@@ -57,6 +57,15 @@ const MAPS := {
 	"workshop":     {"bg": "workshop", "ground": 12, "walls": "foundry", "half_width": 840.0, "music": "story_workshop"},
 	# THE GOLEM'S HALL (Architect's Golem): a vast stone hall of the Architect, glowing runes.
 	"golem_hall":   {"bg": "golem_hall", "ground": 11, "walls": "rune", "half_width": 840.0, "music": "none"},
+	# ----- Colosseum 4 (you play as the ARCHITECT) -----
+	# OVERGROUND DARK CAVE: dark cave, rocks, dim light from the entrance.
+	"dark_cave":    {"bg": "dark_cave", "ground": 13, "walls": "dark", "half_width": 800.0, "music": "story_darkcave"},
+	# THE VOID: dark nothing, the floor is a pile of dark bones, bones everywhere.
+	"void":         {"bg": "void", "ground": 14, "walls": "bone", "half_width": 820.0, "music": "story_void"},
+	# THE ALTAR: a glowing altar of light in the dark void (The Shining).
+	"altar":        {"bg": "altar", "ground": 14, "walls": "bone", "half_width": 820.0, "music": "story_altar"},
+	# THE SPIDER LAIR: webs everywhere, victims hanging from the ceiling in cocoons.
+	"spider_lair":  {"bg": "spider_lair", "ground": 14, "walls": "web", "half_width": 840.0, "music": "story_void"},
 }
 
 const LEVELS := {
@@ -147,6 +156,35 @@ const LEVELS := {
 		"boss_line": "...INTRUDER.   ...DISMANTLE.",
 		"boss_death": "sink", "boss_death_title": "THE ARCHITECT'S GOLEM CRUMBLES",
 		"boss_death_sub": "The runes go dark. The third Colosseum is yours."},
+
+	# ======================= COLOSSEUM 4: THE VOID BELOW (you are the ARCHITECT) =======================
+	19: {"title": "THE DARK CAVE", "theme": "dark_cave", "map": "dark_cave", "hero": "architect",
+		"cutscene_in": "cave_roll",
+		"intro": "You rolled all the way down into a dark cave. Something black crawls on the rocks.",
+		"waves": [["crawling", "crawling", "crawling"], ["crawling", "crawling", "crawling", "crawling"]], "boss": ""},
+	20: {"title": "THE VOID ESCAPIST", "theme": "dark_cave", "map": "dark_cave", "hero": "architect",
+		"intro": "A black ghost slides through the cave floor... the Void Escapist.",
+		"waves": [["escapist", "crawling", "crawling"], ["escapist", "escapist", "crawling"]], "boss": "",
+		"floor_break": true, "cutscene_out": "void_fall"},
+	21: {"title": "THE VOID", "theme": "void", "map": "void", "hero": "architect",
+		"intro": "Nothing but dark, and a floor made of bones. Lost souls drift here.",
+		"waves": [["void_soul", "tentacle"], ["void_soul", "void_soul", "tentacle"]], "boss": ""},
+	22: {"title": "THE BONE SEA", "theme": "void", "map": "void", "hero": "architect",
+		"intro": "The bones go on forever. So do the tentacles.",
+		"waves": [["tentacle", "void_soul", "tentacle"], ["void_soul", "tentacle", "void_soul", "tentacle"]], "boss": ""},
+	23: {"title": "THE HOLLOW MASKER", "theme": "void", "map": "void", "hero": "architect",
+		"intro": "A tall thing in a white mask watches you from the dark.",
+		"waves": [["masker"], ["masker", "void_soul", "tentacle"]], "boss": ""},
+	# Two parts: THE ALTAR (The Shining, optional) -> THE SPIDER LAIR (2 Hollow Maskers, then the boss)
+	24: {"title": "THE VOID MASSACRE", "theme": "altar", "map": "altar", "hero": "architect",
+		"intro": "A light in the dark: an altar... and something made of light floating above it.",
+		"altar": true, "stage_map": "spider_lair", "stage_title": "THE SPIDER LAIR",
+		"stage_sub": "Webs everywhere... and the ones caught in them.",
+		"waves": [["masker", "masker"]], "boss": "void_massacre",
+		"boss_music": "boss_massacre", "boss_color": Color(0.75, 0.5, 1.0),
+		"boss_sub": "Sixteen eyes, sixteen legs  -  Keeper of the Fourth Colosseum",
+		"boss_line": "*the clicking of sixteen legs*",
+		"boss_death_title": "THE VOID MASSACRE IS DEAD", "boss_death_sub": "The webs go still. The fourth Colosseum is yours."},
 }
 
 
@@ -213,6 +251,20 @@ static func enemy_script(id: String) -> Script:
 			return ArchitectianTitan
 		"arch_golem":
 			return ArchitectsGolem
+		"crawling":
+			return BlackCrawling
+		"escapist":
+			return VoidEscapist
+		"void_soul":
+			return VoidSoul
+		"tentacle":
+			return VoidTentacle
+		"masker":
+			return HollowMasker
+		"shining":
+			return TheShining
+		"void_massacre":
+			return VoidMassacre
 	return Parasite
 
 
@@ -222,7 +274,7 @@ static func tile_enemy(n: int) -> String:
 	if String(lv.get("boss", "")) != "":
 		return String(lv["boss"])
 	var rank := ["parasite", "kharleming", "stray", "sparkling", "follower", "brute", "guard", "copper", "warrior_a", "crawler",
-		"golem", "hydra", "atomic"]
+		"golem", "hydra", "atomic", "crawling", "void_soul", "escapist", "tentacle", "masker"]
 	var best := "parasite"
 	for wave in lv.get("waves", []):
 		for id in wave:
@@ -270,5 +322,19 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return ArchitectianTitan.new()
 		"arch_golem":
 			return ArchitectsGolem.new()
+		"crawling":
+			return BlackCrawling.new()
+		"escapist":
+			return VoidEscapist.new()
+		"void_soul":
+			return VoidSoul.new()
+		"tentacle":
+			return VoidTentacle.new()
+		"masker":
+			return HollowMasker.new()
+		"shining":
+			return TheShining.new()
+		"void_massacre":
+			return VoidMassacre.new()
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()

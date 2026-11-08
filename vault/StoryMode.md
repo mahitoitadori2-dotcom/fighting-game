@@ -8,7 +8,7 @@ type: reference
 
 Back to [Summary](SUMMARY.md).
 
-Story Mode has 50 levels in 8 Colosseums. Level 50 is **The Sun**. Colosseums 1-3 (levels 1-18) are playable. The plan for the rest is in the [Roadmap](Roadmap.md).
+Story Mode has 50 levels in 8 Colosseums. Level 50 is **The Sun**. Colosseums 1-4 (levels 1-24) are playable. The plan for the rest is in the [Roadmap](Roadmap.md).
 
 ## Level select
 
@@ -77,6 +77,36 @@ A save that already beat Colosseum 1 (from before Colosseum 2 existed) unlocks L
 - Music: Burning Throne Room, Architectium, Blast Workshop, Titan and Golem themes (placeholders).
 - Not added on purpose: the Hexagon (not yet).
 
+## Colosseum 4: The Void Below (you play as the ARCHITECT)
+
+In Colosseum 4 the playable character is **The Mighty Architect**: his own moves (punch, Rocket, HNCT, Drill, ultimates), look and animations. The Warrior is still the character in Colosseums 1-3. In Story Mode the Architect's punch reaches from head to toe so it can hit small enemies; Versus is unchanged.
+
+| Level | Title | Map | What happens |
+|---|---|---|---|
+| 19 | The Dark Cave | Overground Dark Cave (dark rocks, dim light) | Cutscene: the Architect rolls down into the cave. ONLY Black Crawlings (2 rounds) |
+| 20 | The Void Escapist | Overground Dark Cave | Void Escapists are introduced. At the end the last one breaks the floor: cutscene of falling into the void |
+| 21 | The Void | Void (floor of dark bones, bones everywhere) | Void Souls and Tentacles |
+| 22 | The Bone Sea | Void | Void Souls and Tentacles |
+| 23 | The Hollow Masker | Void | The Hollow Masker is introduced |
+| 24 | The Void Massacre | The Altar, then the Spider Lair | Part 1: The Shining (optional). Part 2: 2 Hollow Maskers, then the boss **Void Massacre** |
+
+- **Why 24 has two parts:** the brief had 7 steps but a Colosseum has 6 levels, so the Shining level and the boss level share Level 24.
+- **The Shining choice (Level 24):** the screen asks "Kill The Shining to weaken the Void? Or leave it and face a stronger Void Massacre?"
+  - The Shining is peaceful until you hit it, then it fights back with Light Beam and Light Blast.
+  - **Kill it:** every void enemy for the rest of the level (the Hollow Maskers and the Massacre) gets 30% less HP and damage, and the Massacre is slower and less aggressive. The boss bar says "WEAKENED BY THE SHINING".
+  - **Walk into the dark gate on the right:** the Void Massacre gets 35% more HP and 25% more damage, is faster and more aggressive, spits more goo, fires triple eye beams and charges back after hitting a wall. The boss bar says "VIGOROUS".
+- **Black Crawling:** small black crawler. Bite, Pounce.
+- **Void Escapist:** crawling black ghost. Ghost Bite, Phase (sinks into the ground where it can't be hit, slides under you, bursts up biting).
+- **Void Soul:** floating void flame. Void Bolt, Soul Burst.
+- **Void Tentacle:** grows out of the bone floor and doesn't walk. Whip, Grab (pulls you in and squeezes).
+- **Hollow Masker:** tall hollow creature with a white mask. Mask Slam, Mask Dash.
+- **Void Massacre** (boss, 320 HP before the Shining choice): huge void spider, 16 white eyes, 16 legs.
+  - Ceiling Drop: climbs the wall and ceiling, then drops on you (watch the shadow).
+  - Void Goo Spit: leaves pools that hurt and slow you.
+  - Leg Slam, Eye Beam, Void Charge.
+  - FRENZY below 50%. Death cutscene after the fight.
+- Music: Dark Cave, Void, Altar and Void Massacre themes (placeholders).
+
 The level and map data is in `scripts/story/StoryLevels.gd`. The full-screen cutscenes are in `scripts/story/StoryCutscene.gd`.
 
 ## Rules
@@ -89,4 +119,4 @@ The level and map data is in `scripts/story/StoryLevels.gd`. The full-screen cut
 
 ## Testing
 
-All levels 1-18 were cleared by a CPU-controlled Warrior (autoplay; it takes only 25% damage). Every Colosseum 2 map and both Caeser forms were checked in screenshots. Nobody has played Colosseum 2 by hand, and the cutscenes and music were not watched or heard in real time. Difficulty settings are in the [To-do list](Todo.md).
+Levels 1-18 were cleared by a CPU-controlled Warrior and levels 19-24 by a CPU-controlled Architect (killing The Shining). With The Shining skipped, the stronger Void Massacre beat the CPU; it was toned down a little afterwards and not re-tested. All levels 1-24 were cleared (autoplay; it takes only 25% damage). Every Colosseum 2 map and both Caeser forms were checked in screenshots. Nobody has played Colosseum 2 by hand, and the cutscenes and music were not watched or heard in real time. Difficulty settings are in the [To-do list](Todo.md).

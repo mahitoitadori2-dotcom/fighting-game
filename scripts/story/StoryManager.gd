@@ -190,6 +190,11 @@ func _spawn_player() -> void:
 	else:
 		player.ctl = FighterInput.new()
 	add_child(player)
+	if hero == "architect":
+		# Story only (own data copy, Versus unchanged): the punch box reaches head to toes,
+		# like the Warrior's sword, so it also hits short enemies (Black Crawlings...).
+		player.data.punch_offset = Vector2(44, -58)
+		player.data.punch_size = Vector2(70, 114)
 	if autoplay:
 		player.damage_taken_mult = 0.25
 	player.died.connect(_on_player_died)
@@ -298,7 +303,7 @@ func _altar_stage() -> void:
 	SoundManager.play_sfx("holy")
 	await _wait(3.4)
 	_hide_banner()
-	wave_text = "KILL THE SHINING = the Void gets weaker      |      WALK INTO THE DARK GATE  ->  = Void Massacre gets stronger"
+	wave_text = "KILL IT = weaker Void   |   DARK GATE -> = stronger Massacre"
 	while not _over:
 		if test_shining_choice == "spared" or (not autoplay and player.global_position.x >= gate.global_position.x - 50.0):
 			shining_choice = "spared"
@@ -333,10 +338,10 @@ func _apply_void_mod(e: BaseEnemy, id: String) -> void:
 	var mode := "weak" if shining_choice == "killed" else ("strong" if id == "void_massacre" else "")
 	if mode == "":
 		return                                       # Skipping The Shining only empowers the Massacre
-	var hp_mult := 0.7 if mode == "weak" else 1.5
+	var hp_mult := 0.7 if mode == "weak" else 1.35
 	e.data.max_hp = roundi(float(e.data.max_hp) * hp_mult)
 	e.hp = e.data.max_hp
-	e.damage_mult = 0.7 if mode == "weak" else 1.4
+	e.damage_mult = 0.7 if mode == "weak" else 1.25
 	if e.has_method("apply_void_mod"):
 		e.call("apply_void_mod", mode)              # Speed / aggression (the Massacre)
 	e.health_changed.emit(e.hp, e.data.max_hp)

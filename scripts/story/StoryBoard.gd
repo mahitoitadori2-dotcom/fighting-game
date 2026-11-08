@@ -24,7 +24,8 @@ const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
-	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "titan": 0.16, "arch_golem": 0.15}
+	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "titan": 0.16, "arch_golem": 0.15,
+	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11}
 ## Board page per Colosseum: title, zone labels [text, x, y, colour], tile colours by level offset (0-5).
 const PAGES := {
 	1: {"title": "STORY MODE  -  COLOSSEUM 1: THE ASHEN DEPTHS",
@@ -41,6 +42,11 @@ const PAGES := {
 			["BLAST WORKSHOP", 0.62, 0.97, Color(1.0, 0.75, 0.35, 0.9)], ["THE GOLEM'S HALL", 0.66, 0.06, Color(0.5, 0.85, 1.0, 0.9)]],
 		"tiles": [Color(0.50, 0.18, 0.08), Color(0.42, 0.40, 0.12), Color(0.36, 0.40, 0.36), Color(0.36, 0.40, 0.36), Color(0.45, 0.28, 0.10), Color(0.18, 0.32, 0.45)],
 		"board": [Color(0.30, 0.10, 0.05), Color(0.14, 0.18, 0.24)], "boss_label": Color(0.5, 0.85, 1.0)},
+	4: {"title": "STORY MODE  -  COLOSSEUM 4: THE VOID BELOW  (YOU ARE THE ARCHITECT)",
+		"zones": [["THE DARK CAVE", 0.14, 0.97, Color(0.75, 0.78, 0.85, 0.9)], ["THE VOID", 0.42, 0.1, Color(0.7, 0.5, 1.0, 0.9)],
+			["THE ALTAR", 0.48, 0.97, Color(1.0, 0.9, 0.55, 0.9)], ["THE SPIDER LAIR", 0.68, 0.06, Color(0.8, 0.6, 1.0, 0.9)]],
+		"tiles": [Color(0.20, 0.20, 0.23), Color(0.20, 0.20, 0.23), Color(0.22, 0.12, 0.34), Color(0.22, 0.12, 0.34), Color(0.22, 0.12, 0.34), Color(0.35, 0.15, 0.50)],
+		"board": [Color(0.10, 0.10, 0.12), Color(0.12, 0.04, 0.18)], "boss_label": Color(0.8, 0.6, 1.0)},
 }
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
 

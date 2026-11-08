@@ -19,6 +19,9 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - In `ArchitectChorus.gd`: HP, `JOLT_EVERY` and the slam numbers.
   - In `ChemicalPool.gd`: `LAVA_TICK_DAMAGE`.
   - In `WarriorData.gd`: the Warrior buff numbers and the sword growth (`sword_power_damage`, `sword_power_size`).
+- [ ] **Play Colosseums 3 and 4 yourself.** Check the Architectian Titan, the Architect's Golem, both Shining choices, and the Void Massacre (VIGOROUS may still be too hard).
+  - Boss numbers: HP / patterns in `ArchitectianTitan.gd`, `ArchitectsGolem.gd`, `VoidMassacre.gd`.
+  - The Shining choice: `_apply_void_mod` in `StoryManager.gd` (weak 0.7x, strong 1.35x HP and 1.25x damage).
 - [ ] Play Versus with the buffed Warrior and check he isn't too strong now.
 - [ ] Play the 3 Fights-mode bosses yourself and tune them (`HP`, pattern cooldowns and damage, `phase2_*` in `scripts/enemies/bosses/`).
 - [ ] Check whether Kharlemings can still stand on top of each other on level 5 (their name tags overlap).
