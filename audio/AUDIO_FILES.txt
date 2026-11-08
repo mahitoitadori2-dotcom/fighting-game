@@ -45,6 +45,10 @@ audio/sfx/
   count_tick.wav    Match countdown 3 / 2 / 1
   count_go.wav      Match countdown GO! (+ Story boss FIGHT!)
 
+  -- added with Story Colosseum 2 --
+  geyser.wav        Blasphemy Caeser - Magma Geysers / Lava Wave
+  splash.wav        Story - landing in the sewer water (falling-into-the-sewers cutscene)
+
 audio/music/        (all loop automatically)
   menu.ogg          Main Menu, Character Select, Settings, Story board
   fight.ogg         Normal fights (speeds up when YOUR HP is low)
@@ -58,6 +62,14 @@ audio/music/        (all loop automatically)
   story_geode.ogg   Level 4, the Geode Cavern - Rock Golem (crystal bells)
   story_hive.ogg    Level 5, the Kharleming Hive (mechanical ticking)
   story_cave.ogg    Level 6 group waves, the lava lair (dark ambient, drips)
+
+  STORY MODE (Colosseum 2):
+  story_ascent.ogg      Elevator from Hell intro cutscene + Level 7, corpse-climb ending
+                        (haunting, melodic: strings, plucked melody, bells)
+  boss_architect.ogg    Architect Chorus mini-boss (same mood, heavier: organ chorus, drums, bells)
+  story_enlightened.ogg Levels 8-9, Home of the Enlightened Ones (bright choir, bells)
+  story_sewers.ogg      Levels 10-11, the Sewers (dark, dripping, creepy, slow)
+  boss_caeser.ogg       Blasphemy Caeser (dark, epic, choir, heavy)
   Future bosses: classical / ancient / medieval, Souls-like (choir, strings, organ).
 
 audio/voice/        (OPTIONAL boss voice recordings - without them the game uses

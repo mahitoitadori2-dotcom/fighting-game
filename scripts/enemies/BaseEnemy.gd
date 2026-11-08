@@ -305,6 +305,11 @@ func _on_respawn() -> void:
 		p.cooldown_left = 0.0
 
 
+## Text on the Story Mode BOSS BAR at the top of the screen. Override for named phases.
+func boss_title() -> String:
+	return enemy_name.to_upper() + ("   -   PHASE 2" if enraged else "")
+
+
 ## Enemies show their name in the EnemyHUD instead of the fighter name tag.
 func _draw() -> void:
 	pass

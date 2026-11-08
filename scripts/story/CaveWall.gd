@@ -69,6 +69,18 @@ func _draw() -> void:
 	elif style == "lab":
 		near = Color(0.24, 0.28, 0.26)
 		far = Color(0.10, 0.12, 0.11)
+	elif style == "shaft":
+		near = Color(0.22, 0.22, 0.25)
+		far = Color(0.08, 0.08, 0.10)
+	elif style == "marble":
+		near = Color(0.95, 0.93, 0.88)
+		far = Color(0.75, 0.71, 0.64)
+	elif style == "sewer":
+		near = Color(0.17, 0.21, 0.16)
+		far = Color(0.06, 0.08, 0.06)
+	elif style == "blasphemy":
+		near = Color(0.20, 0.09, 0.09)
+		far = Color(0.08, 0.03, 0.04)
 	var cols := PackedColorArray()
 	for p in _poly:
 		cols.append(near.lerp(far, clampf(absf(p.x) / thickness, 0.0, 1.0)))
@@ -80,6 +92,16 @@ func _draw() -> void:
 			_draw_plates()
 		"lab":
 			_draw_lab()
+		"shaft":
+			_draw_shaft()
+		"marble":
+			_draw_marble()
+		"sewer":
+			_draw_sewer()
+		"blasphemy":
+			for v in _veins:                        # Magma veins (brighter than the lava cliffs)
+				draw_polyline(v, Color(1.0, 0.35, 0.05, 0.35), 9.0, true)
+				draw_polyline(v, Color(1.0, 0.55, 0.15), 3.0, true)
 		_:
 			for v in _veins:                        # Lava veins
 				draw_polyline(v, Color(1.0, 0.45, 0.1, 0.25), 7.0, true)
@@ -88,7 +110,8 @@ func _draw() -> void:
 	for i in range(1, _poly.size() - 1):
 		edge.append(_poly[i])
 	draw_polyline(edge, Color(0, 0, 0), 6.0, true)
-	var rim := {"lava": Color(0.35, 0.22, 0.18), "crystal": Color(0.6, 0.4, 0.85), "metal": Color(0.3, 0.9, 0.9), "lab": Color(0.45, 1.0, 0.2)}
+	var rim := {"lava": Color(0.35, 0.22, 0.18), "crystal": Color(0.6, 0.4, 0.85), "metal": Color(0.3, 0.9, 0.9), "lab": Color(0.45, 1.0, 0.2),
+		"shaft": Color(0.95, 0.6, 0.15), "marble": Color(0.95, 0.78, 0.35), "sewer": Color(0.45, 0.8, 0.35), "blasphemy": Color(1.0, 0.4, 0.1)}
 	draw_polyline(edge, rim.get(style, Color(0.35, 0.22, 0.18)), 2.0, true)
 
 
@@ -129,6 +152,60 @@ func _draw_lab() -> void:
 		if k % 2 == 0:
 			draw_circle(Vector2(tube.get_center().x + side * 34.0, by + 5.0), 9.0, Color(0.5, 0.12, 0.10))
 			draw_line(Vector2(tube.get_center().x, by + 5.0), Vector2(tube.get_center().x + side * 34.0, by + 5.0), Color(0.3, 0.32, 0.3), 6.0)
+
+
+## Elevator shaft wall: steel girders, cross braces, rivets and blinking warning lamps.
+func _draw_shaft() -> void:
+	var y := 100.0
+	var k := 0
+	while y > -height:
+		draw_rect(Rect2(minf(0.0, side * thickness), y - 16.0, thickness, 16.0), Color(0.30, 0.29, 0.30))
+		draw_line(Vector2(side * 10.0, y), Vector2(side * 220.0, y - 120.0), Color(0.15, 0.15, 0.17), 10.0)   # Cross brace
+		for r in 5:
+			draw_circle(Vector2(side * (20.0 + float(r) * 40.0), y - 8.0), 3.0, Color(0.12, 0.12, 0.13))
+		if k % 2 == 0:
+			draw_circle(Vector2(side * 30.0, y - 60.0), 9.0, Color(0, 0, 0))
+			draw_circle(Vector2(side * 30.0, y - 60.0), 6.0, Color(1.0, 0.5, 0.1))
+		y -= 120.0
+		k += 1
+
+
+## Marble wall of the Enlightened city: fluted column + gold bands + a sun relief.
+func _draw_marble() -> void:
+	var cx := side * 50.0
+	draw_rect(Rect2(minf(cx - side * 30.0, cx + side * 30.0), -height, 60.0, height + 100.0), Color(0.98, 0.97, 0.93))
+	for f in 4:
+		var fx := cx - side * 22.0 + side * float(f) * 15.0
+		draw_line(Vector2(fx, -height), Vector2(fx, 100.0), Color(0.80, 0.77, 0.70), 2.0)
+	for b in 4:
+		var by := -float(b) * 220.0 - 60.0
+		draw_rect(Rect2(minf(0.0, side * thickness), by, thickness, 10.0), Color(0.95, 0.75, 0.3))
+	var sun := Vector2(side * 200.0, -300.0)
+	draw_circle(sun, 46.0, Color(0.95, 0.78, 0.35, 0.8))
+	for i in 12:
+		var a := TAU * float(i) / 12.0
+		draw_line(sun + Vector2.from_angle(a) * 50.0, sun + Vector2.from_angle(a) * 74.0, Color(0.95, 0.78, 0.35, 0.8), 4.0)
+
+
+## Sewer wall: wet bricks, a rusty pipe dripping slime.
+func _draw_sewer() -> void:
+	var y := 100.0
+	var row := 0
+	while y > -height:
+		var x0 := (0.0 if row % 2 == 0 else 24.0)
+		var x := x0
+		while x < thickness:
+			var rx := side * x
+			draw_rect(Rect2(minf(rx, rx + side * 46.0), y - 26.0, 46.0, 22.0), Color(0.13, 0.17, 0.12))
+			x += 50.0
+		y -= 28.0
+		row += 1
+	var px := side * 60.0
+	draw_rect(Rect2(minf(px, px + side * 30.0), -height, 30.0, height + 100.0), Color(0.25, 0.22, 0.16))
+	draw_rect(Rect2(minf(px, px + side * 30.0), -height, 30.0, height + 100.0), Color(0, 0, 0), false, 3.0)
+	for k in 5:
+		var dy := -height + 120.0 + float(k) * (height - 120.0) / 5.0
+		draw_line(Vector2(px, dy), Vector2(px - side * 8.0, dy + 30.0), Color(0.45, 0.8, 0.35, 0.8), 4.0)
 
 
 ## Rusted scrap plates, rivets, cyan light seams and hanging cables (Kharleming hive).

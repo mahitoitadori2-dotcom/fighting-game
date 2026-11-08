@@ -12,6 +12,9 @@
   - Nightmare Lord
   - The Enlightened One
 - Each character has 3 moves and G-Gauge ultimates, plus a CPU opponent and lives.
+- **Warrior buffed (2026-11-08, in every mode):**
+  - Damage: sword 5 (was 3), Clinging Grab 7 (was 5; Onslaught 10), Eternal Grasp spikes 5 (was 4), Mini Eternal Grasp 4 (was 3), Shadow Swarm 30 (was 25).
+  - Cooldowns: Clinging Grab 3.5 s (was 5), Royal Destiny 12 s (was 17), Eternal Grasp 13 s (was 20).
 - Match Settings has Sandbox options (damage, gauge and cooldown multipliers; God Mode) and an FPS counter.
 - **Epic countdown** at the start of every Versus match: 3 → 2 → 1 → GO!, with zooming numbers, screen shake, flash, shockwaves and drum hits.
 - **Move names show BIG on screen** (yours higher, the opponent's lower). The font shrinks to fit, so names are never cut off. The move list in the top corners also fits now; the right side used to run off the screen.
@@ -26,7 +29,7 @@
   - **Geyron** (190 HP): white, blood-soaked dragon with a light-blade tail. Moves: Light Sword Slash, Holy Beam, Wing Dash, Judgment Spears, Angel Flurry. He has no voice lines, only roars.
   - Minos and Sisyphus speak voice lines on the intro, some attacks, rage and death. The voice is text-to-speech for now, and the words also appear on screen.
   - They use mythology names (no "Prime"), because the ULTRAKILL characters and names belong to that game.
-- **Story Mode** (6): Parasite, Demon Brute, Hydra-Mutant, Rock Golem, Kharleming, and the Blinded Lord (boss).
+- **Story Mode** (12): Parasite, Demon Brute, Hydra-Mutant, Rock Golem, Kharleming, the Blinded Lord (boss); Colosseum 2 adds Enlightened Guard, Enlightened Follower, God Crawler, Rot Stray, Architect Chorus (mini-boss) and Blasphemy Caeser (boss).
 - All of them run on the same enemy system (BaseEnemy + EnemyPattern + EnemyHUD), so new enemies are easy to add.
 - Enemies have small hovering HP bars, telegraphed attacks, and group behavior (at most 2 attack at once).
 
@@ -45,6 +48,27 @@
 - Progress saves after every level.
 - **Blinded Lord:** throws chemical pools in phase 1; in phase 2 he becomes CRAZED and fights in melee (Jug Smash, Wild Swings, Charge).
 
+### Story Mode: Colosseum 2 "The Ascent" (levels 7-12, added 2026-11-08)
+
+| Level | Map | What happens |
+|---|---|---|
+| 7 | Elevator (steel platform in a shaft) | Intro cutscene "Elevator from Hell", then mini-boss **Architect Chorus** |
+| 8-9 | Home of the Enlightened Ones (white & gold city) | 2 group rounds each: Enlightened Guards (spear, sun shield) + Followers (Halo Wave, Radiant Palm) |
+| 10-11 | Sewers (bricks, pipes, green fog) | Falling-into-the-sewers cutscene before 10; one round each of only God Crawlers + Rot Strays |
+| 12 | Blasphemy Arena (volcanic temple) | Pre-fight intro, 2-phase boss **Blasphemy Caeser**, then the corpse-climb ending cutscene |
+
+- **Architect Chorus** (150 HP): giant robot behind the elevator, in The Mighty Architect's colours (white plates, green hands and trim, dark visor, blue core). Hit its glowing core, or its hands while they rest after a slam. Hand Slam, Double Hand Slam (both with shockwaves), Rock Throw, Elevator Shake (be in the air on each jolt; falling rocks). Overheats below 50%. When beaten it lets go and falls down the shaft.
+- **Blasphemy Caeser:** a huge (1.6x) gray-scaled serpent with magma between its scales.
+  - **Phase 1, God-Devouring Serpent** (280 HP, no crown): Fire Breath, Serpent Bite, Tail Swipe, Magma Spit.
+  - **The transform:** at 0 HP a cutscene plays. He grows arms, a face with a burning laurel crown pushes out of his neck, and he pulls a giant flesh-covered **Blasphemy Blade** out of his throat.
+  - **Phase 2, The Blasphemy Blade** (fresh 340 HP bar): Blade Slash, Serpent Head Bite, Magma Geysers, Magma Spit, Lava Pools, Ground Slam, Lava Wave.
+  - When beaten he sinks into the magma.
+- **Your sword grows during the Caeser fight:** it gets bigger and stronger when the fight starts (7 damage) and again in phase 2 (8 damage), with a glowing void blade and a longer reach.
+- Same rules as Colosseum 1: 2 flasks per level (R), refilled after each boss intro; small hovering HP bars for normal enemies; a big top bar for bosses only.
+- **The board** now has one page per Colosseum. After the Blinded Lord, the pawn moves on to the Colosseum 2 page. You can switch pages by clicking the fog space or the "< 6" mark, or with Left / Right.
+- **Old saves:** a save that already beat Colosseum 1 now unlocks Level 7 automatically.
+- New sound: 5 music tracks (Elevator theme with strings and bells, Architect Chorus, Enlightened city, Sewers, Blasphemy Caeser with choir) and 2 effects (geyser, splash). All are generated placeholders.
+
 ### Performance
 - Projectiles, effects and chemical pools are reused instead of created and destroyed each time.
 - At most 200 particles at once (110 on phones).
@@ -53,7 +77,7 @@
 
 ### Audio
 - A sound manager plays every effect and music track, with Music and SFX sliders and Mute in Settings.
-- All sounds are generated placeholders: 33 effects and 10 music tracks, including one per Story area and one per Fights-mode boss.
+- All sounds are generated placeholders: 35 effects and 15 music tracks, including one per Story area and one per Fights-mode boss.
 - Sound in every battle: enemy attack whooshes, warning beeps before big attacks, boss roars, slams, rocks, chains and countdown hits.
 - Sound in Story Mode: chemical spills, flask drinking, and cutscene sounds (letterbox whoosh, rumble before the boss drops, roar, death rumble).
 - Boss voice lines: drop recordings into `audio/voice/` (names in `AUDIO_FILES.txt`) to replace the text-to-speech.
@@ -74,19 +98,24 @@
 - Nobody has played Story Mode with a keyboard yet; all tests used a CPU-controlled Warrior, so the difficulty is unverified (especially the Blinded Lord's enraged phase).
 - The website isn't online yet, so the iPhone 13 support (loading, touch, audio after the tap) is untested on a real phone.
 - All sounds and music are generated placeholders.
+- **Colosseum 2 has only been tested by the CPU Warrior** (levels 6-12 all cleared in autoplay, which takes 25% damage). After the Warrior buff and the bigger Caeser (280 + 340 HP), the CPU beat him in about 70 s with 74 HP and 1 flask left. Difficulty for a human is unknown.
+- **The Warrior buff also changes Versus balance** (and the Colosseum 1 levels); it hasn't been played against the other characters yet. Each map and both Caeser forms were checked in screenshots. The cutscenes and music were not watched or heard in real time.
 - **New bosses only tested CPU vs boss** (they won 2 of 3, and Minos and Geyron reached rage). The difficulty is not human-tested.
 - **Voice lines (text-to-speech)** depend on the device. They are untested on Web and iPhone, so a browser without voices simply stays silent. The voice was not listened to in testing (headless runs).
 - The countdown, big move names and boss art were checked with screenshots. Nobody has heard all the new sounds together in a real match.
 - The game is named Universal Beatdown, but the domain you own is universalshowdown.com.
 
 ## Future plans
-1. **Story Mode Colosseums 2-8** (levels 7-50): new enemies, maps and a boss every 6 levels, ending at **Level 50: The Sun**. New bosses should get classical / medieval, Souls-like music (not cyber / synth).
+1. **Story Mode Colosseums 3-8** (levels 13-50; Colosseum 2 is done): new enemies, maps and a boss every 6 levels, ending at **Level 50: The Sun**. New bosses should get classical / medieval, Souls-like music (not cyber / synth).
 2. **Put the website online:** upload `web/` to Netlify (temporary link), then connect universalshowdown.com.
 3. **Real audio:** replace the placeholder sounds and music.
 
 ## Optional to-dos
 - [ ] **Playtest Colosseum 1 with your own hands.** Tests used a CPU-controlled Warrior, so the difficulty, especially the Blinded Lord, still needs tuning by a human.
   - Knobs: boss HP and `phase2_speed_mult` / `phase2_cooldown_mult` in `BlindedLord.gd`, `TICK` / `TICK_DAMAGE` in `ChemicalPool.gd`, `MAX_ATTACKERS` in `StoryManager.gd`.
+- [ ] **Playtest Colosseum 2 yourself**, especially the Architect Chorus's Elevator Shake and Blasphemy Caeser's phase 2.
+  - Knobs: `P1_HP` / `P2_HP` and the pattern cooldowns and damage in `BlasphemyCaeser.gd`; HP, `JOLT_EVERY` and the slam numbers in `ArchitectChorus.gd`; `LAVA_TICK_DAMAGE` in `ChemicalPool.gd`; sword growth `sword_power_damage` / `sword_power_size` and the Warrior buff numbers in `WarriorData.gd`.
+- [ ] Re-export the Web build so the website gets Colosseum 2.
 - [ ] Test on a real iPhone 13 (loading, touch controls, audio after the tap).
 - [ ] Play the 3 Fights-mode bosses yourself and tune them. Knobs: `HP`, pattern cooldowns and damage, and `phase2_*` in `scripts/enemies/bosses/`.
 - [ ] Record real voice lines for Minos / Sisyphus (`audio/voice/`).
@@ -99,7 +128,7 @@
 - [ ] Story Mode extras: difficulty settings, a level timer or score, unlockables.
 
 ## Where things live
-- `scripts/story/`: Story Mode (manager, board, levels, maps, HUD, enemies)
+- `scripts/story/`: Story Mode (manager, board, levels, maps, HUD, enemies). `StoryLevels.gd` holds every level and map; `StoryCutscene.gd` holds the full-screen cutscenes.
 - `scripts/enemies/`: enemy system + Versus enemies
 - `scripts/enemies/bosses/`: Fights-mode bosses (FightBoss base, KingMinos, Sisyphus, Geyron, BossHazard)
 - `scripts/ui/EpicCountdown.gd`: the 3-2-1-GO! countdown

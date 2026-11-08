@@ -81,6 +81,10 @@ const SFX = {
   flask_drink: () => { const b = buf(0.9); for (let k = 0; k < 3; k++) { tone(b, k * 0.17, 0.14, 260, 180, (p) => Math.sin(p * 2 * Math.PI), 0.6, 0.01, 0.05); noise(b, k * 0.17, 0.1, 0.25, 0.01, 0.04, 0.3); } [1047, 1319, 1568].forEach((f, i) => tone(b, 0.55 + i * 0.06, 0.3, f, f, tri, 0.3, 0.005, 0.12)); return b; },
   count_tick:  () => { const b = buf(0.7); tone(b, 0, 0.5, 110, 50, (p) => Math.sin(p * 2 * Math.PI), 1.0, 0.001, 0.15); noise(b, 0, 0.3, 0.6, 0.001, 0.08, 0.3); [440, 660].forEach((f) => tone(b, 0, 0.6, f, f, saw, 0.12, 0.002, 0.25)); return b; },
   count_go:    () => { const b = buf(1.6); tone(b, 0, 0.8, 90, 30, (p) => Math.sin(p * 2 * Math.PI), 1.0, 0.001, 0.3); noise(b, 0, 1.4, 1.0, 0.001, 0.45, 0.2); [262, 330, 392, 523, 659].forEach((f) => tone(b, 0.02, 1.5, f, f, saw, 0.12, 0.005, 0.6)); noise(b, 0, 0.06, 0.9, 0.001, 0.02, 0.95); return b; },
+
+  // ----- added with Story Colosseum 2 -----
+  geyser:      () => { const b = buf(0.9); noise(b, 0, 0.9, 1.0, 0.03, 0.3, 0.12); tone(b, 0, 0.7, 60, 140, (p) => Math.sin(p * 2 * Math.PI), 0.7, 0.02, 0.25); for (let k = 0; k < 5; k++) noise(b, 0.2 + k * 0.1, 0.05, 0.5, 0.001, 0.02, 0.6); return b; },
+  splash:      () => { const b = buf(0.8); noise(b, 0, 0.35, 1.0, 0.002, 0.12, 0.45); for (let k = 0; k < 7; k++) tone(b, 0.15 + k * 0.08, 0.08, 700 + Math.abs(rnd()) * 900, 300 + Math.abs(rnd()) * 300, (p) => Math.sin(p * 2 * Math.PI), 0.35, 0.002, 0.03); return b; },
 };
 
 // ---------- MUSIC (seamless loops: exact bar lengths) ----------
@@ -191,6 +195,39 @@ const MUSIC = {
     ['k', 'c', 'c', 'c', 's', 'c', 'c', 'c'], sq, sq),
   // Bosses use music/boss (the Blinded Lord). FUTURE bosses: classical / ancient /
   // medieval, Souls-like (choir, strings, organ, war drums) - not cyber / synth.
+
+  // ----- STORY MODE (Colosseum 2) -----
+  // The Elevator from Hell (intro cutscene + level 7 before the boss): haunting and melodic,
+  // soft string pads, a lonely plucked melody and distant bells. D minor, slow.
+  story_ascent: () => epic(76, 8,
+    [[50, 57, 62, 65], [46, 53, 58, 62], [43, 50, 55, 58], [45, 52, 57, 61]],
+    [38, 0, 0, 0, 0, 0, 45, 0, 34, 0, 0, 0, 0, 0, 41, 0, 31, 0, 0, 0, 0, 0, 38, 0, 33, 0, 0, 0, 40, 0, 0, 0],
+    [74, 0, 77, 76, 74, 0, 72, 0, 70, 0, 0, 69, 70, 0, 0, 0, 67, 0, 70, 0, 74, 0, 72, 70, 69, 0, 0, 0, 73, 0, 0, 0],
+    ['b', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'b', 0, 0, 0], tri, tri),
+  // Architect Chorus (mini-boss): the same haunting world but HEAVIER - organ chorus,
+  // driving low strings, metal clanks and bells, war drums. C minor.
+  boss_architect: () => epic(132, 8,
+    [[48, 55, 60, 63], [44, 51, 56, 60], [43, 50, 55, 59], [46, 53, 58, 62]],
+    [36, 36, 48, 36, 36, 48, 43, 48, 32, 32, 44, 32, 32, 44, 39, 44, 31, 31, 43, 31, 31, 43, 38, 43, 34, 34, 46, 34, 34, 46, 41, 46],
+    [72, 0, 75, 77, 79, 0, 77, 75, 74, 0, 72, 0, 68, 0, 72, 0, 71, 0, 74, 0, 79, 0, 77, 74, 70, 0, 74, 0, 77, 0, 0, 0],
+    ['T', 'c', 's', 'c', 't', 'b', 's', 'c', 'T', 'c', 's', 'c', 't', 't', 's', 's'], organ, saw),
+  // Home of the Enlightened Ones: bright and holy - choir pads in C major, harp-like line, bells.
+  story_enlightened: () => epic(96, 8,
+    [[48, 55, 60, 64], [53, 57, 60, 65], [55, 59, 62, 67], [45, 52, 57, 60]],
+    [36, 0, 43, 0, 48, 0, 43, 0, 41, 0, 48, 0, 53, 0, 48, 0, 43, 0, 50, 0, 55, 0, 50, 0, 45, 0, 52, 0, 57, 0, 52, 0],
+    [72, 76, 79, 76, 77, 0, 76, 74, 72, 0, 77, 81, 79, 0, 77, 76, 74, 79, 83, 79, 81, 0, 79, 77, 76, 0, 72, 0, 74, 0, 0, 0],
+    ['b', 0, 's', 0, 0, 0, 's', 0, 'b', 0, 's', 0, 0, 0, 's', 's'], organ, tri),
+  // The Sewers: dark, dripping, creepy, slow. Low pulses, water drips, a sparse wrong-sounding lead.
+  story_sewers: () => song(64, 8,
+    [33, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 59, 0, 0, 0, 0, 0, 0, 51, 0],
+    ['k', 0, 'd', 0, 0, 'd', 0, 'd'], tri, tri),
+  // Blasphemy Caeser: dark, epic, CHOIR, heavy. E phrygian organ choir, brass, war drums, bells.
+  boss_caeser: () => epic(120, 8,
+    [[40, 47, 52, 55], [41, 48, 53, 57], [38, 45, 50, 53], [41, 48, 53, 56]],
+    [28, 28, 40, 28, 29, 29, 41, 29, 28, 28, 40, 28, 26, 26, 38, 26, 29, 29, 41, 29, 28, 28, 40, 28, 29, 29, 41, 29, 31, 29, 28, 0],
+    [76, 0, 77, 0, 76, 0, 74, 72, 71, 0, 0, 0, 72, 0, 74, 0, 76, 0, 79, 0, 77, 76, 74, 0, 72, 0, 71, 0, 76, 0, 0, 0],
+    ['T', 0, 't', 's', 'T', 't', 's', 'b', 'T', 0, 't', 's', 'T', 't', 's', 's'], organ, saw),
 };
 
 let made = 0, kept = 0;

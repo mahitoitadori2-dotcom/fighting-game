@@ -10,7 +10,16 @@ extends CanvasLayer
 ##   "hive":    the Kharleming nest - scrap heaps, hanging cables, egg pods, blinking cyan eyes.
 ##   "lab":     the Blinded Lord's laboratory - glass chemical chambers with rotted skeletons
 ##              floating inside, pipes and tubes full of toxic green, shelves of flasks.
-@export_enum("surface", "cave", "geode", "hive", "lab") var theme := "surface":
+## COLOSSEUM 2:
+##   "elevator":    the shaft of the Elevator from Hell - girders and warning lamps rushing
+##                  DOWN past you (you ride up), hell glowing far below, light far above.
+##   "enlightened": Home of the Enlightened Ones - white marble city, golden domes, a huge
+##                  sun with rays, floating halos, rising motes of light.
+##   "sewer":       the sewers - brick arches, big pipes pouring dirty water, a slime channel,
+##                  green fog; animated drips.
+##   "blasphemy":   Blasphemy Caeser's arena - a volcanic temple: blood sky, lava falls, a
+##                  colossal serpent skeleton coiled around broken columns.
+@export_enum("surface", "cave", "geode", "hive", "lab", "elevator", "enlightened", "sewer", "blasphemy") var theme := "surface":
 	set(v):
 		theme = v
 		if _painter != null:
@@ -60,6 +69,14 @@ func _paint() -> void:
 			_paint_hive(sz)
 		"lab":
 			_paint_lab(sz)
+		"elevator":
+			_paint_elevator(sz)
+		"enlightened":
+			_paint_enlightened(sz)
+		"sewer":
+			_paint_sewer(sz)
+		"blasphemy":
+			_paint_blasphemy(sz)
 		_:
 			_paint_surface(sz)
 
@@ -310,10 +327,190 @@ func _skeleton(c: Vector2, tilt: float, s: float) -> void:
 
 
 # ============================================================
+# COLOSSEUM 2 LANDSCAPES
+# ============================================================
+func _paint_elevator(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.10, 0.10, 0.13), Color(0.05, 0.04, 0.06), Color(0.35, 0.07, 0.03), 0.55)
+	p.draw_circle(Vector2(sz.x * 0.5, -sz.y * 0.4), sz.y * 0.6, Color(0.8, 0.85, 1.0, 0.07))      # Light far above
+	# Far shaft wall: riveted panels
+	for row in int(sz.y / 90.0) + 1:
+		for col in int(sz.x / 140.0) + 1:
+			var r := Rect2(float(col) * 140.0 + (70.0 if row % 2 == 0 else 0.0) - 70.0, float(row) * 90.0, 136.0, 86.0)
+			p.draw_rect(r, Color(0.09, 0.09, 0.11))
+			p.draw_rect(r, Color(0.04, 0.04, 0.05), false, 2.0)
+	# Guide rails (the elevator rides on them)
+	for rx in [0.3, 0.7]:
+		p.draw_rect(Rect2(sz.x * rx - 14.0, 0, 28.0, sz.y), Color(0.16, 0.16, 0.18))
+		p.draw_rect(Rect2(sz.x * rx - 4.0, 0, 8.0, sz.y), Color(0.3, 0.3, 0.33))
+	# Hell glow far below
+	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, sz.y * 0.12), Color(0.8, 0.25, 0.05, 0.35))
+
+
+func _paint_enlightened(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.98, 0.93, 0.78), Color(1.0, 0.97, 0.88), Color(0.92, 0.86, 0.72), 0.55)
+	# The great sun with rays
+	var sun := Vector2(sz.x * 0.5, sz.y * 0.28)
+	for i in 24:
+		var a := TAU * float(i) / 24.0
+		p.draw_colored_polygon(PackedVector2Array([sun + Vector2.from_angle(a - 0.04) * 90.0, sun + Vector2.from_angle(a) * sz.x * 0.8, sun + Vector2.from_angle(a + 0.04) * 90.0]),
+			Color(1.0, 0.9, 0.55, 0.12 if i % 2 == 0 else 0.06))
+	p.draw_circle(sun, 150.0, Color(1.0, 0.92, 0.6, 0.35))
+	p.draw_circle(sun, 95.0, Color(1.0, 0.95, 0.75))
+	# Floating halos in the sky
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 71
+	for i in 6:
+		var hc := Vector2(rng.randf() * sz.x, rng.randf_range(0.08, 0.4) * sz.y)
+		p.draw_set_transform(hc, 0.0, Vector2(1.0, 0.3))
+		p.draw_arc(Vector2.ZERO, rng.randf_range(20.0, 46.0), 0.0, TAU, 24, Color(1.0, 0.8, 0.3, 0.6), 5.0, true)
+	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# The white city: towers with golden domes (back row paler)
+	for layer_i in 2:
+		var base_y := sz.y * (0.78 if layer_i == 0 else 0.88)
+		var white := Color(0.88, 0.85, 0.80) if layer_i == 0 else Color(0.97, 0.95, 0.91)
+		var gold := Color(0.92, 0.72, 0.28, 0.7 if layer_i == 0 else 1.0)
+		var x := -40.0 + float(layer_i) * 70.0
+		while x < sz.x + 60.0:
+			var w := rng.randf_range(60.0, 120.0)
+			var h := rng.randf_range(160.0, 340.0) * (0.75 if layer_i == 1 else 1.0)
+			p.draw_rect(Rect2(x, base_y - h, w, h), white)
+			p.draw_rect(Rect2(x, base_y - h, w, h), Color(0.6, 0.55, 0.45, 0.6), false, 2.0)
+			p.draw_circle(Vector2(x + w * 0.5, base_y - h), w * 0.5, gold)                 # Dome
+			p.draw_line(Vector2(x + w * 0.5, base_y - h - w * 0.5), Vector2(x + w * 0.5, base_y - h - w * 0.5 - 30.0), gold, 4.0)
+			for wy in int(h / 50.0):                                                          # Arched windows
+				p.draw_rect(Rect2(x + w * 0.5 - 6.0, base_y - h + 30.0 + float(wy) * 50.0, 12.0, 22.0), Color(1.0, 0.85, 0.45, 0.6))
+			x += w + rng.randf_range(20.0, 90.0)
+	# Colonnade along the front
+	var cy := sz.y * 0.9
+	p.draw_rect(Rect2(0, cy - 140.0, sz.x, 16.0), Color(0.95, 0.92, 0.86))
+	var col := 30.0
+	while col < sz.x:
+		p.draw_rect(Rect2(col - 10.0, cy - 124.0, 20.0, 124.0), Color(0.98, 0.96, 0.92))
+		p.draw_rect(Rect2(col - 10.0, cy - 124.0, 20.0, 124.0), Color(0.7, 0.65, 0.55), false, 2.0)
+		col += 90.0
+	p.draw_rect(Rect2(0, cy, sz.x, sz.y - cy), Color(0.9, 0.86, 0.78))
+	p.draw_rect(Rect2(0, cy, sz.x, 4), Color(0.95, 0.78, 0.35))
+
+
+func _paint_sewer(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.02, 0.03, 0.02), Color(0.05, 0.08, 0.05), Color(0.08, 0.14, 0.08), 0.6)
+	# Brick back wall
+	var row := 0
+	var y := 0.0
+	while y < sz.y * 0.9:
+		var x := -40.0 if row % 2 == 0 else -10.0
+		while x < sz.x:
+			p.draw_rect(Rect2(x + 2.0, y + 2.0, 56.0, 26.0), Color(0.09, 0.12, 0.09))
+			x += 60.0
+		y += 30.0
+		row += 1
+	# Big tunnel arches (dark openings)
+	for ax in [0.2, 0.5, 0.8]:
+		var c := Vector2(sz.x * ax, sz.y * 0.62)
+		var r := sz.y * 0.26
+		p.draw_circle(c, r + 14.0, Color(0.14, 0.18, 0.13))
+		p.draw_circle(c, r, Color(0.01, 0.02, 0.01))
+		p.draw_rect(Rect2(c.x - r - 14.0, c.y, (r + 14.0) * 2.0, sz.y), Color(0.14, 0.18, 0.13))
+		p.draw_rect(Rect2(c.x - r, c.y, r * 2.0, sz.y), Color(0.01, 0.02, 0.01))
+		for k in 9:                                                               # Arch bricks
+			var a := PI + PI * float(k) / 8.0
+			p.draw_line(c + Vector2.from_angle(a) * r, c + Vector2.from_angle(a) * (r + 14.0), Color(0.05, 0.07, 0.05), 3.0)
+	# Pipes along the wall, pouring dirty water
+	for i in 4:
+		var py := sz.y * (0.12 + 0.1 * float(i % 2))
+		var px := sz.x * (0.08 + 0.26 * float(i))
+		p.draw_rect(Rect2(px - 60.0, py, 160.0, 26.0), Color(0.22, 0.26, 0.18))
+		p.draw_rect(Rect2(px - 60.0, py, 160.0, 26.0), Color(0, 0, 0), false, 3.0)
+		p.draw_rect(Rect2(px + 76.0, py - 4.0, 22.0, 34.0), Color(0.28, 0.32, 0.22))      # Pipe mouth
+		p.draw_rect(Rect2(px + 80.0, py + 30.0, 14.0, sz.y * 0.9 - py - 30.0), Color(0.35, 0.5, 0.3, 0.35))   # Water fall
+	# Slime channel at the bottom + fog
+	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, sz.y * 0.12), Color(0.12, 0.22, 0.10))
+	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, 4), Color(0.45, 0.75, 0.35, 0.6))
+	for i in 6:
+		p.draw_set_transform(Vector2(sz.x * (float(i) + 0.5) / 6.0, sz.y * 0.8), 0.0, Vector2(1.0, 0.25))
+		p.draw_circle(Vector2.ZERO, 220.0, Color(0.3, 0.6, 0.25, 0.08))
+	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _paint_blasphemy(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.12, 0.02, 0.03), Color(0.45, 0.06, 0.04), Color(0.95, 0.35, 0.08), 0.6)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 91
+	# Lava falls in the distance
+	for i in 4:
+		var fx := sz.x * (0.1 + 0.27 * float(i)) + rng.randf_range(-30.0, 30.0)
+		p.draw_rect(Rect2(fx - 40.0, 0, 80.0, sz.y), Color(1.0, 0.4, 0.05, 0.08))
+		p.draw_rect(Rect2(fx - 10.0, 0, 20.0, sz.y * 0.88), Color(1.0, 0.5, 0.1, 0.6))
+	# Broken temple columns
+	for i in 5:
+		var cx := sz.x * (0.08 + 0.21 * float(i))
+		var h := sz.y * rng.randf_range(0.35, 0.6)
+		var top := sz.y * 0.88 - h
+		p.draw_rect(Rect2(cx - 22.0, top, 44.0, h), Color(0.16, 0.07, 0.07))
+		p.draw_colored_polygon(PackedVector2Array([Vector2(cx - 22.0, top), Vector2(cx - 6.0, top - 20.0), Vector2(cx + 10.0, top - 4.0), Vector2(cx + 22.0, top - 12.0), Vector2(cx + 22.0, top)]), Color(0.16, 0.07, 0.07))
+		for k in 3:
+			p.draw_line(Vector2(cx - 12.0 + float(k) * 12.0, top + 10.0), Vector2(cx - 12.0 + float(k) * 12.0, top + h), Color(0.1, 0.04, 0.04), 2.0)
+	# A colossal serpent skeleton coiled through the sky (vertebrae + ribs)
+	var spine := PackedVector2Array()
+	for i in 40:
+		var u := float(i) / 39.0
+		spine.append(Vector2(sz.x * (0.05 + 0.9 * u), sz.y * (0.35 + 0.16 * sin(u * TAU * 1.3 + 0.8))))
+	for i in spine.size():
+		var v := spine[i]
+		p.draw_circle(v, 9.0, Color(0.30, 0.22, 0.20))
+		if i % 2 == 0 and i > 2 and i < spine.size() - 3:
+			p.draw_arc(v + Vector2(0, 26), 26.0, PI * 1.15, PI * 1.85, 8, Color(0.30, 0.22, 0.20), 4.0)
+	var skull := spine[0] + Vector2(-10, 0)
+	p.draw_colored_polygon(PackedVector2Array([skull + Vector2(60, -30), skull + Vector2(-50, -10), skull + Vector2(-70, 10), skull + Vector2(60, 20)]), Color(0.30, 0.22, 0.20))
+	p.draw_circle(skull + Vector2(20, -8), 10.0, Color(1.0, 0.5, 0.1, 0.7))
+	# Ground silhouette + magma line
+	_ridge(sz, sz.y * 0.9, 60.0, 70.0, Color(0.08, 0.03, 0.03), 92)
+	p.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 6), Color(1.0, 0.45, 0.1, 0.6))
+
+
+# ============================================================
 # EMBERS (the only animated part)
 # ============================================================
 func _paint_embers() -> void:
 	var sz := _painter.size
+	match theme:
+		"elevator":
+			# Girders + warning lamps rushing DOWN past the camera (the elevator rises)
+			var gap := 260.0
+			for i in int(sz.y / gap) + 2:
+				var y := fmod(float(i) * gap + _t * 220.0, sz.y + gap) - gap
+				_embers.draw_rect(Rect2(0, y, sz.x * 0.12, 18.0), Color(0.18, 0.17, 0.18))
+				_embers.draw_rect(Rect2(sz.x * 0.88, y, sz.x * 0.12, 18.0), Color(0.18, 0.17, 0.18))
+				var on := fmod(_t * 2.0 + float(i), 1.0) < 0.5
+				_embers.draw_circle(Vector2(sz.x * 0.12, y + 9.0), 6.0, Color(1.0, 0.5, 0.1, 0.9 if on else 0.3))
+				_embers.draw_circle(Vector2(sz.x * 0.88, y + 9.0), 6.0, Color(1.0, 0.5, 0.1, 0.3 if on else 0.9))
+			for i in 16:                                            # Sparks falling away
+				var e := _ember_data[i]
+				var y2 := fmod(_t * (e.y * 4.0) + float(i) * 97.0, sz.y + 40.0) - 20.0
+				_embers.draw_line(Vector2(e.x * sz.x, y2), Vector2(e.x * sz.x, y2 - 14.0), Color(1.0, 0.6, 0.25, 0.5), 2.0)
+			return
+		"enlightened":
+			for i in _ember_data.size():                           # Rising motes of golden light
+				var e := _ember_data[i]
+				var y3 := sz.y - fmod(_t * e.y * 0.6 + float(i) * 97.0, sz.y + 40.0)
+				var x3 := e.x * sz.x + sin(_t * 0.6 + float(i)) * 24.0
+				_embers.draw_circle(Vector2(x3, y3), e.z + 1.0, Color(1.0, 0.9, 0.5, 0.35 + 0.3 * sin(_t * 2.0 + float(i))))
+			return
+		"sewer":
+			for i in 20:                                            # Drips falling from the ceiling
+				var e := _ember_data[i]
+				var x4 := e.x * sz.x
+				var k := fmod(_t * (0.25 + e.z * 0.08) + float(i) * 0.31, 1.0)
+				_embers.draw_line(Vector2(x4, k * sz.y * 0.88), Vector2(x4, k * sz.y * 0.88 + 8.0), Color(0.55, 0.85, 0.5, 0.5), 2.0)
+			return
+	_paint_embers_default(sz)
+
+
+func _paint_embers_default(sz: Vector2) -> void:
 	if theme == "lab":
 		# Bubbles rising inside the chemical chambers
 		var chambers := _lab_chambers(sz)

@@ -44,6 +44,8 @@ var wave_text := ""
 
 var _alive := 0
 var _wave_index := 0
+var _center_x := 576.0
+var _fog: StoryFog
 var _over := false
 var _saved_sandbox := false
 var _ground_y := 525.0
@@ -139,6 +141,17 @@ func _apply_map(map: Dictionary) -> void:
 		_ground_y = ground.global_position.y
 		center_x = ground.global_position.x
 		ground.ground_theme = int(map.get("ground", 2))
+	_center_x = center_x
+	# Sewers: drifting green fog in front of the floor
+	if bool(map.get("fog", false)):
+		if _fog == null:
+			_fog = StoryFog.new()
+			add_child(_fog)
+		_fog.global_position = Vector2(center_x, _ground_y)
+		_fog.half_width = float(map.get("half_width", 850.0))
+	elif _fog != null:
+		_fog.queue_free()
+		_fog = null
 	var wl := get_parent().get_node_or_null("WallLeft") as CaveWall
 	var wr := get_parent().get_node_or_null("WallRight") as CaveWall
 	has_walls = wl != null and wr != null
@@ -197,15 +210,19 @@ func _run() -> void:
 
 func _intro() -> void:
 	CombatManager.fight_active = false
-	# Drop in from above
-	var land := player.global_position
-	player.global_position = land + Vector2(0, -520)
-	var tw := create_tween()
-	tw.tween_property(player, "global_position", land, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	await tw.finished
-	Effects.shake(self, 9.0)
-	Effects.hit_sparks(player, land + Vector2(0, -8), 10, 1.2)
-	SoundManager.play_sfx("spawn")
+	if String(level.get("arrive", "drop")) == "stand":
+		await _wait(0.4)                               # Already here (rode the elevator up)
+		SoundManager.play_sfx("spawn", -6.0)
+	else:
+		# Drop in from above
+		var land := player.global_position
+		player.global_position = land + Vector2(0, -520)
+		var tw := create_tween()
+		tw.tween_property(player, "global_position", land, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		await tw.finished
+		Effects.shake(self, 9.0)
+		Effects.hit_sparks(player, land + Vector2(0, -8), 10, 1.2)
+		SoundManager.play_sfx("spawn")
 	_show_banner("LEVEL %d" % level_number, "%s\n%s" % [level.get("title", ""), level.get("intro", "")], Color(1.0, 0.7, 0.3))
 	await _wait(2.4)
 	_hide_banner()
@@ -281,44 +298,95 @@ func _boss_intro() -> void:
 			var f := n as BaseEnemy
 			if f != null and f.is_dead:
 				f.visible = false                          # Old corpses stay behind in the caves
-		_show_banner("THE LABORATORY", "Glass chambers... and what is left of the others.", Color(0.6, 1.0, 0.4))
+		_show_banner(String(level.get("boss_map_title", "")), String(level.get("boss_map_sub", "")), Color(0.6, 1.0, 0.4))
 		await _fade(false)
 		await _wait(1.6)
 		_hide_banner()
-	var hi := (wall_right_x if has_walls else player.global_position.x + 600.0) - 120.0
-	var bx := clampf(player.global_position.x + 460.0, player.global_position.x + 200.0, hi)
-	if bx - player.global_position.x < 200.0:
-		bx = player.global_position.x - 460.0             # No room on the right: come from the left
+	elif String(level.get("boss_map_title", "")) != "":
+		# Same arena: just name it while the ground starts to shake
+		_show_banner(String(level["boss_map_title"]), String(level.get("boss_map_sub", "")), Color(1.0, 0.55, 0.3))
+		SoundManager.play_sfx("rumble")
+		Effects.shake(self, 6.0)
+		await _wait(2.0)
+		_hide_banner()
+	var bx := 0.0
+	if String(level.get("boss_pos", "right")) == "center":
+		bx = _center_x                                   # Giant bosses tower over the middle
+	else:
+		var hi := (wall_right_x if has_walls else player.global_position.x + 600.0) - 120.0
+		bx = clampf(player.global_position.x + 460.0, player.global_position.x + 200.0, hi)
+		if bx - player.global_position.x < 200.0:
+			bx = player.global_position.x - 460.0         # No room on the right: come from the left
 	var land := Vector2(bx, _ground_y)
+	var rise := String(level.get("boss_intro", "drop")) == "rise"
 	boss = StoryLevels.make_enemy(String(level["boss"]))
 	boss.slot = 2
 	boss.team = 2
 	boss.default_facing = -1 if bx > player.global_position.x else 1
 	boss.facing = boss.default_facing
 	boss.respawn_enabled = false
-	boss.position = land + Vector2(0, -620)
+	boss.position = land + (Vector2(0, 760) if rise else Vector2(0, -620))
+	var z_before := boss.z_index
+	if rise:
+		boss.z_index = -3                                  # Climbs up from BEHIND the floor
 	add_child(boss)
 	boss.died.connect(_on_boss_died)
-	ArenaCamera.focus = boss
-	ArenaCamera.focus_zoom = 1.05
-	SoundManager.play_sfx("rumble")                    # The ground shakes before he drops in
-	await _wait(0.8)
-	SoundManager.play_sfx("whoosh")
-	var tw := create_tween()
-	tw.tween_property(boss, "global_position", land, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	await tw.finished
-	Effects.shake(self, 16.0)
-	Effects.hit_sparks(boss, land + Vector2(0, -10), 14, 1.6)
-	SoundManager.play_sfx("slam")
-	SoundManager.play_sfx("explosion", -4.0)
-	SoundManager.play_music("boss")
+	if boss.has_signal("transform_started"):
+		boss.connect("transform_started", _on_boss_transform)
+	var boss_color: Color = level.get("boss_color", Color(0.6, 1.0, 0.3))
+	if rise:
+		# Camera on the spot it climbs out of (not on the boss far below the floor)
+		var mark := Node2D.new()
+		add_child(mark)
+		mark.global_position = land + Vector2(0, -120)
+		ArenaCamera.focus = mark
+		ArenaCamera.focus_zoom = 0.72
+		ArenaCamera.focus_offset = Vector2(0, -110)
+		SoundManager.play_sfx("rumble")
+		Effects.shake(self, 8.0)
+		await _wait(0.9)
+		SoundManager.play_sfx("rumble", -2.0)
+		var tw := create_tween()
+		tw.tween_property(boss, "global_position", land, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		for i in 4:
+			await _wait(0.4)
+			Effects.shake(self, 7.0 + float(i) * 2.0)
+		if tw.is_running():
+			await tw.finished
+		if boss.has_method("on_intro_landed"):
+			boss.call("on_intro_landed")                   # Architect Chorus: hands GRAB the elevator
+		Effects.shake(self, 18.0)
+		SoundManager.play_sfx("slam")
+		SoundManager.play_sfx("explosion", -4.0)
+		mark.queue_free()
+		ArenaCamera.focus = boss
+		ArenaCamera.focus_zoom = 0.72
+	else:
+		ArenaCamera.focus = boss
+		ArenaCamera.focus_zoom = 1.05
+		SoundManager.play_sfx("rumble")                    # The ground shakes before he drops in
+		await _wait(0.8)
+		SoundManager.play_sfx("whoosh")
+		var tw := create_tween()
+		tw.tween_property(boss, "global_position", land, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		await tw.finished
+		Effects.shake(self, 16.0)
+		Effects.hit_sparks(boss, land + Vector2(0, -10), 14, 1.6)
+		SoundManager.play_sfx("slam")
+		SoundManager.play_sfx("explosion", -4.0)
+	if rise and boss.z_index == -3 and not boss.has_method("stays_behind_floor"):
+		boss.z_index = z_before
+	SoundManager.play_music(String(level.get("boss_music", "boss")))
 	await _wait(0.3)
 	SoundManager.play_sfx("roar")                      # Boss roar
 	await _wait(0.2)
-	_show_banner(boss.enemy_name.to_upper(), "Keeper of the First Colosseum", Color(0.6, 1.0, 0.3))
-	Effects.popup(boss, boss.global_position + Vector2(0, -230), "Who dares crawl into MY pit...?", Color(0.85, 1.0, 0.7), 20)
+	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), boss_color)
+	var line := String(level.get("boss_line", ""))
+	if line != "":
+		Effects.popup(boss, boss.global_position + Vector2(0, -boss.data.body_size.y - 60.0), line, boss_color.lightened(0.5), 20)
 	await _wait(2.6)
 	_hide_banner()
+	ArenaCamera.focus_offset = Vector2(0, -110)
 	# Flasks refill after the boss intro
 	flasks = FLASKS_PER_LEVEL
 	Effects.popup(player, player.global_position + Vector2(0, -170), "FLASKS REFILLED!", Color(0.5, 1.0, 0.5), 24)
@@ -331,6 +399,8 @@ func _boss_intro() -> void:
 	Effects.shake(self, 12.0)
 	_show_banner("FIGHT!", "", Color(1.0, 0.45, 0.3))
 	CombatManager.fight_active = true
+	if bool(level.get("sword_power", false)):
+		player.set_sword_power(1, "YOUR SWORD GROWS!")      # Caeser fight: the blade answers the challenge
 	await _wait(0.7)
 	_hide_banner()
 
@@ -342,11 +412,66 @@ func _on_boss_died() -> void:
 	boss_defeated.emit()
 
 
-func _boss_death_cutscene() -> void:
+## Phase 1 of a two-form boss hit 0 HP (Blasphemy Caeser): TRANSFORM cutscene, then phase 2.
+func _on_boss_transform() -> void:
+	if _over or boss == null or not is_instance_valid(boss):
+		return
+	CombatManager.fight_active = false
+	boss_bar_visible = false
 	ChemicalPool.dry_all()
 	_letterbox(true)
 	ArenaCamera.focus = boss
-	ArenaCamera.focus_zoom = 1.2
+	ArenaCamera.focus_zoom = 0.85
+	Engine.time_scale = 0.4                         # The killing blow in slow motion
+	SoundManager.play_sfx("roar", 0.0, 0.0)
+	await _wait(0.35)
+	Engine.time_scale = 1.0
+	SoundManager.stop_music()
+	SoundManager.play_sfx("rumble")
+	var tb = boss.get("transform_banner")
+	_show_banner(String(tb) if tb != null else "THE SERPENT SHEDS ITS SKIN", "", Color(1.0, 0.55, 0.25))
+	for i in 5:
+		Effects.shake(self, 6.0 + float(i) * 3.0)
+		Effects.explosion(boss, boss.global_position + Vector2(randf_range(-90.0, 90.0), randf_range(-200.0, -40.0)), 70.0, true, true)
+		await _wait(0.35)
+	_hide_banner()
+	SoundManager.play_sfx("ultimate")
+	SoundManager.play_sfx("explosion")
+	Effects.shake(self, 20.0)
+	Effects.explosion(boss, boss.global_position + Vector2(0, -120), 220.0, true, true)
+	if boss.has_method("finish_transform"):
+		boss.call("finish_transform")
+	await _wait(0.5)
+	SoundManager.play_music(String(level.get("boss_music", "boss")))
+	SoundManager.play_sfx("roar")
+	_show_banner(boss.enemy_name.to_upper(), String(boss.get("phase2_subtitle")) if boss.get("phase2_subtitle") != null else "PHASE 2", Color(1.0, 0.45, 0.2))
+	var line = boss.get("phase2_line")
+	if line != null and String(line) != "":
+		Effects.popup(boss, boss.global_position + Vector2(0, -boss.data.body_size.y - 60.0), String(line), Color(1.0, 0.8, 0.6), 20)
+	await _wait(2.6)
+	_hide_banner()
+	if _over:
+		return
+	ArenaCamera.focus = null
+	_letterbox(false)
+	await _wait(0.5)
+	boss_bar_visible = true
+	SoundManager.play_sfx("count_go")
+	Effects.shake(self, 12.0)
+	_show_banner("FIGHT!", "", Color(1.0, 0.45, 0.3))
+	CombatManager.fight_active = true
+	if bool(level.get("sword_power", false)):
+		player.set_sword_power(2, "YOUR SWORD AWAKENS!")    # Phase 2: even bigger and stronger
+	await _wait(0.7)
+	_hide_banner()
+
+
+func _boss_death_cutscene() -> void:
+	ChemicalPool.dry_all()
+	_letterbox(true)
+	var style := String(level.get("boss_death", "explode"))
+	ArenaCamera.focus = boss
+	ArenaCamera.focus_zoom = 1.2 if style == "explode" else 0.8
 	await _wait(0.15)
 	Engine.time_scale = 0.35                       # Slow motion
 	SoundManager.play_sfx("roar", 0.0, 0.0)        # Death cry
@@ -357,11 +482,44 @@ func _boss_death_cutscene() -> void:
 	Engine.time_scale = 1.0
 	CombatManager.fight_active = false
 	SoundManager.stop_music()
-	_show_banner("%s HAS FALLEN" % boss.enemy_name.to_upper(), "The first Colosseum is yours.", Color(1.0, 0.85, 0.3))
+	if style == "fall" or style == "sink":
+		# The body stays (no K.O. animation): it lets go and FALLS away / SINKS into the magma
+		var mark := Node2D.new()
+		add_child(mark)
+		mark.global_position = boss.global_position + Vector2(0, -120)
+		ArenaCamera.focus = mark                      # Camera stays put while the body drops away
+		boss.visuals.visible = true
+		if boss.has_method("on_death_cutscene"):
+			boss.call("on_death_cutscene")
+		boss.z_index = -3                             # Behind the floor
+		var drop := 1100.0 if style == "fall" else 760.0
+		var tw := create_tween()
+		tw.tween_property(boss, "global_position", boss.global_position + Vector2(0, drop), 2.6 if style == "fall" else 3.0) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		for i in 6:
+			Effects.explosion(boss, mark.global_position + Vector2(randf_range(-160.0, 160.0), randf_range(-80.0, 120.0)), 80.0, style == "sink", style == "sink")
+			Effects.shake(self, 8.0)
+			SoundManager.play_sfx("explosion" if i % 2 == 0 else "stone", -5.0)
+			await _wait(0.42)
+		if tw.is_running():
+			await tw.finished
+		boss.visuals.visible = false
+		mark.queue_free()
+		SoundManager.play_sfx("rumble", -4.0)
+	var title := String(level.get("boss_death_title", "%s HAS FALLEN" % boss.enemy_name.to_upper()))
+	_show_banner(title, String(level.get("boss_death_sub", "")), Color(1.0, 0.85, 0.3))
 	await _wait(3.0)
 	_hide_banner()
 	ArenaCamera.focus = null
 	_letterbox(false)
+	# Full-screen ending cutscene (Blasphemy Caeser: climbing the serpent's corpse to the shrine)
+	var out := String(level.get("cutscene_out", ""))
+	if out != "":
+		var cs := StoryCutscene.new()
+		cs.kind = out
+		add_child(cs)
+		await cs.finished
+		cs.queue_free()
 
 
 # ============================================================

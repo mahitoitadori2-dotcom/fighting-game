@@ -27,6 +27,7 @@ const FIRE := "fire"
 const GOLDEN := "golden"
 const DOG := "dog"                 # Rotor: flips onto his back, legs up, swirly eyes, tongue out
 const FALL := "fall"
+const CUTSCENE := "cutscene"         # No K.O. animation: a Story cutscene moves the body (giant bosses)
 
 const FIRE_MOVES := ["bloodflame", "launch_spikes", "double_trouble", "volatile_nightmare", "ritual"]
 const GOLDEN_MOVES := ["beam_blast", "godly_light", "throne", "gorilla"]
@@ -83,6 +84,10 @@ static func describe(hit: HitData) -> String:
 
 
 static func play(f: Fighter, type: String, hit: HitData) -> void:
+	if type == CUTSCENE:
+		Effects.hitstop(f, 0.2)
+		Effects.shake(f, 10.0)
+		return
 	var desc := describe(hit)
 	var text := "RING OUT!" if type == FALL else ("K.O.!" if desc == "" else "K.O. - %s" % desc)
 	Effects.popup(f, f.global_position + Vector2(0, -175), text, Color(1.0, 0.35, 0.3), 22)

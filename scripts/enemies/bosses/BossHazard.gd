@@ -18,6 +18,8 @@ const LOOKS := {
 	"spear": {"w": 44.0, "h": 200.0, "life": 0.5, "col": Color(1.0, 0.95, 0.7), "sfx": "holy"},
 	"rock": {"w": 70.0, "h": 120.0, "life": 0.55, "col": Color(0.55, 0.45, 0.38), "sfx": "stone"},
 	"chain": {"w": 60.0, "h": 90.0, "life": 0.35, "col": Color(0.7, 0.7, 0.75), "sfx": "chain"},
+	# Blasphemy Caeser (Story, Colosseum 2): a column of magma bursts out of the floor
+	"geyser": {"w": 84.0, "h": 320.0, "life": 0.7, "col": Color(1.0, 0.42, 0.08), "sfx": "geyser"},
 }
 
 var source: BaseEnemy
@@ -119,6 +121,34 @@ func _draw() -> void:
 			_draw_rock(k)
 		"chain":
 			_draw_chain(k)
+		"geyser":
+			_draw_geyser(k)
+
+
+func _draw_geyser(k: float) -> void:
+	var up := minf(1.0, k / 0.15)
+	var fade := 1.0 - clampf((k - 0.65) / 0.35, 0.0, 1.0)
+	var h := height * up
+	var w := half_w * (1.0 + 0.1 * sin(k * 40.0))
+	# Column of magma: dark crust edge, orange body, white-hot core
+	var col_pts := PackedVector2Array([Vector2(-w, 0), Vector2(-w * 0.7, -h * 0.6), Vector2(-w * 0.45, -h), Vector2(w * 0.45, -h), Vector2(w * 0.7, -h * 0.6), Vector2(w, 0)])
+	draw_colored_polygon(col_pts, Color(0.75, 0.15, 0.03, fade))
+	var mid := PackedVector2Array()
+	for p in col_pts:
+		mid.append(Vector2(p.x * 0.65, p.y))
+	draw_colored_polygon(mid, Color(col.r, col.g, col.b, fade))
+	draw_rect(Rect2(-w * 0.18, -h, w * 0.36, h), Color(1.0, 0.92, 0.55, fade))
+	# Spray of blobs at the top + splash ring at the floor
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(_seed * 1000.0)
+	for i in 7:
+		var v := Vector2(rng.randf_range(-220.0, 220.0), rng.randf_range(-260.0, -80.0))
+		var t := k * life
+		var p := Vector2(0, -h) + v * t + Vector2(0, 900.0 * t * t)
+		draw_circle(p, rng.randf_range(5.0, 10.0) * fade, Color(1.0, 0.55, 0.12, fade))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.3))
+	draw_circle(Vector2.ZERO, w * 1.8, Color(1.0, 0.5, 0.1, 0.45 * fade))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_warning() -> void:
@@ -139,6 +169,13 @@ func _draw_warning() -> void:
 			for i in 4:
 				var a := PI + PI * (float(i) + 0.5) / 4.0
 				draw_line(Vector2.ZERO, Vector2.from_angle(a) * Vector2(half_w, 8.0) * w, Color(0.1, 0.05, 0.02, 0.9), 3.0)
+		"geyser":                                       # Glowing cracks + bubbling magma
+			for i in 5:
+				var a := PI + PI * (float(i) + 0.5) / 5.0
+				draw_line(Vector2.ZERO, Vector2.from_angle(a) * Vector2(half_w, 10.0) * w, Color(1.0, 0.55, 0.1, 0.9), 3.0)
+			for i in 3:
+				var ph := fmod(_age * 3.0 + float(i) * 0.33, 1.0)
+				draw_circle(Vector2((float(i) - 1.0) * half_w * 0.4, -ph * 24.0 * w), 4.0 * (1.0 - ph), Color(1.0, 0.6, 0.15, 0.8))
 
 
 func _draw_pillar(k: float) -> void:

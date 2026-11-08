@@ -86,13 +86,13 @@ func _paint() -> void:
 	if boss != null and is_instance_valid(boss) and not boss.is_dead and manager.boss_bar_visible:
 		var bw := minf(560.0, sz.x - 80.0)
 		var r := Rect2(cx - bw * 0.5, 86, bw, 20)
-		var label := boss.enemy_name.to_upper()
-		if boss.enraged:
-			label += "   -   PHASE 2: CRAZED"
-		FighterArt.label(_painter, Vector2(cx, 76), label, 20, Color(1.0, 0.95, 0.4) if boss.enraged else Color.WHITE)
+		FighterArt.label(_painter, Vector2(cx, 76), boss.boss_title(), 20, Color(1.0, 0.95, 0.4) if boss.enraged else Color.WHITE)
 		var bk := float(boss.hp) / maxf(float(boss.data.max_hp), 1.0)
 		_bar(r, bk, Color(0.55, 0.95, 0.2) if not boss.enraged else Color(1.0, 0.85, 0.15))
-		_painter.draw_line(Vector2(r.position.x + r.size.x * 0.5, r.position.y), Vector2(r.position.x + r.size.x * 0.5, r.end.y), Color(0, 0, 0, 0.8), 2.0)   # 50% mark
+		var mark := boss.phase2_threshold
+		if mark > 0.0 and mark < 1.0:                    # Where phase 2 starts (50% for most bosses)
+			var mx := r.position.x + r.size.x * mark
+			_painter.draw_line(Vector2(mx, r.position.y), Vector2(mx, r.end.y), Color(0, 0, 0, 0.8), 2.0)
 
 	# ---------------- Hint ----------------
 	if not MatchSettings.touch_enabled():

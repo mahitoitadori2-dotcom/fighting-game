@@ -32,6 +32,8 @@ var _grab_onslaught := false
 var _wave_timer := 0.0
 
 var royal_timer := 0.0
+## SWORD POWER (Story boss fights): 0 = normal, each level = bigger + stronger blade.
+var sword_power := 0
 
 # Animation values read by WarriorArt
 var sword_swing := 0.0          # -1 = raised back, 0 = idle, 1 = swung through
@@ -131,6 +133,8 @@ func _try_sword() -> void:
 	var dmg: int = data.punch_damage
 	if onslaught.afterburn_timer > 0.0:          # Only possible from the Time Stop penalty
 		dmg = data.afterburn_melee_damage
+	if sword_power > 0:
+		dmg = roundi(float(dmg) * (1.0 + wd.sword_power_damage * float(sword_power)))
 	_sword_hit = HitData.new()
 	_sword_hit.source = self
 	_sword_hit.damage = dmg
@@ -148,9 +152,27 @@ func _enter_sword_active() -> void:
 	state = State.SWORD_ACTIVE
 	_state_timer = data.punch_active * _swing_mult()
 	_sword_hit.origin = global_position
-	hitbox.activate(_sword_hit, Vector2(facing * wd.sword_offset.x, wd.sword_offset.y), wd.sword_size)
+	var grow := sword_scale()
+	var size := Vector2(wd.sword_size.x * grow, wd.sword_size.y * (1.0 + (grow - 1.0) * 0.5))
+	var off := Vector2(wd.sword_offset.x + (size.x - wd.sword_size.x) * 0.5, wd.sword_offset.y - (size.y - wd.sword_size.y) * 0.5)
+	hitbox.activate(_sword_hit, Vector2(facing * off.x, off.y), size)
 	if is_on_floor():
 		velocity.x += facing * wd.sword_lunge_speed
+
+
+## Blade length multiplier (art + hitbox).
+func sword_scale() -> float:
+	return 1.0 + wd.sword_power_size * float(sword_power)
+
+
+## Story: the sword grows mid-fight (bigger, better, stronger).
+func set_sword_power(level: int, text: String = "") -> void:
+	sword_power = maxi(level, 0)
+	if sword_power > 0:
+		Effects.void_burst(self, global_position + Vector2(facing * 50.0, -80.0), 90.0)
+		Effects.popup(self, global_position + Vector2(0, -200), text if text != "" else "YOUR SWORD GROWS!", Color(0.8, 0.6, 1.0), 26)
+		SoundManager.play_sfx("ultimate", -4.0)
+		SoundManager.play_sfx("sword_slash")
 
 
 func _on_hit_landed(victim: Fighter, hit: HitData, result: String) -> void:

@@ -142,6 +142,8 @@ func _first_frame() -> void:
 			Effects.trail(self, Color(0.2, 0.2, 0.25, 0.6), 8.0, 8)
 		"laser":
 			Effects.trail(self, Color(1.0, 0.15, 0.1), 6.0, 8)
+		"magma":
+			Effects.trail(self, Color(1.0, 0.45, 0.1, 0.8), 9.0, 8)
 
 
 func _physics_process(delta: float) -> void:
@@ -225,7 +227,10 @@ func _update_drop() -> void:
 	# Impact
 	_hit_radius(global_position + Vector2(0, -24), radius)
 	Effects.shake(self, 9.0 if look == "piano" else 4.0)
-	if look == "piano":
+	if look == "debris":
+		Effects.hit_sparks(self, global_position + Vector2(0, -16), 8, 1.1)
+		SoundManager.play_sfx("stone", -6.0)
+	elif look == "piano":
 		Effects.hit_sparks(self, global_position + Vector2(0, -20), 10, 1.4)
 		Effects.popup(self, global_position + Vector2(0, -90), "CRASH!", Color(1.0, 0.85, 0.3), 26)
 		Effects.play_hit_sound(self, "piano_crash", global_position)
@@ -326,6 +331,14 @@ func _draw() -> void:
 		"boulder":                                        # Sisyphus' Boulder Throw (spins in flight)
 			draw_set_transform(Vector2.ZERO, -rotation, Vector2.ONE)
 			Sisyphus.draw_boulder(self, Vector2.ZERO, 34.0, _age * 8.0 * dir)
+		"debris":                                         # Architect Chorus: rocks shaken loose (DROP)
+			_draw_drop()
+		"fireball":                                       # Serpent Fire Breath
+			_draw_fireball(a)
+		"magma":                                          # Magma Spit glob (ARC, leaves a lava pool)
+			_draw_magma()
+		"lava_wave":                                      # Lava Wave rolling along the floor
+			_draw_lava_wave(a)
 
 
 func _draw_rings(col: Color, a: float) -> void:
@@ -434,8 +447,50 @@ func _draw_drop() -> void:
 	var y := -fall_height * (1.0 - fall_k * fall_k) - 4.0
 	if look == "piano":
 		_draw_piano(Vector2(0, y))
+	elif look == "debris":
+		Sisyphus.draw_boulder(self, Vector2(0, y - 22.0), 22.0, _age * 5.0)
 	else:
 		_draw_missile(Vector2(0, y))
+
+
+func _draw_fireball(a: float) -> void:
+	var flick := 1.0 + 0.15 * sin(_age * 40.0 + float(_seed % 7))
+	var r := 16.0 * flick
+	draw_circle(Vector2.ZERO, r * 1.8, Color(1.0, 0.35, 0.05, 0.25 * a))
+	for i in 3:                                          # Flame tail behind it
+		var tx := -dir * (10.0 + float(i) * 11.0)
+		draw_circle(Vector2(tx, sin(_age * 30.0 + float(i)) * 3.0), r * (0.8 - float(i) * 0.2), Color(1.0, 0.45 - float(i) * 0.1, 0.05, 0.7 * a))
+	draw_circle(Vector2.ZERO, r, Color(1.0, 0.5, 0.08, a))
+	draw_circle(Vector2(dir * 3.0, -2), r * 0.55, Color(1.0, 0.9, 0.45, a))
+
+
+func _draw_magma() -> void:
+	var wob := 1.0 + 0.12 * sin(_age * 30.0)
+	draw_circle(Vector2.ZERO, 20.0, Color(1.0, 0.45, 0.1, 0.3))
+	var pts := EnemyArt.ellipse_points(Vector2.ZERO, 15.0 * wob, 10.0 / wob, 14)
+	draw_colored_polygon(pts, Color(0.95, 0.35, 0.06))
+	FighterArt.outline(self, pts, 3.0, Color(0.25, 0.04, 0.02))
+	draw_circle(Vector2(3, -2), 5.0, Color(1.0, 0.85, 0.4))
+	draw_circle(Vector2(-14, 0), 5.0, Color(0.85, 0.25, 0.05))     # Trailing drop
+
+
+func _draw_lava_wave(a: float) -> void:
+	# A curling wall of magma, origin = floor level; rolls in `dir`
+	var h := 70.0 + 10.0 * sin(_age * 18.0)
+	var back := -dir * 46.0
+	var front := dir * 30.0
+	var pts := PackedVector2Array([Vector2(back, 0), Vector2(back * 0.6, -h * 0.5), Vector2(dir * -4.0, -h), Vector2(front, -h * 0.75),
+		Vector2(front * 1.25, -h * 0.4), Vector2(front, 0)])
+	draw_colored_polygon(pts, Color(0.85, 0.22, 0.04, a))
+	FighterArt.outline(self, pts, 3.5, Color(0.2, 0.03, 0.01, a))
+	var core := PackedVector2Array()
+	for p in pts:
+		core.append(p * Vector2(0.6, 0.65))
+	draw_colored_polygon(core, Color(1.0, 0.65, 0.15, a))
+	draw_line(Vector2(dir * -4.0, -h + 6.0), Vector2(front, -h * 0.75 + 4.0), Color(1.0, 0.95, 0.6, a), 3.0)
+	for i in 4:                                           # Splashing droplets
+		var k := fmod(_age * 2.5 + float(i) * 0.27, 1.0)
+		draw_circle(Vector2(dir * (10.0 + 40.0 * k) - dir * float(i) * 6.0, -h - 20.0 * sin(k * PI)), 4.0 * (1.0 - k), Color(1.0, 0.6, 0.15, a))
 
 
 func _draw_piano(p: Vector2) -> void:

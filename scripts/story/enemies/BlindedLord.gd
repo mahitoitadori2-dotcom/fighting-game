@@ -87,6 +87,10 @@ func flavor_lines() -> Array[String]:
 	return ["I hear your heartbeat...", "Step closer, little one.", "*sloshing*"]
 
 
+func boss_title() -> String:
+	return enemy_name.to_upper() + ("   -   PHASE 2: CRAZED" if enraged else "")
+
+
 func custom_death_type(_hit: HitData) -> String:
 	return DeathManager.IMPLODE
 

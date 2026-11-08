@@ -24,7 +24,10 @@ extends StaticBody2D
 ## Hell = Story Mode (black basalt, glowing lava cracks). Geode = purple crystal cavern
 ## (Rock Golem). Scrap = rusted metal hive floor with cyan light seams (Kharlemings).
 ## Lab = the Blinded Lord's laboratory (dark tiles, toxic green seams).
-@export_enum("Stone", "Void", "Hell", "Geode", "Scrap", "Lab") var ground_theme := 0:
+## Colosseum 2: Elevator = steel platform with hazard stripes and cables up the shaft.
+## Marble = white marble with gold seams (Enlightened Ones). Sewer = wet mossy stone with
+## slime seams. Blasphemy = obsidian with magma veins.
+@export_enum("Stone", "Void", "Hell", "Geode", "Scrap", "Lab", "Elevator", "Marble", "Sewer", "Blasphemy") var ground_theme := 0:
 	set(v):
 		ground_theme = v
 		_apply_theme()
@@ -49,6 +52,9 @@ var CRYSTAL_SHADE := Color(0.18, 0.55, 0.85)
 
 
 func _apply_theme() -> void:
+	if ground_theme >= 6:
+		_apply_theme_c2()
+		return
 	if ground_theme == 5:   # LAB: dark green-grey tiles, toxic green seams
 		CRACK = Color(0.45, 1.0, 0.2)
 		CRACK_WIDTH = 2.0
@@ -130,6 +136,35 @@ func _apply_theme() -> void:
 		CRYSTAL = Color(0.35, 0.85, 1.0)
 		CRYSTAL_HI = Color(0.85, 0.98, 1.0)
 		CRYSTAL_SHADE = Color(0.18, 0.55, 0.85)
+
+## Colosseum 2 palettes: [crack, crack_w, top, top_hi, top_shade, stone, dark, deep, pebble, crystal, crystal_hi, crystal_shade]
+const C2_THEMES := {
+	6: [Color(0.95, 0.75, 0.1), 2.0, Color(0.36, 0.37, 0.40), Color(0.58, 0.60, 0.64), Color(0.22, 0.22, 0.25), Color(0.20, 0.20, 0.23),
+		Color(0.15, 0.15, 0.17), Color(0.11, 0.11, 0.13), Color(0.40, 0.40, 0.44), Color(1.0, 0.5, 0.1), Color(1.0, 0.85, 0.5), Color(0.6, 0.25, 0.05)],
+	7: [Color(0.95, 0.75, 0.3), 2.0, Color(0.95, 0.93, 0.88), Color(1.0, 1.0, 0.97), Color(0.80, 0.77, 0.70), Color(0.86, 0.83, 0.77),
+		Color(0.78, 0.74, 0.67), Color(0.70, 0.64, 0.55), Color(0.98, 0.96, 0.90), Color(1.0, 0.85, 0.35), Color(1.0, 0.97, 0.75), Color(0.8, 0.6, 0.15)],
+	8: [Color(0.45, 0.8, 0.35), 2.0, Color(0.22, 0.27, 0.21), Color(0.36, 0.44, 0.33), Color(0.13, 0.17, 0.12), Color(0.13, 0.16, 0.12),
+		Color(0.09, 0.12, 0.08), Color(0.08, 0.14, 0.07), Color(0.26, 0.32, 0.24), Color(0.45, 0.85, 0.35), Color(0.8, 1.0, 0.7), Color(0.2, 0.45, 0.12)],
+	9: [Color(1.0, 0.38, 0.06), 3.0, Color(0.16, 0.10, 0.11), Color(0.36, 0.20, 0.20), Color(0.09, 0.05, 0.06), Color(0.11, 0.06, 0.07),
+		Color(0.07, 0.04, 0.05), Color(0.30, 0.06, 0.03), Color(0.24, 0.14, 0.14), Color(1.0, 0.4, 0.06), Color(1.0, 0.86, 0.45), Color(0.7, 0.12, 0.03)],
+}
+
+
+func _apply_theme_c2() -> void:
+	var t: Array = C2_THEMES.get(ground_theme, C2_THEMES[6])
+	CRACK = t[0]
+	CRACK_WIDTH = t[1]
+	STONE_TOP = t[2]
+	STONE_TOP_HI = t[3]
+	STONE_TOP_SHADE = t[4]
+	STONE = t[5]
+	STONE_DARK = t[6]
+	STONE_DEEP = t[7]
+	PEBBLE_LIGHT = t[8]
+	CRYSTAL = t[9]
+	CRYSTAL_HI = t[10]
+	CRYSTAL_SHADE = t[11]
+
 
 var _poly := PackedVector2Array()
 var _strata: Array[PackedVector2Array] = []
@@ -391,6 +426,30 @@ func _draw() -> void:
 
 	# Thick black cartoon outline
 	_outline(_poly, 7.0)
+	if ground_theme == 6:
+		_draw_elevator_extras()
+	elif ground_theme == 8:      # Sewer: wet sheen + slime drips over the lip
+		draw_line(Vector2(-hw + 14, 9), Vector2(hw - 14, 9), Color(0.6, 0.9, 0.55, 0.25), 3.0)
+		var x := -hw + 60.0
+		while x < hw - 40.0:
+			draw_line(Vector2(x, CAP), Vector2(x, CAP + 10.0 + fmod(x * 0.37, 14.0)), Color(0.45, 0.8, 0.35, 0.7), 4.0)
+			x += 140.0
+
+
+## Elevator platform: yellow/black hazard stripes on the lip + steel cables up the shaft.
+func _draw_elevator_extras() -> void:
+	var hw := width * 0.5
+	var y0 := CAP + 2.0
+	var x := -hw + 14.0
+	while x < hw - 30.0:
+		draw_colored_polygon(PackedVector2Array([Vector2(x, y0), Vector2(x + 18.0, y0), Vector2(x + 30.0, y0 + 16.0), Vector2(x + 12.0, y0 + 16.0)]), Color(0.95, 0.75, 0.1))
+		x += 36.0
+	draw_line(Vector2(-hw + 8, y0 + 17.0), Vector2(hw - 8, y0 + 17.0), OUTLINE, 3.0)
+	for cx in [-hw * 0.62, -hw * 0.2, hw * 0.2, hw * 0.62]:
+		draw_line(Vector2(cx, 0), Vector2(cx, -2200), OUTLINE, 9.0)
+		draw_line(Vector2(cx, 0), Vector2(cx, -2200), Color(0.45, 0.45, 0.5), 4.0)
+		draw_circle(Vector2(cx, -4), 9.0, Color(0.3, 0.3, 0.33))
+		draw_arc(Vector2(cx, -4), 9.0, 0.0, TAU, 12, OUTLINE, 3.0)
 
 
 func _outline(pts: PackedVector2Array, w: float) -> void:

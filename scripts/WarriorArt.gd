@@ -35,6 +35,7 @@ static func draw(c: CanvasItem, w: Warrior) -> void:
 		"royal": w.royal_amt, "shadow": w.shadow_amt, "mask_off": w.mask_off,
 		"beam_charge": w.beam_charge, "beam_fire": w.beam_fire, "beam_range": w.wd.beam_range,
 		"snap": w.snap_t, "waves": w.spike_waves, "onsl": w.onslaught.flash_timer > 0.0,
+		"sword_scale": w.sword_scale(), "sword_power": w.sword_power,
 	})
 
 
@@ -123,7 +124,13 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	var elbow := (shoulder + hand) * 0.5 + Vector2(4, 8)
 	if swing > 0.6:
 		_swing_trail(c, swing)
-	_sword(c, hand, blade_ang)
+	var power: int = s.get("sword_power", 0)
+	if power > 0:                                   # Empowered blade: void glow around it
+		var tip := hand + Vector2(66.0 * float(s.get("sword_scale", 1.0)), 0).rotated(blade_ang)
+		var pulse := 0.6 + 0.4 * sin(t * 8.0)
+		c.draw_line(hand, tip, Color(0.6, 0.3, 1.0, 0.25 * pulse), 18.0 + 6.0 * float(power), true)
+		c.draw_line(hand, tip, Color(0.85, 0.7, 1.0, 0.35 * pulse), 8.0, true)
+	_sword(c, hand, blade_ang, float(s.get("sword_scale", 1.0)))
 	_arm(c, shoulder, elbow, hand, false, royal)
 	_shoulder_pad(c, royal)
 	if snap > 0.5:
@@ -261,7 +268,34 @@ static func _xf(pts: Array, origin: Vector2, ang: float) -> PackedVector2Array:
 	return out
 
 
-static func _sword(c: CanvasItem, hand: Vector2, ang: float) -> void:
+static func _sword(c: CanvasItem, hand: Vector2, ang: float, sc: float = 1.0) -> void:
+	if sc != 1.0:
+		_sword_scaled(c, hand, ang, sc)
+		return
+	_sword_base(c, hand, ang)
+
+
+## Bigger blade (Sword Power): same shape stretched along the blade, a bit thicker.
+static func _sword_scaled(c: CanvasItem, hand: Vector2, ang: float, sc: float) -> void:
+	var k := Vector2(sc, 1.0 + (sc - 1.0) * 0.6)
+	var blade := PackedVector2Array()
+	for p in _BLADE_PTS:
+		blade.append(hand + ((p as Vector2) * k).rotated(ang))
+	var g0 := hand + Vector2(-7, 0).rotated(ang)
+	var g1 := hand + Vector2(11, 0).rotated(ang)
+	c.draw_line(g0, g1, BLACK, 9.0, true)
+	c.draw_line(g0, g1, GRIP, 5.0, true)
+	c.draw_colored_polygon(blade, BLADE)
+	var edge := PackedVector2Array()
+	for p in [Vector2(14, -3.5), Vector2(25, -2), Vector2(33, -4.8), Vector2(47, -4.2), Vector2(60, -1)]:
+		edge.append(hand + ((p as Vector2) * k).rotated(ang))
+	c.draw_polyline(edge, Color(0.85, 0.7, 1.0), 2.5, true)
+	var closed := blade.duplicate()
+	closed.append(blade[0])
+	c.draw_polyline(closed, BLACK, 3.5, true)
+
+
+static func _sword_base(c: CanvasItem, hand: Vector2, ang: float) -> void:
 	# Grip (wrapped, short) - straight into the blade, no guard
 	var g0 := hand + Vector2(-7, 0).rotated(ang)
 	var g1 := hand + Vector2(11, 0).rotated(ang)
