@@ -29,6 +29,12 @@ The workflow `.github/workflows/build.yml` uses Godot 4.7.2.
 | Push to `main` | The website (`web/`) and the web game go to GitHub Pages. |
 | Push a `v*` tag | A GitHub Release is made with four zip files. |
 
+## Automatic commit and push
+
+- `tools/auto_push.ps1` commits everything `.gitignore` allows and pushes `main`. It first rebases onto newer GitHub commits; on a conflict it stops and keeps the commit locally. It never force-pushes. Files that look like secrets are never committed.
+- It runs automatically whenever Claude Code finishes a reply (a Stop hook in the user settings `~/.claude/settings.json`), and on demand with **/push** (an optional commit message can follow).
+- Every push to `main` rebuilds the game and updates the website (see the table above).
+
 Make a release:
 
 ```bash
