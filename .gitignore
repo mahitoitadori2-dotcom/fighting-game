@@ -4,4 +4,9 @@
 
 # Build output - the GitHub Actions workflow rebuilds these
 /build/
+/dist/
 /web/play/
+
+# Operating system files
+.DS_Store
+Thumbs.db
