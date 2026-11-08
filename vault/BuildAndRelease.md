@@ -30,13 +30,13 @@ The workflow `.github/workflows/build.yml` uses Godot 4.7.2.
 | Manual run (**Actions → Build and release → Run workflow**) | All four builds are made and kept as Artifacts. On `main`, the website goes to GitHub Pages again. |
 | Push a tag `v*` | All four builds are made. A GitHub Release is made with four zip files attached. |
 
-A push or pull request that changes only notes (`vault/`, `*.md`) does not start a build.
+Every push to `main` is exported and published to GitHub Pages, whatever it changes. A pull request that changes only notes (`vault/`, `*.md`) does not start a build.
 
 ## Automatic commit and push
 
 - `tools/auto_push.ps1` commits everything `.gitignore` allows and pushes `main`. It first rebases onto newer GitHub commits; on a conflict it stops and keeps the commit locally. It never force-pushes. Files that look like secrets are never committed.
 - It runs automatically whenever Claude Code finishes a reply (a Stop hook in the user settings `~/.claude/settings.json`), and on demand with **/push** (an optional commit message can follow).
-- Every push to `main` rebuilds the web game and updates the website (see the table above). A push with only notes does not start a build.
+- Every push to `main` rebuilds the web game and updates the website (see the table above).
 
 Make a release:
 

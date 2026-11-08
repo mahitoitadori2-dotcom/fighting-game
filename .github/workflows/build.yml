@@ -7,8 +7,8 @@
 # | Manual run (Run workflow) | All 4 platforms | Workflow artifacts + Pages (on main)    |
 # | Push a tag v*             | All 4 platforms | GitHub Release with the zips attached   |
 #
-# Pushes and pull requests that only change notes (vault/, *.md) are skipped.
-# Path filters do not apply to tags or manual runs, so these always build.
+# Every push to main is exported and published to Pages, whatever it changes.
+# Pull requests that only change notes (vault/, *.md) are skipped.
 #     git tag v0.1.0
 #     git push origin v0.1.0
 name: Build and release
@@ -17,7 +17,6 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
-    paths-ignore: ["vault/**", "**.md"]
   pull_request:
     paths-ignore: ["vault/**", "**.md"]
   workflow_dispatch:
@@ -28,9 +27,12 @@ env:
   # Full build (all platforms) for tags and manual runs; web only otherwise.
   FULL: ${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}
 
+# Pull requests: a new push cancels the old run. main and tags: a run is never
+# cancelled (a Pages deploy is not stopped halfway); GitHub keeps only the newest
+# waiting run, which holds every earlier change, so Pages always ends at main's head.
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   export:
