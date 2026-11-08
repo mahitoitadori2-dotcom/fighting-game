@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Universal Beatdown</title>
+<meta name="description" content="Universal Beatdown - a free 2D platform fighter you play right in your browser. PC, Mac, iPhone and Android.">
+<meta name="theme-color" content="#07060d">
+<meta property="og:title" content="Universal Beatdown">
+<meta property="og:description" content="Free 2D platform fighter. Play instantly in your browser on PC, Mac and phone.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://universalshowdown.com/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<!-- Start downloading the game while the visitor reads, so PLAY opens fast -->
+<link rel="prefetch" href="play/index.wasm">
+<link rel="prefetch" href="play/index.pck">
+</head>
+<body>
+
+<header class="top">
+	<a class="brand" href="./">Universal <span>Beatdown</span></a>
+	<nav>
+		<a href="#characters">Characters</a>
+		<a href="#controls">Controls</a>
+		<a class="nav-play" href="play/">Play</a>
+	</nav>
+</header>
+
+<main>
+	<!-- HERO -->
+	<section class="hero">
+		<p class="kicker">2D platform fighter &middot; free &middot; no download</p>
+		<h1>Universal<br><span>Beatdown</span></h1>
+		<a id="play" class="play" href="play/">&#9654; PLAY</a>
+		<p id="play-note" class="sub">Works on PC, Mac, iPhone and Android, right in your browser.</p>
+		<p id="webgl-warning" class="warning" hidden>
+			Your browser doesn't support WebGL 2, so the game can't run here.<br>
+			<b>Please use Safari / Chrome on iOS 17+</b>, or an up-to-date Chrome, Edge, Firefox or Safari on your computer.
+		</p>
+	</section>
+
+	<!-- CHARACTERS -->
+	<section id="characters" class="block">
+		<h2>Characters</h2>
+		<p class="lead">Pick a fighter, fill your <b>G Gauge</b> and unleash 1, 2 or 3 bar ultimates.</p>
+		<div class="cards">
+			<article class="card" style="--accent:#4de65a">
+				<h3>The Mighty Architect</h3>
+				<p class="role">Zoner &middot; Explosives</p>
+				<ul>
+					<li><kbd>ATK</kbd> Punch</li>
+					<li><kbd>1</kbd> Rocket Delivery</li>
+					<li><kbd>2</kbd> HNCT Triangle Bomb</li>
+					<li><kbd>3</kbd> Armaggedon Drill</li>
+					<li><kbd>G</kbd> Void Goo <small>(2 bars)</small></li>
+					<li><kbd>G</kbd> Full Arsenal of the Hexagon <small>(3 bars)</small></li>
+				</ul>
+			</article>
+			<article class="card" style="--accent:#b373ff">
+				<h3>Warrior</h3>
+				<p class="role">Shadow swordsman</p>
+				<ul>
+					<li><kbd>ATK</kbd> Sword</li>
+					<li><kbd>1</kbd> ClingingGrab</li>
+					<li><kbd>2</kbd> Royal Destiny</li>
+					<li><kbd>3</kbd> Eternal Grasp</li>
+					<li><kbd>G</kbd> Mini Eternal Grasp <small>(1 bar)</small></li>
+					<li><kbd>G</kbd> Shadow Swarm <small>(2 bars)</small></li>
+					<li><kbd>G</kbd> The Fall of the Physic <small>(3 bars, time stop)</small></li>
+				</ul>
+			</article>
+			<article class="card" style="--accent:#ff2626">
+				<h3>Nightmare Lord</h3>
+				<p class="role">Fire &middot; Bats &middot; Pressure</p>
+				<ul>
+					<li><kbd>ATK</kbd> Punch</li>
+					<li><kbd>1</kbd> BloodFlame Spit</li>
+					<li><kbd>2</kbd> Bat Escape</li>
+					<li><kbd>3</kbd> Launch O' Spikes</li>
+					<li><kbd>G</kbd> Double Trouble <small>(1 bar)</small></li>
+					<li><kbd>G</kbd> Volatile Nightmare <small>(2 bars)</small></li>
+					<li><kbd>G</kbd> The Ritual of the Troupe <small>(3 bars)</small></li>
+				</ul>
+			</article>
+			<article class="card" style="--accent:#ffd140">
+				<h3>The Enlightened One</h3>
+				<p class="role">Light beams &middot; Healer</p>
+				<ul>
+					<li><kbd>ATK</kbd> Bronze Gloves</li>
+					<li><kbd>1</kbd> Beam Blast</li>
+					<li><kbd>2</kbd> Lord's Heal</li>
+					<li><kbd>3</kbd> Helpers!</li>
+					<li><kbd>G</kbd> Godly O' Light <small>(1 bar)</small></li>
+					<li><kbd>G</kbd> Throne <small>(2 bars)</small></li>
+					<li><kbd>G</kbd> Enlightened Gorilla Form <small>(3 bars)</small></li>
+				</ul>
+			</article>
+			<article class="card boss" style="--accent:#73b3ff">
+				<h3>Rotor</h3>
+				<p class="role">Boss &middot; Enemy Test</p>
+				<ul>
+					<li>Bark waves, fetch balls and telegraphed big attacks</li>
+					<li><kbd>!</kbd> Enraged below 50% HP: faster, glowing fur</li>
+				</ul>
+			</article>
+		</div>
+
+		<h2 class="sub-h">Enemy Test &middot; PvE</h2>
+		<p class="lead">Pick <b>any</b> fighter vs <b>any</b> enemy. Enemies are weaker than fighters (60-70 HP) with 2-3 telegraphed moves.</p>
+		<div class="cards">
+			<article class="card boss" style="--accent:#59cc4d">
+				<h3>King Frog</h3>
+				<p class="role">60 HP &middot; Lily pad royalty</p>
+				<ul>
+					<li>Tongue Grab <small>(pulls you in)</small></li>
+					<li>Royal Hop Slam <small>(shockwave)</small></li>
+					<li>Croak Wave</li>
+				</ul>
+			</article>
+			<article class="card boss" style="--accent:#59a6ff">
+				<h3>Frost Jarl Hrimgar</h3>
+				<p class="role">70 HP &middot; Tanky berserker</p>
+				<ul>
+					<li>Axe Throw <small>(boomerang)</small></li>
+					<li>Rage Punch <small>(huge knockback)</small></li>
+					<li>Frost Slam <small>(slows)</small></li>
+				</ul>
+			</article>
+			<article class="card boss" style="--accent:#ffd966">
+				<h3>Archangel Raphael</h3>
+				<p class="role">60 HP &middot; Holy light</p>
+				<ul>
+					<li>Light Beam</li>
+					<li>Angel Heal <small>(+15 HP, hit him to cancel)</small></li>
+					<li>Wing Gust</li>
+				</ul>
+			</article>
+			<article class="card boss" style="--accent:#ff66bf">
+				<h3>Elton John</h3>
+				<p class="role">60 HP &middot; Fabulous</p>
+				<ul>
+					<li>Piano Drop <small>(watch the shadow)</small></li>
+					<li>Rocket Man Dash</li>
+					<li>Glitter Blast <small>(blinds)</small></li>
+				</ul>
+			</article>
+			<article class="card boss" style="--accent:#bfbfcc">
+				<h3>Abraham Lincoln</h3>
+				<p class="role">60 HP &middot; Rail-splitter</p>
+				<ul>
+					<li>Top Hat Throw <small>(boomerang)</small></li>
+					<li>Axe Chop</li>
+					<li>Emancipation Speech <small>(stuns 1 s)</small></li>
+				</ul>
+			</article>
+			<article class="card boss" style="--accent:#ff4033">
+				<h3>Cyber T-Rex</h3>
+				<p class="role">70 HP &middot; Robot dinosaur</p>
+				<ul>
+					<li>Laser Bite</li>
+					<li>Tail Swipe <small>(front and back)</small></li>
+					<li>Missile Barrage <small>(x3)</small></li>
+				</ul>
+			</article>
+		</div>
+	</section>
+
+	<!-- CONTROLS -->
+	<section id="controls" class="block">
+		<h2>Controls</h2>
+		<div class="controls">
+			<div class="panel">
+				<h3>Keyboard + Mouse <small>(PC &amp; Mac)</small></h3>
+				<table>
+					<tr><td><kbd>A</kbd> <kbd>D</kbd></td><td>Move left / right</td></tr>
+					<tr><td><kbd>W</kbd></td><td>Jump</td></tr>
+					<tr><td><kbd>S</kbd></td><td>Crouch / fast-fall</td></tr>
+					<tr><td><kbd>F</kbd></td><td>Block (tap right before a hit = Perfect Block)</td></tr>
+					<tr><td><kbd>Left Click</kbd></td><td>Attack</td></tr>
+					<tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Special moves</td></tr>
+					<tr><td><kbd>G</kbd></td><td>Ultimate (uses G Gauge bars)</td></tr>
+					<tr><td><kbd>Esc</kbd></td><td>Menu</td></tr>
+				</table>
+			</div>
+			<div class="panel">
+				<h3>Touch <small>(iPhone, iPad, Android)</small></h3>
+				<table>
+					<tr><td><span class="pill">Left thumb</span></td><td>Joystick appears where you touch. Left / right = move, down = crouch, flick up = jump</td></tr>
+					<tr><td><span class="pill red">ATK</span></td><td>Attack (big button, bottom-right)</td></tr>
+					<tr><td><span class="pill green">JUMP</span></td><td>Jump</td></tr>
+					<tr><td><span class="pill blue">BLK</span></td><td>Block</td></tr>
+					<tr><td><span class="pill gold">1</span> <span class="pill gold">2</span> <span class="pill gold">3</span></td><td>Special moves (dark sweep = cooldown)</td></tr>
+					<tr><td><span class="pill purple">G</span></td><td>Ultimate (glows when ready)</td></tr>
+					<tr><td><span class="pill grey">II</span></td><td>Double-tap = back to Main Menu</td></tr>
+				</table>
+				<p class="tip">Hold your phone sideways. Touch controls switch on automatically on phones and tablets (Match Settings &rarr; Touch Controls).</p>
+			</div>
+			<div class="panel">
+				<h3>Controller</h3>
+				<table>
+					<tr><td><kbd>Stick</kbd> / <kbd>D-pad</kbd></td><td>Move, down = crouch</td></tr>
+					<tr><td><kbd>A</kbd></td><td>Jump</td></tr>
+					<tr><td><kbd>X</kbd></td><td>Attack</td></tr>
+					<tr><td><kbd>RB</kbd> / <kbd>LT</kbd></td><td>Block</td></tr>
+					<tr><td><kbd>Y</kbd> <kbd>B</kbd> <kbd>LB</kbd></td><td>Moves 1 / 2 / 3</td></tr>
+					<tr><td><kbd>RT</kbd></td><td>Ultimate</td></tr>
+					<tr><td><kbd>Start</kbd></td><td>Menu</td></tr>
+				</table>
+			</div>
+		</div>
+	</section>
+
+	<section class="block final">
+		<a class="play" href="play/">&#9654; PLAY NOW</a>
+	</section>
+</main>
+
+<footer>
+	<p>&copy; <span id="year">2026</span> Universal Beatdown &middot; universalshowdown.com</p>
+	<p class="small">Best on: Chrome, Edge, Firefox or Safari on PC / Mac &middot; Safari or Chrome on iOS 17+ &middot; Chrome on Android</p>
+</footer>
+
+<script>
+(function () {
+	document.getElementById('year').textContent = new Date().getFullYear();
+	// The game needs WebGL 2. If it's missing, say so instead of showing a broken game.
+	var ok = false;
+	try { ok = !!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); } catch (e) {}
+	if (!ok) {
+		document.getElementById('webgl-warning').hidden = false;
+		document.getElementById('play-note').hidden = true;
+		var links = document.querySelectorAll('a.play, a.nav-play');
+		for (var i = 0; i < links.length; i++) { links[i].classList.add('disabled'); links[i].removeAttribute('href'); }
+	}
+})();
+</script>
+</body>
+</html>

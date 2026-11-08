@@ -1,0 +1,43 @@
+UNIVERSAL BEATDOWN - AUDIO FILES
+================================
+Drop your sounds here with EXACTLY these names. Any of .ogg / .wav / .mp3 works
+(SoundManager tries .ogg first, then .wav, then .mp3). Placeholder .wav files are
+already here so nothing is silent; replace them whenever you like.
+After adding files, open the Godot editor once so it imports them, then re-export Web.
+
+Tips: SFX = short .wav (or .ogg). MUSIC = .ogg (much smaller than .wav, loops cleanly).
+A file you delete is simply silent - the game never crashes on a missing sound.
+
+audio/sfx/
+  punch.wav         Architect / Nightmare Lord / Enlightened One punch
+  sword_slash.wav   Warrior sword
+  beam.wav          Beams (Beam Blast, Godly O' Light, Shadow Swarm, Raphael's Light Beam)
+  explosion.wav     Every explosion (rockets, HNCT, fetch bomb, missiles, piano crash)
+  jump.wav          Any fighter jumping
+  dash.wav          Rotor Spin Dash, Elton's Rocket Man Dash, King Frog's tongue
+  heal.wav          Any heal (Lord's Heal, Angel Heal)
+  spawn.wav         Match start + respawn
+  death.wav         A fighter / enemy is K.O.
+  ultimate.wav      Any G-Gauge ultimate
+  hit.wav           A hit lands
+  block.wav         Block / perfect block
+  drill.wav         Architect - Armaggedon Drill
+  void_goo.wav      Warrior - Clinging Grab / Eternal Grasp (+ Architect's Void Goo)
+  flame.wav         Nightmare (Fire) Lord - BloodFlame Spit / Bat Escape / Launch O' Spikes
+  bark.wav          Rotor - Bark Wave
+  croak.wav         King Frog - Croak Wave
+  laser.wav         Cyber T-Rex - Laser Bite
+
+audio/music/        (all loop automatically)
+  menu.ogg          Main Menu, Character Select, Settings, Story board
+  fight.ogg         Normal fights (speeds up when YOUR HP is low)
+  boss.ogg          Fights vs Rotor and every PvE enemy + the Blinded Lord (Story)
+
+  STORY MODE (Colosseum 1):
+  story_surface.ogg Levels 1-3, the Ashen Wastes (war drums, ominous drone)
+  story_geode.ogg   Level 4, the Geode Cavern - Rock Golem (crystal bells)
+  story_hive.ogg    Level 5, the Kharleming Hive (mechanical ticking)
+  story_cave.ogg    Level 6 group waves, the lava lair (dark ambient, drips)
+  Future bosses: classical / ancient / medieval, Souls-like (choir, strings, organ).
+
+Regenerate the placeholders:  node tools/make_placeholder_audio.js --force

@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/CombatManager.gd" id="1_combat"]
+[ext_resource type="Script" path="res://scripts/HUD.gd" id="2_hud"]
+[ext_resource type="Script" path="res://scripts/ArenaGround.gd" id="3_ground"]
+[ext_resource type="Script" path="res://scripts/VoidBackground.gd" id="4_bg"]
+[ext_resource type="Script" path="res://scripts/ArenaCamera.gd" id="5_cam"]
+[ext_resource type="Script" path="res://scripts/ArenaManager.gd" id="6_arena"]
+[ext_resource type="Script" path="res://scripts/VoidFog.gd" id="7_fog"]
+
+[node name="VoidArena" type="Node2D"]
+script = ExtResource("1_combat")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+script = ExtResource("4_bg")
+
+[node name="ArenaGround" type="StaticBody2D" parent="."]
+position = Vector2(576, 525)
+script = ExtResource("3_ground")
+width = 2800.0
+depth = 320.0
+seed_value = 99
+ground_theme = 1
+
+[node name="ArenaManager" type="Node2D" parent="."]
+script = ExtResource("6_arena")
+p1_spawn = Vector2(426, 520)
+p2_spawn = Vector2(726, 520)
+
+[node name="VoidFog" type="Node2D" parent="."]
+position = Vector2(576, 525)
+script = ExtResource("7_fog")
+
+[node name="ArenaCamera" type="Camera2D" parent="."]
+position = Vector2(576, 375)
+zoom = Vector2(0.8, 0.8)
+script = ExtResource("5_cam")
+
+[node name="hud" type="CanvasLayer" parent="."]
+script = ExtResource("2_hud")

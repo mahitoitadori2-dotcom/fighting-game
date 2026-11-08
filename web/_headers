@@ -1,0 +1,11 @@
+# Netlify (and Cloudflare Pages) read this file automatically.
+# Cross-origin isolation for WebAssembly. The game is exported with threads OFF,
+# so it also runs where these headers can't be set (GitHub Pages) - they are a bonus.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Resource-Policy: same-origin
+  X-Content-Type-Options: nosniff
+
+/play/*.wasm
+  Content-Type: application/wasm

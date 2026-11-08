@@ -1,0 +1,10 @@
+# Netlify settings. Publish THIS folder (web/) as the site root.
+[build]
+  publish = "."
+
+# Redirect www.universalshowdown.com -> universalshowdown.com once the domain is connected.
+[[redirects]]
+  from = "https://www.universalshowdown.com/*"
+  to = "https://universalshowdown.com/:splat"
+  status = 301
+  force = true

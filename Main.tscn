@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://c6n8yrr82irap"]
+
+[ext_resource type="Script" uid="uid://dwxv23yl6ey6x" path="res://scripts/CombatManager.gd" id="1_glv2v"]
+[ext_resource type="Script" uid="uid://d1lwfdhwyd0l1" path="res://scripts/HUD.gd" id="4_fos0i"]
+[ext_resource type="Script" uid="uid://cvbeeuoftdy0n" path="res://scripts/ArenaGround.gd" id="5_ground"]
+[ext_resource type="Script" uid="uid://6rolf4l3xuu0" path="res://scripts/ArenaBackground.gd" id="6_bg"]
+[ext_resource type="Script" uid="uid://biq1l4an1xuoj" path="res://scripts/ArenaCamera.gd" id="7_cam"]
+[ext_resource type="Script" uid="uid://c8ksciqqu7uvg" path="res://scripts/ArenaManager.gd" id="8_arena"]
+
+[node name="Main" type="Node2D" unique_id=1540758679]
+position = Vector2(1, 0)
+script = ExtResource("1_glv2v")
+
+[node name="Background" type="CanvasLayer" parent="." unique_id=50319187]
+layer = -10
+script = ExtResource("6_bg")
+
+[node name="ArenaGround" type="StaticBody2D" parent="." unique_id=2056121616]
+z_index = -2
+position = Vector2(576, 525)
+script = ExtResource("5_ground")
+
+[node name="ArenaManager" type="Node2D" parent="." unique_id=2116860710]
+script = ExtResource("8_arena")
+
+[node name="ArenaCamera" type="Camera2D" parent="." unique_id=1934816873]
+position = Vector2(576, 375)
+zoom = Vector2(0.8, 0.8)
+script = ExtResource("7_cam")
+
+[node name="hud" type="CanvasLayer" parent="." unique_id=243934859]
+script = ExtResource("4_fos0i")

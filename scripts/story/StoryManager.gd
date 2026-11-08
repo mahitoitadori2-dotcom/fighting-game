@@ -1,0 +1,523 @@
+class_name StoryManager
+extends Node2D
+## STORY MODE director. Put ONE in the Story arena scene (instead of ArenaManager).
+## Runs the current level (StoryProgress.current_level) from StoryLevels:
+##
+##   intro (you drop in, level title)
+##   -> GROUP BATTLES: each wave of enemies drops in; next wave when all are dead
+##   -> (boss level) BOSS INTRO cutscene (letterbox, camera on the boss, title card,
+##      FLASKS REFILLED) -> BOSS FIGHT (big HP bar at the top) -> BOSS DEATH cutscene
+##   -> LEVEL CLEAR: progress saved, then you FALL into the caves to the next level.
+##   You die -> YOU DIED (retry the level / menus).
+##
+## FLASKS (Story only): FLASKS_PER_LEVEL per level, each heals FLASK_HEAL of max HP.
+## R key / controller Back / touch "+" button. Refilled after the boss intro.
+## GROUP AI: at most MAX_ATTACKERS enemies attack at the same time (may_attack()).
+
+signal wave_cleared
+signal boss_defeated
+
+const FLASKS_PER_LEVEL := 2
+const FLASK_HEAL := 0.5
+const MAX_ATTACKERS := 2
+const ARENA_SCENE := "res://scenes/StoryArena.tscn"
+const STORY_MENU := "res://scenes/StoryMenu.tscn"
+
+## Static so enemies / touch controls can ask without a reference.
+static var active := false
+static var has_walls := false
+static var wall_left_x := -100000.0
+static var wall_right_x := 100000.0
+## TESTING ONLY: the Warrior is played by its CPU brain and takes 25% damage,
+## so a whole Colosseum can run by itself. Never on in normal play.
+static var autoplay := false
+
+@export var player_spawn := Vector2(330, 525)
+
+var level_number := 1
+var level: Dictionary = {}
+var player: Warrior
+var flasks := FLASKS_PER_LEVEL
+var boss: BaseEnemy
+var boss_bar_visible := false
+var wave_text := ""
+
+var _alive := 0
+var _wave_index := 0
+var _over := false
+var _saved_sandbox := false
+var _ground_y := 525.0
+var _hud: StoryHUD
+var _ui: CanvasLayer
+var _banner: Label
+var _sub: Label
+var _bar_top: ColorRect
+var _bar_bottom: ColorRect
+
+
+# ============================================================
+# GROUP BATTLE RULE
+# ============================================================
+## True if this enemy may start an attack now (Versus / Enemy Test: always true).
+static func may_attack(e: BaseEnemy) -> bool:
+	if not active or e == null or not e.is_inside_tree():
+		return true
+	var busy := 0
+	for n in e.get_tree().get_nodes_in_group("fighters"):
+		var o := n as BaseEnemy
+		if o == null or o == e or o.is_dead:
+			continue
+		if o.estate == BaseEnemy.EState.TELEGRAPH or o.estate == BaseEnemy.EState.ATTACK:
+			busy += 1
+	return busy < MAX_ATTACKERS
+
+
+# ============================================================
+# SETUP
+# ============================================================
+func _ready() -> void:
+	active = true
+	add_to_group("story_manager")
+	StoryProgress.load_progress()
+	level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
+	level = StoryLevels.get_level(level_number)
+	_saved_sandbox = MatchSettings.sandbox
+	MatchSettings.sandbox = false                  # Story is always played with normal rules
+	OptimizationManager.clear_pools()
+	Effects.clear_hitstop()
+	CombatManager.fight_active = false
+	ArenaCamera.focus = null
+	_register_input()
+	_setup_arena()
+	_spawn_player()
+	_hud = StoryHUD.new()
+	_hud.manager = self
+	add_child(_hud)
+	if MatchSettings.touch_enabled():
+		var tc := TouchControls.new()
+		tc.name = "TouchControls"
+		add_child(tc)
+	_build_ui()
+	SoundManager.play_music(String(StoryLevels.map_of(level_number).get("music", "fight")))   # Fits the area
+	if autoplay:
+		print("STORY autoplay: level %d start" % level_number)
+	_run.call_deferred()
+
+
+func _exit_tree() -> void:
+	active = false
+	has_walls = false
+	MatchSettings.sandbox = _saved_sandbox
+	ArenaCamera.focus = null
+	Engine.time_scale = 1.0
+
+
+func _register_input() -> void:
+	if not InputMap.has_action("use_flask"):
+		InputMap.add_action("use_flask")
+		var k := InputEventKey.new()
+		k.physical_keycode = KEY_R
+		InputMap.action_add_event("use_flask", k)
+		var b := InputEventJoypadButton.new()
+		b.button_index = JOY_BUTTON_BACK
+		b.device = -1
+		InputMap.action_add_event("use_flask", b)
+
+
+## Applies this level's MAP (StoryLevels.MAPS): backdrop, floor, wall style, arena width.
+func _setup_arena() -> void:
+	_apply_map(StoryLevels.map_of(level_number))
+
+
+func _apply_map(map: Dictionary) -> void:
+	var bg := get_parent().get_node_or_null("Background") as HellBackground
+	if bg != null:
+		bg.theme = map.get("bg", "surface")
+	var ground := get_tree().get_first_node_in_group("arena_ground") as ArenaGround
+	var center_x := 576.0
+	if ground != null:
+		_ground_y = ground.global_position.y
+		center_x = ground.global_position.x
+		ground.ground_theme = int(map.get("ground", 2))
+	var wl := get_parent().get_node_or_null("WallLeft") as CaveWall
+	var wr := get_parent().get_node_or_null("WallRight") as CaveWall
+	has_walls = wl != null and wr != null
+	if has_walls:
+		var hw: float = map.get("half_width", 850.0)
+		wl.global_position.x = center_x - hw                # Tighter maps just move the walls in
+		wr.global_position.x = center_x + hw
+		wl.style = map.get("walls", "lava")
+		wr.style = wl.style
+		wall_left_x = wl.inner_x()
+		wall_right_x = wr.inner_x()
+		player_spawn.x = clampf(player_spawn.x, wall_left_x + 120.0, wall_right_x - 120.0)
+
+
+func _spawn_player() -> void:
+	player = Warrior.new()
+	player.name = "P1_Warrior"
+	player.position = player_spawn
+	player.spawn_position = player_spawn
+	player.slot = 1
+	player.team = 1
+	player.default_facing = 1
+	player.facing = 1
+	player.respawn_enabled = false               # Story: death = retry the level
+	player.ctl = WarriorAI.new() if autoplay else FighterInput.new()
+	add_child(player)
+	if autoplay:
+		player.damage_taken_mult = 0.25
+	player.died.connect(_on_player_died)
+
+
+# ============================================================
+# LEVEL FLOW
+# ============================================================
+func _run() -> void:
+	await _intro()
+	var waves: Array = level.get("waves", [])
+	for i in waves.size():
+		_wave_index = i
+		await _spawn_wave(waves[i], i, waves.size())
+		await wave_cleared
+		if _over:
+			return
+		if i < waves.size() - 1:
+			_show_banner("WAVE CLEARED", "", Color(0.6, 1.0, 0.6))
+			await _wait(1.3)
+			_hide_banner()
+	if String(level.get("boss", "")) != "":
+		await _boss_intro()
+		await boss_defeated
+		if _over:
+			return
+		await _boss_death_cutscene()
+	await _level_clear()
+
+
+func _intro() -> void:
+	CombatManager.fight_active = false
+	# Drop in from above
+	var land := player.global_position
+	player.global_position = land + Vector2(0, -520)
+	var tw := create_tween()
+	tw.tween_property(player, "global_position", land, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await tw.finished
+	Effects.shake(self, 9.0)
+	Effects.hit_sparks(player, land + Vector2(0, -8), 10, 1.2)
+	SoundManager.play_sfx("spawn")
+	_show_banner("LEVEL %d" % level_number, "%s\n%s" % [level.get("title", ""), level.get("intro", "")], Color(1.0, 0.7, 0.3))
+	await _wait(2.4)
+	_hide_banner()
+	CombatManager.fight_active = true
+
+
+func _spawn_wave(group: Array, idx: int, total: int) -> void:
+	_show_banner("WAVE %d / %d" % [idx + 1, total] if total > 1 else "FIGHT!", "", Color(1.0, 0.45, 0.3))
+	await _wait(0.8)
+	_hide_banner()
+	_alive = 0
+	var lo := (wall_left_x if has_walls else player.global_position.x - 700.0) + 70.0
+	var hi := (wall_right_x if has_walls else player.global_position.x + 700.0) - 70.0
+	for j in group.size():
+		# Spread around the player: mostly in front, every 3rd one behind
+		var behind := j % 3 == 2
+		var x := player.global_position.x + (-1.0 if behind else 1.0) * (300.0 + float(j) * 85.0)
+		if x > hi or x < lo:
+			x = player.global_position.x - signf(x - player.global_position.x) * (300.0 + float(j) * 60.0)
+		x = clampf(x, lo, hi)
+		_spawn_enemy(String(group[j]), Vector2(x, _ground_y - 280.0 - float(j) * 30.0))
+	_update_wave_text()
+
+
+func _spawn_enemy(id: String, pos: Vector2) -> BaseEnemy:
+	var e := StoryLevels.make_enemy(id)
+	e.slot = 2
+	e.team = 2
+	e.default_facing = -1 if pos.x > player.global_position.x else 1
+	e.facing = e.default_facing
+	e.respawn_enabled = false
+	e.position = pos
+	add_child(e)
+	Effects.hit_sparks(e, pos + Vector2(0, -40), 8, 1.0)
+	e.died.connect(_on_enemy_died.bind(e))
+	_alive += 1
+	return e
+
+
+func _on_enemy_died(_e: BaseEnemy) -> void:
+	if _over:
+		return
+	_alive = maxi(_alive - 1, 0)
+	_update_wave_text()
+	if _alive == 0:
+		await _wait(0.6)                           # Let the last death animation breathe
+		wave_cleared.emit()
+
+
+func _update_wave_text() -> void:
+	var waves: Array = level.get("waves", [])
+	wave_text = "WAVE %d / %d     ENEMIES LEFT: %d" % [_wave_index + 1, waves.size(), _alive] if _alive > 0 else ""
+
+
+# ============================================================
+# BOSS
+# ============================================================
+func _boss_intro() -> void:
+	CombatManager.fight_active = false
+	wave_text = ""
+	ChemicalPool.dry_all()
+	_letterbox(true)
+	SoundManager.stop_music()
+	# The boss has his own arena (Blinded Lord: the LAB): fade out, swap the map, fade in
+	var boss_map := String(level.get("boss_map", ""))
+	if boss_map != "":
+		await _fade(true)
+		_apply_map(StoryLevels.MAPS.get(boss_map, {}))
+		player.global_position = Vector2(player_spawn.x, _ground_y)
+		player.velocity = Vector2.ZERO
+		player.facing = 1
+		for n in get_tree().get_nodes_in_group("fighters"):
+			var f := n as BaseEnemy
+			if f != null and f.is_dead:
+				f.visible = false                          # Old corpses stay behind in the caves
+		_show_banner("THE LABORATORY", "Glass chambers... and what is left of the others.", Color(0.6, 1.0, 0.4))
+		await _fade(false)
+		await _wait(1.6)
+		_hide_banner()
+	var hi := (wall_right_x if has_walls else player.global_position.x + 600.0) - 120.0
+	var bx := clampf(player.global_position.x + 460.0, player.global_position.x + 200.0, hi)
+	if bx - player.global_position.x < 200.0:
+		bx = player.global_position.x - 460.0             # No room on the right: come from the left
+	var land := Vector2(bx, _ground_y)
+	boss = StoryLevels.make_enemy(String(level["boss"]))
+	boss.slot = 2
+	boss.team = 2
+	boss.default_facing = -1 if bx > player.global_position.x else 1
+	boss.facing = boss.default_facing
+	boss.respawn_enabled = false
+	boss.position = land + Vector2(0, -620)
+	add_child(boss)
+	boss.died.connect(_on_boss_died)
+	ArenaCamera.focus = boss
+	ArenaCamera.focus_zoom = 1.05
+	await _wait(0.8)
+	var tw := create_tween()
+	tw.tween_property(boss, "global_position", land, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await tw.finished
+	Effects.shake(self, 16.0)
+	Effects.hit_sparks(boss, land + Vector2(0, -10), 14, 1.6)
+	SoundManager.play_sfx("explosion")
+	SoundManager.play_music("boss")
+	await _wait(0.5)
+	_show_banner(boss.enemy_name.to_upper(), "Keeper of the First Colosseum", Color(0.6, 1.0, 0.3))
+	Effects.popup(boss, boss.global_position + Vector2(0, -230), "Who dares crawl into MY pit...?", Color(0.85, 1.0, 0.7), 20)
+	await _wait(2.6)
+	_hide_banner()
+	# Flasks refill after the boss intro
+	flasks = FLASKS_PER_LEVEL
+	Effects.popup(player, player.global_position + Vector2(0, -170), "FLASKS REFILLED!", Color(0.5, 1.0, 0.5), 24)
+	SoundManager.play_sfx("heal")
+	ArenaCamera.focus = null
+	_letterbox(false)
+	await _wait(0.6)
+	boss_bar_visible = true
+	_show_banner("FIGHT!", "", Color(1.0, 0.45, 0.3))
+	CombatManager.fight_active = true
+	await _wait(0.7)
+	_hide_banner()
+
+
+func _on_boss_died() -> void:
+	if _over:
+		return
+	boss_bar_visible = false
+	boss_defeated.emit()
+
+
+func _boss_death_cutscene() -> void:
+	ChemicalPool.dry_all()
+	_letterbox(true)
+	ArenaCamera.focus = boss
+	ArenaCamera.focus_zoom = 1.2
+	await _wait(0.15)
+	Engine.time_scale = 0.35                       # Slow motion
+	Effects.explosion(boss, boss.global_position + Vector2(0, -90), 150.0)
+	Effects.shake(self, 14.0)
+	await _wait(0.5)                               # ~1.4 s real time
+	Engine.time_scale = 1.0
+	CombatManager.fight_active = false
+	SoundManager.stop_music()
+	_show_banner("%s HAS FALLEN" % boss.enemy_name.to_upper(), "The first Colosseum is yours.", Color(1.0, 0.85, 0.3))
+	await _wait(3.0)
+	_hide_banner()
+	ArenaCamera.focus = null
+	_letterbox(false)
+
+
+# ============================================================
+# LEVEL END
+# ============================================================
+func _level_clear() -> void:
+	CombatManager.fight_active = false
+	wave_text = ""
+	StoryProgress.complete_level(level_number)     # SAVED here
+	if autoplay:
+		print("STORY autoplay: level %d CLEAR (player hp %d, flasks %d)" % [level_number, player.hp, flasks])
+	_show_banner("LEVEL CLEAR!", "Progress saved", Color(0.6, 1.0, 0.6))
+	SoundManager.play_sfx("ultimate")
+	await _wait(1.8)
+	_hide_banner()
+	# Back to the BOARD: the pawn hops forward to the next space, then (from the board)
+	# you fall into the caves to the next level. After the boss: Colosseum complete.
+	StoryBoard.advance_from = level_number
+	if level_number < StoryProgress.AVAILABLE_LEVELS:
+		StoryProgress.current_level = level_number + 1
+	get_tree().change_scene_to_file(STORY_MENU)
+
+
+func _on_player_died() -> void:
+	if _over:
+		return
+	_over = true
+	boss_bar_visible = false
+	if autoplay:
+		print("STORY autoplay: player DIED on level %d" % level_number)
+	await _wait(1.6)
+	CombatManager.fight_active = false
+	Engine.time_scale = 1.0
+	var panel := _panel()
+	panel.add_child(UiStyle.label("YOU DIED", 80, Color(0.9, 0.2, 0.15), 16))
+	panel.add_child(UiStyle.label("Level %d: %s" % [level_number, level.get("title", "")], 22, UiStyle.TEXT_DIM, 8))
+	_panel_button(panel, "RETRY LEVEL", func() -> void: get_tree().change_scene_to_file(ARENA_SCENE))
+	_panel_button(panel, "STORY MENU", func() -> void: get_tree().change_scene_to_file(STORY_MENU))
+	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
+
+
+# ============================================================
+# FLASKS
+# ============================================================
+func _process(_delta: float) -> void:
+	if Input.is_action_just_pressed("use_flask"):
+		use_flask()
+	elif autoplay and player != null and not player.is_dead and flasks > 0 and player.hp < player.data.max_hp * 0.4:
+		use_flask()                                # Testing: the CPU drinks like a player would
+
+
+func use_flask() -> void:
+	if _over or not CombatManager.fight_active or player == null or player.is_dead:
+		return
+	if flasks <= 0:
+		Effects.popup(player, player.global_position + Vector2(0, -170), "NO FLASKS LEFT", Color(0.8, 0.8, 0.8), 20)
+		return
+	if player.hp >= player.data.max_hp:
+		Effects.popup(player, player.global_position + Vector2(0, -170), "HP IS FULL", Color(0.8, 0.8, 0.8), 20)
+		return
+	flasks -= 1
+	player.heal(roundi(player.data.max_hp * FLASK_HEAL))
+	Effects.gold_burst(player, player.global_position + Vector2(0, -64), 70.0)
+	Effects.popup(player, player.global_position + Vector2(0, -200), "FLASK!  (%d LEFT)" % flasks, Color(0.5, 1.0, 0.5), 22)
+
+
+# ============================================================
+# UI: banner, letterbox, panels
+# ============================================================
+func _build_ui() -> void:
+	_ui = CanvasLayer.new()
+	_ui.layer = 15
+	add_child(_ui)
+	_bar_top = ColorRect.new()
+	_bar_bottom = ColorRect.new()
+	for b in [_bar_top, _bar_bottom]:
+		b.color = Color(0, 0, 0)
+		b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_ui.add_child(b)
+	_bar_top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_bar_bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_bar_top.offset_bottom = 0.0
+	_bar_bottom.offset_top = 0.0
+	var col := VBoxContainer.new()
+	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ui.add_child(col)
+	_banner = UiStyle.label("", 76, UiStyle.TEXT, 18)
+	_sub = UiStyle.label("", 24, UiStyle.TEXT, 8)
+	_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	col.add_child(_banner)
+	col.add_child(_sub)
+
+
+func _show_banner(text: String, sub: String, col: Color) -> void:
+	_banner.text = text
+	_banner.add_theme_color_override("font_color", col)
+	_sub.text = sub
+	for l in [_banner, _sub]:
+		l.modulate.a = 0.0
+		create_tween().tween_property(l, "modulate:a", 1.0, 0.25)
+
+
+func _hide_banner() -> void:
+	for l in [_banner, _sub]:
+		create_tween().tween_property(l, "modulate:a", 0.0, 0.25)
+
+
+var _black: ColorRect
+
+
+## Full-screen fade to / from black (arena change).
+func _fade(to_black: bool) -> void:
+	if _black == null:
+		_black = ColorRect.new()
+		_black.color = Color(0, 0, 0, 0)
+		_black.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_black.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_ui.add_child(_black)
+		_ui.move_child(_black, 0)                     # Under the banner text
+	var tw := create_tween()
+	tw.tween_property(_black, "color:a", 1.0 if to_black else 0.0, 0.6)
+	await tw.finished
+
+
+func _letterbox(on: bool) -> void:
+	var h := 90.0 if on else 0.0
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(_bar_top, "offset_bottom", h, 0.4)
+	tw.tween_property(_bar_bottom, "offset_top", -h, 0.4)
+
+
+func _panel() -> VBoxContainer:
+	var layer := CanvasLayer.new()
+	layer.layer = 25
+	add_child(layer)
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.7)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(dim)
+	var col := VBoxContainer.new()
+	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", 14)
+	layer.add_child(col)
+	return col
+
+
+func _panel_button(panel: VBoxContainer, text: String, action: Callable) -> void:
+	var b := UiStyle.make_button(text)
+	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	b.pressed.connect(action)
+	panel.add_child(b)
+	if not panel.has_meta("focused"):              # First button gets keyboard / controller focus
+		panel.set_meta("focused", true)
+		b.grab_focus.call_deferred()
+
+
+## A wait that dies with this node (a scene change never resumes a dead coroutine).
+func _wait(seconds: float) -> void:
+	var t := Timer.new()
+	t.one_shot = true
+	t.wait_time = maxf(seconds, 0.01)
+	add_child(t)
+	t.start()
+	await t.timeout
+	t.queue_free()

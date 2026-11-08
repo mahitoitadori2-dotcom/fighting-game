@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/CharacterSelect.gd" id="1_select"]
+[ext_resource type="Script" path="res://scripts/ArenaBackground.gd" id="2_bg"]
+
+[node name="CharacterSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_select")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+script = ExtResource("2_bg")
+auto_scroll_speed = 15.0
+dim = 0.45
