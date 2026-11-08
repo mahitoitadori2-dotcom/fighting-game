@@ -247,7 +247,7 @@ func _spawn_helpers() -> void:
 		h.position = global_position + Vector2(facing * (40.0 + 34.0 * float(i)) + randf_range(-10.0, 10.0), -4.0)
 		get_parent().add_child(h)
 	Effects.gold_burst(self, global_position + Vector2(facing * 55.0, -24.0), 50.0)
-	Effects.popup(self, global_position + Vector2(0, -160), "HELPERS!", Color(1.0, 0.95, 0.8), 24)
+	announce_move("HELPERS!", Color(1.0, 0.95, 0.8))
 	cast_pose = 1.0
 	_start_cooldown("helpers", ed.helpers_cooldown)
 	_begin_cast(0.3)
@@ -275,7 +275,7 @@ func _try_ultimate() -> void:
 
 # --- G1: Godly O' Light ---
 func _ult_godly_light() -> void:
-	Effects.popup(self, global_position + Vector2(0, -170), "GODLY O' LIGHT!", Color(1.0, 0.9, 0.4), 28)
+	announce_move("GODLY O' LIGHT!", Color(1.0, 0.9, 0.4))
 	state = State.LIGHT_CHARGE
 	_state_timer = ed.light_charge
 	velocity.x = 0.0
@@ -302,7 +302,7 @@ func _on_light_hit(victim: Fighter, _hit: HitData, result: String) -> void:
 
 # --- G2: Throne ---
 func _ult_throne() -> void:
-	Effects.popup(self, global_position + Vector2(0, -170), "THRONE!", Color(1.0, 0.85, 0.3), 30)
+	announce_move("THRONE!", Color(1.0, 0.85, 0.3))
 	var t := Throne.new()
 	t.source = self
 	t.damage = ed.throne_damage
@@ -319,7 +319,7 @@ func _ult_throne() -> void:
 
 # --- G3: Enlightened Gorilla Form ---
 func _ult_gorilla() -> void:
-	Effects.popup(self, global_position + Vector2(0, -190), "ENLIGHTENED GORILLA FORM!", Color(1.0, 0.85, 0.3), 28)
+	announce_move("ENLIGHTENED GORILLA FORM!", Color(1.0, 0.85, 0.3))
 	Effects.gold_burst(self, global_position + Vector2(0, -64), 110.0)
 	gorilla_timer = ed.gorilla_duration
 	_begin_cast(0.4)

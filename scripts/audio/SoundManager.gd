@@ -21,10 +21,17 @@ extends Node
 ## "Tap to Start" button is that tap, so music can start right away; anything
 ## requested before the unlock simply starts once the browser allows audio.
 ##
-## LOW HP: during "fight" / "boss" music the track speeds up (pitch_scale) when
+## LOW HP: during "fight" / "boss*" music the track speeds up (pitch_scale) when
 ## YOUR fighter is below LOW_HP_RATIO.
+##
+## VOICE LINES:  SoundManager.say("minos_intro", "I am King Minos!", 0.55, 0.9)
+##   1. res://audio/voice/<key>.ogg / .wav / .mp3 exists -> that recording plays
+##   2. otherwise the system TEXT-TO-SPEECH voice reads the line (Windows, Web, iPhone),
+##      pitched down for the bosses. No voice available = silent (the line is still
+##      shown on screen by the boss).
 
 const SFX_DIR := "res://audio/sfx/"
+const VOICE_DIR := "res://audio/voice/"
 const MUSIC_DIR := "res://audio/music/"
 const SFX_EXTS := ["ogg", "wav", "mp3"]
 const MUSIC_EXTS := ["ogg", "mp3", "wav"]
@@ -116,6 +123,65 @@ func play_sfx(sfx_name: String, volume_db: float = 0.0, pitch_jitter: float = 0.
 	p.play()
 
 
+var _voice_player: AudioStreamPlayer
+var _tts_voice := ""
+var _tts_checked := false
+
+
+## Boss voice line. key = optional recording in res://audio/voice/, text = what is said
+## (TTS fallback). pitch / rate: 1.0 = normal; bosses use a low pitch.
+func say(key: String, text: String, pitch: float = 0.6, rate: float = 0.95) -> void:
+	if muted or sfx_volume <= 0.001:
+		return
+	var stream := _load(VOICE_DIR, key, SFX_EXTS) if key != "" else null
+	if stream != null:
+		if _voice_player == null:
+			_voice_player = AudioStreamPlayer.new()
+			_voice_player.bus = "SFX"
+			add_child(_voice_player)
+		_voice_player.stop()
+		_voice_player.stream = stream
+		_voice_player.volume_db = 2.0
+		_voice_player.play()
+		return
+	var voice := _tts()
+	if voice == "":
+		return
+	DisplayServer.tts_stop()                            # A new line cuts the old one
+	DisplayServer.tts_speak(text, voice, clampi(roundi(sfx_volume * 100.0), 0, 100), pitch, rate)
+
+
+func stop_voice() -> void:
+	if _voice_player != null:
+		_voice_player.stop()
+	if _tts() != "":
+		DisplayServer.tts_stop()
+
+
+## First English TTS voice ("" = no TTS on this device / setting off).
+func _tts() -> String:
+	if _tts_checked:
+		return _tts_voice
+	_tts_checked = true
+	if not ProjectSettings.get_setting("audio/general/text_to_speech", false):
+		return ""
+	var voices := DisplayServer.tts_get_voices_for_language("en")
+	if voices.is_empty():
+		var all := DisplayServer.tts_get_voices()
+		if not all.is_empty():
+			_tts_voice = String(all[0].get("id", ""))
+	else:
+		_tts_voice = voices[0]
+		for v in DisplayServer.tts_get_voices():               # Prefer a male voice: deeper bosses
+			var nm := String(v.get("name", "")).to_lower()
+			var male := nm.contains("david") or nm.contains("daniel") or nm.contains("george") \
+				or (nm.contains("male") and not nm.contains("female"))
+			if String(v.get("language", "")).begins_with("en") and male:
+				_tts_voice = String(v.get("id", _tts_voice))
+				break
+	return _tts_voice
+
+
 ## Sound for a cast move id ("drill", "eternal", "flame", "beam"...). Unknown ids are silent.
 func play_move_sfx(move_id: String) -> void:
 	var s: String = MOVE_SFX.get(move_id, "")
@@ -205,7 +271,7 @@ func _set_loop(stream: AudioStream) -> void:
 
 ## Fight music speeds up when YOUR fighter (slot 1) is low on HP.
 func _check_low_hp() -> void:
-	if _music_name != "fight" and _music_name != "boss":
+	if _music_name != "fight" and not _music_name.begins_with("boss"):
 		_target_pitch = 1.0
 	else:
 		var low := false

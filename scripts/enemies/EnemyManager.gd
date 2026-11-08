@@ -37,13 +37,19 @@ static func entries() -> Array[Dictionary]:
 	list.append(_entry("elton", "Elton John", "Elton John", EltonJohn, Color(1.0, 0.40, 0.75)))
 	list.append(_entry("lincoln", "Abraham Lincoln", "Lincoln", Lincoln, Color(0.75, 0.75, 0.80)))
 	list.append(_entry("cybertrex", "Cyber T-Rex", "Cyber T-Rex", CyberTRex, Color(1.0, 0.25, 0.20)))
+	# FIGHTS-MODE BOSSES (FightBoss): big HP, voice lines, their own boss music
+	list.append(_entry("minos", "King Minos", "King Minos", KingMinos, Color(0.70, 0.88, 1.0), KingMinos.HP, "boss_minos"))
+	list.append(_entry("sisyphus", "Sisyphus", "Sisyphus", Sisyphus, Color(1.0, 0.70, 0.25), Sisyphus.HP, "boss_sisyphus"))
+	list.append(_entry("geyron", "Geyron", "Geyron", Geyron, Color(1.0, 0.30, 0.30), Geyron.HP, "boss_geyron"))
 	_cache = list
 	return list
 
 
 ## Roster entry (same format as the playable characters). The card's move list is
 ## built from the enemy's real patterns, so it can never go out of date.
-static func _entry(id: String, full_name: String, short: String, script: Script, accent: Color) -> Dictionary:
+## boss_hp > 0 = a Fights-mode boss (card says BOSS), music = its fight track.
+static func _entry(id: String, full_name: String, short: String, script: Script, accent: Color,
+		boss_hp: int = 0, music: String = "boss") -> Dictionary:
 	var moves: Array = []
 	var patterns: Array = script.call("make_patterns")
 	for p: EnemyPattern in patterns:
@@ -57,14 +63,19 @@ static func _entry(id: String, full_name: String, short: String, script: Script,
 			info += ", " + p.note
 		var nm: String = CARD_NAMES.get(p.id, String(p.display_name).trim_suffix("!").capitalize())
 		moves.append({"key": "", "name": nm, "info": info})
-	var hp := TANK_HP if script in [FrostJarl, CyberTRex] else ENEMY_HP
-	moves.append({"key": "!", "name": "%d HP" % hp, "info": "PvE enemy: weaker than a playable character"})
+	if boss_hp > 0:
+		moves.append({"key": "!", "name": "BOSS: %d HP" % boss_hp, "info": "Enraged below 50% HP, voice lines, own boss music"})
+	else:
+		var hp := TANK_HP if script in [FrostJarl, CyberTRex] else ENEMY_HP
+		moves.append({"key": "!", "name": "%d HP" % hp, "info": "PvE enemy: weaker than a playable character"})
 	return {
 		"id": id,
 		"name": full_name,
 		"short": short,
 		"selectable": true,
 		"enemy": true,
+		"boss": boss_hp > 0,
+		"music": music,
 		"accent": accent,
 		"art": script,                 # Enemy scripts have static draw_portrait(c, t)
 		"fighter": script,

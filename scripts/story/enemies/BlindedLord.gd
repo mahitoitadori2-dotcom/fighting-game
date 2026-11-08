@@ -97,7 +97,8 @@ func _on_phase_changed(_new_phase: int) -> void:
 	attack_chance = 0.85
 	Effects.popup(self, global_position + Vector2(0, -230), "CRAZED!", CRAZED, 34)
 	Effects.shake(self, 12.0)
-	SoundManager.play_sfx("ultimate")
+	SoundManager.play_sfx("roar")                   # Boss roar
+	SoundManager.play_sfx("ultimate", -4.0)
 	for i in 4:                                     # Splashes in every direction
 		_throw_glob(float(i - 2) * 120.0 + 60.0, 4)
 

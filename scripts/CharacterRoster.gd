@@ -130,7 +130,7 @@ static func _warrior() -> Dictionary:
 		"moves": [
 			{"key": "LMB", "name": "Sword",
 				"info": "%d damage, can't be Onslaughted" % d.punch_damage},
-			{"key": "1", "name": "ClingingGrab",
+			{"key": "1", "name": "Clinging Grab",
 				"info": "%d damage, pulls enemy to you, %ss cooldown. Onslaught: pulls YOU, %d damage" % [d.grab_damage, _num(d.grab_cooldown), d.grab_onslaught_damage]},
 			{"key": "2", "name": "Royal Destiny",
 				"info": "%ss white armor, -%d%% damage taken, slower swings, %ss cooldown" % [_num(d.royal_duration), roundi(d.royal_damage_reduction * 100.0), _num(d.royal_cooldown)]},
@@ -245,7 +245,7 @@ static func _dummy() -> Dictionary:
 		"accent": Color(0.95, 0.80, 0.25),
 		"art": Dummy,
 		"fighter": Dummy,
-		"moves": [{"key": "", "name": "Does not fight", "info": "100 HP training dummy"}],
+		"moves": [{"key": "", "name": "Does not fight", "info": "100 HP training dummy, INF. lives for both sides"}],
 	}
 
 

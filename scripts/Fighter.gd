@@ -34,7 +34,7 @@ var last_hit: HitData = null
 var last_damage_source := {}          # {attacker, move, part, type, onslaught} for debugging / UI
 var last_death_type := ""
 
-# Forced movement (pulled by ClingingGrab, etc.)
+# Forced movement (pulled by Clinging Grab, etc.)
 var _force_target := Vector2.ZERO
 var _force_timer := 0.0
 

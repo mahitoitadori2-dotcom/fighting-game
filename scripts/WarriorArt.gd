@@ -133,7 +133,7 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	if shadow > 0.0:
 		_shadow_body(c, t, shadow)
 
-	# --- ClingingGrab tentacle ---
+	# --- Clinging Grab tentacle ---
 	var gl: float = s.get("grab_len", 0.0)
 	if gl > 1.0:
 		_tentacle(c, t, Vector2(12, -82), Vector2(24.0 + gl, s.get("grab_h", -80.0)))

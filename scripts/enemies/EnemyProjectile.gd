@@ -12,7 +12,7 @@ extends Area2D
 ##   DROP       shadow on the ground for `delay` s (telegraph), then falls and hits a radius
 ##              (piano, missiles).
 ## LOOKS (drawn here, all vector art, no textures): croak, frost, wind, glitter, laser,
-##   shock (harmless ground ring), axe, hat, piano, missile.
+##   shock (ground ring, tinted), axe, hat, piano, missile, chem_glob, boulder.
 ## OPTIMIZATION: pooled, one collision shape reused, culled when off-screen,
 ##   redraws only while on screen.
 
@@ -323,6 +323,9 @@ func _draw() -> void:
 			_draw_drop()
 		"chem_glob":
 			_draw_glob()
+		"boulder":                                        # Sisyphus' Boulder Throw (spins in flight)
+			draw_set_transform(Vector2.ZERO, -rotation, Vector2.ONE)
+			Sisyphus.draw_boulder(self, Vector2.ZERO, 34.0, _age * 8.0 * dir)
 
 
 func _draw_rings(col: Color, a: float) -> void:

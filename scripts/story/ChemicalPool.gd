@@ -45,6 +45,7 @@ static func spawn(src: Fighter, ground_pos: Vector2, w: float, life: float) -> C
 	src.get_tree().current_scene.add_child(pool)
 	pool.global_position = ground_pos
 	_live.append(pool)
+	SoundManager.play_sfx("chem_spill", -5.0)           # Splat + bubbles (same-sound gap stops stacking)
 	return pool
 
 

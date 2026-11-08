@@ -301,15 +301,20 @@ func _boss_intro() -> void:
 	boss.died.connect(_on_boss_died)
 	ArenaCamera.focus = boss
 	ArenaCamera.focus_zoom = 1.05
+	SoundManager.play_sfx("rumble")                    # The ground shakes before he drops in
 	await _wait(0.8)
+	SoundManager.play_sfx("whoosh")
 	var tw := create_tween()
 	tw.tween_property(boss, "global_position", land, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await tw.finished
 	Effects.shake(self, 16.0)
 	Effects.hit_sparks(boss, land + Vector2(0, -10), 14, 1.6)
-	SoundManager.play_sfx("explosion")
+	SoundManager.play_sfx("slam")
+	SoundManager.play_sfx("explosion", -4.0)
 	SoundManager.play_music("boss")
-	await _wait(0.5)
+	await _wait(0.3)
+	SoundManager.play_sfx("roar")                      # Boss roar
+	await _wait(0.2)
 	_show_banner(boss.enemy_name.to_upper(), "Keeper of the First Colosseum", Color(0.6, 1.0, 0.3))
 	Effects.popup(boss, boss.global_position + Vector2(0, -230), "Who dares crawl into MY pit...?", Color(0.85, 1.0, 0.7), 20)
 	await _wait(2.6)
@@ -322,6 +327,8 @@ func _boss_intro() -> void:
 	_letterbox(false)
 	await _wait(0.6)
 	boss_bar_visible = true
+	SoundManager.play_sfx("count_go")
+	Effects.shake(self, 12.0)
 	_show_banner("FIGHT!", "", Color(1.0, 0.45, 0.3))
 	CombatManager.fight_active = true
 	await _wait(0.7)
@@ -342,6 +349,8 @@ func _boss_death_cutscene() -> void:
 	ArenaCamera.focus_zoom = 1.2
 	await _wait(0.15)
 	Engine.time_scale = 0.35                       # Slow motion
+	SoundManager.play_sfx("roar", 0.0, 0.0)        # Death cry
+	SoundManager.play_sfx("rumble")
 	Effects.explosion(boss, boss.global_position + Vector2(0, -90), 150.0)
 	Effects.shake(self, 14.0)
 	await _wait(0.5)                               # ~1.4 s real time
@@ -414,6 +423,7 @@ func use_flask() -> void:
 		Effects.popup(player, player.global_position + Vector2(0, -170), "HP IS FULL", Color(0.8, 0.8, 0.8), 20)
 		return
 	flasks -= 1
+	SoundManager.play_sfx("flask_drink")             # Glug glug + sparkle
 	player.heal(roundi(player.data.max_hp * FLASK_HEAL))
 	Effects.gold_burst(player, player.global_position + Vector2(0, -64), 70.0)
 	Effects.popup(player, player.global_position + Vector2(0, -200), "FLASK!  (%d LEFT)" % flasks, Color(0.5, 1.0, 0.5), 22)
@@ -474,12 +484,15 @@ func _fade(to_black: bool) -> void:
 		_black.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		_ui.add_child(_black)
 		_ui.move_child(_black, 0)                     # Under the banner text
+	if to_black:
+		SoundManager.play_sfx("whoosh", -4.0)
 	var tw := create_tween()
 	tw.tween_property(_black, "color:a", 1.0 if to_black else 0.0, 0.6)
 	await tw.finished
 
 
 func _letterbox(on: bool) -> void:
+	SoundManager.play_sfx("whoosh", -6.0 if on else -10.0)   # Cutscene bars slide in / out
 	var h := 90.0 if on else 0.0
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(_bar_top, "offset_bottom", h, 0.4)

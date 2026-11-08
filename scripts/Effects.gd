@@ -165,6 +165,74 @@ static func popup(ctx: Node, pos: Vector2, text: String, color: Color = Color.WH
 	_add(ctx, p)
 
 
+## BIG move / ultimate name across the SCREEN (screen space, never cut off: the font
+## shrinks until the whole name fits the window). side: 1 = you (upper), 2 = opponent
+## (a bit lower), 0 = centre. Replaces the small world popups for move names.
+static func announce(ctx: Node, text: String, color: Color = Color.WHITE, side: int = 0) -> void:
+	if ctx == null or not ctx.is_inside_tree():
+		return
+	var root := _root(ctx)
+	if root == null:
+		return
+	var layer := root.get_node_or_null("AnnounceLayer") as AnnounceLayer
+	if layer == null:
+		layer = AnnounceLayer.new()
+		layer.name = "AnnounceLayer"
+		root.add_child(layer)
+	layer.show_text(text, color, side)
+
+
+## Screen-space layer for announce(). One label per side, reused.
+class AnnounceLayer extends CanvasLayer:
+	const MAX_FONT := 64
+	const MIN_FONT := 22
+	var _labels := {}                       # side -> Label
+	var _tweens := {}
+
+	func _ready() -> void:
+		layer = 14
+
+	func show_text(text: String, color: Color, side: int) -> void:
+		var l: Label = _labels.get(side)
+		if l == null:
+			l = Label.new()
+			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			l.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+			l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+			l.add_theme_constant_override("shadow_offset_x", 4)
+			l.add_theme_constant_override("shadow_offset_y", 4)
+			add_child(l)
+			_labels[side] = l
+		var vp := get_viewport().get_visible_rect().size
+		# Fit: biggest font where the WHOLE name fits in 92% of the screen width
+		var font := l.get_theme_default_font()
+		var fs := MAX_FONT
+		while fs > MIN_FONT and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + fs * 0.6 > vp.x * 0.92:
+			fs -= 2
+		l.text = text
+		l.add_theme_font_size_override("font_size", fs)
+		l.add_theme_constant_override("outline_size", maxi(6, fs / 5))
+		l.add_theme_color_override("font_color", color)
+		var y := vp.y * (0.27 if side == 1 else (0.43 if side == 2 else 0.35))   # You above, opponent below: never overlap
+		l.size = Vector2(vp.x, fs * 1.6)
+		l.position = Vector2(0, y - l.size.y * 0.5)
+		l.pivot_offset = l.size * 0.5
+		l.scale = Vector2(1.5, 1.5)
+		l.modulate = Color(1, 1, 1, 0)
+		if _tweens.has(side) and (_tweens[side] as Tween).is_valid():
+			(_tweens[side] as Tween).kill()
+		var tw := create_tween()
+		_tweens[side] = tw
+		tw.set_ignore_time_scale(true)             # Hitstop never freezes the name
+		tw.set_parallel(true)
+		tw.tween_property(l, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(l, "modulate:a", 1.0, 0.1)
+		tw.chain().tween_interval(0.9)
+		tw.chain().tween_property(l, "modulate:a", 0.0, 0.3)
+
+
 static func gold_burst(ctx: Node, pos: Vector2, radius: float) -> void:
 	_burst(ctx, pos, radius, BurstFx.GOLD)
 

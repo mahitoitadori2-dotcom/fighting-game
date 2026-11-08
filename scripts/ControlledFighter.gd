@@ -147,6 +147,7 @@ func _press_move(id: String) -> void:
 		cooldowns[id] += extra
 		cooldown_totals[id] += extra
 		Effects.popup(self, global_position + Vector2(0, -160), "ONSLAUGHT!", Color(1.0, 0.55, 0.1), 26)
+		announce_move("ONSLAUGHT " + String(move_names.get(id, id)).to_upper() + "!", Color(1.0, 0.55, 0.1))
 		return
 	if not _is_free():
 		return
@@ -156,6 +157,15 @@ func _press_move(id: String) -> void:
 	is_blocking = false
 	SoundManager.play_move_sfx(id)          # drill / void_goo / flame / beam ... (SoundManager.MOVE_SFX)
 	_cast_move(id)
+	if cooldowns.get(id, 0.0) > 0.0:        # Only when the move really went off (it started its cooldown)
+		announce_move(String(move_names.get(id, id)).to_upper().trim_suffix("!") + "!")
+
+
+## Move / ultimate name, BIG across the screen (Effects.announce). Never cut off.
+func announce_move(text: String, col: Color = Color(-1, 0, 0)) -> void:
+	if col.r < 0.0:
+		col = Color(0.55, 1.0, 0.55) if slot == 1 else Color(1.0, 0.6, 0.55)
+	Effects.announce(self, text, col, slot)
 
 
 # ===== MOVEMENT =====

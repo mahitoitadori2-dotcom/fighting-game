@@ -105,6 +105,8 @@ func start_pattern(p: EnemyPattern) -> void:
 	state_time = 0.0
 	state_len = p.telegraph_time
 	move_dir = 0.0
+	if p.big:
+		SoundManager.play_sfx("telegraph", -8.0, 0.0)    # Warning beep: a big attack is coming
 	_on_telegraph(p)
 
 
@@ -214,6 +216,7 @@ func _run_state(delta: float) -> void:
 				estate = EState.ATTACK
 				state_time = 0.0
 				state_len = current.active_time
+				SoundManager.play_sfx("swing", -9.0)          # Every enemy attack whooshes
 				_on_attack_start(current)
 		EState.ATTACK:
 			state_time += delta
@@ -255,6 +258,7 @@ func _movement(delta: float) -> void:
 func jump(force_mult: float = 1.0) -> void:
 	if is_on_floor() and can_act():
 		velocity.y = -data.jump_force * force_mult
+		SoundManager.play_sfx("jump", -8.0)
 
 
 func _check_phase() -> void:

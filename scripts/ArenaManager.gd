@@ -42,7 +42,9 @@ func _ready() -> void:
 	p1 = _spawn(CharacterRoster.selected(), 1, p1_spawn)
 	p2 = _spawn(CharacterRoster.opponent(), 2, p2_spawn)
 	# Music: boss track vs PvE enemies, fight track otherwise (speeds up when you're low on HP)
-	SoundManager.play_music("boss" if CharacterRoster.opponent().get("enemy", false) else "fight")
+	# (Fights-mode bosses each have their own track: boss_minos / boss_sisyphus / boss_geyron)
+	var opp := CharacterRoster.opponent()
+	SoundManager.play_music(String(opp.get("music", "boss")) if opp.get("enemy", false) else "fight")
 	SoundManager.play_sfx("spawn")
 	# Lives, "ROUND 1 - FIGHT", winner screen
 	var mm := MatchManager.new()

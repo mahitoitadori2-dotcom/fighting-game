@@ -361,14 +361,14 @@ func _try_ultimate() -> void:
 
 
 func _ult_double_trouble(b: int) -> void:
-	Effects.popup(self, global_position + Vector2(0, -165), "DOUBLE TROUBLE!", Color(1.0, 0.2, 0.2), 26)
+	announce_move("DOUBLE TROUBLE!", Color(1.0, 0.2, 0.2))
 	_fan_of_flames(fd.double_flame_count, fd.double_flame_spread_deg, "double_trouble", b)
 	_flock_of_bats(fd.double_bat_count, "double_trouble", b)
 	_begin_cast(0.35)
 
 
 func _ult_volatile_nightmare(b: int) -> void:
-	Effects.popup(self, global_position + Vector2(0, -165), "VOLATILE NIGHTMARE!", Color(1.0, 0.2, 0.2), 26)
+	announce_move("VOLATILE NIGHTMARE!", Color(1.0, 0.2, 0.2))
 	body_spike_t = 0.45
 	body_spike_rot = randf() * TAU
 	var center := global_position + Vector2(0, -64)
@@ -394,7 +394,7 @@ func _ult_volatile_nightmare(b: int) -> void:
 
 
 func _ult_ritual(b: int) -> void:
-	Effects.popup(self, global_position + Vector2(0, -170), "THE RITUAL OF THE TROUPE!", Color(1.0, 0.15, 0.15), 28)
+	announce_move("THE RITUAL OF THE TROUPE!", Color(1.0, 0.15, 0.15))
 	var heart := NightmareHeart.new()
 	heart.source = self
 	heart.grow_time = fd.ritual_grow_time

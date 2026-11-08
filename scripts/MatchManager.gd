@@ -1,19 +1,20 @@
 class_name MatchManager
 extends Node
 ## Runs one match (created by ArenaManager):
-##   "ROUND 1" -> "FIGHT!" intro (fighters frozen until FIGHT)
+##   EPIC COUNTDOWN 3 - 2 - 1 - GO! (EpicCountdown, fighters frozen until GO)
 ##   Lives: every death removes 1 life (MatchSettings.lives, 1-5)
+##   DUMMY FIGHT: BOTH sides have INFINITE lives (nobody is ever out, no winner screen)
 ##   Someone hits 0 lives -> Winner Screen (Play Again / Main Menu)
 
-const INTRO_ROUND_TIME := 0.9
-const INTRO_FIGHT_TIME := 0.7
 const WINNER_DELAY := 1.4                # Let the death animation play first
+const INFINITE := -1                     # lives value = never runs out
 
 var p1: Fighter
 var p2: Fighter
 var max_lives := 1
-var lives := {}                          # Fighter -> lives left
+var lives := {}                          # Fighter -> lives left (INFINITE = no limit)
 var winner: Fighter
+var infinite_lives := false              # Dummy fight
 var _over := false
 var _banner_layer: CanvasLayer
 var _banner: Label
@@ -24,21 +25,32 @@ func setup(a: Fighter, b: Fighter) -> void:
 	p1 = a
 	p2 = b
 	max_lives = MatchSettings.lives
+	infinite_lives = (p1 is Dummy) or (p2 is Dummy)
 	for f in [p1, p2]:
 		if f != null:
-			lives[f] = MatchSettings.enemy_lives if f is BaseEnemy else max_lives
+			lives[f] = INFINITE if infinite_lives else (MatchSettings.enemy_lives if f is BaseEnemy else max_lives)
 			f.died.connect(_on_fighter_died.bind(f))
-	CombatManager.fight_active = false       # Frozen until "FIGHT!"
+	CombatManager.fight_active = false       # Frozen until "GO!"
 	_build_banner()
 	_intro()
 
 
+## Lives left (INFINITE = -1 for Dummy fights).
 func lives_of(f: Fighter) -> int:
 	return lives.get(f, 0)
 
 
 func max_lives_of(f: Fighter) -> int:
+	if infinite_lives:
+		return INFINITE
 	return MatchSettings.enemy_lives if f is BaseEnemy else max_lives
+
+
+## HUD text: "LIVES 2/3" or "LIVES INF."
+func lives_text(f: Fighter) -> String:
+	if infinite_lives or lives_of(f) == INFINITE:
+		return "LIVES INF."
+	return "LIVES %d/%d" % [lives_of(f), max_lives_of(f)]
 
 
 # ============================================================
@@ -56,15 +68,16 @@ func _build_banner() -> void:
 
 func _intro() -> void:
 	await get_tree().process_frame
-	_show_banner("ROUND 1", UiStyle.TEXT)
-	await get_tree().create_timer(INTRO_ROUND_TIME).timeout
 	if not is_inside_tree():
 		return
-	_show_banner("FIGHT!", Color(1.0, 0.75, 0.2))
-	CombatManager.fight_active = true
-	await get_tree().create_timer(INTRO_FIGHT_TIME).timeout
-	if is_inside_tree() and not _over:
-		_banner.text = ""
+	# Boss intro voice line during the countdown (Fights-mode bosses)
+	for f in [p1, p2]:
+		if f is FightBoss:
+			(f as FightBoss).play_intro()
+	var cd := EpicCountdown.new()
+	add_child(cd)
+	cd.go.connect(func() -> void: CombatManager.fight_active = true)
+	cd.start()
 
 
 func _show_banner(text: String, col: Color) -> void:
@@ -84,6 +97,9 @@ func _show_banner(text: String, col: Color) -> void:
 func _on_fighter_died(f: Fighter) -> void:
 	if _over or not lives.has(f):
 		return
+	if lives[f] == INFINITE:
+		Effects.popup(f, f.global_position + Vector2(0, -190), "INF. LIVES", Color(1, 0.85, 0.3), 22)
+		return                                   # Dummy fight: always respawns, never a winner
 	lives[f] = maxi(lives[f] - 1, 0)
 	var left: int = lives[f]
 	if left > 0:

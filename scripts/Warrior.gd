@@ -5,7 +5,7 @@ extends ControlledFighter
 ## Every number comes from WarriorData (res://data/WarriorData.gd).
 ##
 ##   Click  Sword swing (3 dmg, punch range). NO Onslaught, NO Afterburn trigger.
-##   1      ClingingGrab   - void tentacle, grabs + flings enemy to you. Onslaught-able.
+##   1      Clinging Grab   - void tentacle, grabs + flings enemy to you. Onslaught-able.
 ##   2      Royal Destiny  - 8 s white armor: -40% damage taken, slower swings.
 ##   3      Eternal Grasp  - shadow form, spike bursts all around (4 dmg each).
 ##   G x1   Mini Eternal Grasp - homing spikes (3 dmg each)
@@ -312,7 +312,7 @@ func _update_grab_latch() -> void:
 	if _grab_onslaught:
 		# ONSLAUGHT: the Warrior is pulled to the opponent + orange explosion.
 		Effects.explosion(self, v.global_position + Vector2(0, -70), wd.grab_onslaught_blast, true)
-		Effects.popup(self, global_position + Vector2(0, -160), "ONSLAUGHT CLINGING GRAB!", Color(1.0, 0.55, 0.1), 24)
+		announce_move("ONSLAUGHT CLINGING GRAB!", Color(1.0, 0.55, 0.1))
 		v.stun_timer = maxf(v.stun_timer, wd.grab_hitstun + wd.grab_pull_time)
 		force_move_to(Vector2(v.global_position.x - facing * wd.grab_pull_distance, v.global_position.y), wd.grab_pull_time)
 		grab_len = 0.0
@@ -332,7 +332,7 @@ func _cast_royal() -> void:
 	_start_cooldown("royal", wd.royal_cooldown)
 	_begin_cast(0.3)
 	_flash(Color(2.0, 2.0, 2.0), 0.35)
-	Effects.popup(self, global_position + Vector2(0, -160), "ROYAL DESTINY!", Color(1.0, 1.0, 0.85), 26)
+	announce_move("ROYAL DESTINY!", Color(1.0, 1.0, 0.85))
 
 
 func _end_royal() -> void:
@@ -347,7 +347,7 @@ func _cast_eternal() -> void:
 	_wave_timer = 0.0                               # First burst immediately
 	velocity.x = 0.0
 	_start_cooldown("eternal", wd.eternal_cooldown)
-	Effects.popup(self, global_position + Vector2(0, -160), "ETERNAL GRASP!", Color(0.75, 0.5, 1.0), 26)
+	announce_move("ETERNAL GRASP!", Color(0.75, 0.5, 1.0))
 
 
 ## One burst of spikes in all directions. Anyone close enough is hit once per burst,
@@ -398,7 +398,7 @@ func _try_ultimate() -> void:
 
 # --- G1: Unstable Expulsion: homing spikes ---
 func _ult_mini_eternal() -> void:
-	Effects.popup(self, global_position + Vector2(0, -160), "UNSTABLE EXPULSION!", Color(0.75, 0.5, 1.0), 24)
+	announce_move("UNSTABLE EXPULSION!", Color(0.75, 0.5, 1.0))
 	spike_waves.append({"age": 0.0, "range": 70.0, "rot": 0.0, "count": 8})
 	for i in wd.mini_spike_count:
 		var s := OptimizationManager.take(ShadowSpike) as ShadowSpike        # Pooled
@@ -416,7 +416,7 @@ func _ult_mini_eternal() -> void:
 
 # --- G2: Shadow Swarm: mask off, face beam ---
 func _ult_shadow_swarm() -> void:
-	Effects.popup(self, global_position + Vector2(0, -170), "SHADOW SWARM!", Color(0.6, 0.3, 0.9), 28)
+	announce_move("SHADOW SWARM!", Color(0.6, 0.3, 0.9))
 	state = State.BEAM_CHARGE
 	_state_timer = wd.beam_charge
 	velocity.x = 0.0
@@ -443,7 +443,7 @@ func _on_beam_hit(victim: Fighter, _hit: HitData, result: String) -> void:
 
 # --- G3: The Fall of the Physic: TIME STOP ---
 func _ult_fall_of_the_physic() -> void:
-	Effects.popup(self, global_position + Vector2(0, -175), "THE FALL OF PSYCHIC!", Color(0.85, 0.7, 1.0), 28)
+	announce_move("THE FALL OF PSYCHIC!", Color(0.85, 0.7, 1.0))
 	state = State.SNAP
 	_state_timer = wd.timestop_snap_time
 	velocity.x = 0.0

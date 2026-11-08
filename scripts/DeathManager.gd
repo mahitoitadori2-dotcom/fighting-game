@@ -8,7 +8,7 @@ extends RefCounted
 ## before the 1.5 s respawn (and the fighter fades back in: no instant pop).
 ##
 ##   NORMAL   fall over flat + dust + fade   (punch, sword, rocket, HNCT, triple rocket,
-##                                            ClingingGrab, Eternal Grasp, Mini Eternal Grasp,
+##                                            Clinging Grab, Eternal Grasp, Mini Eternal Grasp,
 ##                                            FAOTH rocket / HNCT / arms, anything else)
 ##   SPLIT    Armaggedon Drill: split in half + droplets + blood puddle (until respawn)
 ##   EXPLODE  ANY Onslaught version: bursts into pieces + sparks
@@ -34,7 +34,7 @@ const GOLDEN_MOVES := ["beam_blast", "godly_light", "throne", "gorilla"]
 const MOVE_NAMES := {
 	"punch": "Punch", "rocket": "Rocket Delivery", "hnct": "HNCT Triangle Bomb",
 	"drill": "Armaggedon Drill", "void_goo": "Void Goo", "triple_rocket": "Triple Rocket Delivery",
-	"faoth": "Full Arsenal of the Hexagon", "sword": "Sword", "grab": "ClingingGrab",
+	"faoth": "Full Arsenal of the Hexagon", "sword": "Sword", "grab": "Clinging Grab",
 	"eternal": "Eternal Grasp", "mini_eternal": "Mini Eternal Grasp", "shadow_swarm": "Shadow Swarm",
 	"time_stop_penalty": "Time Stop backfire", "drill_miss": "own Drill",
 	"bloodflame": "BloodFlame Spit", "bat_escape": "Bat Escape", "launch_spikes": "Launch O' Spikes",
@@ -53,7 +53,7 @@ static func death_type(hit: HitData) -> String:
 	if hit == null:
 		return NORMAL
 	if hit.onslaught:
-		return EXPLODE                      # Onslaught Punch / Rocket / HNCT / ClingingGrab
+		return EXPLODE                      # Onslaught Punch / Rocket / HNCT / Clinging Grab
 	match hit.hit_type:
 		"drill", "drill_tick":
 			return SPLIT

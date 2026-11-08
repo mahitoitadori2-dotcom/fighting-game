@@ -25,7 +25,8 @@ func _ready() -> void:
 	matchup.add_child(UiStyle.label("OPPONENT: %s" % CharacterRoster.opponent()["short"], 24, CharacterCard.OPP_COLOR, 8))
 	col.add_child(matchup)
 
-	var info := "ARENA: %s    |    LIVES: %d" % [ArenaManager.selected_arena_entry()["name"], MatchSettings.lives]
+	var lives_txt := "INF. (Dummy fight)" if not CharacterRoster.has_opponent() else str(MatchSettings.lives)
+	var info := "ARENA: %s    |    LIVES: %s" % [ArenaManager.selected_arena_entry()["name"], lives_txt]
 	if MatchSettings.sandbox:
 		info += "    |    SANDBOX ON"
 	col.add_child(UiStyle.label(info, 20, UiStyle.TEXT_DIM, 6))

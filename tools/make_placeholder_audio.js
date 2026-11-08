@@ -64,6 +64,23 @@ const SFX = {
   bark:        () => { const b = buf(0.32); tone(b, 0, 0.11, 620, 330, saw, 0.6, 0.004, 0.05); tone(b, 0.16, 0.12, 680, 340, saw, 0.6, 0.004, 0.05); return b; },
   croak:       () => { const b = buf(0.5); let ph = 0; for (let i = 0; i < b.length; i++) { const t = i / RATE; ph += (95 + 15 * Math.sin(t * 7)) / RATE; b[i] = saw(ph) * 0.7 * (Math.sin(t * 2 * Math.PI * 22) > 0 ? 1 : 0.25) * env(t, 0.02, 0.25); } return b; },
   laser:       () => { const b = buf(0.3); tone(b, 0, 0.3, 1800, 220, sq, 0.4, 0.002, 0.12); tone(b, 0, 0.3, 1790, 215, saw, 0.2, 0.002, 0.12); return b; },
+
+  // ----- added with the Fights-mode bosses (sounds for every battle + Story) -----
+  swing:       () => { const b = buf(0.18); noise(b, 0, 0.18, 0.7, 0.03, 0.05, 0.75); return b; },
+  telegraph:   () => { const b = buf(0.22); tone(b, 0, 0.1, 880, 880, sq, 0.25, 0.002, 0.05); tone(b, 0.1, 0.12, 1175, 1175, sq, 0.25, 0.002, 0.06); return b; },
+  whoosh:      () => { const b = buf(0.6); noise(b, 0, 0.6, 0.8, 0.25, 0.15, 0.2); tone(b, 0, 0.6, 120, 380, tri, 0.12, 0.25, 0.15); return b; },
+  rumble:      () => { const b = buf(1.4); noise(b, 0, 1.4, 1.0, 0.05, 0.5, 0.06); tone(b, 0, 1.2, 55, 35, (p) => Math.sin(p * 2 * Math.PI), 0.8, 0.02, 0.5); return b; },
+  roar:        () => { const b = buf(1.1); let ph = 0; for (let i = 0; i < b.length; i++) { const t = i / RATE; ph += (85 + 25 * Math.sin(t * 9) - 30 * t) / RATE; b[i] = saw(ph) * 0.6 * (0.7 + 0.3 * Math.sin(t * 2 * Math.PI * 31)) * env(t, 0.08, 0.45); } noise(b, 0, 1.1, 0.5, 0.08, 0.4, 0.3); return b; },
+  dragon_roar: () => { const b = buf(1.5); let ph = 0, ph2 = 0; for (let i = 0; i < b.length; i++) { const t = i / RATE; ph += (180 + 120 * Math.sin(t * 2.5) - 60 * t) / RATE; ph2 += (271 + 90 * Math.sin(t * 3.1)) / RATE; b[i] = (saw(ph) * 0.5 + sq(ph2) * 0.15) * (0.6 + 0.4 * Math.sin(t * 2 * Math.PI * 43)) * env(t, 0.12, 0.6); } noise(b, 0, 1.5, 0.6, 0.1, 0.55, 0.45); return b; },
+  slam:        () => { const b = buf(0.9); tone(b, 0, 0.6, 70, 28, (p) => Math.sin(p * 2 * Math.PI), 1.0, 0.001, 0.2); noise(b, 0, 0.9, 0.9, 0.001, 0.25, 0.12); noise(b, 0, 0.05, 0.8, 0.001, 0.02, 0.9); return b; },
+  stone:       () => { const b = buf(0.6); for (let k = 0; k < 9; k++) noise(b, k * 0.045 + Math.abs(rnd()) * 0.02, 0.06, 0.8 - k * 0.07, 0.001, 0.02, 0.55); tone(b, 0, 0.3, 140, 60, sq, 0.2, 0.001, 0.08); return b; },
+  chain:       () => { const b = buf(0.55); for (let k = 0; k < 7; k++) { tone(b, k * 0.06, 0.12, 2300 + k * 140, 2200 + k * 140, sq, 0.12, 0.001, 0.03); noise(b, k * 0.06, 0.03, 0.4, 0.001, 0.01, 0.95); } return b; },
+  holy:        () => { const b = buf(0.8); [784, 988, 1175, 1568].forEach((f, i) => tone(b, i * 0.03, 0.75, f, f * 1.01, (p) => Math.sin(p * 2 * Math.PI), 0.25, 0.04, 0.3)); noise(b, 0, 0.5, 0.15, 0.05, 0.2, 0.97); return b; },
+  bite:        () => { const b = buf(0.25); noise(b, 0, 0.04, 1.0, 0.001, 0.01, 0.8); tone(b, 0.01, 0.2, 320, 90, saw, 0.5, 0.001, 0.06); noise(b, 0.08, 0.04, 0.8, 0.001, 0.01, 0.8); return b; },
+  chem_spill:  () => { const b = buf(0.55); noise(b, 0, 0.12, 0.8, 0.002, 0.05, 0.35); for (let k = 0; k < 6; k++) tone(b, 0.08 + k * 0.07, 0.06, 300 + Math.abs(rnd()) * 500, 900 + Math.abs(rnd()) * 600, (p) => Math.sin(p * 2 * Math.PI), 0.4, 0.002, 0.03); return b; },
+  flask_drink: () => { const b = buf(0.9); for (let k = 0; k < 3; k++) { tone(b, k * 0.17, 0.14, 260, 180, (p) => Math.sin(p * 2 * Math.PI), 0.6, 0.01, 0.05); noise(b, k * 0.17, 0.1, 0.25, 0.01, 0.04, 0.3); } [1047, 1319, 1568].forEach((f, i) => tone(b, 0.55 + i * 0.06, 0.3, f, f, tri, 0.3, 0.005, 0.12)); return b; },
+  count_tick:  () => { const b = buf(0.7); tone(b, 0, 0.5, 110, 50, (p) => Math.sin(p * 2 * Math.PI), 1.0, 0.001, 0.15); noise(b, 0, 0.3, 0.6, 0.001, 0.08, 0.3); [440, 660].forEach((f) => tone(b, 0, 0.6, f, f, saw, 0.12, 0.002, 0.25)); return b; },
+  count_go:    () => { const b = buf(1.6); tone(b, 0, 0.8, 90, 30, (p) => Math.sin(p * 2 * Math.PI), 1.0, 0.001, 0.3); noise(b, 0, 1.4, 1.0, 0.001, 0.45, 0.2); [262, 330, 392, 523, 659].forEach((f) => tone(b, 0.02, 1.5, f, f, saw, 0.12, 0.005, 0.6)); noise(b, 0, 0.06, 0.9, 0.001, 0.02, 0.95); return b; },
 };
 
 // ---------- MUSIC (seamless loops: exact bar lengths) ----------
@@ -87,7 +104,54 @@ function song(bpm, bars, bass, lead, drums, leadWave, bassWave) {
   }
   return b;
 }
+// Souls-like boss track: held ORGAN / CHOIR chords (one per bar) + low strings ostinato
+// + lead + war drums. organ = additive sines, choir = slow-attack detuned triangles.
+const organ = (p) => (Math.sin(p * 2 * Math.PI) + 0.5 * Math.sin(p * 4 * Math.PI) + 0.3 * Math.sin(p * 6 * Math.PI) + 0.2 * Math.sin(p * 8 * Math.PI)) / 2;
+function epic(bpm, bars, chords, bass, lead, drums, padWave, leadWave) {
+  const beat = 60 / bpm, barLen = 4 * beat, len = bars * barLen, b = buf(len), step = beat / 2;
+  for (let bar = 0; bar < bars; bar++) {
+    const ch = chords[bar % chords.length];
+    for (const n of ch) {
+      tone(b, bar * barLen, barLen, NOTE(n), NOTE(n), padWave, 0.09, 0.12, barLen * 2);
+      tone(b, bar * barLen, barLen, NOTE(n) * 1.004, NOTE(n) * 1.004, tri, 0.05, 0.3, barLen * 2);   // choir-ish detune
+    }
+  }
+  const steps = Math.round(len / step);
+  for (let s = 0; s < steps; s++) {
+    const t = s * step;
+    const bn = bass[s % bass.length]; if (bn) tone(b, t, step * 0.9, NOTE(bn), NOTE(bn), saw, 0.22, 0.004, step * 0.5);
+    const ln = lead[s % lead.length]; if (ln) tone(b, t, step * 1.8, NOTE(ln), NOTE(ln), leadWave, 0.13, 0.02, step);
+    const d = drums[s % drums.length];
+    if (d === 't') tone(b, t, 0.3, 80, 38, (p) => Math.sin(p * 2 * Math.PI), 0.9, 0.002, 0.12);
+    if (d === 'T') { tone(b, t, 0.45, 60, 30, (p) => Math.sin(p * 2 * Math.PI), 1.0, 0.002, 0.2); noise(b, t, 0.3, 0.4, 0.002, 0.1, 0.2); }
+    if (d === 's') noise(b, t, 0.14, 0.35, 0.001, 0.05, 0.7);
+    if (d === 'c') { noise(b, t, 0.03, 0.25, 0.001, 0.008, 0.95); tone(b, t, 0.1, 2200, 2100, sq, 0.06, 0.001, 0.03); }
+    if (d === 'b') [1046, 1568].forEach((f) => tone(b, t, 1.0, f, f, (p) => Math.sin(p * 2 * Math.PI), 0.08, 0.002, 0.5));   // church bell
+  }
+  return b;
+}
+
 const MUSIC = {
+  // ----- FIGHTS-MODE BOSSES (classical / Souls-like, per the plan for new bosses) -----
+  // Minos: cathedral organ + choir, D minor, judging and regal
+  boss_minos: () => epic(116, 8,
+    [[50, 57, 62, 65], [46, 53, 58, 62], [48, 55, 60, 64], [45, 52, 57, 61]],
+    [38, 0, 38, 50, 38, 0, 38, 50, 34, 0, 34, 46, 34, 0, 34, 46, 36, 0, 36, 48, 36, 0, 36, 48, 33, 0, 33, 45, 33, 0, 33, 45],
+    [74, 0, 0, 0, 77, 0, 76, 0, 74, 0, 0, 0, 70, 0, 0, 0, 72, 0, 0, 0, 76, 0, 74, 0, 73, 0, 0, 0, 0, 0, 0, 0],
+    ['T', 0, 's', 0, 't', 't', 's', 'b', 'T', 0, 's', 0, 't', 0, 's', 0], organ, organ),
+  // Sisyphus: heavy war drums + brass-like saws, C minor, relentless
+  boss_sisyphus: () => epic(138, 8,
+    [[48, 55, 60, 63], [44, 51, 56, 60], [46, 53, 58, 62], [43, 50, 55, 59]],
+    [36, 36, 48, 36, 36, 48, 36, 47, 32, 32, 44, 32, 32, 44, 32, 43, 34, 34, 46, 34, 34, 46, 34, 45, 31, 31, 43, 31, 31, 43, 35, 38],
+    [72, 0, 75, 0, 79, 0, 77, 75, 74, 0, 72, 0, 68, 0, 0, 0, 70, 0, 74, 0, 77, 0, 75, 74, 71, 0, 0, 0, 67, 0, 71, 0],
+    ['T', 'c', 't', 'c', 'T', 't', 's', 'c', 'T', 'c', 't', 'c', 'T', 't', 's', 's'], saw, saw),
+  // Geyron (dragon): fast strings ostinato, E phrygian, wild
+  boss_geyron: () => epic(152, 8,
+    [[52, 59, 64, 67], [53, 60, 65, 69], [50, 57, 62, 65], [53, 60, 65, 68]],
+    [40, 52, 40, 52, 41, 53, 40, 52, 40, 52, 40, 52, 41, 53, 43, 41, 38, 50, 38, 50, 41, 53, 38, 50, 41, 53, 41, 53, 40, 52, 41, 40],
+    [76, 77, 76, 0, 79, 0, 77, 76, 74, 0, 76, 0, 0, 0, 0, 0, 77, 0, 76, 74, 72, 0, 74, 76, 77, 0, 79, 0, 76, 0, 0, 0],
+    ['T', 'c', 's', 'c', 't', 'c', 's', 't', 'T', 'c', 's', 'c', 't', 't', 's', 's'], tri, saw),
+
   // Menu: relaxed, major
   menu: () => song(96, 8,
     [48, 0, 55, 0, 57, 0, 55, 0, 53, 0, 60, 0, 55, 0, 52, 0],

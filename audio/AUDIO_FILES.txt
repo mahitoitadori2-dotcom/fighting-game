@@ -28,10 +28,30 @@ audio/sfx/
   croak.wav         King Frog - Croak Wave
   laser.wav         Cyber T-Rex - Laser Bite
 
+  -- added with the Fights-mode bosses + sound for every battle / Story --
+  swing.wav         Every enemy attack (whoosh when the attack starts)
+  telegraph.wav     Warning beep when an enemy winds up a BIG attack
+  roar.wav          Boss roar (Minos / Sisyphus rage, Blinded Lord CRAZED + intro + death)
+  dragon_roar.wav   Geyron (intro, rage, death - he has no voice lines)
+  slam.wav          Heavy ground slams (Serpent Slam, Ground Shatter, boulder landing, boss landing)
+  stone.wav         Rocks bursting out of the floor / guard break
+  chain.wav         Sisyphus - Chain Slam
+  holy.wav          Light attacks (Ground Eruption pillars, Judgment Spears, Light Sword)
+  bite.wav          Minos - Ghost Serpent bite
+  chem_spill.wav    Blinded Lord - every chemical pool that splashes down
+  flask_drink.wav   Story - drinking a flask (R)
+  whoosh.wav        Story cutscenes (letterbox bars, fade to the boss arena, boss dropping in)
+  rumble.wav        Story cutscenes (ground shaking before the boss, boss death)
+  count_tick.wav    Match countdown 3 / 2 / 1
+  count_go.wav      Match countdown GO! (+ Story boss FIGHT!)
+
 audio/music/        (all loop automatically)
   menu.ogg          Main Menu, Character Select, Settings, Story board
   fight.ogg         Normal fights (speeds up when YOUR HP is low)
   boss.ogg          Fights vs Rotor and every PvE enemy + the Blinded Lord (Story)
+  boss_minos.ogg    King Minos (cathedral organ + choir)
+  boss_sisyphus.ogg Sisyphus (war drums, brass)
+  boss_geyron.ogg   Geyron (fast strings)
 
   STORY MODE (Colosseum 1):
   story_surface.ogg Levels 1-3, the Ashen Wastes (war drums, ominous drone)
@@ -39,5 +59,13 @@ audio/music/        (all loop automatically)
   story_hive.ogg    Level 5, the Kharleming Hive (mechanical ticking)
   story_cave.ogg    Level 6 group waves, the lava lair (dark ambient, drips)
   Future bosses: classical / ancient / medieval, Souls-like (choir, strings, organ).
+
+audio/voice/        (OPTIONAL boss voice recordings - without them the game uses
+                     text-to-speech with a deep voice, and the line is shown on screen)
+  minos_intro / minos_rage / minos_death / minos_serpent_slam / minos_judgment_kick /
+  minos_ground_eruption / minos_prime_combo
+  sisyphus_intro / sisyphus_rage / sisyphus_death / sisyphus_boulder_throw /
+  sisyphus_sisyphus_punch / sisyphus_ground_shatter
+  (Geyron has no voice lines.)
 
 Regenerate the placeholders:  node tools/make_placeholder_audio.js --force

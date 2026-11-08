@@ -388,7 +388,7 @@ func _try_ultimate() -> void:
 			Effects.popup(self, global_position + Vector2(0, -150), "NO GROUND FOR GOO!", Color(1, 0.9, 0.2), 18)
 			return
 		gauge.consume_segments(2)
-		Effects.popup(self, global_position + Vector2(0, -160), "VOID GOO!", Color(0.7, 0.4, 1.0), 26)
+		announce_move("VOID GOO!", Color(0.7, 0.4, 1.0))
 		_spill_goo(gp)
 	else:
 		gauge.consume_segments(3)
@@ -398,7 +398,7 @@ func _try_ultimate() -> void:
 
 func _ult_triple_rocket(show_popup: bool, move: String = "triple_rocket", part: String = "") -> void:
 	if show_popup:
-		Effects.popup(self, global_position + Vector2(0, -160), "TRIPLE ROCKET!", Color(1.0, 0.6, 0.2), 26)
+		announce_move("TRIPLE ROCKET!", Color(1.0, 0.6, 0.2))
 	for off in [-arch.triple_rocket_spread_deg, 0.0, arch.triple_rocket_spread_deg]:
 		_spawn_rocket(off, move, part)
 
@@ -423,7 +423,7 @@ func _spill_goo(pos: Vector2, move: String = "void_goo", part: String = "") -> v
 func _ult_arsenal() -> void:
 	arsenal_timer = arch.arsenal_duration
 	knockback_scale = arch.arsenal_knockback_taken_mult
-	Effects.popup(self, global_position + Vector2(0, -165), "FULL ARSENAL OF THE HEXAGON!", Color(0.4, 0.9, 1.0), 28)
+	announce_move("FULL ARSENAL OF THE HEXAGON!", Color(0.4, 0.9, 1.0))
 	# Every sub-part is tagged so the kill can be traced to it (death animation).
 	_ult_triple_rocket(false, "faoth", "rocket")
 	for i in arch.arsenal_goo_count:

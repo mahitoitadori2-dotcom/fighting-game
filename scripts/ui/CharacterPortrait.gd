@@ -42,7 +42,11 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, 70.0, Color(0, 0, 0, 0.35))
 
 	# The fighter
-	var s := minf(art_scale, (size.y - 30.0) / 135.0)
+	# Big art (the Fights-mode bosses) declares const PORTRAIT_H so it still fits the card
+	var art_h := 135.0
+	if art != null:
+		art_h = maxf(art_h, float(art.get_script_constant_map().get("PORTRAIT_H", 135.0)))
+	var s := minf(art_scale, (size.y - 30.0) / art_h)
 	draw_set_transform(feet + Vector2(0, -4), 0.0, Vector2(s, s))
 	if art != null:
 		art.call("draw_portrait", self, _t)

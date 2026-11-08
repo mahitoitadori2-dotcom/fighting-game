@@ -73,7 +73,7 @@ func _paint() -> void:
 				var id := cf.move_ids[i]
 				var t: float = cf.cooldowns.get(id, 0.0)
 				var txt := "[%d] %s: %s" % [i + 1, String(cf.move_names.get(id, id)).to_upper(), "READY" if t <= 0.0 else "%.1fs" % t]
-				FighterArt.label(_painter, Vector2(x, fy + 32 + float(i) * 18.0), txt, 13, Color(1, 1, 1, 0.85) if t <= 0.0 else Color(1, 1, 1, 0.5), false)
+				FighterArt.label(_painter, Vector2(x, fy + 34 + float(i) * 21.0), txt, 16, Color(1, 1, 1, 0.9) if t <= 0.0 else Color(1, 1, 1, 0.55), false)
 
 	# ---------------- Level title + wave ----------------
 	var cx := sz.x * 0.5

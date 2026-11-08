@@ -8,6 +8,9 @@ extends CanvasLayer
 
 const BAR_WIDTH: float = 260.0
 const BAR_HEIGHT: float = 18.0
+const COOLDOWN_W: float = 380.0          # Move-name lines get more room than the bars
+const COOLDOWN_FONT := 17
+const COOLDOWN_FONT_MIN := 11
 
 const COLOR_HP_HIGH := Color(0.15, 0.85, 0.25)
 const COLOR_HP_MID := Color(1.0, 0.7, 0.1)
@@ -185,10 +188,14 @@ func _build_side(side: HudSide, right: bool) -> void:
 	side.lives_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	nodes.append(side.lives_label)
 
-	side.cooldown_label = _make_label(Vector2(x, 110), Vector2(BAR_WIDTH, 70), "", 14)
+	# Move names: wider box + the font shrinks so a long name is NEVER cut off (fit_cooldowns)
+	side.cooldown_label = _make_label(Vector2(x - (COOLDOWN_W - BAR_WIDTH) if right else x, 110), Vector2(COOLDOWN_W, 70), "", COOLDOWN_FONT)
 	side.cooldown_label.horizontal_alignment = align
+	side.cooldown_label.clip_text = false
+	if right:
+		side.cooldown_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN   # Grows LEFT, into the screen
 	nodes.append(side.cooldown_label)
-	side.status_label = _make_label(Vector2(x, 178), Vector2(BAR_WIDTH, 44), "", 14)
+	side.status_label = _make_label(Vector2(x, 196), Vector2(BAR_WIDTH, 44), "", 14)   # Under the 3 move lines
 	side.status_label.horizontal_alignment = align
 	side.status_label.modulate = Color(1.0, 0.5, 0.15)
 	nodes.append(side.status_label)
@@ -211,6 +218,20 @@ func _make_label(pos: Vector2, dimensions: Vector2, initial_text: String, font_s
 	label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 	ui_root.add_child(label)
 	return label
+
+
+## Biggest font (COOLDOWN_FONT .. COOLDOWN_FONT_MIN) where every line fits `width`.
+func _fit_font(label: Label, lines: PackedStringArray, width: float) -> void:
+	var font := label.get_theme_default_font()
+	var fs := COOLDOWN_FONT
+	while fs > COOLDOWN_FONT_MIN:
+		var widest := 0.0
+		for l in lines:
+			widest = maxf(widest, font.get_string_size(l, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x)
+		if widest + 14.0 <= width:
+			break
+		fs -= 1
+	label.add_theme_font_size_override("font_size", fs)
 
 
 func _make_bar(pos: Vector2, dimensions: Vector2) -> HudBar:
@@ -264,7 +285,7 @@ func _update_side(side: HudSide) -> void:
 	var max_hp := maxf(float(f.data.max_hp), 1.0)
 	side.hp_label.text = ("%s  %s   %d / %d" % [who, f.data.character_name.to_upper(), int(hp), int(max_hp)]).strip_edges()
 	var mm := get_tree().get_first_node_in_group("match_manager") as MatchManager
-	side.lives_label.text = "LIVES %d/%d" % [mm.lives_of(f), mm.max_lives_of(f)] if mm != null else ""
+	side.lives_label.text = mm.lives_text(f) if mm != null else ""
 	var pct := hp / max_hp
 	side.hp_bar.set_bar(clampf(hp, 0.0, max_hp), max_hp, COLOR_HP_HIGH if pct > 0.5 else (COLOR_HP_MID if pct > 0.25 else COLOR_HP_LOW))
 
@@ -299,7 +320,10 @@ func _update_side(side: HudSide) -> void:
 			var id := cf.move_ids[i]
 			var t: float = cf.cooldowns.get(id, 0.0)
 			lines.append("[%d] %s: %s" % [i + 1, String(cf.move_names.get(id, id)).to_upper(), "READY" if t <= 0.0 else "%.1fs" % t])
-		side.cooldown_label.text = "\n".join(lines)
+		var txt := "\n".join(lines)
+		if txt != side.cooldown_label.text:
+			side.cooldown_label.text = txt
+			_fit_font(side.cooldown_label, lines, COOLDOWN_W)
 	else:
 		side.cooldown_label.text = ""
 

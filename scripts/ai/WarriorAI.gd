@@ -3,12 +3,12 @@ extends BaseAI
 ## CPU brain for the Warrior: aggressive rushdown.
 ##   - Walks toward the enemy constantly
 ##   - Sword when close
-##   - ClingingGrab when the enemy is far (inside tentacle range)
+##   - Clinging Grab when the enemy is far (inside tentacle range)
 ##   - Royal Destiny when below 50% HP
 ##   - Eternal Grasp when the enemy is very close
 ##   - G: 1 bar Mini Eternal Grasp (close) / 2 bars Shadow Swarm (in front, mid range)
 ##        / 3 bars The Fall of the Physic (close)
-##   - Onslaught ClingingGrab 50% of the time (handled by BaseAI)
+##   - Onslaught Clinging Grab 50% of the time (handled by BaseAI)
 
 
 func _init() -> void:
@@ -45,7 +45,7 @@ func think() -> void:
 		press("move3")
 		return
 
-	# --- ClingingGrab: enemy far, but inside tentacle range ---
+	# --- Clinging Grab: enemy far, but inside tentacle range ---
 	if cd_ready("grab") and dist > 220.0 and dist < grab_range - 20.0 and chance(0.4):
 		press("move1")
 		return

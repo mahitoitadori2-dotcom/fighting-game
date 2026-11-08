@@ -28,7 +28,7 @@ func _physics_process(delta: float) -> void:
 			grab_mash()
 		_update_visuals()
 		return
-	if forced_update(delta):             # Flung by ClingingGrab
+	if forced_update(delta):             # Flung by Clinging Grab
 		check_fall_death()
 		_update_visuals()
 		return
