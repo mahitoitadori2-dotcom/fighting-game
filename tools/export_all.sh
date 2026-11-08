@@ -6,11 +6,15 @@
 #   Linux    -> build/linux/UniversalBeatdown.x86_64
 #   macOS    -> build/macos/UniversalBeatdown.zip
 #
-# Usage: tools/export_all.sh [path-to-godot]   (default: $GODOT, then "godot")
+# Usage: tools/export_all.sh [path-to-godot] [web] [windows] [linux] [macos]
+#   path-to-godot defaults to $GODOT, then "godot". No platforms = all four.
 # The matching export templates must be installed (Editor > Manage Export Templates).
 set -euo pipefail
 
 GODOT="${1:-${GODOT:-godot}}"
+shift || true
+PLATFORMS=("$@")
+[ ${#PLATFORMS[@]} -eq 0 ] && PLATFORMS=(web windows linux macos)
 cd "$(dirname "$0")/.."
 
 # The Godot AI (MCP) helper is an editor-only debugging tool, and addons/ is not
@@ -35,11 +39,15 @@ export_one() {
   fi
 }
 
-rm -rf web/play build
-export_one "Web"             web/play/index.html
-export_one "Windows Desktop" build/windows/UniversalBeatdown.exe
-export_one "Linux"           build/linux/UniversalBeatdown.x86_64
-export_one "macOS"           build/macos/UniversalBeatdown.zip
+for p in "${PLATFORMS[@]}"; do
+  case "$p" in
+    web)     rm -rf web/play;      export_one "Web"             web/play/index.html ;;
+    windows) rm -rf build/windows; export_one "Windows Desktop" build/windows/UniversalBeatdown.exe ;;
+    linux)   rm -rf build/linux;   export_one "Linux"           build/linux/UniversalBeatdown.x86_64 ;;
+    macos)   rm -rf build/macos;   export_one "macOS"           build/macos/UniversalBeatdown.zip ;;
+    *) echo "Unknown platform: $p (use web, windows, linux, macos)" >&2; exit 1 ;;
+  esac
+done
 
 echo "== Done"
-ls -la web/play build/*
+ls -la web/play build/* 2>/dev/null || true

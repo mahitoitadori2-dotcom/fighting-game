@@ -11,9 +11,12 @@ The workflow `.github/workflows/build.yml` exports the game with Godot 4.7.2 for
 
 | When | What happens |
 |---|---|
-| Every push or pull request | All four builds are made. Download them from the **Actions** tab: open the run, then **Artifacts**. |
-| Push to `main` | The website in `web/` and the web game are published to GitHub Pages. |
-| Push a tag `v*` | A GitHub Release is made with four zip files attached. |
+| Push to `main` | Only the web game is built. The website in `web/` and the web game go to GitHub Pages. |
+| Pull request | Only the web game is built. Download it from the **Actions** tab: open the run, then **Artifacts**. |
+| Manual run (**Actions → Build and release → Run workflow**) | All four builds are made and kept as Artifacts. On `main`, the website goes to GitHub Pages again. |
+| Push a tag `v*` | All four builds are made. A GitHub Release is made with four zip files attached. |
+
+A push or pull request that changes only notes (`vault/`, `*.md`) does not start a build.
 
 ### Make a release
 
@@ -51,4 +54,5 @@ The builds go to `web/play/` and `build/`. Git ignores these folders, because th
 - The macOS build has no Apple signature. On the first start, right-click the app and select **Open**.
 - On Windows, SmartScreen can show a warning. Click **More info → Run anyway**.
 - The web build has no threads. Thus it runs on GitHub Pages, which cannot set the COOP/COEP headers.
+- `tools/export_all.sh /path/to/godot web` exports only the platforms you name (`web`, `windows`, `linux`, `macos`).
 - To change the Godot version, change `GODOT_VERSION` in the workflow. The editor version must be the same.
