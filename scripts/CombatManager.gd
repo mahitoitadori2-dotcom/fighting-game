@@ -233,7 +233,18 @@ static func register_inputs() -> void:
 		var ev := InputEventMouseButton.new()
 		ev.button_index = MOUSE_BUTTON_LEFT
 		InputMap.action_add_event("punch", ev)
+	register_alt_keys()
 	register_controller()
+
+
+## Alternate keyboard layout, added on top of WASD + mouse (nothing removed):
+##   Arrow keys  move / jump (Up) / crouch (Down)      Space  attack
+static func register_alt_keys() -> void:
+	_alt_key("move_left", KEY_LEFT)
+	_alt_key("move_right", KEY_RIGHT)
+	_alt_key("jump", KEY_UP)
+	_alt_key("crouch", KEY_DOWN)
+	_alt_key("punch", KEY_SPACE)
 
 
 ## XBOX / any standard controller (P1). Added on top of the keyboard, nothing removed.
@@ -282,6 +293,15 @@ static func _pad_axis(action: String, axis: JoyAxis, dir: float) -> void:
 	ev.axis = axis
 	ev.axis_value = dir
 	ev.device = -1
+	if not InputMap.action_has_event(action, ev):
+		InputMap.action_add_event(action, ev)
+
+
+## Extra key for an action that may already exist (project.godot or _key()).
+static func _alt_key(action: String, key: Key) -> void:
+	_ensure_action(action)
+	var ev := InputEventKey.new()
+	ev.physical_keycode = key
 	if not InputMap.action_has_event(action, ev):
 		InputMap.action_add_event(action, ev)
 

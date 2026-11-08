@@ -85,3 +85,14 @@ All enemies, in Versus and in Story Mode, use the same system: `BaseEnemy` + `En
 - Sandbox options: damage, gauge and cooldown multipliers, and God Mode.
 - An FPS counter.
 - Touch controls (on by default on phones and tablets).
+
+## Keyboard controls
+
+| Action | Main keys | Alternate keys |
+|---|---|---|
+| Move | A / D | Left / Right arrow |
+| Jump | W | Up arrow |
+| Crouch | S | Down arrow |
+| Attack | Left mouse button | Space |
+
+The alternate keys are added in `CombatManager.register_alt_keys()`. Block (F), the moves (1, 2, 3) and the ultimate (G) have no alternate keys.
