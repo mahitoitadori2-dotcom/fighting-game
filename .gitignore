@@ -7,6 +7,16 @@
 /dist/
 /web/play/
 
+# Secrets: never public (tools/auto_push.ps1 also refuses these)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+
 # Operating system files
 .DS_Store
 Thumbs.db
