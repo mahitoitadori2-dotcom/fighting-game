@@ -1,0 +1,143 @@
+# Builds Universal Beatdown for Web, Windows, Linux and macOS.
+#
+# - Every push and pull request: export all platforms, keep them as downloadable
+#   workflow artifacts (Actions tab -> the run -> "Artifacts").
+# - Push to main: also publish the website + web build to GitHub Pages.
+# - Push a tag like v0.1.0: also create a GitHub Release with the zips attached.
+#     git tag v0.1.0
+#     git push origin v0.1.0
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.7.2"
+  GODOT_STATUS: "stable"
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  export:
+    name: Export all platforms
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot and export templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-${{ env.GODOT_STATUS }}-v1
+
+      - name: Install Godot and export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GODOT_VERSION}-${GODOT_STATUS}"
+          mkdir -p ~/godot /tmp/godot-dl
+          cd /tmp/godot-dl
+          gh release download "$TAG" -R godotengine/godot \
+            -p "Godot_v${TAG}_linux.x86_64.zip" \
+            -p "Godot_v${TAG}_export_templates.tpz"
+          unzip -q "Godot_v${TAG}_linux.x86_64.zip" -d ~/godot
+          mv ~/godot/Godot_v${TAG}_linux.x86_64 ~/godot/godot
+          chmod +x ~/godot/godot
+          # Only keep the templates our presets use (the full set is ~1.3 GB).
+          T=~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}
+          mkdir -p "$T"
+          unzip -q -j "Godot_v${TAG}_export_templates.tpz" \
+            templates/version.txt \
+            templates/web_nothreads_release.zip \
+            templates/linux_release.x86_64 \
+            templates/windows_release_x86_64.exe \
+            templates/macos.zip \
+            -d "$T"
+          ls -la "$T"
+
+      - name: Export
+        run: tools/export_all.sh ~/godot/godot
+
+      - name: Package
+        run: |
+          NAME="UniversalBeatdown-${GITHUB_REF_NAME//\//-}"
+          mkdir -p dist
+          (cd build/windows && zip -q -r "../../dist/${NAME}-windows.zip" .)
+          (cd build/linux && chmod +x UniversalBeatdown.x86_64 && zip -q -r "../../dist/${NAME}-linux.zip" .)
+          cp build/macos/UniversalBeatdown.zip "dist/${NAME}-macos.zip"
+          (cd web/play && zip -q -r "../../dist/${NAME}-web.zip" .)
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/windows/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: build/linux/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: build/macos/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: web/play/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-zips
+          path: dist/
+
+      # The whole web/ folder is the website: landing page + the game in web/play/.
+      - name: Upload website for GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/
+
+  pages:
+    name: Publish to GitHub Pages
+    needs: export
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  release:
+    name: Create GitHub Release
+    needs: export
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-zips
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+            -R "$GITHUB_REPOSITORY" \
+            --title "Universal Beatdown $GITHUB_REF_NAME" \
+            --generate-notes

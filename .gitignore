@@ -1,3 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Build output - the GitHub Actions workflow rebuilds these
+/build/
+/web/play/
