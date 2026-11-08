@@ -1,9 +1,14 @@
-# Builds Universal Beatdown for Web, Windows, Linux and macOS.
+# Builds Universal Beatdown and publishes it.
 #
-# - Every push and pull request: export all platforms, keep them as downloadable
-#   workflow artifacts (Actions tab -> the run -> "Artifacts").
-# - Push to main: also publish the website + web build to GitHub Pages.
-# - Push a tag like v0.1.0: also create a GitHub Release with the zips attached.
+# | Trigger                   | Builds          | Publishes                               |
+# |---------------------------|-----------------|-----------------------------------------|
+# | Push to main              | Web only        | GitHub Pages                            |
+# | Pull request              | Web only        | Workflow artifact "web"                 |
+# | Manual run (Run workflow) | All 4 platforms | Workflow artifacts + Pages (on main)    |
+# | Push a tag v*             | All 4 platforms | GitHub Release with the zips attached   |
+#
+# Pushes and pull requests that only change notes (vault/, *.md) are skipped.
+# Path filters do not apply to tags or manual runs, so these always build.
 #     git tag v0.1.0
 #     git push origin v0.1.0
 name: Build and release
@@ -12,12 +17,16 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+    paths-ignore: ["vault/**", "**.md"]
   pull_request:
+    paths-ignore: ["vault/**", "**.md"]
   workflow_dispatch:
 
 env:
   GODOT_VERSION: "4.7.2"
   GODOT_STATUS: "stable"
+  # Full build (all platforms) for tags and manual runs; web only otherwise.
+  FULL: ${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}
 
 concurrency:
   group: build-${{ github.ref }}
@@ -25,10 +34,20 @@ concurrency:
 
 jobs:
   export:
-    name: Export all platforms
+    name: Export
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
+      - name: Select platforms
+        run: |
+          if [ "$FULL" = "true" ]; then
+            echo "PLATFORMS=web windows linux macos" >> "$GITHUB_ENV"
+            echo "CACHE_SET=all" >> "$GITHUB_ENV"
+          else
+            echo "PLATFORMS=web" >> "$GITHUB_ENV"
+            echo "CACHE_SET=web" >> "$GITHUB_ENV"
+          fi
 
       - name: Cache Godot and export templates
         id: cache-godot
@@ -37,38 +56,32 @@ jobs:
           path: |
             ~/godot
             ~/.local/share/godot/export_templates
-          key: godot-${{ env.GODOT_VERSION }}-${{ env.GODOT_STATUS }}-v1
+          key: godot-${{ env.GODOT_VERSION }}-${{ env.GODOT_STATUS }}-${{ env.CACHE_SET }}-v2
 
       - name: Install Godot and export templates
         if: steps.cache-godot.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GODOT_VERSION}-${GODOT_STATUS}"
-          mkdir -p ~/godot /tmp/godot-dl
-          cd /tmp/godot-dl
-          gh release download "$TAG" -R godotengine/godot \
-            -p "Godot_v${TAG}_linux.x86_64.zip" \
-            -p "Godot_v${TAG}_export_templates.tpz"
-          unzip -q "Godot_v${TAG}_linux.x86_64.zip" -d ~/godot
-          mv ~/godot/Godot_v${TAG}_linux.x86_64 ~/godot/godot
-          chmod +x ~/godot/godot
-          # Only keep the templates our presets use (the full set is ~1.3 GB).
-          T=~/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}
-          mkdir -p "$T"
-          unzip -q -j "Godot_v${TAG}_export_templates.tpz" \
-            templates/version.txt \
-            templates/web_nothreads_release.zip \
-            templates/linux_release.x86_64 \
-            templates/windows_release_x86_64.exe \
-            templates/macos.zip \
-            -d "$T"
-          ls -la "$T"
+          # shellcheck disable=SC2086  # PLATFORMS is a space-separated list
+          tools/ci_install_godot.sh $PLATFORMS
 
       - name: Export
-        run: tools/export_all.sh ~/godot/godot
+        run: |
+          # shellcheck disable=SC2086  # PLATFORMS is a space-separated list
+          tools/export_all.sh ~/godot/godot $PLATFORMS
 
+      # Web only (push to main, pull request): keep the web game as an artifact for PRs.
+      - name: Upload web build
+        if: env.FULL != 'true' && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: web
+          path: web/play/
+
+      # Full build: package every platform as a zip.
       - name: Package
+        if: env.FULL == 'true'
         run: |
           NAME="UniversalBeatdown-${GITHUB_REF_NAME//\//-}"
           mkdir -p dist
@@ -78,30 +91,16 @@ jobs:
           (cd web/play && zip -q -r "../../dist/${NAME}-web.zip" .)
           ls -la dist
 
-      - uses: actions/upload-artifact@v7
-        with:
-          name: windows
-          path: build/windows/
-      - uses: actions/upload-artifact@v7
-        with:
-          name: linux
-          path: build/linux/
-      - uses: actions/upload-artifact@v7
-        with:
-          name: macos
-          path: build/macos/
-      - uses: actions/upload-artifact@v7
-        with:
-          name: web
-          path: web/play/
-      - uses: actions/upload-artifact@v7
+      - name: Upload release zips
+        if: env.FULL == 'true'
+        uses: actions/upload-artifact@v7
         with:
           name: release-zips
           path: dist/
 
       # The whole web/ folder is the website: landing page + the game in web/play/.
       - name: Upload website for GitHub Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
           path: web/
@@ -109,7 +108,7 @@ jobs:
   pages:
     name: Publish to GitHub Pages
     needs: export
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write
