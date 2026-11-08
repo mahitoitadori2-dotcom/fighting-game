@@ -12,6 +12,8 @@ Back to [Summary](SUMMARY.md).
 
 The game is **Universal Beatdown**. Its old name was Universal Showdown. The domain is still universalshowdown.com (see [To-do list](Todo.md)).
 
+The game icon (`icon.png`, 512 px) shows the 4 fighters (Architect, Warrior, Nightmare Lord, Enlightened One), each on a glow in their own colour. It was rendered from their in-game art on 2026-11-08.
+
 ## Playable fighters
 
 Versus mode has 4 fighters. Each fighter has an attack, 3 special moves, G-Gauge ultimates, a CPU opponent and lives.
