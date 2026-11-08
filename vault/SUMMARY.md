@@ -17,7 +17,7 @@ Universal Beatdown is a free 2D platform fighter, made in Godot 4.7.
 | **Play online** | https://mahitoitadori2-dotcom.github.io/fighting-game/ |
 | **Downloads** | Windows, macOS, Linux and Web zips on the [Releases page](https://github.com/mahitoitadori2-dotcom/fighting-game/releases) |
 | **Builds** | Automatic. Every push builds all platforms. A push to `main` updates the website. A `v*` tag makes a release. |
-| **Playable** | Versus (4 fighters, 7 test enemies, 3 Fights-mode bosses) and Story Mode Colosseums 1 and 2 (levels 1-12 of 50) |
+| **Playable** | Versus (4 fighters, 7 test enemies, 3 Fights-mode bosses) and Story Mode Colosseums 1-3 (levels 1-18 of 50) |
 | **Audio** | Placeholder sounds and music only |
 | **Tested** | By CPU-controlled matches and in Chrome. Not tested by a human player or on a real iPhone. |
 

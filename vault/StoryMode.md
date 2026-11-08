@@ -8,7 +8,7 @@ type: reference
 
 Back to [Summary](SUMMARY.md).
 
-Story Mode has 50 levels in 8 Colosseums. Level 50 is **The Sun**. Colosseums 1 and 2 (levels 1-12) are playable. The plan for levels 13-50 is in the [Roadmap](Roadmap.md).
+Story Mode has 50 levels in 8 Colosseums. Level 50 is **The Sun**. Colosseums 1-3 (levels 1-18) are playable. The plan for the rest is in the [Roadmap](Roadmap.md).
 
 ## Level select
 
@@ -57,6 +57,26 @@ A save that already beat Colosseum 1 (from before Colosseum 2 existed) unlocks L
 - When beaten, he sinks into the magma. Then you climb his corpse to a glowing shrine.
 - **Your sword grows during this fight:** bigger and stronger when the fight starts (7 damage) and again in phase 2 (8 damage).
 
+## Colosseum 3: The Burning Crown
+
+| Level | Title | Map | What happens |
+|---|---|---|---|
+| 13 | The Burning Throne | Burning Throne Room (empty throne on fire, broken pillars) | Cutscene: you wake up in the burning throne room. AMBUSH: Copper Corpses and Sparklings drop from the ceiling (2 rounds) |
+| 14 | The Atomic Creation | Burning Throne Room | The Atomic Creation fights with Sparklings (group battle, small HP bars) |
+| 15 | Minor Architectium | Minor Architectium land (stone buildings, workshops, gears) | 2 rounds of Architectian Warriors |
+| 16 | The Gearworks | Minor Architectium land | 2 rounds of Architectian Warriors |
+| 17 | The Blast Workshop | Blast Workshop (blast furnaces, molten metal) | Mini-boss **Architectian Titan** |
+| 18 | The Architect's Golem | The Golem's Hall (runic stone hall) | Pre-fight intro (it rises out of the floor), boss **Architect's Golem**, death cutscene |
+
+- **Copper Corpse:** dead soldier in green-stained copper armour. Slow; Heavy Punch, Shoulder Ram.
+- **Sparkling:** tiny ball of electricity. Fast; Spark Dash, Spark Burst.
+- **Atomic Creation** (110 HP): glowing green atomic core with electron rings. Atomic Slam (shockwaves), Radiation Burst (toxic puddles), Atomic Explosion (huge, long wind-up). Goes CRITICAL below 50%.
+- **Architectian Warrior:** white/green armour, hammer and gear shield. Hammer Swing, Shield Block (takes almost no damage), Formation (charges, and nearby warriors charge with it).
+- **Architectian Titan** (mini-boss, 210 HP): furnace-chested giant with a smithing hammer. Hammer Slam (blast + shockwaves), Hammer Sweep (jump it), Workshop Explosion (vents blow up under you), Scrap Throw. Overheats below 50%.
+- **Architect's Golem** (boss, 280 HP): stone and white/green metal, glowing blue runes, the Architect's gear-and-compass mark. Golem Slam, Rock Throw (stone blocks), Rune Blast, Stomp Shockwave. Runes burn orange below 50% (more blocks, triple rune blast). When beaten it crumbles into the floor.
+- Music: Burning Throne Room, Architectium, Blast Workshop, Titan and Golem themes (placeholders).
+- Not added on purpose: the Hexagon (not yet).
+
 The level and map data is in `scripts/story/StoryLevels.gd`. The full-screen cutscenes are in `scripts/story/StoryCutscene.gd`.
 
 ## Rules
@@ -69,4 +89,4 @@ The level and map data is in `scripts/story/StoryLevels.gd`. The full-screen cut
 
 ## Testing
 
-All levels 1-12 were cleared by a CPU-controlled Warrior (autoplay; it takes only 25% damage). Every Colosseum 2 map and both Caeser forms were checked in screenshots. Nobody has played Colosseum 2 by hand, and the cutscenes and music were not watched or heard in real time. Difficulty settings are in the [To-do list](Todo.md).
+All levels 1-18 were cleared by a CPU-controlled Warrior (autoplay; it takes only 25% damage). Every Colosseum 2 map and both Caeser forms were checked in screenshots. Nobody has played Colosseum 2 by hand, and the cutscenes and music were not watched or heard in real time. Difficulty settings are in the [To-do list](Todo.md).

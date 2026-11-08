@@ -80,6 +80,7 @@ func _make_data() -> CharacterData:
 	attack_chance = 0.65
 	phase2_threshold = -1.0                       # Phases are FORMS here (see take_hit)
 	knockback_scale = 0.2
+	grab_immune = true
 	var d := SimpleEnemy.make_data("Blasphemy Caeser", P1_HP, P1_BODY, P1_SPEED)
 	d.hitstun_time = 0.08
 	d.respawn_delay = 99.0

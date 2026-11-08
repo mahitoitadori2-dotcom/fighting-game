@@ -36,8 +36,12 @@ static var autoplay := false
 
 var level_number := 1
 var level: Dictionary = {}
-var player: Warrior
+var player: ControlledFighter               # Warrior (Colosseums 1-3) or Architect (Colosseum 4)
+var hero := "warrior"
 var flasks := FLASKS_PER_LEVEL
+## Colosseum 4, level 24: "" = undecided, "killed" = The Shining died (Void weaker),
+## "spared" = you walked past it (Void Massacre stronger).
+var shining_choice := ""
 var boss: BaseEnemy
 var boss_bar_visible := false
 var wave_text := ""
@@ -167,8 +171,13 @@ func _apply_map(map: Dictionary) -> void:
 
 
 func _spawn_player() -> void:
-	player = Warrior.new()
-	player.name = "P1_Warrior"
+	hero = StoryLevels.hero_of(level_number)
+	if hero == "architect":
+		player = Player.new()                    # The Mighty Architect: own moves, look, animations
+		player.name = "P1_Architect"
+	else:
+		player = Warrior.new()
+		player.name = "P1_Warrior"
 	player.position = player_spawn
 	player.spawn_position = player_spawn
 	player.slot = 1
@@ -176,7 +185,10 @@ func _spawn_player() -> void:
 	player.default_facing = 1
 	player.facing = 1
 	player.respawn_enabled = false               # Story: death = retry the level
-	player.ctl = WarriorAI.new() if autoplay else FighterInput.new()
+	if autoplay:
+		player.ctl = ArchitectAI.new() if hero == "architect" else WarriorAI.new()
+	else:
+		player.ctl = FighterInput.new()
 	add_child(player)
 	if autoplay:
 		player.damage_taken_mult = 0.25
@@ -188,6 +200,13 @@ func _spawn_player() -> void:
 # ============================================================
 func _run() -> void:
 	await _intro()
+	if bool(level.get("altar", false)):
+		await _altar_stage()                       # Colosseum 4: the optional Shining
+		if _over:
+			return
+		var sm := String(level.get("stage_map", ""))
+		if sm != "":
+			await _switch_map(sm, String(level.get("stage_title", "")), String(level.get("stage_sub", "")), Color(0.75, 0.6, 1.0))
 	var waves: Array = level.get("waves", [])
 	for i in waves.size():
 		_wave_index = i
@@ -205,7 +224,144 @@ func _run() -> void:
 		if _over:
 			return
 		await _boss_death_cutscene()
+	elif String(level.get("cutscene_out", "")) != "":
+		# Normal level that ends in a cutscene (Colosseum 4: the floor breaks, you fall into the void)
+		if bool(level.get("floor_break", false)):
+			await _floor_break()
+		await _play_cutscene(String(level["cutscene_out"]))
 	await _level_clear()
+
+
+func _play_cutscene(kind: String) -> void:
+	var cs := StoryCutscene.new()
+	cs.kind = kind
+	cs.hero_art = ArchitectArt if hero == "architect" else WarriorArt
+	add_child(cs)
+	await cs.finished
+	cs.queue_free()
+
+
+## Fade to another map in the middle of a level (boss arena, the Spider Lair after the altar).
+func _switch_map(map_key: String, title: String, sub: String, col: Color) -> void:
+	CombatManager.fight_active = false
+	ChemicalPool.dry_all()
+	await _fade(true)
+	_apply_map(StoryLevels.MAPS.get(map_key, {}))
+	player.global_position = Vector2(player_spawn.x, _ground_y)
+	player.velocity = Vector2.ZERO
+	player.facing = 1
+	for n in get_tree().get_nodes_in_group("fighters"):
+		var f := n as BaseEnemy
+		if f != null and f.is_dead:
+			f.visible = false                          # Corpses stay behind
+	if title != "":
+		_show_banner(title, sub, col)
+	await _fade(false)
+	await _wait(1.8)
+	_hide_banner()
+	CombatManager.fight_active = true
+
+
+## The last Void Escapist breaks the floor under you (Colosseum 4, level 20).
+func _floor_break() -> void:
+	CombatManager.fight_active = false
+	_show_banner("THE FLOOR BREAKS!", "The last Void Escapist tore the ground open...", Color(0.75, 0.55, 1.0))
+	SoundManager.play_sfx("rumble")
+	SoundManager.play_sfx("stone")
+	for i in 4:
+		Effects.shake(self, 8.0 + float(i) * 4.0)
+		Effects.void_burst(self, player.global_position + Vector2(randf_range(-160.0, 160.0), -10.0), 90.0)
+		await _wait(0.35)
+	SoundManager.play_sfx("explosion")
+	_hide_banner()
+	var tw := create_tween()
+	tw.tween_property(player, "global_position", player.global_position + Vector2(0, 700), 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	await tw.finished
+
+
+# ============================================================
+# COLOSSEUM 4: THE ALTAR (optional fight against The Shining)
+# ============================================================
+## TESTING ONLY (autoplay): force the altar choice ("killed" / "spared").
+static var test_shining_choice := ""
+
+
+func _altar_stage() -> void:
+	shining_choice = ""
+	var right := (wall_right_x if has_walls else player.global_position.x + 900.0)
+	var gate := AltarGate.new()
+	add_child(gate)
+	gate.global_position = Vector2(right - 70.0, _ground_y)
+	var shining := _spawn_enemy("shining", Vector2(_center_x + 120.0, _ground_y - 200.0))
+	_alive = 0                                     # The Shining is optional: it doesn't block the level
+	_show_banner("THE SHINING", "Kill The Shining to weaken the Void?\nOr leave it and face a stronger Void Massacre?", Color(1.0, 0.9, 0.5))
+	SoundManager.play_sfx("holy")
+	await _wait(3.4)
+	_hide_banner()
+	wave_text = "KILL THE SHINING = the Void gets weaker      |      WALK INTO THE DARK GATE  ->  = Void Massacre gets stronger"
+	while not _over:
+		if test_shining_choice == "spared" or (not autoplay and player.global_position.x >= gate.global_position.x - 50.0):
+			shining_choice = "spared"
+			break
+		if shining == null or not is_instance_valid(shining) or shining.is_dead:
+			shining_choice = "killed"
+			break
+		await _wait(0.1)
+	wave_text = ""
+	if _over:
+		return
+	if shining_choice == "killed":
+		Effects.gold_burst(self, player.global_position + Vector2(0, -80), 160.0)
+		SoundManager.play_sfx("ultimate")
+		_show_banner("THE SHINING IS GONE", "Its light poured into the Void.  The Void is WEAKER now.", Color(1.0, 0.9, 0.5))
+	else:
+		if shining != null and is_instance_valid(shining) and not shining.is_dead:
+			var tw := create_tween()
+			tw.tween_property(shining, "modulate:a", 0.0, 0.8)
+			tw.tween_callback(shining.queue_free)
+		SoundManager.play_sfx("roar", -4.0)
+		_show_banner("YOU LEFT THE SHINING", "Somewhere below, the Void Massacre grows STRONGER...", Color(1.0, 0.35, 0.35))
+	await _wait(2.6)
+	_hide_banner()
+	gate.queue_free()
+
+
+## Weaken / strengthen void enemies after the altar choice (Colosseum 4 only).
+func _apply_void_mod(e: BaseEnemy, id: String) -> void:
+	if shining_choice == "" or not (id in ["void_soul", "tentacle", "masker", "void_massacre", "escapist", "crawling"]):
+		return
+	var mode := "weak" if shining_choice == "killed" else ("strong" if id == "void_massacre" else "")
+	if mode == "":
+		return                                       # Skipping The Shining only empowers the Massacre
+	var hp_mult := 0.7 if mode == "weak" else 1.5
+	e.data.max_hp = roundi(float(e.data.max_hp) * hp_mult)
+	e.hp = e.data.max_hp
+	e.damage_mult = 0.7 if mode == "weak" else 1.4
+	if e.has_method("apply_void_mod"):
+		e.call("apply_void_mod", mode)              # Speed / aggression (the Massacre)
+	e.health_changed.emit(e.hp, e.data.max_hp)
+
+
+## The dark gate out of the altar: walk into it to leave The Shining alive.
+class AltarGate extends Node2D:
+	var _t := 0.0
+
+	func _ready() -> void:
+		z_index = -1
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var pulse := 0.5 + 0.5 * sin(_t * 3.0)
+		draw_rect(Rect2(-46, -220, 92, 220), Color(0.02, 0.0, 0.05))
+		draw_circle(Vector2(0, -110), 70.0 + 8.0 * pulse, Color(0.5, 0.2, 0.9, 0.15))
+		draw_rect(Rect2(-46, -220, 92, 220), Color(0.55, 0.3, 0.95, 0.6 + 0.4 * pulse), false, 5.0)
+		for i in 6:
+			var k := fmod(_t * 0.6 + float(i) / 6.0, 1.0)
+			draw_circle(Vector2(sin(float(i) * 2.0) * 28.0, -20.0 - k * 180.0), 3.0 * (1.0 - k), Color(0.8, 0.6, 1.0, 1.0 - k))
+		FighterArt.label(self, Vector2(0, -236), "LEAVE  ->", 18, Color(0.85, 0.7, 1.0))
 
 
 func _intro() -> void:
@@ -230,7 +386,14 @@ func _intro() -> void:
 
 
 func _spawn_wave(group: Array, idx: int, total: int) -> void:
-	_show_banner("WAVE %d / %d" % [idx + 1, total] if total > 1 else "FIGHT!", "", Color(1.0, 0.45, 0.3))
+	var ambush := bool(level.get("ambush", false)) and idx == 0
+	if ambush:
+		# They fall from the ceiling (Colosseum 3: the Burning Throne Room)
+		_show_banner("AMBUSH!", "They drop from the ceiling!", Color(1.0, 0.35, 0.2))
+		SoundManager.play_sfx("rumble", -4.0)
+		Effects.shake(self, 8.0)
+	else:
+		_show_banner("WAVE %d / %d" % [idx + 1, total] if total > 1 else "FIGHT!", "", Color(1.0, 0.45, 0.3))
 	await _wait(0.8)
 	_hide_banner()
 	_alive = 0
@@ -243,7 +406,8 @@ func _spawn_wave(group: Array, idx: int, total: int) -> void:
 		if x > hi or x < lo:
 			x = player.global_position.x - signf(x - player.global_position.x) * (300.0 + float(j) * 60.0)
 		x = clampf(x, lo, hi)
-		_spawn_enemy(String(group[j]), Vector2(x, _ground_y - 280.0 - float(j) * 30.0))
+		var drop_h := 680.0 if ambush else 280.0
+		_spawn_enemy(String(group[j]), Vector2(x, _ground_y - drop_h - float(j) * 30.0))
 	_update_wave_text()
 
 
@@ -256,6 +420,7 @@ func _spawn_enemy(id: String, pos: Vector2) -> BaseEnemy:
 	e.respawn_enabled = false
 	e.position = pos
 	add_child(e)
+	_apply_void_mod(e, id)
 	Effects.hit_sparks(e, pos + Vector2(0, -40), 8, 1.0)
 	e.died.connect(_on_enemy_died.bind(e))
 	_alive += 1
@@ -330,6 +495,7 @@ func _boss_intro() -> void:
 	if rise:
 		boss.z_index = -3                                  # Climbs up from BEHIND the floor
 	add_child(boss)
+	_apply_void_mod(boss, String(level["boss"]))
 	boss.died.connect(_on_boss_died)
 	if boss.has_signal("transform_started"):
 		boss.connect("transform_started", _on_boss_transform)
@@ -399,8 +565,8 @@ func _boss_intro() -> void:
 	Effects.shake(self, 12.0)
 	_show_banner("FIGHT!", "", Color(1.0, 0.45, 0.3))
 	CombatManager.fight_active = true
-	if bool(level.get("sword_power", false)):
-		player.set_sword_power(1, "YOUR SWORD GROWS!")      # Caeser fight: the blade answers the challenge
+	if bool(level.get("sword_power", false)) and player is Warrior:
+		(player as Warrior).set_sword_power(1, "YOUR SWORD GROWS!")      # Caeser fight: the blade answers the challenge
 	await _wait(0.7)
 	_hide_banner()
 
@@ -460,8 +626,8 @@ func _on_boss_transform() -> void:
 	Effects.shake(self, 12.0)
 	_show_banner("FIGHT!", "", Color(1.0, 0.45, 0.3))
 	CombatManager.fight_active = true
-	if bool(level.get("sword_power", false)):
-		player.set_sword_power(2, "YOUR SWORD AWAKENS!")    # Phase 2: even bigger and stronger
+	if bool(level.get("sword_power", false)) and player is Warrior:
+		(player as Warrior).set_sword_power(2, "YOUR SWORD AWAKENS!")    # Phase 2: even bigger and stronger
 	await _wait(0.7)
 	_hide_banner()
 
@@ -515,11 +681,7 @@ func _boss_death_cutscene() -> void:
 	# Full-screen ending cutscene (Blasphemy Caeser: climbing the serpent's corpse to the shrine)
 	var out := String(level.get("cutscene_out", ""))
 	if out != "":
-		var cs := StoryCutscene.new()
-		cs.kind = out
-		add_child(cs)
-		await cs.finished
-		cs.queue_free()
+		await _play_cutscene(out)
 
 
 # ============================================================

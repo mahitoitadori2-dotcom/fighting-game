@@ -20,6 +20,10 @@ const LOOKS := {
 	"chain": {"w": 60.0, "h": 90.0, "life": 0.35, "col": Color(0.7, 0.7, 0.75), "sfx": "chain"},
 	# Blasphemy Caeser (Story, Colosseum 2): a column of magma bursts out of the floor
 	"geyser": {"w": 84.0, "h": 320.0, "life": 0.7, "col": Color(1.0, 0.42, 0.08), "sfx": "geyser"},
+	# Architectian Titan (Story, Colosseum 3): a floor vent of the workshop blows up
+	"blast": {"w": 110.0, "h": 220.0, "life": 0.6, "col": Color(1.0, 0.6, 0.15), "sfx": "explosion"},
+	# Void Tentacle / Void Massacre (Story, Colosseum 4): a void tendril bursts out of the floor
+	"tendril": {"w": 64.0, "h": 200.0, "life": 0.55, "col": Color(0.45, 0.2, 0.8), "sfx": "void_goo"},
 }
 
 var source: BaseEnemy
@@ -123,6 +127,37 @@ func _draw() -> void:
 			_draw_chain(k)
 		"geyser":
 			_draw_geyser(k)
+		"blast":
+			_draw_blast(k)
+		"tendril":
+			_draw_tendril(k)
+
+
+func _draw_blast(k: float) -> void:
+	var fade := 1.0 - clampf((k - 0.5) / 0.5, 0.0, 1.0)
+	var grow := minf(1.0, k / 0.2)
+	for i in 4:
+		var r := half_w * (0.6 + 0.3 * float(i)) * grow
+		var y := -height * 0.25 * float(i) * grow
+		draw_circle(Vector2(sin(_seed + float(i)) * 10.0, y), r, Color(1.0, 0.35 + 0.15 * float(i), 0.08, 0.75 * fade))
+	draw_circle(Vector2(0, -height * 0.3 * grow), half_w * 0.6 * grow, Color(1.0, 0.95, 0.6, fade))
+	for i in 8:
+		var a := -PI * (0.1 + 0.8 * float(i) / 7.0)
+		var p := Vector2.from_angle(a) * (40.0 + 200.0 * k)
+		draw_rect(Rect2(p - Vector2(5, 5), Vector2(10, 10)), Color(0.35, 0.33, 0.32, fade))
+
+
+func _draw_tendril(k: float) -> void:
+	var rise := sin(clampf(k, 0.0, 1.0) * PI)
+	var a := 1.0 - clampf((k - 0.75) / 0.25, 0.0, 1.0)
+	var pts := PackedVector2Array()
+	for i in 9:
+		var u := float(i) / 8.0
+		pts.append(Vector2(sin(u * 6.0 + _seed + k * 10.0) * 14.0 * u, -height * rise * u))
+	draw_polyline(pts, Color(0, 0, 0, a), 30.0, true)
+	draw_polyline(pts, Color(col.r * 0.4, col.g * 0.3, col.b * 0.5, a), 22.0, true)
+	draw_polyline(pts, Color(col.r, col.g, col.b, a * 0.8), 6.0, true)
+	draw_circle(pts[8], 12.0, Color(0.05, 0.0, 0.08, a))
 
 
 func _draw_geyser(k: float) -> void:
@@ -169,6 +204,11 @@ func _draw_warning() -> void:
 			for i in 4:
 				var a := PI + PI * (float(i) + 0.5) / 4.0
 				draw_line(Vector2.ZERO, Vector2.from_angle(a) * Vector2(half_w, 8.0) * w, Color(0.1, 0.05, 0.02, 0.9), 3.0)
+		"blast", "tendril":                             # Glowing vent / void crack
+			var vc := col
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.3))
+			draw_circle(Vector2.ZERO, half_w * 0.5 * w + 6.0 * blink, Color(vc.r, vc.g, vc.b, 0.4 + 0.4 * w))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		"geyser":                                       # Glowing cracks + bubbling magma
 			for i in 5:
 				var a := PI + PI * (float(i) + 0.5) / 5.0

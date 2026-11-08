@@ -339,6 +339,18 @@ func _draw() -> void:
 			_draw_magma()
 		"lava_wave":                                      # Lava Wave rolling along the floor
 			_draw_lava_wave(a)
+		"scrap":                                          # Architectian Titan: gears / metal plates
+			draw_set_transform(Vector2.ZERO, _age * 9.0 * dir - rotation, Vector2.ONE)
+			_draw_scrap()
+		"stone_block":                                    # Architect's Golem: thrown stone block
+			draw_set_transform(Vector2.ZERO, _age * 5.0 * dir - rotation, Vector2.ONE)
+			_draw_stone_block()
+		"rune":                                           # Golem Rune Blast (tinted)
+			_draw_rune(a)
+		"void_bolt":                                      # Void Soul
+			_draw_void_bolt(a)
+		"eye_beam":                                       # Void Massacre: white eye beam
+			_draw_eye_beam(a)
 
 
 func _draw_rings(col: Color, a: float) -> void:
@@ -451,6 +463,58 @@ func _draw_drop() -> void:
 		Sisyphus.draw_boulder(self, Vector2(0, y - 22.0), 22.0, _age * 5.0)
 	else:
 		_draw_missile(Vector2(0, y))
+
+
+func _draw_scrap() -> void:
+	# A cog with a bent plate bolted to it
+	var pts := PackedVector2Array()
+	for i in 16:
+		var ang := TAU * float(i) / 16.0
+		pts.append(Vector2.from_angle(ang) * (20.0 if i % 2 == 0 else 15.0))
+	draw_colored_polygon(pts, Color(0.62, 0.60, 0.58))
+	FighterArt.outline(self, pts, 3.0)
+	draw_circle(Vector2.ZERO, 6.0, Color(0.2, 0.2, 0.22))
+	draw_colored_polygon(PackedVector2Array([Vector2(4, -6), Vector2(26, -12), Vector2(28, 2), Vector2(6, 6)]), Color(0.75, 0.55, 0.25))
+	draw_circle(Vector2(16, -3), 2.5, Color(0.2, 0.2, 0.22))
+
+
+func _draw_stone_block() -> void:
+	var r := Rect2(-24, -24, 48, 48)
+	var pts := FighterArt.rrect_points(r, 5.0)
+	draw_colored_polygon(pts, Color(0.58, 0.56, 0.52))
+	draw_line(Vector2(-20, -18), Vector2(20, -18), Color(0.74, 0.72, 0.68), 3.0)
+	draw_line(Vector2(-10, -4), Vector2(6, 10), Color(0.3, 0.28, 0.26), 2.0)
+	draw_line(Vector2(-14, 8), Vector2(14, 8), Color(0.35, 0.8, 1.0, 0.8), 2.5)        # Rune scratch
+	FighterArt.outline(self, pts, 3.5)
+
+
+func _draw_rune(a: float) -> void:
+	var col := tint if tint != Color.WHITE else Color(0.35, 0.8, 1.0)
+	var spin := _age * 6.0
+	draw_circle(Vector2.ZERO, 30.0, Color(col.r, col.g, col.b, 0.2 * a))
+	draw_line(Vector2(-dir * 70.0, 0), Vector2.ZERO, Color(col.r, col.g, col.b, 0.35 * a), 14.0)
+	var tri := PackedVector2Array()
+	for i in 3:
+		tri.append(Vector2.from_angle(spin + TAU * float(i) / 3.0) * 20.0)
+	draw_colored_polygon(tri, Color(col.r, col.g, col.b, a))
+	draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 20, Color(1, 1, 1, 0.8 * a), 3.0, true)
+	draw_circle(Vector2.ZERO, 6.0, Color(1, 1, 1, a))
+
+
+func _draw_void_bolt(a: float) -> void:
+	draw_circle(Vector2.ZERO, 18.0, Color(0.45, 0.15, 0.75, 0.25 * a))
+	for i in 3:
+		draw_circle(Vector2(-dir * (10.0 + float(i) * 9.0), sin(_age * 25.0 + float(i)) * 3.0), 8.0 - float(i) * 2.0, Color(0.25, 0.05, 0.4, 0.8 * a))
+	draw_circle(Vector2.ZERO, 11.0, Color(0.05, 0.0, 0.08, a))
+	draw_arc(Vector2.ZERO, 11.0, 0.0, TAU, 16, Color(0.7, 0.4, 1.0, a), 2.5, true)
+	draw_circle(Vector2(dir * 3.0, -2), 3.0, Color(0.9, 0.8, 1.0, a))
+
+
+func _draw_eye_beam(a: float) -> void:
+	var len := 110.0
+	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.8, 0.8, 1.0, 0.25 * a), 22.0, true)
+	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.95, 0.95, 1.0, 0.9 * a), 8.0, true)
+	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(1, 1, 1, a), 3.0, true)
 
 
 func _draw_fireball(a: float) -> void:

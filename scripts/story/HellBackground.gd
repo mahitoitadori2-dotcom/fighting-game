@@ -19,7 +19,12 @@ extends CanvasLayer
 ##                  green fog; animated drips.
 ##   "blasphemy":   Blasphemy Caeser's arena - a volcanic temple: blood sky, lava falls, a
 ##                  colossal serpent skeleton coiled around broken columns.
-@export_enum("surface", "cave", "geode", "hive", "lab", "elevator", "enlightened", "sewer", "blasphemy") var theme := "surface":
+## COLOSSEUM 3: "throne" (burning throne room), "architectium" (stone town of workshops and
+##   gears), "workshop" (blast furnaces), "golem_hall" (runic stone hall of the Architect).
+## COLOSSEUM 4: "dark_cave" (overground dark cave, dim light), "void" (dark void full of
+##   bones), "altar" (a glowing altar of light in the void), "spider_lair" (webs, victims).
+@export_enum("surface", "cave", "geode", "hive", "lab", "elevator", "enlightened", "sewer", "blasphemy",
+	"throne", "architectium", "workshop", "golem_hall", "dark_cave", "void", "altar", "spider_lair") var theme := "surface":
 	set(v):
 		theme = v
 		if _painter != null:
@@ -77,6 +82,22 @@ func _paint() -> void:
 			_paint_sewer(sz)
 		"blasphemy":
 			_paint_blasphemy(sz)
+		"throne":
+			_paint_throne(sz)
+		"architectium":
+			_paint_architectium(sz)
+		"workshop":
+			_paint_workshop(sz)
+		"golem_hall":
+			_paint_golem_hall(sz)
+		"dark_cave":
+			_paint_dark_cave(sz)
+		"void":
+			_paint_void(sz)
+		"altar":
+			_paint_altar(sz)
+		"spider_lair":
+			_paint_spider_lair(sz)
 		_:
 			_paint_surface(sz)
 
@@ -473,6 +494,273 @@ func _paint_blasphemy(sz: Vector2) -> void:
 
 
 # ============================================================
+# COLOSSEUM 3 LANDSCAPES
+# ============================================================
+func _flame(p: Vector2, w: float, h: float, a: float) -> void:
+	_painter.draw_colored_polygon(PackedVector2Array([p + Vector2(-w, 0), p + Vector2(-w * 0.4, -h * 0.6), p + Vector2(0, -h), p + Vector2(w * 0.4, -h * 0.5), p + Vector2(w, 0)]), Color(1.0, 0.35, 0.05, a))
+	_painter.draw_colored_polygon(PackedVector2Array([p + Vector2(-w * 0.5, 0), p + Vector2(0, -h * 0.65), p + Vector2(w * 0.5, 0)]), Color(1.0, 0.8, 0.3, a))
+
+
+func _paint_throne(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.10, 0.03, 0.02), Color(0.30, 0.08, 0.03), Color(0.65, 0.22, 0.05), 0.55)
+	# Back wall: big stone blocks, scorched
+	var y := 0.0
+	var row := 0
+	while y < sz.y * 0.88:
+		var x := -60.0 if row % 2 == 0 else 0.0
+		while x < sz.x:
+			p.draw_rect(Rect2(x + 3, y + 3, 114, 54), Color(0.16, 0.07, 0.05))
+			x += 120.0
+		y += 60.0
+		row += 1
+	# Tall windows glowing with fire outside
+	for wx in [0.15, 0.85]:
+		var r := Rect2(sz.x * wx - 50, sz.y * 0.12, 100, sz.y * 0.42)
+		p.draw_rect(r, Color(1.0, 0.45, 0.1, 0.55))
+		p.draw_circle(Vector2(r.get_center().x, r.position.y), 50.0, Color(1.0, 0.45, 0.1, 0.55))
+		p.draw_line(Vector2(r.get_center().x, r.position.y - 50), Vector2(r.get_center().x, r.end.y), Color(0.1, 0.03, 0.02), 6.0)
+	# Broken pillars
+	for i in 4:
+		var cx := sz.x * (0.08 + 0.28 * float(i))
+		var h := sz.y * (0.55 if i % 2 == 0 else 0.35)
+		var top := sz.y * 0.88 - h
+		p.draw_rect(Rect2(cx - 30, top, 60, h), Color(0.24, 0.12, 0.09))
+		p.draw_colored_polygon(PackedVector2Array([Vector2(cx - 30, top), Vector2(cx - 10, top - 26), Vector2(cx + 8, top - 6), Vector2(cx + 30, top - 18), Vector2(cx + 30, top)]), Color(0.24, 0.12, 0.09))
+		for k in 3:
+			p.draw_line(Vector2(cx - 18 + float(k) * 18.0, top + 10), Vector2(cx - 18 + float(k) * 18.0, top + h), Color(0.14, 0.06, 0.04), 3.0)
+	# The EMPTY THRONE on a dais, burning
+	var tc := Vector2(sz.x * 0.5, sz.y * 0.86)
+	p.draw_rect(Rect2(tc.x - 160, tc.y - 30, 320, 30), Color(0.20, 0.10, 0.07))
+	p.draw_rect(Rect2(tc.x - 110, tc.y - 60, 220, 30), Color(0.24, 0.12, 0.08))
+	var throne := PackedVector2Array([tc + Vector2(-60, -60), tc + Vector2(-60, -230), tc + Vector2(-30, -280), tc + Vector2(0, -250),
+		tc + Vector2(30, -280), tc + Vector2(60, -230), tc + Vector2(60, -60)])
+	p.draw_colored_polygon(throne, Color(0.30, 0.12, 0.06))
+	p.draw_rect(Rect2(tc.x - 70, tc.y - 120, 140, 26), Color(0.35, 0.15, 0.07))           # Seat
+	p.draw_rect(Rect2(tc.x - 40, tc.y - 220, 80, 100), Color(0.45, 0.06, 0.06))           # Red cushion, scorched
+	p.draw_circle(tc + Vector2(0, -250), 10.0, Color(1.0, 0.75, 0.25))                    # Gem
+	for k in 5:
+		_flame(tc + Vector2(-60 + float(k) * 30.0, -60), 26.0, 80.0 + float(k % 3) * 30.0, 0.85)
+	# Smoke under the ceiling
+	for i in 7:
+		p.draw_set_transform(Vector2(sz.x * float(i) / 6.0, sz.y * 0.06), 0.0, Vector2(1.0, 0.3))
+		p.draw_circle(Vector2.ZERO, 200.0, Color(0.05, 0.03, 0.03, 0.5))
+	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, 6), Color(1.0, 0.45, 0.1, 0.55))
+
+
+func _gear_bg(c: Vector2, r: float, col: Color, teeth: int = 12) -> void:
+	var pts := PackedVector2Array()
+	for i in teeth * 2:
+		var a := TAU * float(i) / float(teeth * 2)
+		pts.append(c + Vector2.from_angle(a) * (r if i % 2 == 0 else r * 0.82))
+	_painter.draw_colored_polygon(pts, col)
+	_painter.draw_circle(c, r * 0.3, col.darkened(0.4))
+
+
+func _paint_architectium(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.45, 0.62, 0.72), Color(0.72, 0.80, 0.78), Color(0.55, 0.60, 0.52), 0.6)
+	# Far: big gears turning on towers (static silhouettes)
+	_gear_bg(Vector2(sz.x * 0.18, sz.y * 0.3), 90.0, Color(0.48, 0.55, 0.55, 0.6), 14)
+	_gear_bg(Vector2(sz.x * 0.82, sz.y * 0.25), 120.0, Color(0.48, 0.55, 0.55, 0.6), 16)
+	# Stone buildings / workshops
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 131
+	var x := -30.0
+	while x < sz.x:
+		var w := rng.randf_range(110.0, 190.0)
+		var h := rng.randf_range(150.0, 300.0)
+		var base_y := sz.y * 0.88
+		var stone := Color(0.62, 0.60, 0.55).darkened(rng.randf_range(0.0, 0.2))
+		p.draw_rect(Rect2(x, base_y - h, w, h), stone)
+		p.draw_colored_polygon(PackedVector2Array([Vector2(x - 8, base_y - h), Vector2(x + w * 0.5, base_y - h - 50), Vector2(x + w + 8, base_y - h)]), Color(0.35, 0.50, 0.35))   # Green roof
+		for wy in int(h / 70.0):
+			p.draw_rect(Rect2(x + w * 0.5 - 14, base_y - h + 30 + float(wy) * 70.0, 28, 34), Color(0.95, 0.85, 0.5, 0.7))
+		if rng.randf() < 0.5:                                         # Workshop chimney + gear sign
+			p.draw_rect(Rect2(x + w - 30, base_y - h - 70, 20, 70), Color(0.35, 0.33, 0.3))
+			_gear_bg(Vector2(x + 30, base_y - h + 30), 18.0, Color(0.22, 0.86, 0.28, 0.9), 10)
+		x += w + rng.randf_range(10.0, 40.0)
+	# Crane
+	p.draw_line(Vector2(sz.x * 0.6, sz.y * 0.88), Vector2(sz.x * 0.6, sz.y * 0.2), Color(0.3, 0.3, 0.32), 10.0)
+	p.draw_line(Vector2(sz.x * 0.5, sz.y * 0.22), Vector2(sz.x * 0.78, sz.y * 0.22), Color(0.3, 0.3, 0.32), 8.0)
+	p.draw_line(Vector2(sz.x * 0.75, sz.y * 0.22), Vector2(sz.x * 0.75, sz.y * 0.45), Color(0.2, 0.2, 0.2), 3.0)
+	p.draw_rect(Rect2(sz.x * 0.75 - 18, sz.y * 0.45, 36, 26), Color(0.55, 0.45, 0.3))
+
+
+func _paint_workshop(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.08, 0.06, 0.06), Color(0.20, 0.10, 0.06), Color(0.45, 0.18, 0.05), 0.6)
+	# Roof trusses
+	for i in 8:
+		var x := sz.x * float(i) / 7.0
+		p.draw_line(Vector2(x, 0), Vector2(x + 120, sz.y * 0.2), Color(0.16, 0.14, 0.14), 8.0)
+		p.draw_line(Vector2(x, 0), Vector2(x - 120, sz.y * 0.2), Color(0.16, 0.14, 0.14), 8.0)
+	p.draw_rect(Rect2(0, sz.y * 0.2, sz.x, 14), Color(0.16, 0.14, 0.14))
+	# Blast furnaces with glowing mouths, pouring molten metal
+	for i in 3:
+		var fx := sz.x * (0.17 + 0.33 * float(i))
+		var base_y := sz.y * 0.88
+		var body := PackedVector2Array([Vector2(fx - 90, base_y), Vector2(fx - 70, base_y - 300), Vector2(fx - 40, base_y - 340), Vector2(fx + 40, base_y - 340), Vector2(fx + 70, base_y - 300), Vector2(fx + 90, base_y)])
+		p.draw_colored_polygon(body, Color(0.20, 0.18, 0.18))
+		for k in 4:
+			p.draw_line(Vector2(fx - 80 + float(k) * 4.0, base_y - 60 - float(k) * 70.0), Vector2(fx + 80 - float(k) * 4.0, base_y - 60 - float(k) * 70.0), Color(0.45, 0.35, 0.2), 6.0)
+		p.draw_circle(Vector2(fx, base_y - 120), 44.0, Color(1.0, 0.5, 0.1, 0.35))
+		p.draw_circle(Vector2(fx, base_y - 120), 28.0, Color(1.0, 0.7, 0.2))
+		p.draw_rect(Rect2(fx - 6, base_y - 92, 12, 92), Color(1.0, 0.55, 0.1, 0.8))      # Molten pour
+		p.draw_rect(Rect2(fx - 40, base_y - 380, 24, 40), Color(0.15, 0.13, 0.13))      # Stack
+	# Chains + hanging crucible
+	p.draw_line(Vector2(sz.x * 0.5, sz.y * 0.2), Vector2(sz.x * 0.5, sz.y * 0.4), Color(0.25, 0.25, 0.27), 4.0)
+	p.draw_colored_polygon(PackedVector2Array([Vector2(sz.x * 0.5 - 40, sz.y * 0.4), Vector2(sz.x * 0.5 + 40, sz.y * 0.4), Vector2(sz.x * 0.5 + 26, sz.y * 0.48), Vector2(sz.x * 0.5 - 26, sz.y * 0.48)]), Color(0.3, 0.28, 0.27))
+	p.draw_rect(Rect2(sz.x * 0.5 - 34, sz.y * 0.4, 68, 6), Color(1.0, 0.6, 0.15))
+	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, 6), Color(1.0, 0.5, 0.1, 0.6))
+
+
+func _paint_golem_hall(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.04, 0.05, 0.08), Color(0.10, 0.12, 0.16), Color(0.16, 0.18, 0.22), 0.6)
+	# Huge stone columns with rune bands
+	for i in 5:
+		var cx := sz.x * (0.06 + 0.22 * float(i))
+		p.draw_rect(Rect2(cx - 40, 0, 80, sz.y * 0.88), Color(0.22, 0.23, 0.26))
+		p.draw_rect(Rect2(cx - 50, sz.y * 0.1, 100, 20), Color(0.28, 0.29, 0.32))
+		for k in 4:
+			var ry := sz.y * (0.25 + 0.15 * float(k))
+			p.draw_line(Vector2(cx - 24, ry), Vector2(cx + 24, ry + 10), Color(0.35, 0.8, 1.0, 0.6), 3.0)
+	# The Architect's mark on the far wall: a giant gear + compass, glowing
+	var m := Vector2(sz.x * 0.5, sz.y * 0.38)
+	p.draw_circle(m, 150.0, Color(0.35, 0.8, 1.0, 0.08))
+	_gear_bg(m, 110.0, Color(0.30, 0.32, 0.36), 18)
+	p.draw_circle(m, 70.0, Color(0.12, 0.13, 0.16))
+	p.draw_polyline(PackedVector2Array([m + Vector2(-40, 50), m + Vector2(0, -55), m + Vector2(40, 50)]), Color(0.35, 0.8, 1.0, 0.8), 6.0, true)
+	p.draw_circle(m + Vector2(0, -55), 8.0, Color(0.35, 0.8, 1.0))
+	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, 5), Color(0.35, 0.8, 1.0, 0.5))
+
+
+# ============================================================
+# COLOSSEUM 4 LANDSCAPES
+# ============================================================
+func _paint_dark_cave(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.02, 0.02, 0.03), Color(0.05, 0.05, 0.06), Color(0.08, 0.08, 0.09), 0.6)
+	# Dim light falling in from the cave mouth (top left)
+	p.draw_colored_polygon(PackedVector2Array([Vector2(sz.x * 0.05, 0), Vector2(sz.x * 0.25, 0), Vector2(sz.x * 0.55, sz.y * 0.9), Vector2(sz.x * 0.2, sz.y * 0.9)]), Color(0.7, 0.75, 0.8, 0.06))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 171
+	for i in 6:                                                       # Rock outcrops
+		var rx := rng.randf() * sz.x
+		var rw := rng.randf_range(80.0, 180.0)
+		p.draw_colored_polygon(PackedVector2Array([Vector2(rx - rw, sz.y), Vector2(rx - rw * 0.5, sz.y * rng.randf_range(0.5, 0.7)), Vector2(rx + rw * 0.3, sz.y * rng.randf_range(0.45, 0.65)), Vector2(rx + rw, sz.y)]), Color(0.06, 0.06, 0.07))
+	var x := -20.0
+	while x < sz.x + 20.0:                                            # Stalactites
+		var w := rng.randf_range(30.0, 70.0)
+		p.draw_colored_polygon(PackedVector2Array([Vector2(x, -2), Vector2(x + w, -2), Vector2(x + w * 0.5, rng.randf_range(50.0, 180.0))]), Color(0.04, 0.04, 0.05))
+		x += w * rng.randf_range(0.7, 1.1)
+	_ridge(sz, sz.y * 0.9, 50.0, 60.0, Color(0.03, 0.03, 0.04), 172)
+
+
+func _bone(c: Vector2, ang: float, l: float, col: Color) -> void:
+	var d := Vector2.from_angle(ang) * l * 0.5
+	_painter.draw_line(c - d, c + d, col, 6.0)
+	for e in [c - d, c + d]:
+		var n := Vector2.from_angle(ang + PI * 0.5) * 4.0
+		_painter.draw_circle(e + n, 5.0, col)
+		_painter.draw_circle(e - n, 5.0, col)
+
+
+func _skull(c: Vector2, s: float, col: Color) -> void:
+	_painter.draw_circle(c, 14.0 * s, col)
+	_painter.draw_rect(Rect2(c.x - 9.0 * s, c.y + 6.0 * s, 18.0 * s, 10.0 * s), col)
+	_painter.draw_circle(c + Vector2(-5, -1) * s, 4.0 * s, Color(0, 0, 0, 0.9))
+	_painter.draw_circle(c + Vector2(5, -1) * s, 4.0 * s, Color(0, 0, 0, 0.9))
+
+
+func _paint_void(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.0, 0.0, 0.01), Color(0.04, 0.01, 0.07), Color(0.08, 0.02, 0.12), 0.6)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 181
+	# Piles of dark bones and skulls everywhere
+	for i in 26:
+		var bc := Vector2(rng.randf() * sz.x, sz.y * rng.randf_range(0.55, 0.9))
+		var col := Color(0.20, 0.18, 0.24).lerp(Color(0.32, 0.30, 0.36), rng.randf())
+		if i % 4 == 0:
+			_skull(bc, rng.randf_range(0.8, 1.6), col)
+		else:
+			_bone(bc, rng.randf_range(0.0, PI), rng.randf_range(30.0, 70.0), col)
+	# Huge ribcage silhouette in the distance
+	var rc := Vector2(sz.x * 0.62, sz.y * 0.55)
+	p.draw_line(rc + Vector2(-260, 0), rc + Vector2(260, 0), Color(0.12, 0.08, 0.16), 12.0)
+	for k in 9:
+		var rx := rc.x - 220.0 + float(k) * 55.0
+		p.draw_arc(Vector2(rx, rc.y), 120.0 - absf(float(k) - 4.0) * 12.0, PI * 1.05, PI * 1.95, 12, Color(0.12, 0.08, 0.16), 10.0)
+	_ridge(sz, sz.y * 0.9, 40.0, 50.0, Color(0.03, 0.01, 0.05), 182)
+	p.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 4), Color(0.5, 0.25, 0.85, 0.35))
+
+
+func _paint_altar(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.0, 0.0, 0.02), Color(0.03, 0.02, 0.06), Color(0.06, 0.04, 0.08), 0.6)
+	# A pillar of soft light falling on the altar
+	var ac := Vector2(sz.x * 0.5, sz.y * 0.88)
+	p.draw_colored_polygon(PackedVector2Array([Vector2(ac.x - 60, 0), Vector2(ac.x + 60, 0), Vector2(ac.x + 220, ac.y), Vector2(ac.x - 220, ac.y)]), Color(1.0, 0.92, 0.6, 0.08))
+	p.draw_circle(ac + Vector2(0, -160), 220.0, Color(1.0, 0.9, 0.55, 0.06))
+	# The altar: stepped white stone, glowing runes
+	p.draw_rect(Rect2(ac.x - 200, ac.y - 30, 400, 30), Color(0.42, 0.40, 0.38))
+	p.draw_rect(Rect2(ac.x - 140, ac.y - 70, 280, 40), Color(0.52, 0.50, 0.46))
+	p.draw_rect(Rect2(ac.x - 70, ac.y - 170, 140, 100), Color(0.62, 0.60, 0.55))
+	p.draw_rect(Rect2(ac.x - 90, ac.y - 186, 180, 18), Color(0.72, 0.70, 0.64))
+	p.draw_circle(ac + Vector2(0, -120), 22.0, Color(1.0, 0.9, 0.5, 0.9))
+	for k in 5:
+		p.draw_line(ac + Vector2(-120 + float(k) * 60.0, -44), ac + Vector2(-110 + float(k) * 60.0, -56), Color(1.0, 0.85, 0.4, 0.8), 3.0)
+	# Bones scattered in the dark around it
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 191
+	for i in 14:
+		var bc := Vector2(rng.randf() * sz.x, sz.y * rng.randf_range(0.72, 0.9))
+		if absf(bc.x - ac.x) < 240.0:
+			continue
+		_bone(bc, rng.randf_range(0.0, PI), rng.randf_range(30.0, 60.0), Color(0.22, 0.20, 0.26))
+
+
+func _paint_spider_lair(sz: Vector2) -> void:
+	var p := _painter
+	_vgradient(sz, Color(0.01, 0.0, 0.02), Color(0.05, 0.02, 0.06), Color(0.09, 0.04, 0.10), 0.6)
+	var web_col := Color(0.75, 0.75, 0.82, 0.35)
+	# Big webs in the corners and across the ceiling
+	for wc in [Vector2(0, 0), Vector2(sz.x, 0), Vector2(sz.x * 0.5, -40)]:
+		var center: Vector2 = wc
+		for i in 10:
+			var a := PI * 0.05 + PI * 0.9 * float(i) / 9.0
+			p.draw_line(center, center + Vector2.from_angle(a) * 420.0, web_col, 1.5)
+		for k in 7:
+			var r := 50.0 + float(k) * 55.0
+			p.draw_arc(center, r, PI * 0.05, PI * 0.95, 14, web_col, 1.5)
+	# Victims hanging from the ceiling in web cocoons
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 201
+	for i in 6:
+		var hx := sz.x * (0.1 + 0.16 * float(i)) + rng.randf_range(-30.0, 30.0)
+		var hy := sz.y * rng.randf_range(0.22, 0.42)
+		p.draw_line(Vector2(hx, 0), Vector2(hx, hy - 40), web_col, 2.0)
+		var cocoon := PackedVector2Array()
+		for k in 16:
+			var a := TAU * float(k) / 16.0
+			cocoon.append(Vector2(hx, hy) + Vector2(cos(a) * 20.0, sin(a) * 46.0))
+		p.draw_colored_polygon(cocoon, Color(0.62, 0.62, 0.66))
+		for k in 5:
+			p.draw_line(Vector2(hx - 20, hy - 34 + float(k) * 16.0), Vector2(hx + 20, hy - 26 + float(k) * 16.0), Color(0.45, 0.45, 0.5), 2.0)
+		if i % 2 == 0:                                                # A hand / face poking out
+			p.draw_circle(Vector2(hx + 6, hy - 30), 7.0, Color(0.55, 0.45, 0.42))
+			p.draw_line(Vector2(hx - 18, hy + 10), Vector2(hx - 30, hy + 24), Color(0.55, 0.45, 0.42), 4.0)
+	# Bones and egg sacs on the floor
+	for i in 10:
+		var bc := Vector2(rng.randf() * sz.x, sz.y * rng.randf_range(0.8, 0.9))
+		_bone(bc, rng.randf_range(0.0, PI), rng.randf_range(30.0, 60.0), Color(0.3, 0.28, 0.32))
+	_ridge(sz, sz.y * 0.9, 40.0, 50.0, Color(0.03, 0.01, 0.04), 202)
+
+
+# ============================================================
 # EMBERS (the only animated part)
 # ============================================================
 func _paint_embers() -> void:
@@ -499,6 +787,24 @@ func _paint_embers() -> void:
 				var y3 := sz.y - fmod(_t * e.y * 0.6 + float(i) * 97.0, sz.y + 40.0)
 				var x3 := e.x * sz.x + sin(_t * 0.6 + float(i)) * 24.0
 				_embers.draw_circle(Vector2(x3, y3), e.z + 1.0, Color(1.0, 0.9, 0.5, 0.35 + 0.3 * sin(_t * 2.0 + float(i))))
+			return
+		"architectium", "golem_hall":
+			for i in 14:                                            # Dust motes / rune sparks drifting
+				var e := _ember_data[i]
+				var y5 := sz.y - fmod(_t * e.y * 0.3 + float(i) * 97.0, sz.y + 40.0)
+				var col5 := Color(0.35, 0.8, 1.0, 0.5) if theme == "golem_hall" else Color(1, 1, 0.9, 0.3)
+				_embers.draw_circle(Vector2(e.x * sz.x + sin(_t + float(i)) * 20.0, y5), e.z * 0.8, col5)
+			return
+		"dark_cave", "void", "altar", "spider_lair":
+			for i in 18:                                            # Drifting motes (void: purple, altar: gold)
+				var e := _ember_data[i]
+				var y6 := sz.y - fmod(_t * e.y * 0.25 + float(i) * 97.0, sz.y + 40.0)
+				var col6 := Color(0.6, 0.6, 0.65, 0.25)
+				if theme == "void" or theme == "spider_lair":
+					col6 = Color(0.6, 0.3, 1.0, 0.35)
+				elif theme == "altar":
+					col6 = Color(1.0, 0.9, 0.5, 0.5)
+				_embers.draw_circle(Vector2(e.x * sz.x + sin(_t * 0.5 + float(i)) * 30.0, y6), e.z * 0.8, col6)
 			return
 		"sewer":
 			for i in 20:                                            # Drips falling from the ceiling

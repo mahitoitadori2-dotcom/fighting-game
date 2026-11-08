@@ -48,6 +48,15 @@ const MAPS := {
 	"sewers":      {"bg": "sewer", "ground": 8, "walls": "sewer", "half_width": 760.0, "music": "story_sewers", "fog": true},
 	# BLASPHEMY ARENA: volcanic temple of Blasphemy Caeser, lava falls, serpent bones.
 	"blasphemy":   {"bg": "blasphemy", "ground": 9, "walls": "blasphemy", "half_width": 840.0, "music": "none"},
+	# ----- Colosseum 3 -----
+	# BURNING THRONE ROOM: an empty throne on fire, broken pillars, smoke and falling embers.
+	"throne":       {"bg": "throne", "ground": 10, "walls": "burnt", "half_width": 780.0, "music": "story_throne"},
+	# MINOR ARCHITECTIUM LAND: stone buildings, architect workshops, cranes and gears.
+	"architectium": {"bg": "architectium", "ground": 11, "walls": "stone", "half_width": 840.0, "music": "story_architectium"},
+	# BLAST WORKSHOP (Architectian Titan): blast furnaces, molten metal, sparks, a big open floor.
+	"workshop":     {"bg": "workshop", "ground": 12, "walls": "foundry", "half_width": 840.0, "music": "story_workshop"},
+	# THE GOLEM'S HALL (Architect's Golem): a vast stone hall of the Architect, glowing runes.
+	"golem_hall":   {"bg": "golem_hall", "ground": 11, "walls": "rune", "half_width": 840.0, "music": "none"},
 }
 
 const LEVELS := {
@@ -105,6 +114,37 @@ const LEVELS := {
 		"boss_line": "I have devoured GODS.  You are barely a morsel.",
 		"boss_death": "sink", "boss_death_title": "BLASPHEMY CAESER HAS FALLEN",
 		"boss_death_sub": "The second Colosseum is yours.", "cutscene_out": "corpse_climb"},
+
+	# ======================= COLOSSEUM 3: THE BURNING CROWN =======================
+	13: {"title": "THE BURNING THRONE", "theme": "throne", "map": "throne",
+		"cutscene_in": "throne_wake", "arrive": "stand", "ambush": true,
+		"intro": "You wake in an empty throne room. It is on fire... and something moves above you.",
+		"waves": [["copper", "sparkling", "sparkling"], ["copper", "sparkling", "copper", "sparkling", "sparkling"]], "boss": ""},
+	14: {"title": "THE ATOMIC CREATION", "theme": "throne", "map": "throne",
+		"intro": "A blinding green light behind the throne... the Atomic Creation wakes.",
+		"waves": [["sparkling", "atomic", "sparkling", "sparkling"]], "boss": ""},
+	15: {"title": "MINOR ARCHITECTIUM", "theme": "architectium", "map": "architectium",
+		"intro": "Beyond the throne: the land of the Minor Architectium. Workshops, gears... and its warriors.",
+		"waves": [["warrior_a", "warrior_a"], ["warrior_a", "warrior_a", "warrior_a"]], "boss": ""},
+	16: {"title": "THE GEARWORKS", "theme": "architectium", "map": "architectium",
+		"intro": "Deeper into the Architectium. The warriors form ranks.",
+		"waves": [["warrior_a", "warrior_a", "warrior_a"], ["warrior_a", "warrior_a", "warrior_a", "warrior_a"]], "boss": ""},
+	17: {"title": "THE BLAST WORKSHOP", "theme": "workshop", "map": "workshop",
+		"intro": "Blast furnaces roar. Something enormous hammers the anvil.",
+		"waves": [], "boss": "titan",
+		"boss_music": "boss_titan", "boss_color": Color(1.0, 0.6, 0.2),
+		"boss_sub": "Mini-Boss  -  Forge-Guardian of the Architectium",
+		"boss_line": "THE FORGE...  NEVER...  COOLS.",
+		"boss_death_title": "THE ARCHITECTIAN TITAN HAS FALLEN", "boss_death_sub": "The furnaces go quiet."},
+	18: {"title": "THE ARCHITECT'S GOLEM", "theme": "golem_hall", "map": "golem_hall",
+		"intro": "A hall of the Architect himself. Runes glow in the stone floor.",
+		"waves": [], "boss": "arch_golem",
+		"boss_intro": "rise", "boss_music": "boss_golem", "boss_color": Color(0.4, 0.85, 1.0),
+		"boss_map_title": "THE GOLEM'S HALL", "boss_map_sub": "The runes in the floor light up one by one...",
+		"boss_sub": "Built by the Architect  -  Keeper of the Third Colosseum",
+		"boss_line": "...INTRUDER.   ...DISMANTLE.",
+		"boss_death": "sink", "boss_death_title": "THE ARCHITECT'S GOLEM CRUMBLES",
+		"boss_death_sub": "The runes go dark. The third Colosseum is yours."},
 }
 
 
@@ -118,6 +158,11 @@ static func map_of(n: int) -> Dictionary:
 
 static func count() -> int:
 	return LEVELS.size()
+
+
+## Playable character of a level: "warrior" (Colosseums 1-3) or "architect" (Colosseum 4).
+static func hero_of(n: int) -> String:
+	return String(get_level(n).get("hero", PLAYER_CHARACTER))
 
 
 static func colosseum_of(n: int) -> int:
@@ -154,6 +199,18 @@ static func enemy_script(id: String) -> Script:
 			return RotStray
 		"blasphemy_caeser":
 			return BlasphemyCaeser
+		"copper":
+			return CopperCorpse
+		"sparkling":
+			return Sparkling
+		"atomic":
+			return AtomicCreation
+		"warrior_a":
+			return ArchitectianWarrior
+		"titan":
+			return ArchitectianTitan
+		"arch_golem":
+			return ArchitectsGolem
 	return Parasite
 
 
@@ -162,7 +219,8 @@ static func tile_enemy(n: int) -> String:
 	var lv := get_level(n)
 	if String(lv.get("boss", "")) != "":
 		return String(lv["boss"])
-	var rank := ["parasite", "kharleming", "stray", "follower", "brute", "guard", "crawler", "golem", "hydra"]
+	var rank := ["parasite", "kharleming", "stray", "sparkling", "follower", "brute", "guard", "copper", "warrior_a", "crawler",
+		"golem", "hydra", "atomic"]
 	var best := "parasite"
 	for wave in lv.get("waves", []):
 		for id in wave:
@@ -198,5 +256,17 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return RotStray.new()
 		"blasphemy_caeser":
 			return BlasphemyCaeser.new()
+		"copper":
+			return CopperCorpse.new()
+		"sparkling":
+			return Sparkling.new()
+		"atomic":
+			return AtomicCreation.new()
+		"warrior_a":
+			return ArchitectianWarrior.new()
+		"titan":
+			return ArchitectianTitan.new()
+		"arch_golem":
+			return ArchitectsGolem.new()
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()

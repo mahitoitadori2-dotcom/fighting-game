@@ -23,7 +23,8 @@ const TEASER := [Vector2(0.78, 0.36), Vector2(0.84, 0.20)]     # next Colosseum 
 const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1" on later pages
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
-	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17}
+	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
+	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "titan": 0.16, "arch_golem": 0.15}
 ## Board page per Colosseum: title, zone labels [text, x, y, colour], tile colours by level offset (0-5).
 const PAGES := {
 	1: {"title": "STORY MODE  -  COLOSSEUM 1: THE ASHEN DEPTHS",
@@ -35,6 +36,11 @@ const PAGES := {
 			["THE SEWERS", 0.56, 0.97, Color(0.6, 1.0, 0.5, 0.8)], ["BLASPHEMY", 0.64, 0.06, Color(1.0, 0.5, 0.3, 0.9)]],
 		"tiles": [Color(0.30, 0.32, 0.38), Color(0.75, 0.66, 0.40), Color(0.75, 0.66, 0.40), Color(0.18, 0.32, 0.16), Color(0.18, 0.32, 0.16), Color(0.50, 0.10, 0.08)],
 		"board": [Color(0.22, 0.22, 0.28), Color(0.32, 0.10, 0.08)], "boss_label": Color(1.0, 0.6, 0.35)},
+	3: {"title": "STORY MODE  -  COLOSSEUM 3: THE BURNING CROWN",
+		"zones": [["THE BURNING THRONE", 0.16, 0.97, Color(1.0, 0.6, 0.3, 0.9)], ["MINOR ARCHITECTIUM", 0.40, 0.1, Color(0.7, 1.0, 0.7, 0.9)],
+			["BLAST WORKSHOP", 0.62, 0.97, Color(1.0, 0.75, 0.35, 0.9)], ["THE GOLEM'S HALL", 0.66, 0.06, Color(0.5, 0.85, 1.0, 0.9)]],
+		"tiles": [Color(0.50, 0.18, 0.08), Color(0.42, 0.40, 0.12), Color(0.36, 0.40, 0.36), Color(0.36, 0.40, 0.36), Color(0.45, 0.28, 0.10), Color(0.18, 0.32, 0.45)],
+		"board": [Color(0.30, 0.10, 0.05), Color(0.14, 0.18, 0.24)], "boss_label": Color(0.5, 0.85, 1.0)},
 }
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
 
@@ -133,7 +139,7 @@ func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
 	_title.text = String(_page_data().get("title", "STORY MODE"))
 	if _celebrate:
-		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser"}
+		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre"}
 		_info.text = "COLOSSEUM %d COMPLETE!  %s has fallen.  Colosseum %d coming soon...  (Level 50: The Sun)" % [
 			_page, boss_names.get(_page, "The boss"), _page + 1]
 		_info.add_theme_color_override("font_color", GOLD)
@@ -141,7 +147,8 @@ func _refresh_ui() -> void:
 	else:
 		_info.add_theme_color_override("font_color", UiStyle.TEXT)
 		var boss := String(lv.get("boss", "")) != ""
-		_info.text = "Level %d: %s%s    |    Warrior only    |    R = Flask (2 per level)" % [_pawn_space, lv["title"], "  (BOSS)" if boss else ""]
+		var hero_name := "You play as the ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "architect" else "Warrior only"
+		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (2 per level)" % [_pawn_space, lv["title"], "  (BOSS)" if boss else "", hero_name]
 		_play.text = "PLAY LEVEL %d" % _pawn_space
 
 
@@ -278,15 +285,17 @@ func _on_play() -> void:
 	_busy = true
 	StoryProgress.current_level = _pawn_space
 	var cs := String(StoryLevels.get_level(_pawn_space).get("cutscene_in", ""))
+	var art: Script = ArchitectArt if StoryLevels.hero_of(_pawn_space) == "architect" else WarriorArt
 	if cs != "":
 		# Level with its own intro cutscene (Elevator from Hell, falling into the Sewers)
 		var scene := StoryCutscene.new()
 		scene.kind = cs
+		scene.hero_art = art
 		add_child(scene)
 		await scene.finished
 	else:
 		var fall := CaveFall.new()
-		fall.hero_art = WarriorArt
+		fall.hero_art = art
 		fall.caption = "LEVEL %d:  %s" % [_pawn_space, StoryLevels.get_level(_pawn_space)["title"]]
 		add_child(fall)
 		await fall.finished
@@ -344,6 +353,8 @@ func _draw_board() -> void:
 
 	if _page == 2:
 		_draw_scenery_2(r)
+	elif _page >= 3:
+		_draw_scenery_n(r)
 	else:
 		_draw_scenery(r)
 
@@ -458,6 +469,49 @@ func _draw_scenery_2(r: Rect2) -> void:
 	c.draw_circle(sun, 70.0 + 6.0 * sin(_t * 2.0), Color(1.0, 0.8, 0.3, 0.10))
 
 
+## Colosseum 3+ pages: a few landmark doodles per page.
+func _draw_scenery_n(r: Rect2) -> void:
+	var c := _board
+	if _page == 3:
+		# Burning throne (bottom left)
+		var th := r.position + Vector2(r.size.x * 0.12, r.size.y * 0.62)
+		c.draw_rect(Rect2(th.x - 18, th.y - 40, 36, 50), Color(0.35, 0.15, 0.08, 0.9))
+		c.draw_rect(Rect2(th.x - 24, th.y + 10, 48, 10), Color(0.35, 0.15, 0.08, 0.9))
+		for k in 5:
+			var fx := th.x - 30.0 + float(k) * 15.0
+			var fh := 20.0 + 10.0 * sin(_t * 6.0 + float(k))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(fx - 6, th.y + 20), Vector2(fx + 6, th.y + 20), Vector2(fx, th.y + 20 - fh)]), Color(1.0, 0.5, 0.1, 0.8))
+		# Gears of the Architectium (top middle)
+		for k in 3:
+			var gp := r.position + Vector2(r.size.x * (0.3 + 0.08 * float(k)), r.size.y * 0.26)
+			var pts := PackedVector2Array()
+			for i in 16:
+				var a := TAU * float(i) / 16.0 + _t * (0.6 if k % 2 == 0 else -0.6)
+				pts.append(gp + Vector2.from_angle(a) * (22.0 if i % 2 == 0 else 16.0))
+			c.draw_colored_polygon(pts, Color(0.55, 0.6, 0.55, 0.7))
+		# Furnace glow (bottom right) + rune circle (top right)
+		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
+		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, true)
+	else:
+		# Colosseum 4: dark cave (left), void bones (bottom), altar light (middle), spider web (right)
+		var cave := r.position + Vector2(r.size.x * 0.1, r.size.y * 0.5)
+		c.draw_set_transform(cave, 0.0, Vector2(1.0, 0.7))
+		c.draw_circle(Vector2.ZERO, 50.0, Color(0.02, 0.02, 0.03, 0.9))
+		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		for k in 6:
+			var bp := r.position + Vector2(r.size.x * (0.3 + 0.07 * float(k)), r.size.y * 0.9)
+			c.draw_line(bp + Vector2(-10, -4), bp + Vector2(10, 4), Color(0.8, 0.78, 0.7, 0.6), 4.0)
+			c.draw_circle(bp + Vector2(-10, -4), 3.0, Color(0.8, 0.78, 0.7, 0.6))
+		c.draw_circle(r.position + Vector2(r.size.x * 0.44, r.size.y * 0.36), 34.0 + 4.0 * sin(_t * 2.0), Color(1.0, 0.9, 0.5, 0.25))
+		var web := r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42)
+		for i in 8:
+			c.draw_line(web, web + Vector2.from_angle(TAU * float(i) / 8.0) * 50.0, Color(0.85, 0.85, 0.9, 0.4), 1.5)
+		for k in 3:
+			c.draw_arc(web, 15.0 + float(k) * 15.0, 0.0, TAU, 8, Color(0.85, 0.85, 0.9, 0.4), 1.5)
+	var sun := _teaser_pos(1)
+	c.draw_circle(sun, 70.0 + 6.0 * sin(_t * 2.0), Color(1.0, 0.8, 0.3, 0.10))
+
+
 func _road(a: Vector2, b: Vector2, lit: bool, alpha: float = 1.0) -> void:
 	var mid := (a + b) * 0.5 + (b - a).orthogonal().normalized() * 26.0
 	var steps := 14
@@ -565,24 +619,32 @@ func _pawn(p: Vector2) -> void:
 	var bob := sin(_t * 3.0) * 3.0 if _hop_t < 0.0 else 0.0
 	var h := 70.0 * squash
 	var base_c := p + Vector2(0, 0)
+	# Colosseum 4: you are the ARCHITECT -> white pawn, green trim, dark visor, blue core
+	var arch := StoryLevels.hero_of(_hop_to if _hop_t >= 0.0 else _pawn_space) == "architect"
+	var pc := Color(0.95, 0.96, 0.98) if arch else StoryBoard.PAWN
+	var ps := Color(0.22, 0.86, 0.28) if arch else StoryBoard.PAWN_SHADE
 	# Base disc
 	var base := EnemyArt.ellipse_points(base_c, 24, 9, 18)
-	c.draw_colored_polygon(base, PAWN_SHADE)
+	c.draw_colored_polygon(base, ps)
 	FighterArt.outline(c, base, 3.0)
 	# Body (cone)
 	var top := base_c + Vector2(0, -h * 0.62 + bob)
 	var body := PackedVector2Array([base_c + Vector2(-18, -4), top + Vector2(-7, 0), top + Vector2(7, 0), base_c + Vector2(18, -4)])
-	c.draw_polygon(body, PackedColorArray([PAWN_SHADE, PAWN, PAWN.lightened(0.2), PAWN_SHADE]))
+	c.draw_polygon(body, PackedColorArray([ps, pc, pc.lightened(0.2), ps]))
 	FighterArt.outline(c, body, 3.0)
 	# Collar
 	var collar := EnemyArt.ellipse_points(top, 13, 4.5, 14)
-	c.draw_colored_polygon(collar, PAWN.lightened(0.15))
+	c.draw_colored_polygon(collar, pc.lightened(0.15))
 	FighterArt.outline(c, collar, 2.5)
 	# Head + void mask
 	var head := top + Vector2(0, -15)
-	FighterArt.ball(c, head, 15.0, PAWN, PAWN_SHADE, PAWN.lightened(0.45))
-	c.draw_colored_polygon(PackedVector2Array([head + Vector2(-8, -3), head + Vector2(10, -4), head + Vector2(8, 4), head + Vector2(-6, 4)]), Color(0.92, 0.92, 0.98))
-	c.draw_circle(head + Vector2(4, 0), 2.5, Color(0.55, 0.3, 0.95))
+	FighterArt.ball(c, head, 15.0, pc, ps, pc.lightened(0.45))
+	if arch:                                               # Dark visor + blue core
+		c.draw_colored_polygon(PackedVector2Array([head + Vector2(-4, -6), head + Vector2(12, -6), head + Vector2(12, 3), head + Vector2(-4, 3)]), Color(0.07, 0.08, 0.11))
+		c.draw_circle(top + Vector2(0, 14), 4.0, Color(0.18, 0.68, 1.0))
+	else:
+		c.draw_colored_polygon(PackedVector2Array([head + Vector2(-8, -3), head + Vector2(10, -4), head + Vector2(8, 4), head + Vector2(-6, 4)]), Color(0.92, 0.92, 0.98))
+		c.draw_circle(head + Vector2(4, 0), 2.5, Color(0.55, 0.3, 0.95))
 	c.draw_circle(head + Vector2(-5, -6), 3.5, Color(1, 1, 1, 0.5))      # Shine
 
 

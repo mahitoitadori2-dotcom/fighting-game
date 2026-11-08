@@ -13,13 +13,17 @@ extends CanvasLayer
 
 signal finished
 
-const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0}
-const MUSIC := {"elevator": "story_ascent", "sewer_fall": "story_sewers", "corpse_climb": "story_ascent"}
+const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0, "throne_wake": 6.0, "cave_roll": 5.0, "void_fall": 3.6}
+const MUSIC := {"elevator": "story_ascent", "sewer_fall": "story_sewers", "corpse_climb": "story_ascent",
+	"throne_wake": "story_throne", "cave_roll": "story_darkcave", "void_fall": "story_void"}
 ## [start, end, title, subtitle]
 const CAPTIONS := {
 	"elevator": [[0.6, 3.2, "COLOSSEUM 2: THE ASCENT", ""], [3.4, 6.0, "THE ELEVATOR FROM HELL", "Up... out of the depths."]],
 	"sewer_fall": [[0.5, 3.0, "THE SEWERS", "Down into the dark and the filth..."]],
 	"corpse_climb": [[0.4, 2.8, "THE SERPENT FALLS", ""], [3.4, 7.6, "A STAIRWAY OF BONE", "You climb the corpse to the shrine above."]],
+	"throne_wake": [[0.8, 3.0, "COLOSSEUM 3: THE BURNING CROWN", ""], [3.2, 5.6, "THE BURNING THRONE ROOM", "You wake up. The throne is empty... and everything is on fire."]],
+	"cave_roll": [[0.6, 2.6, "COLOSSEUM 4: THE VOID BELOW", "You are the ARCHITECT now."], [2.8, 4.6, "THE OVERGROUND DARK CAVE", "Something crawls in the dark..."]],
+	"void_fall": [[0.5, 3.2, "INTO THE VOID", "The floor is gone. Bones below. Nothing but dark."]],
 }
 
 var kind := "elevator"
@@ -54,6 +58,13 @@ func _ready() -> void:
 			SoundManager.play_sfx("dash")
 		"corpse_climb":
 			SoundManager.play_sfx("rumble")
+		"throne_wake":
+			SoundManager.play_sfx("flame", -4.0)
+		"cave_roll":
+			SoundManager.play_sfx("stone", -4.0)
+		"void_fall":
+			SoundManager.play_sfx("dash")
+			SoundManager.play_sfx("void_goo", -4.0)
 
 
 func _input(event: InputEvent) -> void:
@@ -116,6 +127,12 @@ func _paint() -> void:
 			_paint_sewer_fall(sz, k)
 		"corpse_climb":
 			_paint_corpse_climb(sz, k)
+		"throne_wake":
+			_paint_throne_wake(sz, k)
+		"cave_roll":
+			_paint_cave_roll(sz, k)
+		"void_fall":
+			_paint_void_fall(sz, k)
 		_:
 			_paint_elevator(sz, k)
 	# Captions
@@ -200,6 +217,121 @@ func _paint_elevator(sz: Vector2, k: float) -> void:
 		stripe += 32.0
 	p.draw_rect(Rect2(px, py, pw, 52.0), Color(0, 0, 0), false, 4.0)
 	_hero(Vector2(sz.x * 0.5, py), 1.5)
+
+
+# ============================================================
+# COLOSSEUM 3: WAKING UP IN THE BURNING THRONE ROOM
+# ============================================================
+func _paint_throne_wake(sz: Vector2, k: float) -> void:
+	var p := _painter
+	var wake := clampf(k / 2.5, 0.0, 1.0)                           # Eyes opening: the view brightens
+	_vgrad(Rect2(Vector2.ZERO, sz), Color(0.12, 0.04, 0.02), Color(0.55, 0.18, 0.04))
+	# The empty throne in the back, burning
+	var tc := Vector2(sz.x * 0.62, sz.y * 0.72)
+	p.draw_rect(Rect2(tc.x - 130, tc.y, 260, 26), Color(0.22, 0.10, 0.06))
+	p.draw_colored_polygon(PackedVector2Array([tc + Vector2(-50, 0), tc + Vector2(-50, -170), tc + Vector2(-24, -210), tc + Vector2(0, -186),
+		tc + Vector2(24, -210), tc + Vector2(50, -170), tc + Vector2(50, 0)]), Color(0.30, 0.12, 0.06))
+	p.draw_rect(Rect2(tc.x - 30, tc.y - 160, 60, 80), Color(0.45, 0.06, 0.06))
+	# Flames everywhere (flickering)
+	for i in 14:
+		var fx := sz.x * (0.04 + 0.07 * float(i))
+		var fh := 70.0 + 50.0 * absf(sin(_t * 3.0 + float(i) * 1.7))
+		var fy := sz.y * 0.82
+		p.draw_colored_polygon(PackedVector2Array([Vector2(fx - 26, fy), Vector2(fx - 8, fy - fh * 0.6), Vector2(fx, fy - fh), Vector2(fx + 10, fy - fh * 0.5), Vector2(fx + 26, fy)]), Color(1.0, 0.35, 0.05, 0.85))
+		p.draw_colored_polygon(PackedVector2Array([Vector2(fx - 12, fy), Vector2(fx, fy - fh * 0.55), Vector2(fx + 12, fy)]), Color(1.0, 0.85, 0.35, 0.9))
+	# Smoke rolling under the ceiling
+	for i in 6:
+		var sx := fmod(float(i) * 260.0 + _t * 30.0, sz.x + 300.0) - 150.0
+		p.draw_set_transform(Vector2(sx, sz.y * 0.12), 0.0, Vector2(1.0, 0.35))
+		p.draw_circle(Vector2.ZERO, 160.0, Color(0.06, 0.04, 0.04, 0.55))
+	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# Embers falling
+	for i in 30:
+		var ex := fmod(float(i) * 97.0, sz.x)
+		var ey := fmod(float(i) * 53.0 + _t * (40.0 + float(i % 5) * 12.0), sz.y)
+		p.draw_circle(Vector2(ex + sin(_t + float(i)) * 10.0, ey), 2.0 + float(i % 3), Color(1.0, 0.6, 0.2, 0.8))
+	# The floor + the hero lying down, then getting up
+	p.draw_rect(Rect2(0, sz.y * 0.82, sz.x, sz.y * 0.18), Color(0.18, 0.09, 0.06))
+	var up := clampf((k - 3.0) / 1.0, 0.0, 1.0)
+	_hero(Vector2(sz.x * 0.3, sz.y * 0.82), 1.4, lerpf(-PI * 0.5, 0.0, up))
+	# Blinking eyelids at the start
+	var lid := (1.0 - wake) * sz.y * 0.5
+	if lid > 1.0:
+		p.draw_rect(Rect2(0, 0, sz.x, lid), Color(0, 0, 0))
+		p.draw_rect(Rect2(0, sz.y - lid, sz.x, lid), Color(0, 0, 0))
+
+
+# ============================================================
+# COLOSSEUM 4: THE ARCHITECT ROLLS INTO THE CAVE
+# ============================================================
+func _paint_cave_roll(sz: Vector2, k: float) -> void:
+	var p := _painter
+	var total := float(DURATION["cave_roll"])
+	_vgrad(Rect2(Vector2.ZERO, sz), Color(0.35, 0.40, 0.48), Color(0.20, 0.22, 0.25))
+	# Hillside sloping down into a dark cave mouth on the right
+	var slope := PackedVector2Array([Vector2(0, sz.y * 0.45), Vector2(sz.x * 0.62, sz.y * 0.82), Vector2(sz.x, sz.y * 0.82), Vector2(sz.x, sz.y), Vector2(0, sz.y)])
+	p.draw_colored_polygon(slope, Color(0.16, 0.16, 0.17))
+	var mouth := Vector2(sz.x * 0.8, sz.y * 0.82)
+	p.draw_colored_polygon(PackedVector2Array([mouth + Vector2(-140, 0), mouth + Vector2(-110, -180), mouth + Vector2(0, -240), mouth + Vector2(120, -190), mouth + Vector2(160, 0)]), Color(0.08, 0.08, 0.09))
+	p.draw_colored_polygon(PackedVector2Array([mouth + Vector2(-100, 0), mouth + Vector2(-80, -150), mouth + Vector2(0, -190), mouth + Vector2(90, -150), mouth + Vector2(110, 0)]), Color(0.01, 0.01, 0.015))
+	for i in 5:                                                   # Rocks bouncing along
+		var rx := fmod(float(i) * 180.0 + k * 220.0, sz.x * 0.7)
+		var ry := sz.y * 0.45 + (rx / (sz.x * 0.62)) * sz.y * 0.37
+		p.draw_circle(Vector2(rx, ry - 8), 6.0, Color(0.3, 0.3, 0.32))
+	# The ARCHITECT tumbling down the slope, spinning, into the cave
+	var u := clampf(k / (total * 0.75), 0.0, 1.0)
+	var start := Vector2(sz.x * 0.05, sz.y * 0.45)
+	var end := mouth + Vector2(-10, 0)
+	var hp := start.lerp(end, u) + Vector2(0, -absf(sin(u * PI * 5.0)) * 40.0)
+	var into := clampf((k - total * 0.75) / (total * 0.15), 0.0, 1.0)
+	if into < 1.0:
+		_hero(hp, 1.0 * (1.0 - into * 0.6), u * TAU * 3.0)
+	# Dust puffs behind
+	for i in 4:
+		var du := u - float(i) * 0.05
+		if du > 0.0:
+			var dp := start.lerp(end, du)
+			p.draw_circle(dp, 14.0 + float(i) * 6.0, Color(0.5, 0.5, 0.52, 0.3 - float(i) * 0.06))
+	# Darkness swallows the screen at the end
+	if into > 0.0:
+		p.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, into * 0.9))
+
+
+# ============================================================
+# COLOSSEUM 4: FALLING INTO THE VOID
+# ============================================================
+func _paint_void_fall(sz: Vector2, k: float) -> void:
+	var p := _painter
+	_vgrad(Rect2(Vector2.ZERO, sz), Color(0.0, 0.0, 0.01), Color(0.08, 0.02, 0.14))
+	var speed := 700.0 + 900.0 * (k / float(DURATION["void_fall"]))
+	# Broken floor chunks falling with you
+	for i in 10:
+		var cx := sz.x * fmod(float(i) * 0.37 + 0.1, 1.0)
+		var cy := fmod(float(i) * 120.0 - k * speed * 0.4, sz.y + 200.0)
+		if cy < -100.0:
+			cy += sz.y + 200.0
+		var r := 16.0 + float(i % 4) * 8.0
+		p.draw_colored_polygon(PackedVector2Array([Vector2(cx - r, cy), Vector2(cx, cy - r * 0.8), Vector2(cx + r, cy - r * 0.2), Vector2(cx + r * 0.6, cy + r * 0.7)]), Color(0.12, 0.12, 0.13))
+	# Bones and skulls rushing UP past you (you fall fast)
+	for i in 16:
+		var bx := sz.x * fmod(float(i) * 0.618, 1.0)
+		var by := fmod(float(i) * 97.0 - k * speed, sz.y + 120.0)
+		if by < -60.0:
+			by += sz.y + 120.0
+		if i % 3 == 0:
+			p.draw_circle(Vector2(bx, by), 10.0, Color(0.32, 0.30, 0.36))
+			p.draw_circle(Vector2(bx - 3, by - 1), 2.5, Color(0, 0, 0))
+			p.draw_circle(Vector2(bx + 3, by - 1), 2.5, Color(0, 0, 0))
+		else:
+			p.draw_line(Vector2(bx - 14, by), Vector2(bx + 14, by + 6), Color(0.32, 0.30, 0.36), 5.0)
+	# Purple void streaks
+	for i in 10:
+		var sx := sz.x * (0.2 + 0.6 * fmod(float(i) * 0.41, 1.0))
+		var sy := fmod(float(i) * 173.0 - k * speed * 1.3, sz.y + 200.0)
+		if sy < -200.0:
+			sy += sz.y + 200.0
+		p.draw_line(Vector2(sx, sy), Vector2(sx, sy + 90.0), Color(0.6, 0.3, 1.0, 0.4), 2.0)
+	_hero(Vector2(sz.x * 0.5, sz.y * 0.45 + sin(k * 6.0) * 10.0 + 64.0), 1.4, sin(k * 4.0) * 0.9)
 
 
 # ============================================================

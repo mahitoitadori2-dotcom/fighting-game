@@ -48,7 +48,7 @@ func _make_brain() -> EnemyAI:
 func dmg(p: EnemyPattern) -> int:
 	if p.damage <= 0:
 		return 0
-	return maxi(1, roundi(p.damage * EnemyManager.DAMAGE_MULT))
+	return maxi(1, roundi(p.damage * EnemyManager.DAMAGE_MULT * damage_mult))
 
 
 ## OVERRIDE: may the AI use this pattern right now? (Raphael only heals when hurt.)

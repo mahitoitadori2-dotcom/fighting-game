@@ -49,7 +49,8 @@ func _paint() -> void:
 		var x := 24.0
 		var y := 20.0
 		var k := float(p.hp) / maxf(float(p.data.max_hp), 1.0)
-		FighterArt.label(_painter, Vector2(x, y + 12), "WARRIOR   %d / %d" % [p.hp, p.data.max_hp], 18, Color.WHITE, false)
+		var who := "ARCHITECT" if manager.hero == "architect" else "WARRIOR"
+		FighterArt.label(_painter, Vector2(x, y + 12), "%s   %d / %d" % [who, p.hp, p.data.max_hp], 18, Color.WHITE, false)
 		var col := Color(0.15, 0.85, 0.25) if k > 0.5 else (Color(1.0, 0.7, 0.1) if k > 0.25 else Color(0.9, 0.15, 0.15))
 		_bar(Rect2(x, y + 24, 300, 22), k, col)
 		# G Gauge

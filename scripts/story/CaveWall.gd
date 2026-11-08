@@ -81,6 +81,21 @@ func _draw() -> void:
 	elif style == "blasphemy":
 		near = Color(0.20, 0.09, 0.09)
 		far = Color(0.08, 0.03, 0.04)
+	elif style == "burnt":
+		near = Color(0.24, 0.13, 0.10)
+		far = Color(0.09, 0.05, 0.04)
+	elif style == "stone" or style == "rune":
+		near = Color(0.52, 0.50, 0.46)
+		far = Color(0.25, 0.24, 0.23)
+	elif style == "foundry":
+		near = Color(0.24, 0.23, 0.25)
+		far = Color(0.09, 0.09, 0.10)
+	elif style == "dark":
+		near = Color(0.10, 0.10, 0.11)
+		far = Color(0.03, 0.03, 0.04)
+	elif style == "bone" or style == "web":
+		near = Color(0.12, 0.09, 0.15)
+		far = Color(0.03, 0.02, 0.05)
 	var cols := PackedColorArray()
 	for p in _poly:
 		cols.append(near.lerp(far, clampf(absf(p.x) / thickness, 0.0, 1.0)))
@@ -98,6 +113,24 @@ func _draw() -> void:
 			_draw_marble()
 		"sewer":
 			_draw_sewer()
+		"burnt", "foundry":
+			for v in _veins:                        # Ember / molten veins
+				draw_polyline(v, Color(1.0, 0.45, 0.1, 0.3), 7.0, true)
+				draw_polyline(v, Color(1.0, 0.6, 0.2), 2.5, true)
+		"stone", "rune":
+			var yb := 100.0
+			while yb > -height:                     # Masonry courses
+				draw_line(Vector2(0, yb), Vector2(side * thickness, yb), Color(0.30, 0.29, 0.27), 3.0)
+				yb -= 70.0
+			if style == "rune":
+				for v in _veins:
+					draw_polyline(v, Color(0.35, 0.8, 1.0, 0.8), 2.5, true)
+		"dark":
+			pass
+		"bone", "web":
+			for v in _veins:                        # Bones stuck in the wall / web strands
+				var col := Color(0.8, 0.8, 0.85, 0.35) if style == "web" else Color(0.32, 0.29, 0.36)
+				draw_polyline(v, col, 2.0 if style == "web" else 6.0, true)
 		"blasphemy":
 			for v in _veins:                        # Magma veins (brighter than the lava cliffs)
 				draw_polyline(v, Color(1.0, 0.35, 0.05, 0.35), 9.0, true)
@@ -111,7 +144,9 @@ func _draw() -> void:
 		edge.append(_poly[i])
 	draw_polyline(edge, Color(0, 0, 0), 6.0, true)
 	var rim := {"lava": Color(0.35, 0.22, 0.18), "crystal": Color(0.6, 0.4, 0.85), "metal": Color(0.3, 0.9, 0.9), "lab": Color(0.45, 1.0, 0.2),
-		"shaft": Color(0.95, 0.6, 0.15), "marble": Color(0.95, 0.78, 0.35), "sewer": Color(0.45, 0.8, 0.35), "blasphemy": Color(1.0, 0.4, 0.1)}
+		"shaft": Color(0.95, 0.6, 0.15), "marble": Color(0.95, 0.78, 0.35), "sewer": Color(0.45, 0.8, 0.35), "blasphemy": Color(1.0, 0.4, 0.1),
+		"burnt": Color(1.0, 0.5, 0.15), "stone": Color(0.7, 0.68, 0.62), "rune": Color(0.35, 0.8, 1.0), "foundry": Color(1.0, 0.55, 0.15),
+		"dark": Color(0.25, 0.26, 0.3), "bone": Color(0.55, 0.3, 0.9), "web": Color(0.7, 0.7, 0.78)}
 	draw_polyline(edge, rim.get(style, Color(0.35, 0.22, 0.18)), 2.0, true)
 
 

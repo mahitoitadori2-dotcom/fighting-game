@@ -7,7 +7,7 @@ extends RefCounted
 
 const SAVE_PATH := "user://story.cfg"
 const TOTAL_LEVELS := 50                 # Level 50 = The Sun
-const AVAILABLE_LEVELS := 12             # Colosseums 1 and 2 exist so far
+const AVAILABLE_LEVELS := 18             # Colosseums 1-3 exist so far
 
 static var current_level := 1
 static var unlocked_level := 1

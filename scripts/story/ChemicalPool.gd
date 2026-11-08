@@ -24,6 +24,10 @@ const LAVA_TICK_DAMAGE := 3
 
 var pool_gen := 0
 var lava := false                     # Magma instead of chemicals (set by spawn every time)
+var void_goo := false                 # Void goo instead of chemicals (set by spawn every time)
+const VOID := Color(0.40, 0.14, 0.70)
+const VOID_DARK := Color(0.07, 0.02, 0.12)
+const VOID_HI := Color(0.80, 0.60, 1.0)
 var source: Fighter
 var width := 130.0
 var lifetime := 5.0
@@ -39,7 +43,13 @@ static func spawn_lava(src: Fighter, ground_pos: Vector2, w: float, life: float)
 	return p
 
 
-static func spawn(src: Fighter, ground_pos: Vector2, w: float, life: float, is_lava: bool = false) -> ChemicalPool:
+## VOID GOO POOL (Void Massacre): dark purple goo, also slows you while you stand in it.
+static func spawn_void(src: Fighter, ground_pos: Vector2, w: float, life: float) -> ChemicalPool:
+	var p := spawn(src, ground_pos, w, life, false, true)
+	return p
+
+
+static func spawn(src: Fighter, ground_pos: Vector2, w: float, life: float, is_lava: bool = false, is_void: bool = false) -> ChemicalPool:
 	if src == null or not src.is_inside_tree():
 		return null
 	# Too many puddles: the oldest one starts drying up right away
@@ -55,10 +65,13 @@ static func spawn(src: Fighter, ground_pos: Vector2, w: float, life: float, is_l
 	pool.width = w
 	pool.lifetime = life
 	pool.lava = is_lava
+	pool.void_goo = is_void
 	src.get_tree().current_scene.add_child(pool)
 	pool.global_position = ground_pos
 	_live.append(pool)
-	if is_lava:
+	if is_void:
+		SoundManager.play_sfx("void_goo", -5.0)
+	elif is_lava:
 		SoundManager.play_sfx("flame", -7.0)             # Sizzle
 	else:
 		SoundManager.play_sfx("chem_spill", -5.0)       # Splat + bubbles (same-sound gap stops stacking)
@@ -119,7 +132,9 @@ func _damage_standing() -> void:
 		h.is_tick = true
 		h.gauge_gain = false
 		h.hit_type = "fire" if lava else "enemy"         # Lava burns (burn status icon)
-		h.move = "lava" if lava else "chemicals"
+		h.move = "lava" if lava else ("void_goo" if void_goo else "chemicals")
+		if void_goo:
+			f.apply_goo(1.0, 0.65, 0.0)                    # Void goo also slows you down
 		h.origin = global_position
 		CombatManager.apply_hit(h, f)
 
@@ -136,9 +151,9 @@ func _draw() -> void:
 	if k <= 0.0:
 		return
 	var hw := width * 0.5 * (0.4 + 0.6 * k)
-	var main := LAVA if lava else GREEN
-	var dark := LAVA_DARK if lava else GREEN_DARK
-	var hi := LAVA_HI if lava else GREEN_HI
+	var main := LAVA if lava else (VOID if void_goo else GREEN)
+	var dark := LAVA_DARK if lava else (VOID_DARK if void_goo else GREEN_DARK)
+	var hi := LAVA_HI if lava else (VOID_HI if void_goo else GREEN_HI)
 	# Glow + puddle
 	draw_set_transform(Vector2(0, -2), 0.0, Vector2(1.0, 0.22))
 	draw_circle(Vector2.ZERO, hw * 1.15, Color(main.r, main.g, main.b, (0.3 if lava else 0.18) * k))

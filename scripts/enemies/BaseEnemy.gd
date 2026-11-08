@@ -39,6 +39,7 @@ var phase2_speed_mult := 1.3
 var phase2_cooldown_mult := 0.8          # Cooldowns 20% faster
 var cooldown_mult := 1.0
 var phase_speed_mult := 1.0
+var damage_mult := 1.0                   # Story modifiers (Colosseum 4: The Shining choice)
 
 var anim_time := 0.0
 var walk_phase := 0.0

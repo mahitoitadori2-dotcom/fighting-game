@@ -22,6 +22,7 @@ var is_crouching := false
 var spawn_position := Vector2.ZERO
 var fall_death_y := 800.0
 var knockback_scale := 1.0            # < 1 = knockback resistance
+var grab_immune := false              # Giant bosses: grabs still damage them but never move them
 var damage_taken_mult := 1.0          # < 1 = damage reduction (Warrior's Royal Destiny)
 var grab_hold_distance := 70.0
 var slot := 0                         # 1 = you, 2 = opponent (set by ArenaManager)
@@ -160,6 +161,8 @@ func is_time_frozen() -> bool:
 
 ## Slide this fighter to `target` (feet position) over `duration` seconds.
 func force_move_to(target: Vector2, duration: float) -> void:
+	if grab_immune:
+		return
 	_force_target = target
 	_force_timer = maxf(duration, 0.01)
 
@@ -178,7 +181,7 @@ func forced_update(delta: float) -> bool:
 
 ## Call at the top of _physics_process. Returns true while held (skip normal logic).
 func grabbed_update(delta: float) -> bool:
-	if grabbed_by == null:
+	if grabbed_by == null or grab_immune:
 		return false
 	if not is_instance_valid(grabbed_by) or grabbed_by.is_dead:
 		grabbed_by = null

@@ -27,7 +27,11 @@ extends StaticBody2D
 ## Colosseum 2: Elevator = steel platform with hazard stripes and cables up the shaft.
 ## Marble = white marble with gold seams (Enlightened Ones). Sewer = wet mossy stone with
 ## slime seams. Blasphemy = obsidian with magma veins.
-@export_enum("Stone", "Void", "Hell", "Geode", "Scrap", "Lab", "Elevator", "Marble", "Sewer", "Blasphemy") var ground_theme := 0:
+## Colosseum 3: Burnt = scorched throne-room stone with ember cracks. Cobble = Architectium
+## paving with rune seams. Foundry = iron floor plates with molten seams.
+## Colosseum 4: DarkRock = dim cave rock. Bones = dark bone-pile floor of the void.
+@export_enum("Stone", "Void", "Hell", "Geode", "Scrap", "Lab", "Elevator", "Marble", "Sewer", "Blasphemy",
+	"Burnt", "Cobble", "Foundry", "DarkRock", "Bones") var ground_theme := 0:
 	set(v):
 		ground_theme = v
 		_apply_theme()
@@ -147,6 +151,16 @@ const C2_THEMES := {
 		Color(0.09, 0.12, 0.08), Color(0.08, 0.14, 0.07), Color(0.26, 0.32, 0.24), Color(0.45, 0.85, 0.35), Color(0.8, 1.0, 0.7), Color(0.2, 0.45, 0.12)],
 	9: [Color(1.0, 0.38, 0.06), 3.0, Color(0.16, 0.10, 0.11), Color(0.36, 0.20, 0.20), Color(0.09, 0.05, 0.06), Color(0.11, 0.06, 0.07),
 		Color(0.07, 0.04, 0.05), Color(0.30, 0.06, 0.03), Color(0.24, 0.14, 0.14), Color(1.0, 0.4, 0.06), Color(1.0, 0.86, 0.45), Color(0.7, 0.12, 0.03)],
+	10: [Color(1.0, 0.5, 0.12), 2.5, Color(0.30, 0.20, 0.16), Color(0.48, 0.34, 0.26), Color(0.18, 0.11, 0.09), Color(0.20, 0.13, 0.10),
+		Color(0.14, 0.09, 0.07), Color(0.28, 0.10, 0.04), Color(0.36, 0.26, 0.20), Color(1.0, 0.5, 0.12), Color(1.0, 0.85, 0.5), Color(0.6, 0.2, 0.04)],
+	11: [Color(0.35, 0.80, 1.0), 2.0, Color(0.62, 0.60, 0.55), Color(0.80, 0.78, 0.72), Color(0.46, 0.44, 0.40), Color(0.45, 0.43, 0.40),
+		Color(0.36, 0.34, 0.32), Color(0.26, 0.28, 0.30), Color(0.68, 0.66, 0.60), Color(0.22, 0.86, 0.28), Color(0.72, 1.0, 0.62), Color(0.08, 0.52, 0.15)],
+	12: [Color(1.0, 0.55, 0.12), 2.5, Color(0.30, 0.30, 0.33), Color(0.48, 0.48, 0.52), Color(0.18, 0.18, 0.20), Color(0.16, 0.16, 0.18),
+		Color(0.11, 0.11, 0.13), Color(0.25, 0.12, 0.05), Color(0.38, 0.38, 0.40), Color(1.0, 0.55, 0.12), Color(1.0, 0.9, 0.5), Color(0.6, 0.25, 0.05)],
+	13: [Color(0.30, 0.32, 0.36), 2.0, Color(0.15, 0.15, 0.17), Color(0.26, 0.26, 0.29), Color(0.09, 0.09, 0.10), Color(0.09, 0.09, 0.10),
+		Color(0.06, 0.06, 0.07), Color(0.05, 0.05, 0.06), Color(0.20, 0.20, 0.22), Color(0.45, 0.50, 0.60), Color(0.8, 0.85, 0.95), Color(0.2, 0.22, 0.3)],
+	14: [Color(0.55, 0.28, 0.95), 2.0, Color(0.24, 0.21, 0.27), Color(0.40, 0.37, 0.43), Color(0.14, 0.12, 0.17), Color(0.10, 0.08, 0.13),
+		Color(0.07, 0.05, 0.10), Color(0.12, 0.05, 0.18), Color(0.34, 0.31, 0.37), Color(0.55, 0.28, 0.95), Color(0.85, 0.7, 1.0), Color(0.25, 0.1, 0.45)],
 }
 
 
@@ -426,7 +440,24 @@ func _draw() -> void:
 
 	# Thick black cartoon outline
 	_outline(_poly, 7.0)
-	if ground_theme == 6:
+	if ground_theme == 14:      # Void: bones and skulls half sunk in the floor
+		var bx := -hw + 70.0
+		var bi := 0
+		while bx < hw - 60.0:
+			var by := CAP + 18.0 + float(bi % 3) * 22.0
+			if bi % 3 == 0:
+				draw_circle(Vector2(bx, by), 11.0, Color(0.36, 0.33, 0.40))
+				draw_circle(Vector2(bx - 4, by - 1), 3.0, Color(0, 0, 0))
+				draw_circle(Vector2(bx + 4, by - 1), 3.0, Color(0, 0, 0))
+			else:
+				var a := 0.6 * float(bi % 5) - 1.2
+				var d := Vector2.from_angle(a) * 22.0
+				draw_line(Vector2(bx, by) - d, Vector2(bx, by) + d, Color(0.36, 0.33, 0.40), 5.0)
+				draw_circle(Vector2(bx, by) - d, 4.0, Color(0.36, 0.33, 0.40))
+				draw_circle(Vector2(bx, by) + d, 4.0, Color(0.36, 0.33, 0.40))
+			bx += 95.0
+			bi += 1
+	elif ground_theme == 6:
 		_draw_elevator_extras()
 	elif ground_theme == 8:      # Sewer: wet sheen + slime drips over the lip
 		draw_line(Vector2(-hw + 14, 9), Vector2(hw - 14, 9), Color(0.6, 0.9, 0.55, 0.25), 3.0)

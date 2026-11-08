@@ -67,6 +67,7 @@ func _make_data() -> CharacterData:
 	phase2_speed_mult = 1.0
 	phase2_cooldown_mult = 0.7
 	knockback_scale = 0.0
+	grab_immune = true
 	var d := SimpleEnemy.make_data("Architect Chorus", 150, Vector2(150, 300), 0.0)
 	d.hitstun_time = 0.0
 	d.respawn_delay = 99.0
