@@ -16,7 +16,7 @@ The workflow `.github/workflows/build.yml` exports the game with Godot 4.7.2 for
 | Manual run (**Actions → Build and release → Run workflow**) | All four builds are made and kept as Artifacts. On `main`, the website goes to GitHub Pages again. |
 | Push a tag `v*` | All four builds are made. A GitHub Release is made with four zip files attached. |
 
-A push or pull request that changes only notes (`vault/`, `*.md`) does not start a build.
+Every push to `main` is exported and published to GitHub Pages, whatever it changes. A pull request that changes only notes (`vault/`, `*.md`) does not start a build.
 
 ### Make a release
 
