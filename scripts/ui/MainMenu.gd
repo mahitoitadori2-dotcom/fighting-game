@@ -85,13 +85,14 @@ func _build() -> void:
 	col.add_child(settings_btn)
 
 	var hint := UiStyle.label(
-		"A/D move   W jump   S crouch   Click attack   F block   1/2/3 moves   G ultimate   Esc menu" if Input.get_connected_joypads().is_empty() else "Controller: Stick move  A jump  X attack  RB/LT block  Y/B/LB moves  RT ultimate  Start menu",
+		"A/D or Arrows move   W/Up jump   S/Down crouch   Click/Space attack   F block   1/2/3 moves   G ultimate   Esc menu" if Input.get_connected_joypads().is_empty() else "Controller: Stick move  A jump  X attack  RB/LT block  Y/B/LB moves  RT ultimate  Start menu",
 		15, UiStyle.TEXT_DIM, 5)
 	hint.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	hint.offset_top = -36
 	hint.offset_bottom = -12
-	hint.offset_left = -500
-	hint.offset_right = 500
+	hint.offset_left = -620
+	hint.offset_right = 620
+	hint.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	add_child(hint)
 
 
