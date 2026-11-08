@@ -84,6 +84,8 @@ const LEVELS := {
 		"boss_death_sub": "The first Colosseum is yours."},
 
 	# ======================= COLOSSEUM 2: THE ASCENT =======================
+	# Levels 7-12: Elevator from Hell (Architect Chorus), Home of the Enlightened Ones,
+	# the Sewers, Blasphemy Caeser.
 	7: {"title": "THE ELEVATOR FROM HELL", "theme": "elevator", "map": "elevator",
 		"cutscene_in": "elevator", "arrive": "stand",
 		"intro": "Rising out of hell... but something huge is climbing after you.",
