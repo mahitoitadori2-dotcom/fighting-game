@@ -139,6 +139,8 @@ static func apply_hit(hit: HitData, victim: Fighter) -> String:
 
 	# --- DAMAGE (Void Goo = defense down, Royal Destiny = damage reduction) ---
 	var dmg := float(hit.damage)
+	if attacker != null and is_instance_valid(attacker):
+		dmg *= attacker.outgoing_damage_mult           # Weakened attacker (Godly Touch debuff); 1.0 normally
 	if victim.goo_timer > 0.0:
 		dmg *= 1.0 + victim.goo_def_down
 	dmg *= victim.damage_taken_mult
@@ -221,6 +223,12 @@ static func register_inputs() -> void:
 	_key("move_hnct", KEY_2)
 	_key("move_drill", KEY_3)
 	_key("ultimate", KEY_G)
+	# APHA Architect: powers 4-7 + Flight (other characters simply never read these)
+	_key("move_4", KEY_4)
+	_key("move_5", KEY_5)
+	_key("move_6", KEY_6)
+	_key("move_7", KEY_7)
+	_key("flight", KEY_E)
 	_key("debug_damage", KEY_T)
 	_key("debug_sim_front", KEY_P)
 	_key("debug_sim_back", KEY_L)

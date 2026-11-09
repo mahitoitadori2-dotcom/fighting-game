@@ -324,6 +324,8 @@ func _update_side(side: HudSide) -> void:
 		if txt != side.cooldown_label.text:
 			side.cooldown_label.text = txt
 			_fit_font(side.cooldown_label, lines, COOLDOWN_W)
+			# More than 3 moves (APHA Architect: 7): the status line moves down under them
+			side.status_label.position.y = 196.0 + maxf(float(lines.size() - 3), 0.0) * 22.0
 	else:
 		side.cooldown_label.text = ""
 
@@ -341,7 +343,10 @@ func _update_side(side: HudSide) -> void:
 			st.append("BAT FORM: %.1fs" % fl.bat_timer)
 	if f is EnlightenedOne and (f as EnlightenedOne).is_gorilla():
 		st.append("GORILLA FORM: %.1fs" % (f as EnlightenedOne).gorilla_timer)
-	if CombatManager.is_time_stopped() and CombatManager.time_stop_owner == f:
+	if f is AlphaArchitect:
+		var al := f as AlphaArchitect
+		st.append("FLIGHT: ON  (air variants)  -  E" if al.flying else "FLIGHT: OFF  -  E")
+	elif CombatManager.is_time_stopped() and CombatManager.time_stop_owner == f:
 		st.append("TIME STOP: %.1fs" % CombatManager.time_stop_left)
 	side.status_label.text = "\n".join(st)
 

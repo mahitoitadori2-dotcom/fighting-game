@@ -16,7 +16,7 @@ The game icon (`icon.png`, 512 px) shows the 4 fighters (Architect, Warrior, Nig
 
 ## Playable fighters
 
-Versus mode has 4 fighters. Each fighter has an attack, 3 special moves, G-Gauge ultimates, a CPU opponent and lives.
+Versus mode has 5 fighters. Each fighter has an attack, special moves, a CPU opponent and lives; the first four also have G-Gauge ultimates. The 5th, the **APHA Architect**, has 7 powers and Flight instead (see below).
 
 | Fighter | Style | Moves 1 / 2 / 3 | Ultimates (G) |
 |---|---|---|---|
@@ -26,6 +26,22 @@ Versus mode has 4 fighters. Each fighter has an attack, 3 special moves, G-Gauge
 | The Enlightened One | Light beams, healer | Beam Blast, Lord's Heal, Helpers! | Godly O' Light (1), Throne (2), Enlightened Gorilla Form (3) |
 
 The full list of fighters and moves is in `scripts/CharacterRoster.gd`.
+
+### APHA Architect (added 2026-11-09, Versus only)
+
+A dark, very powerful version of the Architect: black helmet, black metal chest, faint dark green, a slimmer athletic build, and black **Creation Gloves** on both hands with sigils glowing in different colours. **2500 HP, no G Gauge**, and **every punch is an Onslaught punch** (18 damage). His powers hit very hard on purpose. All numbers are in `data/AlphaArchitectData.gd`; code in `scripts/alpha/`.
+
+- **E = Flight on / off.** Flying: Jump = up, Crouch = down. Punches become **Air Charges** (24). Powers switch to their air variants (shown in the HUD list).
+- **1 Thunderclap:** electrified shockwave (30 + stun). Air: compressed wind tornado (45 + stun).
+- **2 Godly Touch** (ground only): 25 + 3 random debuffs for 6 s, from Slow, Burn, Poison, Weakened damage, Blind, Stun, Confusion, Defense Down, Life Drain.
+- **3 Barrage of Vadis:** 3 clones, 12 fist hits x 7. Air: the clones shoot 9 lasers x 10.
+- **4 Portal Manifestation:** a portal throws homing rocks, metal shards, energy orbs and debris (9 each) for 2.6 s.
+- **5 Pure Implosion of Decay** (cinematic): flies up, gas gathers into a ball in slow motion, throws it down: implosion 70 + a decay field.
+- **6 World Implosion Bomb** (cinematic + cutscene): an energy rod forms and duplicates, he flies up, a cutscene shows him over the Earth throwing the rods through it, then 2 rods crash onto the enemy (130 each).
+- **7 World Opening** (cinematic): eyes close, a barrier covers the area, giant hands tear at everything inside (8 x 16, then a final rip of 80).
+- During 5-7 everyone else is frozen, he can't be hurt, and the camera zooms with black bars.
+- Keys 4-7 and E are new keys; on phones the touch controls add buttons 4-7 (right to left) and FLY.
+- Tested by script: every power on the ground and in flight, all 3 cinematics, and a CPU-vs-CPU fight. **Not played by hand yet**, and he is not balanced against anyone (on purpose very strong).
 
 **Warrior buff (2026-11-08, every mode).** The numbers are in `data/WarriorData.gd`. It hasn't been played against the other fighters yet.
 

@@ -36,6 +36,7 @@ static func all() -> Array[Dictionary]:
 	list.append(_warrior())
 	list.append(_fire_lord())
 	list.append(_enlightened_one())
+	list.append(_apha_architect())
 	# Add future characters here, e.g.:
 	# list.append(_some_new_fighter())
 	# PvE enemies ("enemy": true) - Character Select shows them in ENEMY TEST.
@@ -207,6 +208,40 @@ static func _enlightened_one() -> Dictionary:
 				"info": "3 Bar Ultimate, %ss: bigger, M1 only, %d damage, faster" % [_num(d.gorilla_duration), d.gorilla_damage]},
 			{"key": "!", "name": "Weakness",
 				"info": "Takes x1.25 damage from Explosions and Void attacks"},
+		],
+	}
+
+
+static func _apha_architect() -> Dictionary:
+	var d := AlphaArchitectData.new()
+	return {
+		"id": "apha",
+		"name": "APHA Architect",
+		"short": "APHA Architect",
+		"selectable": true,
+		"accent": Color(0.20, 0.55, 0.28),
+		"art": AlphaArchitectArt,
+		"fighter": AlphaArchitect,
+		"ai": AlphaAI,
+		"moves": [
+			{"key": "!", "name": "Stats",
+				"info": "%d HP, NO G Gauge. Every punch is an Onslaught punch (%d damage)" % [d.max_hp, d.punch_damage]},
+			{"key": "E", "name": "Flight On / Off",
+				"info": "Jump = up, Crouch = down. Punches become Air Charges (%d dmg), powers change" % d.air_charge_damage},
+			{"key": "1", "name": "Thunderclap",
+				"info": "Electrified shockwave, %d dmg + stun. Air: wind tornado, %d dmg, %ss cd" % [d.clap_damage, d.tornado_damage, _num(d.clap_cooldown)]},
+			{"key": "2", "name": "Godly Touch",
+				"info": "%d dmg + 3 random debuffs (%ss). Not in the air, %ss cd" % [d.touch_damage, _num(d.debuff_duration), _num(d.touch_cooldown)]},
+			{"key": "3", "name": "Barrage of Vadis",
+				"info": "Clones: %d hits x %d dmg. Air: %d lasers x %d dmg, %ss cd" % [d.barrage_hits, d.barrage_hit_damage, d.laser_count, d.laser_damage, _num(d.barrage_cooldown)]},
+			{"key": "4", "name": "Portal Manifestation",
+				"info": "Rocks, shards, orbs, debris home in, %d dmg each, %ss cd" % [d.portal_shot_damage, _num(d.portal_cooldown)]},
+			{"key": "5", "name": "Pure Implosion of Decay",
+				"info": "CINEMATIC: %d dmg implosion + decay field, %ss cd" % [d.decay_damage, _num(d.decay_cooldown)]},
+			{"key": "6", "name": "World Implosion Bomb",
+				"info": "CINEMATIC + Earth cutscene: 2 rods x %d dmg, %ss cd" % [d.bomb_damage, _num(d.bomb_cooldown)]},
+			{"key": "7", "name": "World Opening",
+				"info": "CINEMATIC: barrier + giant hands, %d x %d + %d dmg, %ss cd" % [d.opening_hand_hits, d.opening_hand_damage, d.opening_final_damage, _num(d.opening_cooldown)]},
 		],
 	}
 

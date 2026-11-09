@@ -25,6 +25,7 @@ const STICK_DEADZONE := 0.22
 var _ui: Control
 var _scale := 1.0
 var _ui_size := 1.0                       # MatchSettings.touch_ui_scale the layout was built with
+var _extended := false                    # Layout has the APHA Architect's extra buttons (4-7 + FLY)
 var _buttons: Array[Dictionary] = []     # {id, action, label, center, r, finger, pressed}
 var _stick := {"home": Vector2.ZERO, "center": Vector2.ZERO, "knob": Vector2.ZERO, "r": 60.0, "finger": -999}
 var _stick_jump := false
@@ -87,6 +88,15 @@ func _layout() -> void:
 	_add_button("m1", "move_rocket", "1", a + Vector2.from_angle(deg_to_rad(268.0)) * outer, 25.0 * s)
 	_add_button("m2", "move_hnct", "2", a + Vector2.from_angle(deg_to_rad(245.0)) * outer, 25.0 * s)
 	_add_button("m3", "move_drill", "3", a + Vector2.from_angle(deg_to_rad(222.0)) * outer, 25.0 * s)
+	# APHA Architect (7 powers + Flight): moves 4-7 on a third ring (right to left), FLY on the left
+	_extended = _player != null and is_instance_valid(_player) and _player.move_ids.size() > 3
+	if _extended:
+		var third := 228.0 * s
+		var angs := [280.0, 258.0, 236.0, 214.0]
+		for i in range(3, mini(_player.move_ids.size(), 7)):
+			_add_button("m%d" % (i + 1), "move_%d" % (i + 1), str(i + 1), a + Vector2.from_angle(deg_to_rad(angs[i - 3])) * third, 22.0 * s)
+		if InputMap.has_action("flight"):
+			_add_button("fly", "flight", "FLY", Vector2(64.0 * s, size.y - 240.0 * s), 24.0 * s)
 	# Small menu button at the top, left of the fight timer (only the screen scale: it is tiny on purpose)
 	_add_button("menu", "", "II", Vector2(size.x * 0.5 - 92.0 * screen, 32.0 * screen), 17.0 * screen)
 	# Story Mode: healing FLASK button above the joystick (same as the R key)
@@ -238,6 +248,8 @@ func _process(_delta: float) -> void:
 			var cf := n as ControlledFighter
 			if cf != null and cf.slot == 1 and cf.is_human():
 				_player = cf
+		if _player != null and _player.move_ids.size() > 3 and not _extended:
+			_layout()                             # Found a 7-power fighter: add buttons 4-7 + FLY
 	_ui.queue_redraw()
 
 
@@ -304,6 +316,8 @@ func _button_color(id: String) -> Color:
 			return Color(0.3, 0.3, 0.35)
 		"flask":
 			return Color(0.35, 0.95, 0.45)
+		"fly":
+			return Color(0.3, 0.75, 0.45)
 	return Color(0.95, 0.75, 0.25)               # Moves 1 / 2 / 3
 
 
@@ -311,7 +325,7 @@ func _button_color(id: String) -> Color:
 func _cooldown_fraction(id: String) -> float:
 	if _player == null or not is_instance_valid(_player):
 		return 0.0
-	var idx := ["m1", "m2", "m3"].find(id)
+	var idx := ["m1", "m2", "m3", "m4", "m5", "m6", "m7"].find(id)
 	if idx < 0 or idx >= _player.move_ids.size():
 		return 0.0
 	var mid: String = _player.move_ids[idx]

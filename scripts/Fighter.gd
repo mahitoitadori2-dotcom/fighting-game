@@ -24,6 +24,7 @@ var fall_death_y := 800.0
 var knockback_scale := 1.0            # < 1 = knockback resistance
 var grab_immune := false              # Giant bosses: grabs still damage them but never move them
 var damage_taken_mult := 1.0          # < 1 = damage reduction (Warrior's Royal Destiny)
+var outgoing_damage_mult := 1.0       # < 1 = this fighter's hits are weaker (APHA Architect: Godly Touch "Weakened")
 var grab_hold_distance := 70.0
 var slot := 0                         # 1 = you, 2 = opponent (set by ArenaManager)
 var respawn_enabled := true           # MatchManager turns this off when lives run out
@@ -323,6 +324,7 @@ func respawn() -> void:
 	goo_slow = 1.0
 	goo_def_down = 0.0
 	confuse_timer = 0.0
+	outgoing_damage_mult = 1.0
 	grabbed_by = null
 	knockback_scale = 1.0
 	damage_taken_mult = 1.0

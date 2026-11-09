@@ -17,6 +17,11 @@ const ACTIONS := {
 	"move2": "move_hnct",
 	"move3": "move_drill",
 	"ultimate": "ultimate",
+	"move4": "move_4",                 # APHA Architect only (keys 4-7 + E)
+	"move5": "move_5",
+	"move6": "move_6",
+	"move7": "move_7",
+	"fly": "flight",
 }
 
 
