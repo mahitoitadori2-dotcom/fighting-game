@@ -353,6 +353,92 @@ func _draw() -> void:
 			_draw_eye_beam(a)
 		"arrow":                                          # Story archers (tint = fletching / head)
 			_draw_arrow(a)
+		# ----- Colosseum 5 -----
+		"needle":                                         # Child Wielding Needle: thrown needle on a thread
+			_draw_needle(a)
+		"bubble":                                         # Mother Nature (water): wobbling water bubble
+			_draw_bubble(a)
+		"fire_bat":                                       # The False God: a bat made of fire
+			_draw_fire_bat(a)
+		"fog":                                            # Executor: memory-altering purple fog
+			_draw_fog(a)
+		"light_orb":                                      # The Sun: orb of light
+			_draw_light_orb(a)
+		"crescent":                                       # The Brothers / blade waves (tinted)
+			_draw_crescent(a)
+
+
+## Colosseum 5 looks. ARC shots are rotated by their flight, so they are drawn along +x.
+func _draw_needle(a: float) -> void:
+	var d := 1.0 if kind == Kind.ARC else dir
+	var tip := Vector2(34.0 * d, 0)
+	var eye := Vector2(-30.0 * d, 0)
+	draw_line(eye, tip, Color(0, 0, 0, a), 7.0, true)
+	draw_line(eye, tip, Color(0.88, 0.9, 0.95, a), 3.5, true)
+	draw_colored_polygon(PackedVector2Array([tip, tip + Vector2(-10.0 * d, -4), tip + Vector2(-10.0 * d, 4)]), Color(1, 1, 1, a))
+	draw_arc(eye, 5.0, 0.0, TAU, 10, Color(0.88, 0.9, 0.95, a), 2.0)
+	var thread := PackedVector2Array()                  # The silk thread whipping behind it
+	for i in 8:
+		var u := float(i) / 7.0
+		thread.append(eye + Vector2(-d * u * 70.0, sin(u * 8.0 + _age * 30.0) * 8.0 * u))
+	draw_polyline(thread, Color(tint.r, tint.g, tint.b, 0.8 * a), 2.0, true)
+
+
+func _draw_bubble(a: float) -> void:
+	var r := size.x * 0.5
+	var wob := 1.0 + 0.08 * sin(_age * 14.0)
+	draw_set_transform(Vector2.ZERO, -rotation, Vector2(wob, 2.0 - wob))
+	draw_circle(Vector2.ZERO, r + 3.0, Color(0, 0, 0, 0.6 * a))
+	draw_circle(Vector2.ZERO, r, Color(0.25, 0.6, 1.0, 0.55 * a))
+	draw_circle(Vector2(-r * 0.3, -r * 0.35), r * 0.28, Color(1, 1, 1, 0.8 * a))
+	draw_arc(Vector2.ZERO, r * 0.75, 0.3, 1.6, 10, Color(0.8, 0.95, 1.0, 0.7 * a), 2.0)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_fire_bat(a: float) -> void:
+	var d := 1.0 if kind == Kind.ARC else dir
+	var flap := sin(_age * 26.0) * 14.0
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(d, 1.0))
+	draw_circle(Vector2(-18, 0), 22.0, Color(1.0, 0.3, 0.05, 0.25 * a))     # Flame trail
+	for s: float in [-1.0, 1.0]:
+		var up := 14.0 + absf(flap)                         # Wings: two triangles each (always valid)
+		for tri in [PackedVector2Array([Vector2(2, 0), Vector2(-12, s * up), Vector2(-8, s * 3.0)]),
+				PackedVector2Array([Vector2(-6, s * 2.0), Vector2(-26, s * (up + 6.0)), Vector2(-22, s * 3.0)])]:
+			draw_colored_polygon(tri, Color(0.75, 0.08, 0.04, a))
+			FighterArt.outline(self, tri, 2.0, Color(0, 0, 0, a))
+	draw_circle(Vector2(4, 0), 9.0, Color(0, 0, 0, a))
+	draw_circle(Vector2(4, 0), 7.0, Color(1.0, 0.5, 0.1, a))
+	draw_circle(Vector2(8, -2), 2.5, Color(1, 1, 0.6, a))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_fog(a: float) -> void:
+	draw_set_transform(Vector2.ZERO, -rotation, Vector2.ONE)
+	for i in 6:
+		var ang := float(i) * 1.05 + _age * 1.6
+		var p := Vector2.from_angle(ang) * (12.0 + 6.0 * sin(_age * 3.0 + float(i)))
+		draw_circle(p, 22.0 + 4.0 * sin(_age * 5.0 + float(i)), Color(0.55, 0.2, 0.85, 0.35 * a))
+	draw_circle(Vector2.ZERO, 14.0, Color(0.85, 0.6, 1.0, 0.5 * a))
+	for i in 3:                                           # Swirling "memories"
+		var p2 := Vector2.from_angle(-_age * 4.0 + float(i) * 2.1) * 18.0
+		draw_arc(p2, 5.0, 0.0, 4.5, 8, Color(1, 0.9, 1, 0.8 * a), 2.0)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_light_orb(a: float) -> void:
+	var r := size.x * 0.5
+	draw_circle(Vector2.ZERO, r * 1.8, Color(tint.r, tint.g, tint.b, 0.18 * a))
+	draw_circle(Vector2.ZERO, r, Color(tint.r, tint.g, tint.b, 0.85 * a))
+	draw_circle(Vector2.ZERO, r * 0.5, Color(1, 1, 1, a))
+
+
+func _draw_crescent(a: float) -> void:
+	var d := 1.0 if kind == Kind.ARC else dir
+	var a0 := -1.2 if d > 0.0 else PI - 1.2
+	var r := size.y * 0.5
+	draw_arc(Vector2(-d * 8.0, 0), r, a0, a0 + 2.4, 18, Color(0, 0, 0, a), 12.0, true)
+	draw_arc(Vector2(-d * 8.0, 0), r, a0, a0 + 2.4, 18, Color(tint.r, tint.g, tint.b, a), 7.0, true)
+	draw_arc(Vector2(-d * 8.0, 0), r - 2.0, a0 + 0.3, a0 + 2.1, 14, Color(1, 1, 1, 0.8 * a), 2.0, true)
 
 
 ## Arrow along +x (ARC: the node rotation follows the flight) or along `dir` (LINEAR).

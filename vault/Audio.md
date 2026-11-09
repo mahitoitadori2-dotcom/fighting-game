@@ -24,6 +24,11 @@ All sounds are generated placeholders:
   - `story_sewers`: the Sewers (dark, dripping, creepy, slow)
   - `boss_caeser`: Blasphemy Caeser (dark, epic, choir, heavy)
 - Boss voice lines: put recordings in `audio/voice/` to replace the text-to-speech (names in `AUDIO_FILES.txt`).
+- **Colosseum 5 (added 2026-11-09):** every boss has its own theme:
+  - `boss_needle`: Child Wielding Needle, a fast **violin** theme (bowed-string synth with vibrato, pizzicato bass, harpsichord)
+  - `boss_brothers` (symmetrical organ and bells), `boss_animal` (tribal drums), `boss_executor` (slow, crushing doom organ), `boss_nature` (flowing choir and harp)
+  - `boss_falsegod` (twisted carnival waltz of fire), `boss_satan` (infernal choir), `boss_sun` (radiant holy choir), `boss_consumer` (the Sun's theme collapsing, plays in phase 2)
+- **Child Wielding Needle voice lines:** "Shaw!", "Adino!", "Guarana!" and "Get Good". They use text-to-speech (high child's voice) until you add recordings to `audio/voice/` named `needle_shaw`, `needle_adino`, `needle_guarana` and `needle_getgood` (.ogg / .wav / .mp3).
 
 The list of file names is in `audio/AUDIO_FILES.txt`.
 

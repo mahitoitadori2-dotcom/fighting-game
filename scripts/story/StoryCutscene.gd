@@ -13,9 +13,11 @@ extends CanvasLayer
 
 signal finished
 
-const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0, "throne_wake": 6.0, "cave_roll": 5.0, "void_fall": 3.6}
+const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0, "throne_wake": 6.0, "cave_roll": 5.0, "void_fall": 3.6,
+	"c5_intro": 6.5, "mountain_climb": 8.0, "reach_peak": 6.0, "fall_to_earth": 11.0}
 const MUSIC := {"elevator": "story_ascent", "sewer_fall": "story_sewers", "corpse_climb": "story_ascent",
-	"throne_wake": "story_throne", "cave_roll": "story_darkcave", "void_fall": "story_void"}
+	"throne_wake": "story_throne", "cave_roll": "story_darkcave", "void_fall": "story_void",
+	"c5_intro": "story_ascent", "mountain_climb": "story_cave", "reach_peak": "story_altar", "fall_to_earth": "menu"}
 ## [start, end, title, subtitle]
 const CAPTIONS := {
 	"elevator": [[0.6, 3.2, "COLOSSEUM 2: THE ASCENT", ""], [3.4, 6.0, "THE ELEVATOR FROM HELL", "Up... out of the depths."]],
@@ -24,6 +26,11 @@ const CAPTIONS := {
 	"throne_wake": [[0.8, 3.0, "COLOSSEUM 3: THE BURNING CROWN", ""], [3.2, 5.6, "THE BURNING THRONE ROOM", "You wake up. The throne is empty... and everything is on fire."]],
 	"cave_roll": [[0.6, 2.6, "COLOSSEUM 4: THE VOID BELOW", "You are the ARCHITECT now."], [2.8, 4.6, "THE OVERGROUND DARK CAVE", "Something crawls in the dark..."]],
 	"void_fall": [[0.5, 3.2, "INTO THE VOID", "The floor is gone. Bones below. Nothing but dark."]],
+	# Colosseum 5 (painted by C5Cutscenes)
+	"c5_intro": [[0.6, 3.0, "COLOSSEUM 5: THE FINAL ASCENT", ""], [3.2, 6.0, "TWO HEROES, ONE ROAD", "At the top of the mountain... The Sun."]],
+	"mountain_climb": [[0.5, 3.5, "THE CLIMB", "Mother Nature is gone. The mountain is next."], [4.0, 7.4, "A CAVE OF FIRE", "Near the top, the rock glows red. Someone is waiting."]],
+	"reach_peak": [[0.5, 2.6, "THE PEAK", ""], [3.0, 5.4, "THE SUN", "No turning back."]],
+	"fall_to_earth": [[0.6, 3.4, "THE CONSUMER EXPLODES", ""], [4.0, 8.0, "YOU FALL BACK TO EARTH", "...and the sky is finally quiet."], [8.4, 10.6, "THE END", "You beat Story Mode."]],
 }
 
 var kind := "elevator"
@@ -65,6 +72,13 @@ func _ready() -> void:
 		"void_fall":
 			SoundManager.play_sfx("dash")
 			SoundManager.play_sfx("void_goo", -4.0)
+		"mountain_climb":
+			SoundManager.play_sfx("whoosh", -6.0)
+		"reach_peak":
+			SoundManager.play_sfx("holy")
+		"fall_to_earth":
+			SoundManager.play_sfx("explosion")
+			SoundManager.play_sfx("whoosh")
 
 
 func _input(event: InputEvent) -> void:
@@ -133,6 +147,8 @@ func _paint() -> void:
 			_paint_cave_roll(sz, k)
 		"void_fall":
 			_paint_void_fall(sz, k)
+		"c5_intro", "mountain_climb", "reach_peak", "fall_to_earth":
+			C5Cutscenes.paint(_painter, kind, sz, k, _t)
 		_:
 			_paint_elevator(sz, k)
 	# Captions

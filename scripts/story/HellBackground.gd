@@ -24,7 +24,9 @@ extends CanvasLayer
 ## COLOSSEUM 4: "dark_cave" (overground dark cave, dim light), "void" (dark void full of
 ##   bones), "altar" (a glowing altar of light in the void), "spider_lair" (webs, victims).
 @export_enum("surface", "cave", "geode", "hive", "lab", "elevator", "enlightened", "sewer", "blasphemy",
-	"throne", "architectium", "workshop", "golem_hall", "dark_cave", "void", "altar", "spider_lair") var theme := "surface":
+	"throne", "architectium", "workshop", "golem_hall", "dark_cave", "void", "altar", "spider_lair",
+	"thornwood", "fallen_ruins", "foothills", "silk_loom", "mirror_hall", "beast_den", "gallows", "world_tree",
+	"satan_cave", "sun_peak", "sun_collapse", "ash_cathedral") var theme := "surface":
 	set(v):
 		theme = v
 		if _painter != null:
@@ -64,6 +66,9 @@ func _process(delta: float) -> void:
 func _paint() -> void:
 	var sz := _painter.size
 	if sz.x <= 1.0:
+		return
+	if C5Backdrops.handles(theme):                         # Colosseum 5 (C5Backdrops.gd)
+		C5Backdrops.paint(_painter, theme, sz)
 		return
 	match theme:
 		"cave":
@@ -765,6 +770,9 @@ func _paint_spider_lair(sz: Vector2) -> void:
 # ============================================================
 func _paint_embers() -> void:
 	var sz := _painter.size
+	if C5Backdrops.handles(theme):
+		C5Backdrops.embers(_embers, theme, sz, _t, _ember_data)
+		return
 	match theme:
 		"elevator":
 			# Girders + warning lamps rushing DOWN past the camera (the elevator rises)

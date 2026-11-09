@@ -36,8 +36,10 @@ static var autoplay := false
 
 var level_number := 1
 var level: Dictionary = {}
-var player: ControlledFighter               # Warrior (Colosseums 1-3) or Architect (Colosseum 4)
+var player: ControlledFighter               # Warrior (Colosseums 1-3) or Architect (Colosseum 4); C5: your pick
 var hero := "warrior"
+## Colosseum 5: the other hero, played by a MEDIUM CPU, fighting beside you (revives when it falls).
+var partner: ControlledFighter = null
 var flasks := FLASKS_PER_LEVEL
 ## Colosseum 4: "" = no effect, "killed" = The Shining died (Void weaker), "spared" = you
 ## walked past it or skipped its optional level (Void Massacre stronger). Set on the altar
@@ -76,7 +78,11 @@ static func may_attack(e: BaseEnemy) -> bool:
 			continue
 		if o.estate == BaseEnemy.EState.TELEGRAPH or o.estate == BaseEnemy.EState.ATTACK:
 			busy += 1
-	return busy < MAX_ATTACKERS
+	return busy < max_attackers
+
+
+## Colosseum 5 (you have a partner): one more enemy may attack at the same time.
+static var max_attackers := MAX_ATTACKERS
 
 
 # ============================================================
@@ -100,6 +106,10 @@ func _ready() -> void:
 	_register_input()
 	_setup_arena()
 	_spawn_player()
+	max_attackers = MAX_ATTACKERS
+	if bool(level.get("partner", false)):
+		_spawn_partner()
+		max_attackers = MAX_ATTACKERS + 1
 	_hud = StoryHUD.new()
 	_hud.manager = self
 	add_child(_hud)
@@ -117,6 +127,8 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	active = false
 	has_walls = false
+	max_attackers = MAX_ATTACKERS
+	Companion.leader = null
 	MatchSettings.sandbox = _saved_sandbox
 	ArenaCamera.focus = null
 	Engine.time_scale = 1.0
@@ -205,6 +217,60 @@ func _spawn_player() -> void:
 	player.died.connect(_on_player_died)
 
 
+## Colosseum 5: the hero you did NOT pick fights beside you (CPU, medium). No G Gauge (no
+## ultimates, so no Time Stop freezes you), no big move names, revives next to you.
+func _spawn_partner() -> void:
+	var other := "warrior" if hero == "architect" else "architect"
+	if other == "architect":
+		partner = Player.new()
+		partner.name = "Partner_Architect"
+		partner.ctl = PartnerArchitectAI.new()
+	else:
+		partner = Warrior.new()
+		partner.name = "Partner_Warrior"
+		partner.ctl = PartnerWarriorAI.new()
+	partner.position = player_spawn + Vector2(-90, 0)
+	partner.spawn_position = partner.position
+	partner.slot = 3
+	partner.team = 1
+	partner.default_facing = 1
+	partner.facing = 1
+	partner.respawn_enabled = true
+	partner.quiet_announce = true
+	add_child(partner)
+	partner.data.gauge_enabled = false
+	partner.gauge = null
+	partner.data.respawn_delay = Companion.REVIVE_TIME
+	if other == "architect":
+		partner.data.punch_offset = Vector2(44, -58)     # Same Story reach as when you play him
+		partner.data.punch_size = Vector2(70, 114)
+	partner.died.connect(_on_partner_died)
+	partner.respawned.connect(_on_partner_revived)
+	Companion.leader = player
+
+
+func _on_partner_died() -> void:
+	if partner != null and not _over:
+		Effects.popup(partner, partner.global_position + Vector2(0, -160), "%s IS DOWN  -  BACK IN %d s" % [partner.data.character_name.to_upper(), int(Companion.REVIVE_TIME)], Color(1.0, 0.6, 0.5), 20)
+
+
+func _on_partner_revived() -> void:
+	if partner != null:
+		Effects.popup(partner, partner.global_position + Vector2(0, -170), "BACK IN THE FIGHT!", Color(0.6, 1.0, 0.6), 20)
+		Effects.gold_burst(partner, partner.global_position + Vector2(0, -60), 70.0)
+
+
+## Put you (and the partner next to you) on the floor at x (map changes, boss arenas).
+func _place_party(x: float) -> void:
+	player.global_position = Vector2(x, _ground_y)
+	player.velocity = Vector2.ZERO
+	player.facing = 1
+	if partner != null and is_instance_valid(partner) and not partner.is_dead:
+		partner.global_position = Vector2(x - 90.0, _ground_y)
+		partner.velocity = Vector2.ZERO
+		partner.facing = 1
+
+
 # ============================================================
 # LEVEL FLOW
 # ============================================================
@@ -218,7 +284,15 @@ func _run() -> void:
 		var sm := String(level.get("stage_map", ""))
 		if sm != "":
 			await _switch_map(sm, String(level.get("stage_title", "")), String(level.get("stage_sub", "")), Color(0.75, 0.6, 1.0))
-	var waves: Array = level.get("waves", [])
+	var waves: Array = (level.get("waves", []) as Array).duplicate(true)
+	if bool(level.get("coin_flip", false)) and not bool(level.get("quick_boss", false)):
+		# Colosseum 5: the coin decides who ELSE joins this level (added to the first wave)
+		var extra := _coin_flip()
+		if waves.is_empty():
+			waves.append(extra)
+		else:
+			(waves[0] as Array).append_array(extra)
+	_waves_now = waves
 	for i in waves.size():
 		_wave_index = i
 		await _spawn_wave(waves[i], i, waves.size())
@@ -234,7 +308,12 @@ func _run() -> void:
 		await boss_defeated
 		if _over:
 			return
-		await _boss_death_cutscene()
+		if bool(level.get("finale", false)):
+			# The Sun: the finale already played out - straight to the ending cutscene
+			if String(level.get("cutscene_out", "")) != "":
+				await _play_cutscene(String(level["cutscene_out"]))
+		else:
+			await _boss_death_cutscene()
 	elif String(level.get("cutscene_out", "")) != "":
 		# Normal level that ends in a cutscene (Colosseum 4: the floor breaks, you fall into the void)
 		if bool(level.get("floor_break", false)):
@@ -258,9 +337,7 @@ func _switch_map(map_key: String, title: String, sub: String, col: Color) -> voi
 	ChemicalPool.dry_all()
 	await _fade(true)
 	_apply_map(StoryLevels.MAPS.get(map_key, {}))
-	player.global_position = Vector2(player_spawn.x, _ground_y)
-	player.velocity = Vector2.ZERO
-	player.facing = 1
+	_place_party(player_spawn.x)
 	for n in get_tree().get_nodes_in_group("fighters"):
 		var f := n as BaseEnemy
 		if f != null and f.is_dead:
@@ -381,11 +458,15 @@ func _intro() -> void:
 		await _wait(0.4)                               # Already here (rode the elevator up)
 		SoundManager.play_sfx("spawn", -6.0)
 	else:
-		# Drop in from above
+		# Drop in from above (the partner lands next to you)
 		var land := player.global_position
 		player.global_position = land + Vector2(0, -520)
 		var tw := create_tween()
 		tw.tween_property(player, "global_position", land, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		if partner != null:
+			var pland := partner.global_position
+			partner.global_position = pland + Vector2(0, -600)
+			tw.parallel().tween_property(partner, "global_position", pland, 0.65).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		await tw.finished
 		Effects.shake(self, 9.0)
 		Effects.hit_sparks(player, land + Vector2(0, -8), 10, 1.2)
@@ -395,8 +476,10 @@ func _intro() -> void:
 		intro += "\nThe Shining is dead: the Void is WEAKER."
 	elif shining_choice == "spared" and String(level.get("boss", "")) == "void_massacre":
 		intro += "\nThe Shining lives: the Void Massacre is STRONGER."
+	if partner != null:
+		intro += "\nYour partner: %s (CPU)" % partner.data.character_name.to_upper()
 	_show_banner("LEVEL %d" % level_number, intro, Color(1.0, 0.7, 0.3))
-	await _wait(2.4)
+	await _wait(1.2 if bool(level.get("quick_boss", false)) else 2.4)
 	_hide_banner()
 	CombatManager.fight_active = true
 
@@ -454,14 +537,34 @@ func _on_enemy_died(_e: BaseEnemy) -> void:
 
 
 func _update_wave_text() -> void:
-	var waves: Array = level.get("waves", [])
+	var waves: Array = _waves_now if not _waves_now.is_empty() else level.get("waves", [])
 	wave_text = "WAVE %d / %d     ENEMIES LEFT: %d" % [_wave_index + 1, waves.size(), _alive] if _alive > 0 else ""
+
+
+var _waves_now: Array = []
+
+
+## Colosseum 5 coin flip, done silently in the background (nothing is shown):
+## HEADS = 2 Ambushers, TAILS = a Devilish Grin and a Pained One, added to the first wave.
+var coin_result := ""
+## TESTING ONLY: force the coin ("heads" / "tails"). Never set in normal play.
+static var test_coin := ""
+
+
+func _coin_flip() -> Array:
+	coin_result = test_coin if test_coin != "" else ("heads" if randf() < 0.5 else "tails")
+	if autoplay:
+		print("STORY autoplay: coin flip %s" % coin_result)
+	return ["ambusher", "ambusher"] if coin_result == "heads" else ["grin", "pained"]
 
 
 # ============================================================
 # BOSS
 # ============================================================
 func _boss_intro() -> void:
+	if bool(level.get("quick_boss", false)):
+		await _quick_boss_intro()
+		return
 	CombatManager.fight_active = false
 	wave_text = ""
 	ChemicalPool.dry_all()
@@ -472,9 +575,7 @@ func _boss_intro() -> void:
 	if boss_map != "":
 		await _fade(true)
 		_apply_map(StoryLevels.MAPS.get(boss_map, {}))
-		player.global_position = Vector2(player_spawn.x, _ground_y)
-		player.velocity = Vector2.ZERO
-		player.facing = 1
+		_place_party(player_spawn.x)
 		for n in get_tree().get_nodes_in_group("fighters"):
 			var f := n as BaseEnemy
 			if f != null and f.is_dead:
@@ -515,6 +616,8 @@ func _boss_intro() -> void:
 	boss.died.connect(_on_boss_died)
 	if boss.has_signal("transform_started"):
 		boss.connect("transform_started", _on_boss_transform)
+	if boss.has_signal("finale_started"):
+		boss.connect("finale_started", _on_finale)
 	var boss_color: Color = level.get("boss_color", Color(0.6, 1.0, 0.3))
 	if rise:
 		# Camera on the spot it climbs out of (not on the boss far below the floor)
@@ -587,6 +690,56 @@ func _boss_intro() -> void:
 	_hide_banner()
 
 
+## THE SUN: no pre-fight. A flash of light, she is there, the fight starts at once.
+func _quick_boss_intro() -> void:
+	wave_text = ""
+	var bx := _center_x if String(level.get("boss_pos", "right")) == "center" else player.global_position.x + 460.0
+	boss = StoryLevels.make_enemy(String(level["boss"]))
+	boss.slot = 2
+	boss.team = 2
+	boss.default_facing = -1 if bx > player.global_position.x else 1
+	boss.facing = boss.default_facing
+	boss.respawn_enabled = false
+	boss.position = Vector2(bx, _ground_y)
+	add_child(boss)
+	boss.died.connect(_on_boss_died)
+	if boss.has_signal("transform_started"):
+		boss.connect("transform_started", _on_boss_transform)
+	if boss.has_signal("finale_started"):
+		boss.connect("finale_started", _on_finale)
+	Effects.gold_burst(self, Vector2(bx, _ground_y - 160.0), 260.0)
+	Effects.shake(self, 14.0)
+	SoundManager.play_sfx("holy")
+	SoundManager.play_sfx("ultimate", -4.0)
+	SoundManager.play_music(String(level.get("boss_music", "boss")))
+	flasks = FLASKS_PER_LEVEL
+	boss_bar_visible = true
+	var col: Color = level.get("boss_color", Color(1, 1, 1))
+	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), col)
+	var line := String(level.get("boss_line", ""))
+	if line != "":
+		Effects.popup(boss, boss.global_position + Vector2(0, -boss.data.body_size.y - 60.0), line, col.lightened(0.5), 20)
+	CombatManager.fight_active = true
+	await _wait(1.4)
+	_hide_banner()
+
+
+## The Consumer hit 0 HP: the bomb + escape finale (SunFinale), then it dies for real.
+func _on_finale() -> void:
+	if _over or boss == null or not is_instance_valid(boss):
+		return
+	boss_bar_visible = false
+	var fin := SunFinale.new()
+	fin.manager = self
+	fin.boss = boss as TheSun
+	add_child(fin)
+	await fin.done
+	if _over or boss == null or not is_instance_valid(boss):
+		return
+	boss.visible = false
+	boss.die()
+
+
 func _on_boss_died() -> void:
 	if _over:
 		return
@@ -624,7 +777,8 @@ func _on_boss_transform() -> void:
 	if boss.has_method("finish_transform"):
 		boss.call("finish_transform")
 	await _wait(0.5)
-	SoundManager.play_music(String(level.get("boss_music", "boss")))
+	var fm = boss.get("form_music")                     # Colosseum 5: some forms have their own theme
+	SoundManager.play_music(String(fm) if fm != null and String(fm) != "" else String(level.get("boss_music", "boss")))
 	SoundManager.play_sfx("roar")
 	_show_banner(boss.enemy_name.to_upper(), String(boss.get("phase2_subtitle")) if boss.get("phase2_subtitle") != null else "PHASE 2", Color(1.0, 0.45, 0.2))
 	var line = boss.get("phase2_line")
@@ -743,6 +897,12 @@ func _on_player_died() -> void:
 # FLASKS
 # ============================================================
 func _process(_delta: float) -> void:
+	# The partner always revives right next to you
+	if partner != null and is_instance_valid(partner) and player != null and not player.is_dead:
+		var px := player.global_position.x - 80.0 * float(player.facing)
+		if has_walls:
+			px = clampf(px, wall_left_x + 60.0, wall_right_x - 60.0)
+		partner.spawn_position = Vector2(px, _ground_y - 10.0)
 	if Input.is_action_just_pressed("use_flask"):
 		use_flask()
 	elif autoplay and player != null and not player.is_dead and flasks > 0 and player.hp < player.data.max_hp * 0.4:
@@ -792,6 +952,23 @@ func _build_ui() -> void:
 	_sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	col.add_child(_banner)
 	col.add_child(_sub)
+
+
+## Public helpers for level sequences (SunFinale).
+func show_banner(text: String, sub: String, col: Color) -> void:
+	_show_banner(text, sub, col)
+
+
+func hide_banner() -> void:
+	_hide_banner()
+
+
+func fade(to_black: bool) -> void:
+	await _fade(to_black)
+
+
+func ground_y() -> float:
+	return _ground_y
 
 
 func _show_banner(text: String, sub: String, col: Color) -> void:

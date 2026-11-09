@@ -30,6 +30,12 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 - [ ] Play the new Story levels (5, 7, 11, 14, 18, 21-23, 25, 33) and tune the new soldier weapons (`ArmedSoldier.gd`: HP per weapon, `FRONT_GUARD` of the great shield, arrow damage).
 - [ ] Check the optional Shining level (32) both ways and by skipping it, then play level 34.
 - [ ] Try the new **Touch UI Size** slider (Settings) on a phone and pick a good default.
+- [ ] **Play Colosseum 5** (levels 35-50). Nothing there was beaten yet, by CPU or human:
+  - The 8 bosses (HP / patterns in `scripts/story/c5/*.gd`; shared hard-boss rules in `C5Boss.gd` and `BossBrain.gd`).
+  - The Sun finale: throwing the bomb and the platform escape (`SunFinale.gd`: `PLATFORMS`, `WALL_SPEED`, `FALL_DAMAGE`). Check every gap can be jumped by both heroes.
+  - The CPU partner: does it keep up, help enough, not get in the way (`Companion.gd`).
+  - The Executor's memory fog (reversed controls, 3.5 s): fun or too annoying?
+- [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).
 
 ## Website
 

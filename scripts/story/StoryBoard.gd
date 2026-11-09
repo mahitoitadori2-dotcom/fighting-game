@@ -30,6 +30,10 @@ const MAP_TILE := {
 	"golem_hall": Color(0.18, 0.32, 0.45), "rune_gallery": Color(0.18, 0.32, 0.45),
 	"dark_cave": Color(0.20, 0.20, 0.23), "void": Color(0.22, 0.12, 0.34), "altar": Color(0.55, 0.48, 0.22),
 	"spider_lair": Color(0.35, 0.15, 0.50),
+	"thornwood": Color(0.22, 0.10, 0.10), "ruins": Color(0.40, 0.40, 0.46), "foothills": Color(0.45, 0.52, 0.60),
+	"silk_loom": Color(0.42, 0.28, 0.48), "mirror_hall": Color(0.55, 0.55, 0.60), "beast_den": Color(0.42, 0.28, 0.16),
+	"gallows": Color(0.30, 0.16, 0.38), "world_tree": Color(0.25, 0.45, 0.22), "satan_cave": Color(0.55, 0.12, 0.06),
+	"sun_peak": Color(0.85, 0.72, 0.35), "ash_cathedral": Color(0.45, 0.10, 0.10),
 }
 const TEASER := [Vector2(0.78, 0.36), Vector2(0.84, 0.20)]     # next Colosseum fog space, "50 THE SUN"
 const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1" on later pages
@@ -37,7 +41,9 @@ const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
 	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "titan": 0.16, "arch_golem": 0.15,
-	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11}
+	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11,
+	"ambusher": 0.45, "grin": 0.42, "pained": 0.3, "imp": 0.8, "needle": 0.36, "brothers": 0.3, "animal_lord": 0.13,
+	"executor": 0.14, "mother_nature": 0.15, "false_god": 0.12, "satan": 0.1, "the_sun": 0.11}
 ## Board page per Colosseum: title, board gradient, boss label colour. Tile colours and the
 ## zone labels come from each level's map (MAP_TILE / StoryLevels.MAPS "zone").
 const PAGES := {
@@ -49,6 +55,8 @@ const PAGES := {
 		"board": [Color(0.30, 0.10, 0.05), Color(0.14, 0.18, 0.24)], "boss_label": Color(0.5, 0.85, 1.0)},
 	4: {"title": "STORY MODE  -  COLOSSEUM 4: THE VOID BELOW  (YOU ARE THE ARCHITECT)",
 		"board": [Color(0.10, 0.10, 0.12), Color(0.12, 0.04, 0.18)], "boss_label": Color(0.8, 0.6, 1.0)},
+	5: {"title": "STORY MODE  -  COLOSSEUM 5: THE FINAL ASCENT",
+		"board": [Color(0.18, 0.08, 0.08), Color(0.55, 0.42, 0.20)], "boss_label": Color(1.0, 0.85, 0.4)},
 }
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
 
@@ -147,15 +155,21 @@ func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
 	_title.text = String(_page_data().get("title", "STORY MODE"))
 	if _celebrate:
-		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre"}
-		_info.text = "COLOSSEUM %d COMPLETE!  %s has fallen.  Colosseum %d coming soon...  (Level 50: The Sun)" % [
-			_page, boss_names.get(_page, "The boss"), _page + 1]
+		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun"}
+		if _page >= 5:
+			_info.text = "THE END.  The Sun has fallen and you fell back to Earth.  You beat Story Mode!"
+		else:
+			_info.text = "COLOSSEUM %d COMPLETE!  %s has fallen.  Colosseum %d coming soon...  (Level 50: The Sun)" % [
+				_page, boss_names.get(_page, "The boss"), _page + 1]
 		_info.add_theme_color_override("font_color", GOLD)
 		_play.text = "REPLAY BOSS"
 	else:
 		_info.add_theme_color_override("font_color", UiStyle.TEXT)
 		var boss := String(lv.get("boss", "")) != ""
 		var hero_name := "You play as the ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "architect" else "Warrior only"
+		if bool(lv.get("partner", false)):
+			var h := StoryLevels.hero_of(_pawn_space)
+			hero_name = "YOU: %s  +  CPU partner: %s" % [h.to_upper(), "ARCHITECT" if h == "warrior" else "WARRIOR"]
 		var tag := "  (BOSS)" if boss else ""
 		if StoryLevels.is_optional(_pawn_space):
 			tag = "  (OPTIONAL - skip it with Right)"
@@ -183,9 +197,10 @@ func _layout(n: int) -> Array:
 	if n == SPACES.size():
 		return SPACES
 	var pts := []
+	var rows := [0.80, 0.52, 0.24] if n > 12 else [0.78, 0.40]  # 3 rows for long Colosseums
 	for i in n:
 		var k := float(i) / float(maxi(n - 1, 1))
-		pts.append(Vector2(lerpf(0.07, 0.68, k), 0.78 if i % 2 == 0 else 0.40))
+		pts.append(Vector2(lerpf(0.07, 0.70, k), rows[i % rows.size()]))
 	return pts
 
 
@@ -309,6 +324,13 @@ func _on_play() -> void:
 		return
 	_busy = true
 	StoryProgress.current_level = _pawn_space
+	# Colosseum 5: pick your hero at its first level (or whenever no hero was picked yet)
+	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) == "choice" \
+			and (_pawn_space == StoryLevels.first_of(StoryLevels.colosseum_of(_pawn_space)) or StoryProgress.c5_hero == ""):
+		var pick := HeroSelect.new()
+		add_child(pick)
+		await pick.chosen
+		_refresh_ui()
 	var cs := String(StoryLevels.get_level(_pawn_space).get("cutscene_in", ""))
 	var art: Script = ArchitectArt if StoryLevels.hero_of(_pawn_space) == "architect" else WarriorArt
 	if cs != "":
@@ -392,8 +414,9 @@ func _draw_board() -> void:
 	for n in range(first, last):
 		_road(_space_pos(n), _space_pos(n + 1), n < StoryProgress.unlocked_level)
 	var next_open := last + 1 <= StoryProgress.unlocked_level and last + 1 <= StoryLevels.count()
-	_road(_space_pos(last), _teaser_pos(0), next_open, 1.0 if next_open else 0.5)
-	_road(_teaser_pos(0), _teaser_pos(1), false, 0.25)
+	if not _final_page():
+		_road(_space_pos(last), _teaser_pos(0), next_open, 1.0 if next_open else 0.5)
+		_road(_teaser_pos(0), _teaser_pos(1), false, 0.25)
 	if _page > 1:
 		_road(_back_pos(), _space_pos(first), true, 0.7)
 
@@ -516,6 +539,17 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, true)
+	elif _page >= 5:
+		# Colosseum 5: the mountain rising to the right, its peak glowing (The Sun), a red sky
+		var base := r.position.y + r.size.y
+		c.draw_colored_polygon(PackedVector2Array([Vector2(r.position.x + r.size.x * 0.30, base), Vector2(r.position.x + r.size.x * 0.62, r.position.y + r.size.y * 0.30),
+			Vector2(r.position.x + r.size.x * 0.80, r.position.y + r.size.y * 0.08), Vector2(r.position.x + r.size.x * 0.96, base)]), Color(0.10, 0.06, 0.06, 0.55))
+		var peak := r.position + Vector2(r.size.x * 0.80, r.size.y * 0.08)
+		c.draw_circle(peak, 60.0 + 6.0 * sin(_t * 2.0), Color(1.0, 0.9, 0.5, 0.25))
+		c.draw_circle(peak, 24.0, Color(1.0, 0.95, 0.7, 0.7))
+		for k in 3:                                            # Thorn trees on the left
+			var tx := r.position.x + r.size.x * (0.05 + 0.08 * float(k))
+			c.draw_line(Vector2(tx, base - 10.0), Vector2(tx + 6.0, base - 80.0 - float(k) * 14.0), Color(0.08, 0.03, 0.03, 0.7), 5.0)
 	else:
 		# Colosseum 4: dark cave (left), void bones (bottom), altar light (middle), spider web (right)
 		var cave := r.position + Vector2(r.size.x * 0.1, r.size.y * 0.5)
@@ -545,6 +579,8 @@ func _zone_labels(r: Rect2) -> void:
 			runs.append([zone, n, n, key])
 		else:
 			runs[-1][2] = n
+	if runs.size() > 8:
+		return                                              # Too many areas to label (Colosseum 5): the info line names each level
 	for i in runs.size():
 		var run: Array = runs[i]
 		if String(run[0]) == "":
@@ -630,8 +666,20 @@ func _back_pos() -> Vector2:
 	return r.position + BACK_MARK * r.size
 
 
+## The last page (Colosseum 5, ending with Level 50: The Sun): no "next Colosseum" teaser.
+func _final_page() -> bool:
+	return _page_last() >= StoryProgress.TOTAL_LEVELS
+
+
 func _teasers() -> void:
 	var c := _board
+	if _final_page():
+		if _page > 1:
+			var bk := _back_pos()
+			c.draw_circle(bk, 30.0, Color(1.0, 0.8, 0.3, 0.3))
+			FighterArt.label(c, bk + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
+			FighterArt.label(c, bk + Vector2(0, 46), "COLOSSEUM %d" % (_page - 1), 12, Color(1, 1, 1, 0.7))
+		return
 	var p := _teaser_pos(0)
 	var nxt := _page_last() + 1
 	var open := nxt <= StoryProgress.unlocked_level and nxt <= StoryLevels.count()

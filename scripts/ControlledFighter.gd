@@ -16,6 +16,8 @@ var move_names := {}
 var cooldowns := {}
 var cooldown_totals := {}
 
+var quiet_announce := false           # True = never shows big move names (Story CPU partner)
+
 var _coyote_timer := 0.0
 var _jump_buffer_timer := 0.0
 
@@ -163,6 +165,8 @@ func _press_move(id: String) -> void:
 
 ## Move / ultimate name, BIG across the screen (Effects.announce). Never cut off.
 func announce_move(text: String, col: Color = Color(-1, 0, 0)) -> void:
+	if quiet_announce:
+		return                                # Story CPU partner: no big move names over your screen
 	if col.r < 0.0:
 		col = Color(0.55, 1.0, 0.55) if slot == 1 else Color(1.0, 0.6, 0.55)
 	Effects.announce(self, text, col, slot)

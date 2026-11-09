@@ -136,7 +136,94 @@ function epic(bpm, bars, chords, bass, lead, drums, padWave, leadWave) {
   return b;
 }
 
+// VIOLIN: bowed string = sawtooth with a slow bow attack + 5.5 Hz vibrato, softened by
+// mixing in a triangle. Used for the Child Wielding Needle's theme.
+function bowed(b, start, dur, f, vol) {
+  let ph = 0; const n = Math.round(dur * RATE), s0 = Math.round(start * RATE);
+  for (let i = 0; i < n && s0 + i < b.length; i++) {
+    const t = i / RATE;
+    const vib = 1 + 0.006 * Math.sin(2 * Math.PI * 5.5 * t) * Math.min(1, t / 0.15);   // vibrato grows in
+    ph += (f * vib) / RATE;
+    const bow = Math.min(1, t / 0.06) * (t > dur - 0.05 ? Math.max(0, (dur - t) / 0.05) : 1);
+    b[s0 + i] += (0.7 * saw(ph) + 0.3 * tri(ph)) * vol * bow;
+  }
+}
+// Violin boss: a fast violin melody (16th-note runs), pizzicato bass, harpsichord-ish chords.
+function violinBoss(bpm, bars, chords, bass, melody) {
+  const beat = 60 / bpm, barLen = 4 * beat, len = bars * barLen, b = buf(len), step = beat / 4;   // 16ths
+  for (let bar = 0; bar < bars; bar++) {
+    const ch = chords[bar % chords.length];
+    for (let k = 0; k < 8; k++)                                                  // Broken-chord harpsichord
+      tone(b, bar * barLen + k * beat * 0.5, beat * 0.45, NOTE(ch[k % ch.length]), NOTE(ch[k % ch.length]), sq, 0.05, 0.002, 0.08);
+  }
+  const steps = Math.round(len / step);
+  for (let s = 0; s < steps; s++) {
+    const t = s * step;
+    const bn = bass[(s >> 1) % bass.length]; if (bn && s % 2 === 0) tone(b, t, step * 1.6, NOTE(bn), NOTE(bn), tri, 0.3, 0.002, 0.08);   // Pizzicato
+    const m = melody[s % melody.length];
+    if (m) { let d = 1; while (d < 4 && !melody[(s + d) % melody.length] && (s + d) % melody.length !== 0) d++; bowed(b, t, step * d * 0.98, NOTE(m), 0.2); }
+    if (s % 8 === 0) tone(b, t, 0.2, 90, 40, (p) => Math.sin(p * 2 * Math.PI), 0.5, 0.002, 0.08);
+  }
+  return b;
+}
+
 const MUSIC = {
+  // ----- STORY MODE (Colosseum 5): every boss has its own theme -----
+  // Child Wielding Needle: a frantic VIOLIN theme, D minor, fast 16th-note runs
+  boss_needle: () => violinBoss(150, 8,
+    [[62, 65, 69], [58, 62, 65], [60, 64, 67], [57, 61, 64]],
+    [38, 50, 38, 45, 34, 46, 34, 41, 36, 48, 36, 43, 33, 45, 33, 40],
+    [74, 76, 77, 79, 81, 0, 79, 77, 76, 77, 74, 0, 73, 74, 76, 0, 77, 0, 74, 0, 70, 72, 74, 76, 77, 76, 74, 72, 70, 0, 0, 0,
+     72, 74, 76, 77, 79, 0, 76, 0, 72, 74, 72, 70, 69, 0, 0, 0, 69, 71, 73, 74, 76, 77, 79, 81, 82, 81, 79, 77, 76, 0, 73, 0]),
+  // The Brothers: two mirrored voices (organ + bells), strict and symmetrical, A minor
+  boss_brothers: () => epic(126, 8,
+    [[45, 52, 57, 60], [45, 52, 57, 60], [41, 48, 53, 57], [43, 50, 55, 59]],
+    [33, 45, 33, 45, 33, 45, 33, 45, 33, 45, 33, 45, 33, 45, 33, 45, 29, 41, 29, 41, 29, 41, 29, 41, 31, 43, 31, 43, 31, 43, 31, 43],
+    [69, 0, 72, 0, 76, 0, 72, 0, 81, 0, 76, 0, 72, 0, 69, 0, 77, 0, 72, 0, 69, 0, 72, 0, 74, 0, 79, 0, 74, 0, 71, 0],
+    ['T', 'b', 's', 'b', 'T', 'b', 's', 'b', 'T', 'c', 's', 'c', 'T', 'c', 's', 's'], organ, tri),
+  // Animal Lord: primal, tribal drums, low growling brass, F# phrygian
+  boss_animal: () => epic(136, 8,
+    [[42, 49, 54], [43, 50, 55], [42, 49, 54], [40, 47, 52]],
+    [30, 30, 0, 30, 42, 0, 30, 31, 30, 30, 0, 30, 42, 0, 31, 30, 30, 30, 0, 30, 42, 0, 30, 31, 28, 28, 0, 28, 40, 0, 28, 31],
+    [66, 0, 67, 66, 0, 0, 64, 0, 66, 0, 69, 0, 67, 0, 66, 0, 66, 0, 67, 66, 64, 0, 62, 0, 61, 0, 0, 0, 0, 0, 0, 0],
+    ['T', 't', 't', 's', 'T', 't', 's', 't', 'T', 't', 't', 's', 'T', 's', 't', 's'], saw, saw),
+  // Executor: slow, crushing, grinding - doom organ, metal clanks, G minor
+  boss_executor: () => epic(96, 8,
+    [[43, 50, 55, 58], [39, 46, 51, 55], [41, 48, 53, 56], [38, 45, 50, 54]],
+    [31, 0, 31, 0, 31, 30, 31, 0, 27, 0, 27, 0, 27, 26, 27, 0, 29, 0, 29, 0, 29, 28, 29, 0, 26, 0, 26, 0, 26, 25, 26, 0],
+    [67, 0, 0, 0, 70, 0, 69, 0, 67, 0, 0, 0, 63, 0, 0, 0, 65, 0, 0, 0, 68, 0, 67, 0, 66, 0, 0, 0, 0, 0, 0, 0],
+    ['T', 'c', 'c', 0, 'T', 'c', 's', 'c', 'T', 'c', 'c', 0, 'T', 'c', 's', 's'], organ, saw),
+  // Mother Nature: majestic, flowing, four moods in one - choir + harp-like arps, E major / minor
+  boss_nature: () => epic(112, 8,
+    [[52, 56, 59, 64], [49, 52, 56, 61], [45, 49, 52, 57], [47, 51, 54, 59]],
+    [40, 0, 47, 0, 52, 0, 47, 0, 37, 0, 44, 0, 49, 0, 44, 0, 33, 0, 40, 0, 45, 0, 40, 0, 35, 0, 42, 0, 47, 0, 42, 0],
+    [76, 80, 83, 80, 81, 0, 80, 78, 76, 0, 73, 76, 80, 0, 78, 76, 73, 76, 81, 76, 78, 0, 76, 73, 75, 0, 78, 0, 83, 0, 0, 0],
+    ['b', 0, 's', 0, 't', 0, 's', 0, 'b', 0, 's', 0, 't', 't', 's', 's'], organ, tri),
+  // The False God: a twisted carnival of fire - waltz-like 3/4 feel in a 4/4 loop, B minor, choir
+  boss_falsegod: () => epic(144, 8,
+    [[47, 54, 59, 62], [43, 50, 55, 59], [45, 52, 57, 61], [42, 49, 54, 58]],
+    [35, 0, 47, 50, 0, 47, 31, 0, 43, 47, 0, 43, 33, 0, 45, 49, 0, 45, 30, 0, 42, 46, 0, 42, 35, 0, 47, 50, 0, 47, 34, 0],
+    [71, 74, 78, 0, 76, 74, 71, 0, 67, 0, 71, 74, 79, 0, 78, 76, 73, 76, 81, 0, 79, 78, 76, 0, 78, 0, 73, 0, 70, 0, 0, 0],
+    ['T', 0, 's', 'T', 0, 's', 'T', 'c', 0, 's', 'T', 0, 's', 'T', 's', 's'], organ, saw),
+  // Satan: infernal choir, tritone bass, pounding drums, C minor
+  boss_satan: () => epic(132, 8,
+    [[36, 43, 48, 51], [42, 49, 54, 57], [36, 43, 48, 51], [41, 48, 53, 56]],
+    [24, 24, 36, 24, 30, 30, 42, 30, 24, 24, 36, 24, 29, 29, 41, 29, 24, 24, 36, 24, 30, 30, 42, 30, 23, 23, 35, 23, 26, 29, 30, 24],
+    [72, 0, 75, 0, 78, 0, 75, 72, 71, 0, 0, 0, 66, 0, 0, 0, 72, 0, 75, 77, 78, 0, 77, 75, 74, 0, 72, 0, 71, 0, 0, 0],
+    ['T', 'T', 's', 'c', 'T', 'T', 's', 'b', 'T', 'T', 's', 'c', 'T', 't', 's', 's'], organ, saw),
+  // The Sun: radiant, holy, enormous - bright choir, bells, soaring lead, D major
+  boss_sun: () => epic(120, 8,
+    [[50, 54, 57, 62], [55, 59, 62, 67], [57, 61, 64, 69], [47, 50, 54, 59]],
+    [38, 0, 45, 0, 50, 0, 45, 0, 43, 0, 50, 0, 55, 0, 50, 0, 45, 0, 52, 0, 57, 0, 52, 0, 35, 0, 42, 0, 47, 0, 42, 0],
+    [78, 0, 81, 0, 86, 0, 83, 81, 79, 0, 83, 0, 86, 0, 0, 0, 81, 0, 85, 0, 88, 0, 86, 85, 83, 0, 81, 0, 78, 0, 0, 0],
+    ['b', 0, 's', 0, 'T', 0, 's', 'b', 'b', 0, 's', 0, 'T', 't', 's', 's'], organ, tri),
+  // The Consumer: the Sun's theme collapsing - same key twisted to D minor, faster, distorted
+  boss_consumer: () => epic(160, 8,
+    [[50, 53, 57, 62], [46, 50, 53, 58], [45, 49, 52, 57], [44, 50, 53, 56]],
+    [38, 38, 50, 38, 37, 37, 49, 37, 34, 34, 46, 34, 33, 33, 45, 33, 38, 38, 50, 38, 37, 37, 49, 37, 32, 32, 44, 32, 33, 37, 38, 39],
+    [74, 77, 74, 0, 81, 0, 77, 74, 73, 0, 74, 0, 70, 0, 0, 0, 74, 77, 81, 0, 82, 0, 81, 77, 76, 0, 74, 0, 73, 0, 0, 0],
+    ['T', 'c', 's', 'c', 'T', 't', 's', 'c', 'T', 'c', 's', 'c', 'T', 't', 's', 's'], saw, saw),
+
   // ----- FIGHTS-MODE BOSSES (classical / Souls-like, per the plan for new bosses) -----
   // Minos: cathedral organ + choir, D minor, judging and regal
   boss_minos: () => epic(116, 8,

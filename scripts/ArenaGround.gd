@@ -31,7 +31,8 @@ extends StaticBody2D
 ## paving with rune seams. Foundry = iron floor plates with molten seams.
 ## Colosseum 4: DarkRock = dim cave rock. Bones = dark bone-pile floor of the void.
 @export_enum("Stone", "Void", "Hell", "Geode", "Scrap", "Lab", "Elevator", "Marble", "Sewer", "Blasphemy",
-	"Burnt", "Cobble", "Foundry", "DarkRock", "Bones") var ground_theme := 0:
+	"Burnt", "Cobble", "Foundry", "DarkRock", "Bones",
+	"Loom", "Mirror", "Den", "Gallows", "Garden", "Hellrock", "SunStone", "Thorn", "Ruin", "Snow", "Cathedral") var ground_theme := 0:
 	set(v):
 		ground_theme = v
 		_apply_theme()
@@ -170,6 +171,29 @@ const C2_THEMES := {
 		Color(0.06, 0.06, 0.07), Color(0.05, 0.05, 0.06), Color(0.20, 0.20, 0.22), Color(0.45, 0.50, 0.60), Color(0.8, 0.85, 0.95), Color(0.2, 0.22, 0.3)],
 	14: [Color(0.55, 0.28, 0.95), 2.0, Color(0.24, 0.21, 0.27), Color(0.40, 0.37, 0.43), Color(0.14, 0.12, 0.17), Color(0.10, 0.08, 0.13),
 		Color(0.07, 0.05, 0.10), Color(0.12, 0.05, 0.18), Color(0.34, 0.31, 0.37), Color(0.55, 0.28, 0.95), Color(0.85, 0.7, 1.0), Color(0.25, 0.1, 0.45)],
+	# ----- Colosseum 5 -----
+	15: [Color(0.85, 0.85, 0.95), 1.5, Color(0.42, 0.28, 0.20), Color(0.58, 0.42, 0.30), Color(0.28, 0.18, 0.12), Color(0.26, 0.16, 0.12),   # Loom: floorboards, silk
+		Color(0.20, 0.12, 0.09), Color(0.16, 0.10, 0.12), Color(0.45, 0.32, 0.24), Color(0.85, 0.80, 0.95), Color(1.0, 1.0, 1.0), Color(0.55, 0.45, 0.65)],
+	16: [Color(1.0, 0.85, 0.4), 2.0, Color(0.50, 0.50, 0.54), Color(0.92, 0.92, 0.95), Color(0.12, 0.12, 0.14), Color(0.30, 0.30, 0.33),       # Mirror: black / white
+		Color(0.18, 0.18, 0.20), Color(0.10, 0.10, 0.12), Color(0.70, 0.70, 0.74), Color(1.0, 0.85, 0.4), Color(1.0, 0.97, 0.8), Color(0.6, 0.45, 0.15)],
+	17: [Color(0.75, 0.15, 0.10), 2.0, Color(0.36, 0.26, 0.18), Color(0.50, 0.38, 0.26), Color(0.22, 0.15, 0.10), Color(0.24, 0.16, 0.10),      # Den: dirt, bones
+		Color(0.17, 0.11, 0.07), Color(0.20, 0.08, 0.05), Color(0.78, 0.72, 0.60), Color(0.80, 0.74, 0.62), Color(1.0, 0.96, 0.85), Color(0.5, 0.42, 0.3)],
+	18: [Color(0.65, 0.30, 0.95), 2.0, Color(0.24, 0.20, 0.24), Color(0.38, 0.33, 0.38), Color(0.14, 0.11, 0.14), Color(0.13, 0.10, 0.14),      # Gallows: dark stone, fog
+		Color(0.09, 0.07, 0.10), Color(0.16, 0.06, 0.20), Color(0.30, 0.26, 0.30), Color(0.65, 0.30, 0.95), Color(0.9, 0.75, 1.0), Color(0.3, 0.1, 0.45)],
+	19: [Color(0.55, 0.95, 0.45), 2.0, Color(0.32, 0.50, 0.22), Color(0.48, 0.68, 0.32), Color(0.20, 0.34, 0.14), Color(0.34, 0.24, 0.14),      # Garden: grass, roots
+		Color(0.26, 0.18, 0.10), Color(0.18, 0.12, 0.06), Color(0.44, 0.34, 0.22), Color(0.55, 0.95, 0.45), Color(0.9, 1.0, 0.85), Color(0.2, 0.5, 0.15)],
+	20: [Color(1.0, 0.40, 0.06), 3.0, Color(0.14, 0.08, 0.08), Color(0.32, 0.16, 0.14), Color(0.08, 0.04, 0.04), Color(0.10, 0.05, 0.05),      # Hellrock: obsidian, lava
+		Color(0.06, 0.03, 0.03), Color(0.35, 0.08, 0.02), Color(0.22, 0.12, 0.10), Color(1.0, 0.40, 0.06), Color(1.0, 0.85, 0.45), Color(0.7, 0.15, 0.03)],
+	21: [Color(1.0, 0.85, 0.40), 2.0, Color(0.95, 0.92, 0.82), Color(1.0, 1.0, 0.95), Color(0.80, 0.74, 0.60), Color(0.85, 0.80, 0.68),        # SunStone: white-gold
+		Color(0.75, 0.68, 0.54), Color(0.68, 0.60, 0.45), Color(0.98, 0.95, 0.86), Color(1.0, 0.85, 0.40), Color(1.0, 0.98, 0.8), Color(0.8, 0.6, 0.2)],
+	22: [Color(0.80, 0.18, 0.12), 2.0, Color(0.20, 0.12, 0.10), Color(0.34, 0.22, 0.18), Color(0.12, 0.07, 0.06), Color(0.12, 0.07, 0.06),      # Thorn: dark forest soil
+		Color(0.08, 0.05, 0.04), Color(0.14, 0.04, 0.04), Color(0.26, 0.17, 0.14), Color(0.80, 0.18, 0.12), Color(1.0, 0.6, 0.5), Color(0.4, 0.08, 0.06)],
+	23: [Color(0.70, 0.80, 1.0), 2.0, Color(0.46, 0.46, 0.50), Color(0.62, 0.62, 0.68), Color(0.32, 0.32, 0.36), Color(0.34, 0.34, 0.38),      # Ruin: old pale stone
+		Color(0.26, 0.26, 0.30), Color(0.20, 0.20, 0.26), Color(0.54, 0.54, 0.58), Color(0.70, 0.80, 1.0), Color(0.95, 0.97, 1.0), Color(0.35, 0.45, 0.7)],
+	24: [Color(0.60, 0.80, 1.0), 2.0, Color(0.92, 0.94, 0.98), Color(1.0, 1.0, 1.0), Color(0.74, 0.78, 0.86), Color(0.44, 0.46, 0.52),         # Snow over mountain rock
+		Color(0.34, 0.36, 0.42), Color(0.26, 0.28, 0.34), Color(0.60, 0.62, 0.68), Color(0.60, 0.80, 1.0), Color(0.95, 0.98, 1.0), Color(0.3, 0.45, 0.65)],
+	25: [Color(1.0, 0.35, 0.10), 2.5, Color(0.16, 0.12, 0.12), Color(0.30, 0.24, 0.22), Color(0.09, 0.06, 0.06), Color(0.10, 0.07, 0.07),      # Cathedral: black stone, embers
+		Color(0.07, 0.05, 0.05), Color(0.22, 0.06, 0.03), Color(0.24, 0.20, 0.20), Color(1.0, 0.35, 0.10), Color(1.0, 0.8, 0.5), Color(0.6, 0.12, 0.04)],
 }
 
 
@@ -475,6 +499,16 @@ func _draw() -> void:
 			bi += 1
 	elif ground_theme == 6:
 		_draw_elevator_extras()
+	elif ground_theme == 16:     # Mirror Hall: the floor is a black / white checkerboard, mirrored
+		var tile := 60.0
+		var x0 := -hw + 10.0
+		var i := 0
+		while x0 < hw - 10.0:
+			var w := minf(tile, hw - 10.0 - x0)
+			draw_rect(Rect2(x0, 2, w, CAP - 8.0), Color(0.12, 0.12, 0.14) if (i % 2 == 0) == (x0 < 0.0) else Color(0.92, 0.92, 0.95))
+			x0 += tile
+			i += 1
+		draw_line(Vector2(0, 0), Vector2(0, CAP), Color(1.0, 0.85, 0.4), 3.0)
 	elif ground_theme == 8:      # Sewer: wet sheen + slime drips over the lip
 		draw_line(Vector2(-hw + 14, 9), Vector2(hw - 14, 9), Color(0.6, 0.9, 0.55, 0.25), 3.0)
 		var x := -hw + 60.0

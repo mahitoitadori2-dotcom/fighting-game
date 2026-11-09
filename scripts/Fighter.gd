@@ -43,6 +43,7 @@ var _force_timer := 0.0
 var stun_timer := 0.0
 var goo_timer := 0.0
 var burn_timer := 0.0                 # > 0 right after fire damage (status icon)
+var confuse_timer := 0.0              # > 0 = left / right are REVERSED for a human (Executor's memory fog)
 var goo_slow := 1.0
 var goo_def_down := 0.0
 var grabbed_by: Fighter = null
@@ -105,6 +106,7 @@ func draw_model_on(_c: CanvasItem) -> void:
 func tick_status(delta: float) -> void:
 	stun_timer = maxf(stun_timer - delta, 0.0)
 	burn_timer = maxf(burn_timer - delta, 0.0)
+	confuse_timer = maxf(confuse_timer - delta, 0.0)
 	if goo_timer > 0.0:
 		goo_timer -= delta
 		if goo_timer <= 0.0:
@@ -320,6 +322,7 @@ func respawn() -> void:
 	goo_timer = 0.0
 	goo_slow = 1.0
 	goo_def_down = 0.0
+	confuse_timer = 0.0
 	grabbed_by = null
 	knockback_scale = 1.0
 	damage_taken_mult = 1.0
@@ -371,6 +374,8 @@ func _status_text() -> String:
 		parts.append("GRABBED! mash (%d/%d)" % [int(grab_progress), data.grab_escape_presses])
 	if stun_timer > 0.0:
 		parts.append("STUN")
+	if confuse_timer > 0.0:
+		parts.append("CONFUSED: CONTROLS REVERSED")
 	return " | ".join(parts)
 
 

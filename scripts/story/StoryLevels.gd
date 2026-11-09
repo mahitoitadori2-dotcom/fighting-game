@@ -5,6 +5,8 @@ extends RefCounted
 ##   COLOSSEUM 2 = levels 7-15   (The Ascent, mini-boss: Architect Chorus, boss: Blasphemy Caeser)
 ##   COLOSSEUM 3 = levels 16-26  (The Burning Crown, mini-boss: Architectian Titan, boss: Architect's Golem)
 ##   COLOSSEUM 4 = levels 27-34  (The Void Below, OPTIONAL level 32: The Shining, boss: Void Massacre)
+##   COLOSSEUM 5 = levels 35-50  (The Final Ascent: pick Warrior or Architect, the other is your CPU
+##                               partner; a COIN FLIP adds enemies every level; 7 bosses up to THE SUN)
 ## A level = waves of enemy GROUPS, then (boss levels) intro cutscene -> boss -> death cutscene.
 ##
 ##   waves        Array of groups; each group = Array of enemy ids (see make_enemy()).
@@ -25,10 +27,15 @@ extends RefCounted
 ##   altar        true = The Shining's altar (kill it or leave through the dark gate)
 ##   void_mod     true = void enemies are weakened / the Massacre strengthened by the Shining choice
 ##   tile         enemy shown on the board tile (default: the boss / the toughest enemy)
+##   hero         "warrior" (default), "architect", or "choice" (Colosseum 5: the hero you picked)
+##   partner      true = the other hero fights beside you as a CPU partner (revives when it falls)
+##   coin_flip    true = coin flip at the start: HEADS 2 Ambushers / TAILS Devilish Grin + Pained One
+##   quick_boss   true = NO pre-fight: straight into the boss (The Sun)
+##   finale       true = the boss ends in the SunFinale sequence instead of a death cutscene
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8]
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16]
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -88,6 +95,30 @@ const MAPS := {
 	"altar":        {"bg": "altar", "ground": 14, "walls": "bone", "half_width": 820.0, "music": "story_altar", "zone": "THE ALTAR"},
 	# THE SPIDER LAIR: webs everywhere, victims hanging from the ceiling in cocoons.
 	"spider_lair":  {"bg": "spider_lair", "ground": 14, "walls": "web", "half_width": 840.0, "music": "story_void", "zone": "THE SPIDER LAIR"},
+	# ----- Colosseum 5: the road (group battles) -----
+	# THE THORNWOOD: a dead forest of black thorns under a blood-red sky.
+	"thornwood":    {"bg": "thornwood", "ground": 22, "walls": "thorn", "half_width": 820.0, "music": "story_darkcave", "zone": "THE THORNWOOD"},
+	# THE FALLEN RUINS: broken temples and aqueducts under a huge pale moon.
+	"ruins":        {"bg": "fallen_ruins", "ground": 23, "walls": "ruin", "half_width": 820.0, "music": "story_throne", "zone": "THE FALLEN RUINS"},
+	# THE FOOTHILLS: windy mountain slopes, snow, the peak and its light far above.
+	"foothills":    {"bg": "foothills", "ground": 24, "walls": "cliff", "half_width": 820.0, "music": "story_ascent", "zone": "THE FOOTHILLS"},
+	# ----- Colosseum 5: one UNIQUE arena per boss -----
+	# CHILD WIELDING NEEDLE: the Silk Loom, an attic of giant spools and silk curtains, moonlight.
+	"silk_loom":    {"bg": "silk_loom", "ground": 15, "walls": "loom", "half_width": 760.0, "music": "story_altar", "zone": "THE SILK LOOM"},
+	# THE BROTHERS: the Mirror Hall, a perfectly symmetrical black-and-white hall.
+	"mirror_hall":  {"bg": "mirror_hall", "ground": 16, "walls": "mirror", "half_width": 780.0, "music": "story_enlightened", "zone": "THE MIRROR HALL"},
+	# ANIMAL LORD: the Stitched Den, hides, bones and stitched carcasses hanging from hooks.
+	"beast_den":    {"bg": "beast_den", "ground": 17, "walls": "den", "half_width": 820.0, "music": "story_hive", "solid": true, "zone": "THE STITCHED DEN"},
+	# EXECUTOR: the Execution Ground, gallows, chopping blocks, purple fog, a blood moon.
+	"gallows":      {"bg": "gallows", "ground": 18, "walls": "gallows", "half_width": 820.0, "music": "story_void", "zone": "THE EXECUTION GROUND"},
+	# MOTHER NATURE: the Heart of Nature, a giant world tree in four seasons at once.
+	"world_tree":   {"bg": "world_tree", "ground": 19, "walls": "roots", "half_width": 860.0, "music": "story_geode", "zone": "THE HEART OF NATURE"},
+	# THE FALSE GOD: the Ashen Cathedral, black stone, burnt pews, a burning altar, ash falling.
+	"ash_cathedral": {"bg": "ash_cathedral", "ground": 25, "walls": "cathedral", "half_width": 840.0, "music": "story_throne", "zone": "THE ASHEN CATHEDRAL"},
+	# SATAN: his Mountain Cave, black rock, rivers of lava, a throne of horns.
+	"satan_cave":   {"bg": "satan_cave", "ground": 20, "walls": "hellrock", "half_width": 860.0, "music": "story_cave", "solid": true, "zone": "SATAN'S CAVE"},
+	# THE SUN: the Sun Peak, above the clouds, white-gold stone, blinding sky.
+	"sun_peak":     {"bg": "sun_peak", "ground": 21, "walls": "peak", "half_width": 880.0, "music": "none", "zone": "THE SUN PEAK"},
 }
 
 const LEVELS := {
@@ -239,6 +270,90 @@ const LEVELS := {
 		"boss_sub": "Sixteen eyes, sixteen legs  -  Keeper of the Fourth Colosseum",
 		"boss_line": "*the clicking of sixteen legs*",
 		"boss_death_title": "THE VOID MASSACRE IS DEAD", "boss_death_sub": "The webs go still. The fourth Colosseum is yours."},
+
+	# ======================= COLOSSEUM 5: THE FINAL ASCENT (35-50) =======================
+	# You pick the Warrior or the Architect (the other one is your CPU partner) and every level
+	# starts with a hidden COIN FLIP. Bosses (each with its own arena + soundtrack): Child Wielding
+	# Needle, The Brothers, Animal Lord, Executor, then Mother Nature (once those four are beaten),
+	# The False God, Satan and THE SUN.
+	35: {"title": "THE CROSSROADS OF ASH", "theme": "thornwood", "map": "thornwood", "hero": "choice", "partner": true, "coin_flip": true,
+		"cutscene_in": "c5_intro", "arrive": "stand",
+		"intro": "Two heroes, one road. Far away, on top of the mountain, something shines.",
+		"waves": [["brute", "parasite", "brute"], ["guard_sword", "warrior_a_spear", "hydra"]], "boss": ""},
+	36: {"title": "CHILD WIELDING NEEDLE", "theme": "silk_loom", "map": "silk_loom", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Giant spools, silk curtains, moonlight... and a child humming a lullaby.",
+		"waves": [], "boss": "needle",
+		"boss_music": "boss_needle", "boss_color": Color(0.85, 0.75, 1.0),
+		"boss_sub": "The First Keeper of the Ascent", "boss_line": "Will you play with me?  Hold still...",
+		"boss_death_title": "THE NEEDLE FALLS", "boss_death_sub": "The silk goes slack. The lullaby stops."},
+	37: {"title": "THE THORNWOOD", "theme": "thornwood", "map": "thornwood", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Black thorns as tall as towers. Dead things still walk between them.",
+		"waves": [["copper", "sparkling", "copper"], ["masker", "guard_bow", "guard_bow"]], "boss": ""},
+	38: {"title": "THE WEEPING ROAD", "theme": "ruins", "map": "ruins", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "A road of broken temples. The statues are crying.",
+		"waves": [["stray", "crawler", "stray"], ["warrior_a_shield", "guard_hammer", "warrior_a_bow"]], "boss": ""},
+	39: {"title": "THE BROTHERS", "theme": "mirror_hall", "map": "mirror_hall", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "A hall that is the same on both sides. Two blades are waiting in the middle.",
+		"waves": [], "boss": "brothers",
+		"boss_music": "boss_brothers", "boss_color": Color(0.9, 0.9, 1.0),
+		"boss_sub": "One Blade, Two Hands  -  The Second Keeper", "boss_line": "As one.",
+		"boss_death_title": "THE BROTHERS FALL TOGETHER", "boss_death_sub": "Neither first. Neither last."},
+	40: {"title": "THE BROKEN AQUEDUCT", "theme": "ruins", "map": "ruins", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Water still runs through the cracks. Something ghostly slides under the stones.",
+		"waves": [["escapist", "crawling", "crawling"], ["golem", "guard_bow", "guard_bow"]], "boss": ""},
+	41: {"title": "THE SILENT CHAPEL", "theme": "ruins", "map": "ruins", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "An empty chapel. The faithful are still here... sort of.",
+		"waves": [["follower", "guard_shield", "follower"], ["masker", "tentacle", "void_soul"]], "boss": ""},
+	42: {"title": "ANIMAL LORD", "theme": "beast_den", "map": "beast_den", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Hides on hooks. Bones in piles. Something breathes with many lungs.",
+		"waves": [], "boss": "animal_lord",
+		"boss_music": "boss_animal", "boss_color": Color(1.0, 0.75, 0.45),
+		"boss_sub": "Stitched from Every Beast  -  The Third Keeper", "boss_line": "*a roar in a dozen voices*",
+		"boss_death_title": "THE ANIMAL LORD COMES APART", "boss_death_sub": "The stitches tear. The den goes quiet."},
+	43: {"title": "THE HOWLING PASS", "theme": "foothills", "map": "foothills", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "The mountain begins. The wind screams through the pass.",
+		"waves": [["kharleming", "kharleming", "brute"], ["hydra", "warrior_a_sword", "warrior_a_sword"]], "boss": ""},
+	44: {"title": "THE FROZEN STAIR", "theme": "foothills", "map": "foothills", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Steps cut into ice. Every step is guarded.",
+		"waves": [["guard", "guard_bow", "warrior_a_shield"], ["atomic", "sparkling", "sparkling"]], "boss": ""},
+	45: {"title": "EXECUTOR", "theme": "gallows", "map": "gallows", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Gallows. Chopping blocks. A purple fog that makes you forget why you came.",
+		"waves": [], "boss": "executor",
+		"boss_music": "boss_executor", "boss_color": Color(0.8, 0.55, 1.0),
+		"boss_sub": "The Grinding Blade  -  The Fourth Keeper", "boss_line": "The sentence... is DEATH.",
+		"boss_death_title": "THE EXECUTOR IS EXECUTED", "boss_death_sub": "The fog lifts. You remember everything."},
+	46: {"title": "THE ROOTS OF THE WORLD", "theme": "thornwood", "map": "thornwood", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "Four Keepers fallen. The roots of a giant tree break through the ground.",
+		"waves": [["crawler", "brute", "crawler"], ["masker", "masker"]], "boss": ""},
+	47: {"title": "MOTHER NATURE", "theme": "world_tree", "map": "world_tree", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "With the four Keepers dead, the Heart of Nature opens. She is waiting.",
+		"waves": [], "boss": "mother_nature", "boss_intro": "rise", "boss_pos": "center",
+		"boss_music": "boss_nature", "boss_color": Color(0.6, 1.0, 0.6),
+		"boss_map_title": "THE HEART OF NATURE", "boss_map_sub": "Fire, water, earth and wind... all at once.",
+		"boss_sub": "Fire, Water, Earth and Wind", "boss_line": "You walked all this way to kill your MOTHER?",
+		"boss_death": "sink", "boss_death_title": "MOTHER NATURE RETURNS TO THE EARTH",
+		"boss_death_sub": "But something crawls out of her ashes... and runs up the mountain."},
+	48: {"title": "THE FALSE GOD", "theme": "ash_cathedral", "map": "ash_cathedral", "hero": "choice", "partner": true, "coin_flip": true,
+		"intro": "A cathedral of black stone on the mountainside, full of ash. Something burning sits on the altar.",
+		"waves": [], "boss": "false_god",
+		"boss_music": "boss_falsegod", "boss_color": Color(1.0, 0.3, 0.2),
+		"boss_sub": "It Wore Nature's Skin  -  The Nightmare of Fire", "boss_line": "You prayed to her. You will BURN for ME.",
+		"boss_death_title": "THE FALSE GOD BURNS OUT", "boss_death_sub": "Above, near the peak, a cave glows red..."},
+	49: {"title": "SATAN", "theme": "satan_cave", "map": "satan_cave", "hero": "choice", "partner": true, "coin_flip": true,
+		"cutscene_in": "mountain_climb", "arrive": "stand",
+		"intro": "A cave near the top of the mountain. Lava, horns... and a throne.",
+		"waves": [], "boss": "satan", "boss_intro": "rise",
+		"boss_music": "boss_satan", "boss_color": Color(1.0, 0.35, 0.2),
+		"boss_map_title": "SATAN'S MOUNTAIN CAVE", "boss_map_sub": "The lava rises... and so does HE.",
+		"boss_sub": "Lord of the Mountain Cave  -  The Last Gate", "boss_line": "So. The little heroes came to my door.",
+		"boss_death": "sink", "boss_death_title": "SATAN SINKS INTO THE LAVA", "boss_death_sub": "The way to the peak is open."},
+	50: {"title": "THE SUN", "theme": "sun_peak", "map": "sun_peak", "hero": "choice", "partner": true, "quick_boss": true, "finale": true,
+		"cutscene_in": "reach_peak", "arrive": "stand",
+		"intro": "The peak. She is here.",
+		"waves": [], "boss": "the_sun", "boss_pos": "center",
+		"boss_music": "boss_sun", "boss_color": Color(1.0, 0.95, 0.7),
+		"boss_sub": "The Final Boss", "boss_line": "Little moth... fly to the light.",
+		"cutscene_out": "fall_to_earth"},
 }
 
 
@@ -256,7 +371,10 @@ static func count() -> int:
 
 ## Playable character of a level: "warrior" (Colosseums 1-3) or "architect" (Colosseum 4).
 static func hero_of(n: int) -> String:
-	return String(get_level(n).get("hero", PLAYER_CHARACTER))
+	var h := String(get_level(n).get("hero", PLAYER_CHARACTER))
+	if h == "choice":
+		return StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
+	return h
 
 
 static func is_optional(n: int) -> bool:
@@ -350,6 +468,30 @@ static func enemy_script(id: String) -> Script:
 			return TheShining
 		"void_massacre":
 			return VoidMassacre
+		"ambusher":
+			return Ambusher
+		"grin":
+			return DevilishGrin
+		"pained":
+			return PainedOne
+		"imp":
+			return Imp
+		"needle":
+			return ChildNeedle
+		"brothers":
+			return TheBrothers
+		"animal_lord":
+			return AnimalLord
+		"executor":
+			return Executor
+		"mother_nature":
+			return MotherNature
+		"false_god":
+			return FalseGod
+		"satan":
+			return Satan
+		"the_sun":
+			return TheSun
 	return Parasite
 
 
@@ -372,7 +514,8 @@ static func tile_enemy(n: int) -> String:
 		return String(lv["boss"])
 	var rank := ["parasite", "kharleming", "stray", "sparkling", "follower", "guard_bow", "warrior_a_bow", "brute",
 		"guard", "guard_sword", "copper", "warrior_a", "warrior_a_sword", "warrior_a_spear", "guard_hammer", "crawler",
-		"guard_shield", "warrior_a_shield", "golem", "hydra", "atomic", "crawling", "void_soul", "escapist", "tentacle", "masker"]
+		"guard_shield", "warrior_a_shield", "golem", "hydra", "atomic", "crawling", "void_soul", "escapist", "tentacle", "masker",
+		"ambusher", "grin", "pained"]
 	var best := "parasite"
 	for wave in lv.get("waves", []):
 		for id in wave:
@@ -438,5 +581,29 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return TheShining.new()
 		"void_massacre":
 			return VoidMassacre.new()
+		"ambusher":
+			return Ambusher.new()
+		"grin":
+			return DevilishGrin.new()
+		"pained":
+			return PainedOne.new()
+		"imp":
+			return Imp.new()
+		"needle":
+			return ChildNeedle.new()
+		"brothers":
+			return TheBrothers.new()
+		"animal_lord":
+			return AnimalLord.new()
+		"executor":
+			return Executor.new()
+		"mother_nature":
+			return MotherNature.new()
+		"false_god":
+			return FalseGod.new()
+		"satan":
+			return Satan.new()
+		"the_sun":
+			return TheSun.new()
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()

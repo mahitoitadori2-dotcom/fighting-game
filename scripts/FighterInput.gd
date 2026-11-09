@@ -20,29 +20,47 @@ const ACTIONS := {
 }
 
 
+var _owner: Fighter                  # Set every frame by update() (memory fog reverses left / right)
+
+
 func is_human() -> bool:
 	return true
 
 
 ## Called once per physics frame by the fighter, BEFORE it reads any input.
-func update(_fighter: Fighter, _delta: float) -> void:
-	pass
+func update(fighter: Fighter, _delta: float) -> void:
+	_owner = fighter
+
+
+func _confused() -> bool:
+	return _owner != null and is_instance_valid(_owner) and _owner.confuse_timer > 0.0
 
 
 func pressed(button: String) -> bool:
-	return Input.is_action_pressed(ACTIONS[button])
+	return Input.is_action_pressed(ACTIONS[_swap(button)])
 
 
 func just_pressed(button: String) -> bool:
-	return Input.is_action_just_pressed(ACTIONS[button])
+	return Input.is_action_just_pressed(ACTIONS[_swap(button)])
 
 
 func just_released(button: String) -> bool:
-	return Input.is_action_just_released(ACTIONS[button])
+	return Input.is_action_just_released(ACTIONS[_swap(button)])
 
 
 func axis() -> float:
-	return Input.get_axis(ACTIONS["left"], ACTIONS["right"])
+	var a := Input.get_axis(ACTIONS["left"], ACTIONS["right"])
+	return -a if _confused() else a
+
+
+## Confused (memory fog): left and right swap places.
+func _swap(button: String) -> String:
+	if _confused():
+		if button == "left":
+			return "right"
+		if button == "right":
+			return "left"
+	return button
 
 
 ## Any key pressed this frame (used to mash out of grabs).

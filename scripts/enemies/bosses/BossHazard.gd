@@ -24,6 +24,11 @@ const LOOKS := {
 	"blast": {"w": 110.0, "h": 220.0, "life": 0.6, "col": Color(1.0, 0.6, 0.15), "sfx": "explosion"},
 	# Void Tentacle / Void Massacre (Story, Colosseum 4): a void tendril bursts out of the floor
 	"tendril": {"w": 64.0, "h": 200.0, "life": 0.55, "col": Color(0.45, 0.2, 0.8), "sfx": "void_goo"},
+	# Colosseum 5
+	"tornado": {"w": 90.0, "h": 360.0, "life": 0.9, "col": Color(0.8, 0.92, 0.95), "sfx": "whoosh"},
+	"water": {"w": 80.0, "h": 300.0, "life": 0.7, "col": Color(0.25, 0.6, 1.0), "sfx": "splash"},
+	"hellfire": {"w": 76.0, "h": 380.0, "life": 0.7, "col": Color(1.0, 0.18, 0.08), "sfx": "flame"},
+	"silk": {"w": 60.0, "h": 150.0, "life": 0.5, "col": Color(0.92, 0.92, 0.98), "sfx": "sword_slash"},
 }
 
 var source: BaseEnemy
@@ -131,6 +136,56 @@ func _draw() -> void:
 			_draw_blast(k)
 		"tendril":
 			_draw_tendril(k)
+		"tornado":
+			_draw_tornado(k)
+		"water", "hellfire":
+			_draw_column(k)
+		"silk":
+			_draw_silk(k)
+
+
+## Wind tornado: stacked spinning ellipses, wider at the top.
+func _draw_tornado(k: float) -> void:
+	var grow := minf(1.0, k / 0.15)
+	var fade := 1.0 - clampf((k - 0.7) / 0.3, 0.0, 1.0)
+	for i in 9:
+		var u := float(i) / 8.0
+		var y := -height * u * grow
+		var w := half_w * (0.3 + 0.9 * u)
+		var sway := sin(_age * 10.0 + u * 4.0 + _seed) * 12.0 * u
+		draw_set_transform(Vector2(sway, y), 0.0, Vector2(1.0, 0.25))
+		draw_arc(Vector2.ZERO, w, _age * 9.0, _age * 9.0 + 4.6, 16, Color(col.r, col.g, col.b, 0.7 * fade), 9.0, true)
+		draw_arc(Vector2.ZERO, w, _age * 9.0, _age * 9.0 + 4.6, 16, Color(1, 1, 1, 0.5 * fade), 3.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+## Water spout / hellfire pillar: a tall tinted column with a bright core.
+func _draw_column(k: float) -> void:
+	var up := minf(1.0, k / 0.15)
+	var fade := 1.0 - clampf((k - 0.6) / 0.4, 0.0, 1.0)
+	var h := height * up
+	var w := half_w * (1.0 + 0.12 * sin(_age * 30.0))
+	var pts := PackedVector2Array([Vector2(-w, 0), Vector2(-w * 0.75, -h * 0.5), Vector2(-w * 0.5, -h), Vector2(w * 0.5, -h), Vector2(w * 0.75, -h * 0.5), Vector2(w, 0)])
+	draw_colored_polygon(pts, Color(col.r * 0.6, col.g * 0.6, col.b * 0.6, 0.85 * fade))
+	var inner := PackedVector2Array()
+	for p in pts:
+		inner.append(Vector2(p.x * 0.6, p.y))
+	draw_colored_polygon(inner, Color(col.r, col.g, col.b, fade))
+	draw_rect(Rect2(-w * 0.15, -h, w * 0.3, h), Color(1, 1, 1, 0.7 * fade))
+	for i in 6:                                         # Droplets / sparks flying off the top
+		var t := k * life
+		var v := Vector2(sin(_seed + float(i) * 2.0) * 220.0, -200.0 - float(i) * 30.0)
+		draw_circle(Vector2(0, -h) + v * t + Vector2(0, 900.0 * t * t), 6.0 * fade, Color(col.r, col.g, col.b, fade))
+
+
+## Silk spikes: white threads that stab up out of the floor.
+func _draw_silk(k: float) -> void:
+	var up := sin(clampf(k, 0.0, 1.0) * PI)
+	for i in 5:
+		var x := (float(i) - 2.0) * half_w * 0.35
+		var tip := Vector2(x + sin(_seed + float(i)) * 8.0, -height * up * (0.6 + 0.4 * absf(sin(float(i) * 1.7))))
+		draw_line(Vector2(x, 0), tip, Color(0, 0, 0, up), 6.0, true)
+		draw_line(Vector2(x, 0), tip, Color(col.r, col.g, col.b, up), 3.0, true)
 
 
 func _draw_blast(k: float) -> void:
@@ -204,7 +259,7 @@ func _draw_warning() -> void:
 			for i in 4:
 				var a := PI + PI * (float(i) + 0.5) / 4.0
 				draw_line(Vector2.ZERO, Vector2.from_angle(a) * Vector2(half_w, 8.0) * w, Color(0.1, 0.05, 0.02, 0.9), 3.0)
-		"blast", "tendril":                             # Glowing vent / void crack
+		"blast", "tendril", "tornado", "water", "hellfire", "silk":   # Glowing vent / crack / swirl
 			var vc := col
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.3))
 			draw_circle(Vector2.ZERO, half_w * 0.5 * w + 6.0 * blink, Color(vc.r, vc.g, vc.b, 0.4 + 0.4 * w))

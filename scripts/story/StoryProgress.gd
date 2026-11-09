@@ -12,7 +12,7 @@ extends RefCounted
 
 const SAVE_PATH := "user://story.cfg"
 const TOTAL_LEVELS := 50                 # Level 50 = The Sun
-const AVAILABLE_LEVELS := 34             # Colosseums 1-4 exist so far
+const AVAILABLE_LEVELS := 50             # Colosseums 1-5: the whole story, up to The Sun
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -22,6 +22,8 @@ static var unlocked_level := 1
 static var colosseums_done := 0
 static var shining_choice := ""
 static var optional_done: Array = []
+## Colosseum 5: the hero you picked ("warrior" / "architect"); the other one is your CPU partner.
+static var c5_hero := ""
 static var _loaded := false
 
 
@@ -36,6 +38,7 @@ static func load_progress() -> void:
 	colosseums_done = int(cfg.get_value("story", "colosseums_done", 0))
 	shining_choice = String(cfg.get_value("story", "shining_choice", ""))
 	optional_done = cfg.get_value("story", "optional_done", [])
+	c5_hero = String(cfg.get_value("story", "c5_hero", ""))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -53,6 +56,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "colosseums_done", colosseums_done)
 	cfg.set_value("story", "shining_choice", shining_choice)
 	cfg.set_value("story", "optional_done", optional_done)
+	cfg.set_value("story", "c5_hero", c5_hero)
 	cfg.save(SAVE_PATH)
 
 
@@ -86,10 +90,16 @@ static func set_shining_choice(choice: String) -> void:
 	save_progress()
 
 
+static func set_c5_hero(hero: String) -> void:
+	c5_hero = hero
+	save_progress()
+
+
 static func reset() -> void:
 	current_level = 1
 	unlocked_level = 1
 	colosseums_done = 0
 	shining_choice = ""
 	optional_done = []
+	c5_hero = ""
 	save_progress()

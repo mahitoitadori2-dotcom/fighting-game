@@ -17,6 +17,21 @@ extends StaticBody2D
 var _poly := PackedVector2Array()
 var _veins: Array[PackedVector2Array] = []
 
+## Colosseum 5 wall styles: [near colour, far colour, vein / detail colour, vein width, rim colour]
+const C5_WALLS := {
+	"thorn": [Color(0.14, 0.06, 0.06), Color(0.04, 0.01, 0.01), Color(0.45, 0.08, 0.06), 6.0, Color(0.7, 0.15, 0.1)],
+	"ruin": [Color(0.40, 0.40, 0.45), Color(0.16, 0.16, 0.20), Color(0.26, 0.26, 0.30), 3.0, Color(0.7, 0.75, 0.9)],
+	"cliff": [Color(0.46, 0.48, 0.55), Color(0.20, 0.22, 0.28), Color(0.95, 0.97, 1.0), 5.0, Color(0.9, 0.95, 1.0)],
+	"loom": [Color(0.36, 0.22, 0.16), Color(0.12, 0.07, 0.06), Color(0.90, 0.88, 0.96), 2.0, Color(0.85, 0.75, 0.95)],
+	"mirror": [Color(0.50, 0.50, 0.55), Color(0.12, 0.12, 0.14), Color(1.0, 0.85, 0.4), 3.0, Color(1.0, 0.85, 0.4)],
+	"den": [Color(0.30, 0.20, 0.12), Color(0.10, 0.06, 0.03), Color(0.78, 0.72, 0.60), 6.0, Color(0.6, 0.4, 0.2)],
+	"gallows": [Color(0.20, 0.14, 0.22), Color(0.06, 0.04, 0.08), Color(0.65, 0.30, 0.95), 3.0, Color(0.65, 0.3, 0.95)],
+	"roots": [Color(0.30, 0.22, 0.12), Color(0.10, 0.08, 0.04), Color(0.45, 0.70, 0.30), 7.0, Color(0.55, 0.9, 0.4)],
+	"hellrock": [Color(0.20, 0.06, 0.05), Color(0.06, 0.02, 0.02), Color(1.0, 0.45, 0.08), 3.0, Color(1.0, 0.45, 0.1)],
+	"peak": [Color(0.92, 0.88, 0.78), Color(0.62, 0.56, 0.44), Color(1.0, 0.85, 0.4), 3.0, Color(1.0, 0.9, 0.5)],
+	"cathedral": [Color(0.14, 0.10, 0.10), Color(0.04, 0.03, 0.03), Color(1.0, 0.35, 0.1), 2.5, Color(0.9, 0.3, 0.1)],
+}
+
 
 func _ready() -> void:
 	z_index = -1                                  # Behind fighters (climbing Kharlemings stay visible)
@@ -58,6 +73,9 @@ func _build() -> void:
 
 
 func _draw() -> void:
+	if C5_WALLS.has(style):
+		_draw_c5()
+		return
 	var near := Color(0.16, 0.11, 0.10)
 	var far := Color(0.07, 0.05, 0.05)
 	if style == "crystal":
@@ -148,6 +166,31 @@ func _draw() -> void:
 		"burnt": Color(1.0, 0.5, 0.15), "stone": Color(0.7, 0.68, 0.62), "rune": Color(0.35, 0.8, 1.0), "foundry": Color(1.0, 0.55, 0.15),
 		"dark": Color(0.25, 0.26, 0.3), "bone": Color(0.55, 0.3, 0.9), "web": Color(0.7, 0.7, 0.78)}
 	draw_polyline(edge, rim.get(style, Color(0.35, 0.22, 0.18)), 2.0, true)
+
+
+## Colosseum 5 walls: gradient rock in the style's colours, veins / details, a coloured rim.
+func _draw_c5() -> void:
+	var st: Array = C5_WALLS[style]
+	var cols := PackedColorArray()
+	for p in _poly:
+		cols.append((st[0] as Color).lerp(st[1], clampf(absf(p.x) / thickness, 0.0, 1.0)))
+	draw_polygon(_poly, cols)
+	if style == "ruin" or style == "mirror" or style == "peak" or style == "cathedral":
+		var yb := 100.0
+		while yb > -height:                               # Masonry courses
+			draw_line(Vector2(0, yb), Vector2(side * thickness, yb), (st[1] as Color).lerp(st[0], 0.4), 3.0)
+			yb -= 64.0
+	for v in _veins:
+		draw_polyline(v, st[2], float(st[3]), true)
+	if style == "thorn" or style == "roots":                 # Thorns / root tips poking out
+		for i in 8:
+			var y := -float(i) * 100.0 - 40.0
+			draw_colored_polygon(PackedVector2Array([Vector2(0, y - 8), Vector2(-side * 34.0, y - 20.0), Vector2(0, y + 8)]), st[2])
+	var edge := PackedVector2Array()
+	for i in range(1, _poly.size() - 1):
+		edge.append(_poly[i])
+	draw_polyline(edge, Color(0, 0, 0), 6.0, true)
+	draw_polyline(edge, st[4], 2.0, true)
 
 
 ## Amethyst clusters growing out of the wall (Geode Cavern).

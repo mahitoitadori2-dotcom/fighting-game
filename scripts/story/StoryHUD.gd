@@ -50,6 +50,8 @@ func _paint() -> void:
 		var y := 20.0
 		var k := float(p.hp) / maxf(float(p.data.max_hp), 1.0)
 		var who := "ARCHITECT" if manager.hero == "architect" else "WARRIOR"
+		if p.confuse_timer > 0.0:
+			who += "   -   CONFUSED (controls reversed) %.1fs" % p.confuse_timer
 		FighterArt.label(_painter, Vector2(x, y + 12), "%s   %d / %d" % [who, p.hp, p.data.max_hp], 18, Color.WHITE, false)
 		var col := Color(0.15, 0.85, 0.25) if k > 0.5 else (Color(1.0, 0.7, 0.1) if k > 0.25 else Color(0.9, 0.15, 0.15))
 		_bar(Rect2(x, y + 24, 300, 22), k, col)
@@ -75,6 +77,17 @@ func _paint() -> void:
 				var t: float = cf.cooldowns.get(id, 0.0)
 				var txt := "[%d] %s: %s" % [i + 1, String(cf.move_names.get(id, id)).to_upper(), "READY" if t <= 0.0 else "%.1fs" % t]
 				FighterArt.label(_painter, Vector2(x, fy + 34 + float(i) * 21.0), txt, 16, Color(1, 1, 1, 0.9) if t <= 0.0 else Color(1, 1, 1, 0.55), false)
+		# Colosseum 5: your CPU partner
+		var pa := manager.partner
+		if pa != null and is_instance_valid(pa) and pa.visible:
+			var py := fy + 104.0
+			var pname := String(pa.data.character_name).to_upper()
+			if pa.is_dead:
+				FighterArt.label(_painter, Vector2(x, py + 12), "PARTNER  %s:  DOWN - reviving..." % pname, 15, Color(1.0, 0.6, 0.5), false)
+			else:
+				var pk := float(pa.hp) / maxf(float(pa.data.max_hp), 1.0)
+				FighterArt.label(_painter, Vector2(x, py + 12), "PARTNER  %s (CPU)   %d / %d" % [pname, pa.hp, pa.data.max_hp], 15, Color(0.75, 0.9, 1.0), false)
+				_bar(Rect2(x, py + 20, 200, 12), pk, Color(0.3, 0.7, 1.0))
 
 	# ---------------- Level title + wave ----------------
 	var cx := sz.x * 0.5
@@ -91,6 +104,11 @@ func _paint() -> void:
 		var bk := float(boss.hp) / maxf(float(boss.data.max_hp), 1.0)
 		_bar(r, bk, Color(0.55, 0.95, 0.2) if not boss.enraged else Color(1.0, 0.85, 0.15))
 		var mark := boss.phase2_threshold
+		if boss is C5Boss:
+			mark = (boss as C5Boss).rage_at              # Colosseum 5: where it gets ENRAGED
+			var cb := boss as C5Boss
+			if cb.forms.size() > 1:                      # Form counter under the bar
+				FighterArt.label(_painter, Vector2(cx, r.end.y + 16), "FORM %d / %d" % [cb.form, cb.forms.size()], 13, Color(1, 1, 1, 0.75))
 		if mark > 0.0 and mark < 1.0:                    # Where phase 2 starts (50% for most bosses)
 			var mx := r.position.x + r.size.x * mark
 			_painter.draw_line(Vector2(mx, r.position.y), Vector2(mx, r.end.y), Color(0, 0, 0, 0.8), 2.0)
