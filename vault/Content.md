@@ -84,7 +84,9 @@ All enemies, in Versus and in Story Mode, use the same system: `BaseEnemy` + `En
 
 - Sandbox options: damage, gauge and cooldown multipliers, and God Mode.
 - An FPS counter.
-- Touch controls (on by default on phones and tablets).
+- Touch controls (on by default on phones and tablets), with a **Touch UI Size** slider (60%-160%, saved on the device) that makes the buttons and joystick bigger or smaller.
+
+On the touch controls, the move buttons sit in a row ordered **1, 2, 3 from right to left** (1 is nearest the right edge), above ATK. JUMP, BLOCK and G sit on the inner ring.
 
 ## Keyboard controls
 

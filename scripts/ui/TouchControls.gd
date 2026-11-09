@@ -6,8 +6,10 @@ extends CanvasLayer
 ##   LEFT  : floating joystick - touch anywhere in the bottom-left area.
 ##           left/right = move, down = crouch / fast-fall, flick up = jump.
 ##   RIGHT : compact see-through button cluster in the bottom-right corner:
-##           ATK (big), JUMP, BLOCK, 1, 2, 3 and G (ultimate). Move buttons show a
-##           cooldown sweep, G glows when the gauge has a bar.
+##           ATK (big), JUMP, BLOCK and G (ultimate) around it, the moves 3 - 2 - 1 on an
+##           outer arc (1 is the rightmost). Move buttons show a cooldown sweep, G glows
+##           when the gauge has a bar.
+##   SIZE  : Settings > Touch UI Size (MatchSettings.touch_ui_scale) scales the buttons + joystick.
 ##   TOP   : small MENU button (double tap = back to Main Menu).
 ## Everything stays in the corners and is semi-transparent: the middle of the
 ## screen (the fight) is never covered. Sizes scale with the screen height.
@@ -22,6 +24,7 @@ const STICK_DEADZONE := 0.22
 
 var _ui: Control
 var _scale := 1.0
+var _ui_size := 1.0                       # MatchSettings.touch_ui_scale the layout was built with
 var _buttons: Array[Dictionary] = []     # {id, action, label, center, r, finger, pressed}
 var _stick := {"home": Vector2.ZERO, "center": Vector2.ZERO, "knob": Vector2.ZERO, "r": 60.0, "finger": -999}
 var _stick_jump := false
@@ -60,7 +63,10 @@ func _exit_tree() -> void:
 # ============================================================
 func _layout() -> void:
 	var size := _ui.get_viewport_rect().size
-	_scale = clampf(size.y / BASE_H, 0.6, 2.5)
+	MatchSettings.load_controls()
+	_ui_size = MatchSettings.touch_ui_scale
+	var screen := clampf(size.y / BASE_H, 0.6, 2.5)
+	_scale = screen * _ui_size                            # Mobile UI scaler (Settings > Touch UI Size)
 	var s := _scale
 	_stick["r"] = 58.0 * s
 	_stick["home"] = Vector2(105.0 * s, size.y - 105.0 * s)
@@ -68,23 +74,28 @@ func _layout() -> void:
 		_stick["center"] = _stick["home"]
 		_stick["knob"] = _stick["home"]
 
-	# Right cluster: big ATK in the corner, the rest on two small arcs around it
+	# Right cluster: big ATK in the corner; JUMP, BLOCK and G on the inner arc, and the
+	# moves on the outer arc ordered 1, 2, 3 from RIGHT to LEFT (1 nearest the right edge).
 	var a := Vector2(size.x - 82.0 * s, size.y - 82.0 * s)
 	var inner := 92.0 * s
 	var outer := 160.0 * s
 	_buttons.clear()
 	_add_button("attack", "punch", "ATK", a, 40.0 * s)
 	_add_button("jump", "jump", "JUMP", a + Vector2.from_angle(deg_to_rad(180.0)) * inner, 27.0 * s)
-	_add_button("block", "block", "BLK", a + Vector2.from_angle(deg_to_rad(214.0)) * inner, 25.0 * s)
-	_add_button("m1", "move_rocket", "1", a + Vector2.from_angle(deg_to_rad(248.0)) * inner, 25.0 * s)
-	_add_button("m2", "move_hnct", "2", a + Vector2.from_angle(deg_to_rad(282.0)) * inner, 25.0 * s)
-	_add_button("m3", "move_drill", "3", a + Vector2.from_angle(deg_to_rad(232.0)) * outer, 25.0 * s)
-	_add_button("ult", "ultimate", "G", a + Vector2.from_angle(deg_to_rad(262.0)) * outer, 27.0 * s)
-	# Small menu button at the top, left of the fight timer
-	_add_button("menu", "", "II", Vector2(size.x * 0.5 - 92.0 * s, 32.0 * s), 17.0 * s)
+	_add_button("block", "block", "BLK", a + Vector2.from_angle(deg_to_rad(216.0)) * inner, 25.0 * s)
+	_add_button("ult", "ultimate", "G", a + Vector2.from_angle(deg_to_rad(254.0)) * inner, 27.0 * s)
+	_add_button("m1", "move_rocket", "1", a + Vector2.from_angle(deg_to_rad(268.0)) * outer, 25.0 * s)
+	_add_button("m2", "move_hnct", "2", a + Vector2.from_angle(deg_to_rad(245.0)) * outer, 25.0 * s)
+	_add_button("m3", "move_drill", "3", a + Vector2.from_angle(deg_to_rad(222.0)) * outer, 25.0 * s)
+	# Small menu button at the top, left of the fight timer (only the screen scale: it is tiny on purpose)
+	_add_button("menu", "", "II", Vector2(size.x * 0.5 - 92.0 * screen, 32.0 * screen), 17.0 * screen)
 	# Story Mode: healing FLASK button above the joystick (same as the R key)
 	if StoryManager.active and InputMap.has_action("use_flask"):
 		_add_button("flask", "use_flask", "+", Vector2(64.0 * s, size.y - 240.0 * s), 24.0 * s)
+	# Big sizes on small screens: keep every button fully on screen
+	for b in _buttons:
+		var r: float = b["r"]
+		b["center"] = Vector2(clampf(b["center"].x, r + 4.0, size.x - r - 4.0), clampf(b["center"].y, r + 4.0, size.y - r - 4.0))
 
 
 func _add_button(id: String, action: String, text: String, center: Vector2, r: float) -> void:
@@ -216,6 +227,9 @@ func _release_all() -> void:
 # ============================================================
 func _process(_delta: float) -> void:
 	var show := CombatManager.fight_active
+	if not is_equal_approx(_ui_size, MatchSettings.touch_ui_scale) and _stick["finger"] == -999:
+		_release_all()
+		_layout()                                 # Touch UI Size changed
 	if _ui.visible and not show:
 		_release_all()                            # Intro / winner screen: let go of everything
 	_ui.visible = show

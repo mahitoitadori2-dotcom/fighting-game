@@ -208,8 +208,10 @@ func play_music(music_name: String) -> void:
 		return                                          # Missing track: just fade out the old one
 	_set_loop(stream)
 	if _fades.has(nxt):
-		(_fades[nxt] as Tween).kill()                   # Don't let an old fade-out stop the new track
+		(_fades[nxt] as Tween).kill()                   # Don't let an old fade-out stop / free the new track
 		_fades.erase(nxt)
+	if nxt.stream != null and nxt.stream != stream:
+		_release_music(nxt)                             # Free the track this player held before
 	nxt.stream = stream
 	nxt.pitch_scale = 1.0
 	nxt.volume_db = -40.0
@@ -234,8 +236,30 @@ func _fade_out(p: AudioStreamPlayer) -> void:
 		(_fades[p] as Tween).kill()
 	var tw := create_tween()
 	tw.tween_property(p, "volume_db", -40.0, CROSSFADE)
-	tw.tween_callback(p.stop)
+	tw.tween_callback(_release_music.bind(p))
 	_fades[p] = tw
+
+
+## A music player finished fading out: stop it and, on WEB, free the decoded track.
+## The web build plays audio as "samples": every track that ever played stays decoded
+## (float PCM) in the browser's WebAudio memory. Walking through Story Mode (a new track
+## per area + boss themes) piled them up until phones killed and RELOADED the tab after a
+## few minutes. Old tracks are now released; they reload when needed.
+func _release_music(p: AudioStreamPlayer) -> void:
+	p.stop()
+	_fades.erase(p)
+	var s := p.stream
+	if s == null:
+		return
+	p.stream = null
+	var other := _music_b if p == _music_a else _music_a
+	if other.stream == s:
+		return                                              # Same track restarted on the other player
+	# Drop every reference (player + cache): the AudioStream is freed, and with it the
+	# engine's registered web sample. The next play_music() of this track loads it again.
+	for k in _cache.keys():
+		if _cache[k] == s:
+			_cache.erase(k)
 
 
 func current_music() -> String:

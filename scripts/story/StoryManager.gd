@@ -39,8 +39,9 @@ var level: Dictionary = {}
 var player: ControlledFighter               # Warrior (Colosseums 1-3) or Architect (Colosseum 4)
 var hero := "warrior"
 var flasks := FLASKS_PER_LEVEL
-## Colosseum 4, level 24: "" = undecided, "killed" = The Shining died (Void weaker),
-## "spared" = you walked past it (Void Massacre stronger).
+## Colosseum 4: "" = no effect, "killed" = The Shining died (Void weaker), "spared" = you
+## walked past it or skipped its optional level (Void Massacre stronger). Set on the altar
+## level (32) and saved; the "void_mod" levels after it (33, 34) read it back.
 var shining_choice := ""
 var boss: BaseEnemy
 var boss_bar_visible := false
@@ -87,6 +88,9 @@ func _ready() -> void:
 	StoryProgress.load_progress()
 	level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
 	level = StoryLevels.get_level(level_number)
+	if bool(level.get("void_mod", false)):
+		# Skipping the optional Shining level counts as leaving it alive
+		shining_choice = StoryProgress.shining_choice if StoryProgress.shining_choice != "" else "spared"
 	_saved_sandbox = MatchSettings.sandbox
 	MatchSettings.sandbox = false                  # Story is always played with normal rules
 	OptimizationManager.clear_pools()
@@ -145,6 +149,7 @@ func _apply_map(map: Dictionary) -> void:
 		_ground_y = ground.global_position.y
 		center_x = ground.global_position.x
 		ground.ground_theme = int(map.get("ground", 2))
+		ground.solid = bool(map.get("solid", false))     # Caves / sewers: no floating island
 	_center_x = center_x
 	# Sewers: drifting green fog in front of the floor
 	if bool(map.get("fog", false)):
@@ -209,6 +214,7 @@ func _run() -> void:
 		await _altar_stage()                       # Colosseum 4: the optional Shining
 		if _over:
 			return
+		StoryProgress.set_shining_choice(shining_choice)
 		var sm := String(level.get("stage_map", ""))
 		if sm != "":
 			await _switch_map(sm, String(level.get("stage_title", "")), String(level.get("stage_sub", "")), Color(0.75, 0.6, 1.0))
@@ -267,7 +273,7 @@ func _switch_map(map_key: String, title: String, sub: String, col: Color) -> voi
 	CombatManager.fight_active = true
 
 
-## The last Void Escapist breaks the floor under you (Colosseum 4, level 20).
+## The last Void Escapist breaks the floor under you (Colosseum 4, level 28).
 func _floor_break() -> void:
 	CombatManager.fight_active = false
 	_show_banner("THE FLOOR BREAKS!", "The last Void Escapist tore the ground open...", Color(0.75, 0.55, 1.0))
@@ -384,7 +390,12 @@ func _intro() -> void:
 		Effects.shake(self, 9.0)
 		Effects.hit_sparks(player, land + Vector2(0, -8), 10, 1.2)
 		SoundManager.play_sfx("spawn")
-	_show_banner("LEVEL %d" % level_number, "%s\n%s" % [level.get("title", ""), level.get("intro", "")], Color(1.0, 0.7, 0.3))
+	var intro := "%s\n%s" % [level.get("title", ""), level.get("intro", "")]
+	if shining_choice == "killed":
+		intro += "\nThe Shining is dead: the Void is WEAKER."
+	elif shining_choice == "spared" and String(level.get("boss", "")) == "void_massacre":
+		intro += "\nThe Shining lives: the Void Massacre is STRONGER."
+	_show_banner("LEVEL %d" % level_number, intro, Color(1.0, 0.7, 0.3))
 	await _wait(2.4)
 	_hide_banner()
 	CombatManager.fight_active = true

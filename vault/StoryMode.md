@@ -2,121 +2,122 @@
 class: state
 validity: current
 type: reference
+updated: 2026-11-09
 ---
 
 # Story Mode
 
 Back to [Summary](SUMMARY.md).
 
-Story Mode has 50 levels in 8 Colosseums. Level 50 is **The Sun**. Colosseums 1-4 (levels 1-24) are playable. The plan for the rest is in the [Roadmap](Roadmap.md).
+Story Mode has 50 levels. Level 50 is **The Sun**. The Colosseums have different sizes now. Colosseums 1-4 (levels 1-34) are playable. The plan for the rest is in the [Roadmap](Roadmap.md).
+
+| Colosseum | Levels | Count | Areas (levels each) |
+|---|---|---|---|
+| 1 The Ashen Depths | 1-6 | 6 | Ashen Wastes 2, Geode Cavern 1, Kharleming Hive 1, Lava Lair 2 |
+| 2 The Ascent | 7-15 | 9 | Elevator 2, Enlightened city 3, Sewers 2, Blasphemy 2 |
+| 3 The Burning Crown | 16-26 | 11 | Burning Throne 3, Minor Architectium 3, Blast Workshop 3, Golem's Hall 2 |
+| 4 The Void Below | 27-34 | 8 | Dark Cave 2, Void 3, Altar 1 (optional), Spider Lair 2 |
+
+The sizes are set in `COLOSSEUM_SIZES` in `scripts/story/StoryLevels.gd`. All the level and map data is in that file. The full-screen cutscenes are in `scripts/story/StoryCutscene.gd`.
 
 ## Level select
 
-The level select is a board game with one page per Colosseum. When you clear a level, your pawn hops forward. After the boss of a Colosseum, the pawn moves on to the next page. Switch pages by clicking the fog space (next Colosseum) or the "< 6" mark (back), or with Left / Right.
+The level select is a board game with one page per Colosseum. Bigger Colosseums get a zig-zag path. The area names and tile colours come from each level's map. When you clear a level, your pawn hops forward. After the boss, it moves on to the next page. Switch pages with the fog space (next Colosseum), the "< N" mark (back), or Left / Right.
 
-A save that already beat Colosseum 1 (from before Colosseum 2 existed) unlocks Level 7 automatically.
+**Old saves** (from when every Colosseum had 6 levels) move to the matching level of the new layout the first time they load.
 
-## Colosseum 1: The Ashen Depths
+## Underground floors
+
+Caves and sewers no longer float. Solid rock fills everything under the floor in the Geode Cavern, the Kharleming Hive, the Lava Lair, the Laboratory, the Sewers and the Dark Cave.
+
+## Colosseum 1: The Ashen Depths (1-6)
 
 | Level | Title | Map | Enemies |
 |---|---|---|---|
-| 1 | The Ashen Gate | Ashen Wastes | Parasite |
-| 2 | Brute March | Ashen Wastes | Parasites, Demon Brute |
-| 3 | The Mutant Pit | Ashen Wastes | Demon Brutes, Hydra-Mutant |
-| 4 | The Geode Cavern | Geode Cavern | Rock Golem |
-| 5 | The Kharleming Hive | Kharleming Hive | Kharlemings (they climb walls) |
-| 6 | The Blinded Lord | Lava Lair, then the Blinded Lord's Laboratory | Group waves, then the boss |
+| 1 | The Ashen Gate | Ashen Wastes | Parasites |
+| 2 | The Mutant March | Ashen Wastes | Parasites, Demon Brutes, Hydra-Mutant (the old levels 2 and 3 combined) |
+| 3 | The Geode Cavern | Geode Cavern | Parasites, then a Rock Golem |
+| 4 | The Kharleming Hive | Kharleming Hive | Kharlemings (they climb walls) |
+| 5 | The Burning Tunnels (new) | Lava Lair | Kharlemings, Demon Brute, Parasites, Hydra-Mutant |
+| 6 | The Blinded Lord | Lava Lair, then the Laboratory | Group waves, then the boss |
 
-**The Blinded Lord** (boss of level 6): intro cutscene, boss fight, death cutscene.
+**The Blinded Lord** (boss): phase 1 throws chemical pools; phase 2 is CRAZED melee (Jug Smash, Wild Swings, Charge).
 
-- **Phase 1:** he throws chemical pools.
-- **Phase 2:** he becomes CRAZED and fights in melee: Jug Smash, Wild Swings and Charge.
-
-## Colosseum 2: The Ascent
+## Colosseum 2: The Ascent (7-15)
 
 | Level | Title | Map | What happens |
 |---|---|---|---|
-| 7 | The Elevator from Hell | Elevator (steel platform rising up a shaft) | Intro cutscene of the elevator ride, then the mini-boss **Architect Chorus** |
-| 8 | Home of the Enlightened Ones | Enlightened city (white marble, gold domes) | 2 rounds: Enlightened Guards (spear, sun shield) and Followers (Halo Wave, Radiant Palm) |
-| 9 | The Golden Court | Enlightened city | 2 rounds of Guards and Followers |
-| 10 | The Sewers | Sewers (bricks, pipes, green fog) | Cutscene of falling into the sewers; 1 round of only God Crawlers and Rot Strays |
-| 11 | The Rot Channel | Sewers | 1 round of only God Crawlers and Rot Strays |
-| 12 | Blasphemy Caeser | Blasphemy Arena (volcanic temple, serpent skeleton) | Pre-fight intro, 2-phase boss **Blasphemy Caeser**, then the corpse-climb ending cutscene |
+| 7 | The Elevator Shaft (new) | Elevator | Elevator cutscene; Kharlemings and Parasites climb after you |
+| 8 | The Elevator from Hell | Elevator | Mini-boss **Architect Chorus** |
+| 9 | Home of the Enlightened Ones | Enlightened city | Guards, Followers, then Blades (short sword) |
+| 10 | The Golden Court | Enlightened city | Smiters (hammer), Archers (bow), Blades |
+| 11 | The Hall of Shields (new) | Enlightened city | Bulwarks (great shield) with Archers behind them |
+| 12 | The Sewers | Sewers | Fall-into-the-sewers cutscene; God Crawler and Rot Strays |
+| 13 | The Rot Channel | Sewers | God Crawlers and Rot Strays |
+| 14 | The Magma Stair (new) | Blasphemy temple | Demon Brutes, Hydra-Mutant, Parasites |
+| 15 | Blasphemy Caeser | Blasphemy Arena | 2-phase boss, then the corpse-climb cutscene |
 
-**Architect Chorus** (mini-boss, 150 HP): a giant robot in The Mighty Architect's colours (white plates, green hands and trim, dark visor, blue core). It towers behind the elevator and grabs it.
+- **Architect Chorus** (150 HP): hit the core or the resting hands. Hand Slam, Double Slam, Rock Throw, Elevator Shake. Falls back down the shaft when beaten.
+- **Blasphemy Caeser**: phase 1 serpent (280 HP), transform cutscene, phase 2 with the Blasphemy Blade (340 HP). Your sword grows when the fight starts and again in phase 2.
 
-- Hit its glowing core, or its hands while they rest on the platform after a slam.
-- Attacks: Hand Slam, Double Hand Slam (both send shockwaves along the floor), Rock Throw (block or dodge), Elevator Shake (be in the air on each jolt; rocks fall from above).
-- It overheats below 50% HP. When beaten, it lets go and falls back down the shaft.
-
-**Blasphemy Caeser** (boss): a huge gray-scaled serpent with magma between its scales. Each phase has its own full HP bar.
-
-- **Phase 1, The God-Devouring Serpent** (280 HP, no crown): Fire Breath, Serpent Bite, Tail Swipe (jump it), Magma Spit (leaves lava pools).
-- **Transform:** at 0 HP a cutscene plays. He grows arms, a face with a burning laurel crown pushes out of his neck, and he pulls a giant flesh-covered **Blasphemy Blade** out of his throat.
-- **Phase 2, The Blasphemy Blade** (340 HP): Blade Slash, Serpent Head Bite, Magma Geysers, Magma Spit, Lava Pools, Ground Slam, Lava Wave (jump it).
-- When beaten, he sinks into the magma. Then you climb his corpse to a glowing shrine.
-- **Your sword grows during this fight:** bigger and stronger when the fight starts (7 damage) and again in phase 2 (8 damage).
-
-## Colosseum 3: The Burning Crown
+## Colosseum 3: The Burning Crown (16-26)
 
 | Level | Title | Map | What happens |
 |---|---|---|---|
-| 13 | The Burning Throne | Burning Throne Room (empty throne on fire, broken pillars) | Cutscene: you wake up in the burning throne room. AMBUSH: Copper Corpses and Sparklings drop from the ceiling (2 rounds) |
-| 14 | The Atomic Creation | Burning Throne Room | The Atomic Creation fights with Sparklings (group battle, small HP bars) |
-| 15 | Minor Architectium | Minor Architectium land (stone buildings, workshops, gears) | 2 rounds of Architectian Warriors |
-| 16 | The Gearworks | Minor Architectium land | 2 rounds of Architectian Warriors |
-| 17 | The Blast Workshop | Blast Workshop (blast furnaces, molten metal) | Mini-boss **Architectian Titan** |
-| 18 | The Architect's Golem | The Golem's Hall (runic stone hall) | Pre-fight intro (it rises out of the floor), boss **Architect's Golem**, death cutscene |
+| 16 | The Burning Throne | Burning Throne Room | Wake-up cutscene; AMBUSH of Copper Corpses and Sparklings |
+| 17 | The Atomic Creation | Burning Throne Room | The Atomic Creation with Sparklings |
+| 18 | The Cinder Gallery (new) | Burning Throne Room | Copper Corpses and Sparklings |
+| 19 | Minor Architectium | Architectium | Architectian Warriors, then Swordsmen |
+| 20 | The Gearworks | Architectium | Lancers (spear), Archers, Swordsmen, Warriors |
+| 21 | The Bulwark Line (new) | Architectium | Bulwarks (great shield) with Archers and a Lancer |
+| 22 | The Forge Floor (new) | Blast Workshop | Warriors, Sparklings, a Copper Corpse, a Lancer |
+| 23 | The Smelter (new) | Blast Workshop | Bulwark, Archers, Swordsman, Sparkling, Copper Corpse |
+| 24 | The Blast Workshop | Blast Workshop | Mini-boss **Architectian Titan** |
+| 25 | The Rune Gallery (new) | The Golem's Hall | All the Architectian weapon types |
+| 26 | The Architect's Golem | The Golem's Hall | Boss **Architect's Golem** |
 
-- **Copper Corpse:** dead soldier in green-stained copper armour. Slow; Heavy Punch, Shoulder Ram.
-- **Sparkling:** tiny ball of electricity. Fast; Spark Dash, Spark Burst.
-- **Atomic Creation** (110 HP): glowing green atomic core with electron rings. Atomic Slam (shockwaves), Radiation Burst (toxic puddles), Atomic Explosion (huge, long wind-up). Goes CRITICAL below 50%.
-- **Architectian Warrior:** white/green armour, hammer and gear shield. Hammer Swing, Shield Block (takes almost no damage), Formation (charges, and nearby warriors charge with it).
-- **Architectian Titan** (mini-boss, 210 HP): furnace-chested giant with a smithing hammer. Hammer Slam (blast + shockwaves), Hammer Sweep (jump it), Workshop Explosion (vents blow up under you), Scrap Throw. Overheats below 50%.
-- **Architect's Golem** (boss, 280 HP): stone and white/green metal, glowing blue runes, the Architect's gear-and-compass mark. Golem Slam, Rock Throw (stone blocks), Rune Blast, Stomp Shockwave. Runes burn orange below 50% (more blocks, triple rune blast). When beaten it crumbles into the floor.
-- Music: Burning Throne Room, Architectium, Blast Workshop, Titan and Golem themes (placeholders).
-- Not added on purpose: the Hexagon (not yet).
+## Soldier weapon types (new)
 
-## Colosseum 4: The Void Below (you play as the ARCHITECT)
+Enlightened Guards and Architectian Warriors now come with different weapons. The plain Guard keeps its spear and sun shield, and the plain Warrior keeps its hammer and gear shield.
 
-In Colosseum 4 the playable character is **The Mighty Architect**: his own moves (punch, Rocket, HNCT, Drill, ultimates), look and animations. The Warrior is still the character in Colosseums 1-3. In Story Mode the Architect's punch reaches from head to toe so it can hit small enemies; Versus is unchanged.
+| Weapon | Enlightened name | Architectian name | How it fights |
+|---|---|---|---|
+| Short sword | Blade | Swordsman | Fast and fragile: Quick Slash, Lunge (dashes in) |
+| Hammer | Smiter | (the plain Warrior) | Slow and heavy: Hammer Smash, Ground Pound (shockwave on the floor: jump it) |
+| Great shield | Bulwark | Bulwark | Tanky. Blocks 80% of damage from the FRONT unless it is attacking. Hit it from behind or right after its Shield Bash / Shield Slam |
+| Spear | (the plain Guard) | Lancer | Reach: Spear Thrust, Low Sweep (jump it) |
+| Bow | Archer | Archer | Keeps away. Arrow, Arrow Volley (3 arrows rain down where you stand), Kick (pushes you off) |
+
+The shared weapon code is in `scripts/story/enemies/ArmedSoldier.gd`.
+
+## Colosseum 4: The Void Below (27-34, you play as the ARCHITECT)
 
 | Level | Title | Map | What happens |
 |---|---|---|---|
-| 19 | The Dark Cave | Overground Dark Cave (dark rocks, dim light) | Cutscene: the Architect rolls down into the cave. ONLY Black Crawlings (2 rounds) |
-| 20 | The Void Escapist | Overground Dark Cave | Void Escapists are introduced. At the end the last one breaks the floor: cutscene of falling into the void |
-| 21 | The Void | Void (floor of dark bones, bones everywhere) | Void Souls and Tentacles |
-| 22 | The Bone Sea | Void | Void Souls and Tentacles |
-| 23 | The Hollow Masker | Void | The Hollow Masker is introduced |
-| 24 | The Void Massacre | The Altar, then the Spider Lair | Part 1: The Shining (optional). Part 2: 2 Hollow Maskers, then the boss **Void Massacre** |
+| 27 | The Dark Cave | Dark Cave | Roll-down cutscene; Black Crawlings |
+| 28 | The Void Escapist | Dark Cave | Void Escapists; the floor breaks, fall into the void |
+| 29 | The Void | Void | Void Souls and Tentacles |
+| 30 | The Bone Sea | Void | Void Souls and Tentacles |
+| 31 | The Hollow Masker | Void | The Hollow Masker |
+| 32 | The Shining (OPTIONAL) | The Altar | Kill The Shining, or leave through the dark gate |
+| 33 | The Web Tunnels (new) | Spider Lair | Crawlings, a Hollow Masker, Tentacle, Void Soul |
+| 34 | The Void Massacre | Spider Lair | 2 Hollow Maskers, then the boss **Void Massacre** |
 
-- **Why 24 has two parts:** the brief had 7 steps but a Colosseum has 6 levels, so the Shining level and the boss level share Level 24.
-- **The Shining choice (Level 24):** the screen asks "Kill The Shining to weaken the Void? Or leave it and face a stronger Void Massacre?"
-  - The Shining is peaceful until you hit it, then it fights back with Light Beam and Light Blast.
-  - **Kill it:** every void enemy for the rest of the level (the Hollow Maskers and the Massacre) gets 30% less HP and damage, and the Massacre is slower and less aggressive. The boss bar says "WEAKENED BY THE SHINING".
-  - **Walk into the dark gate on the right:** the Void Massacre gets 35% more HP and 25% more damage, is faster and more aggressive, spits more goo, fires triple eye beams and charges back after hitting a wall. The boss bar says "VIGOROUS".
-- **Black Crawling:** small black crawler. Bite, Pounce.
-- **Void Escapist:** crawling black ghost. Ghost Bite, Phase (sinks into the ground where it can't be hit, slides under you, bursts up biting).
-- **Void Soul:** floating void flame. Void Bolt, Soul Burst.
-- **Void Tentacle:** grows out of the bone floor and doesn't walk. Whip, Grab (pulls you in and squeezes).
-- **Hollow Masker:** tall hollow creature with a white mask. Mask Slam, Mask Dash.
-- **Void Massacre** (boss, 320 HP before the Shining choice): huge void spider, 16 white eyes, 16 legs.
-  - Ceiling Drop: climbs the wall and ceiling, then drops on you (watch the shadow).
-  - Void Goo Spit: leaves pools that hurt and slow you.
-  - Leg Slam, Eye Beam, Void Charge.
-  - FRENZY below 50%. Death cutscene after the fight.
-- Music: Dark Cave, Void, Altar and Void Massacre themes (placeholders).
-
-The level and map data is in `scripts/story/StoryLevels.gd`. The full-screen cutscenes are in `scripts/story/StoryCutscene.gd`.
+**The Shining is now its own optional level (32).** Beating level 31 unlocks both 32 and 33, so you can walk past it on the board (it has a dashed border and says OPTIONAL). The choice is saved:
+- **Kill it:** every void enemy in levels 33-34 has 30% less HP and damage, and the Massacre is slower ("WEAKENED BY THE SHINING").
+- **Leave it, or skip the level:** the Void Massacre has 35% more HP and 25% more damage, and is faster and more aggressive ("VIGOROUS").
+- Replaying level 32 changes the saved choice.
 
 ## Rules
 
-- Enemies come in group battles (waves). Normal enemies only have small HP bars above them; bosses also get a big HP bar at the top.
-- You get 2 flasks for each level. Press **R** to drink one. A flask heals 50% of your max HP. Flasks refill after each boss intro.
+- Enemies come in waves. Normal enemies have small HP bars; bosses also get a big bar at the top.
+- 2 flasks per level (R / touch "+"), each heals 50%. They refill after each boss intro.
 - At most 2 enemies attack at the same time.
 - Progress saves after each level.
-- Only Warrior is playable in Story Mode.
 
-## Testing
+## Testing (2026-11-09)
 
-Levels 1-18 were cleared by a CPU-controlled Warrior and levels 19-24 by a CPU-controlled Architect (killing The Shining). With The Shining skipped, the stronger Void Massacre beat the CPU; it was toned down a little afterwards and not re-tested. All levels 1-24 were cleared (autoplay; it takes only 25% damage). Every Colosseum 2 map and both Caeser forms were checked in screenshots. Nobody has played Colosseum 2 by hand, and the cutscenes and music were not watched or heard in real time. Difficulty settings are in the [To-do list](Todo.md).
+- Headless check: all 34 levels load, and every enemy, including the 8 new weapon types, spawns and fires every attack.
+- A CPU-controlled Warrior cleared levels 9-12 (with the new Blades, Smiters, Archers and Bulwarks).
+- Screenshots checked: the board pages for all 4 Colosseums, the solid floors in the Geode Cavern and Sewers, and the Enlightened and Architectian Archers and Bulwarks in a fight.
+- **Not tested yet:** the other new levels (5, 7, 14, 18, 22-23, 25, 33) played through, the optional Shining flow with a real save, and the difficulty of the new soldiers by a human player.

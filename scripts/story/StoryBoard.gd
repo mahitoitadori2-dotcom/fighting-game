@@ -16,9 +16,21 @@ static var advance_from := 0
 const HOP_TIME := 0.75
 const TILE := 74.0
 const BOSS_TILE := 96.0
-## Space positions on the board (0..1 of the board rect). Index 0 = Level 1.
+## Space positions of a 6-level page (0..1 of the board rect). Bigger Colosseums get a
+## zig-zag path from _layout().
 const SPACES := [Vector2(0.10, 0.80), Vector2(0.26, 0.64), Vector2(0.42, 0.79),
 	Vector2(0.56, 0.58), Vector2(0.44, 0.36), Vector2(0.64, 0.24)]
+## Tile colour per map (StoryLevels.MAPS key).
+const MAP_TILE := {
+	"wastes": Color(0.55, 0.22, 0.14), "geode": Color(0.36, 0.22, 0.48), "hive": Color(0.30, 0.26, 0.24),
+	"lair": Color(0.45, 0.16, 0.08), "lab": Color(0.20, 0.40, 0.12),
+	"elevator": Color(0.30, 0.32, 0.38), "enlightened": Color(0.75, 0.66, 0.40), "sewers": Color(0.18, 0.32, 0.16),
+	"blasphemy": Color(0.50, 0.10, 0.08), "magma_stair": Color(0.42, 0.14, 0.08),
+	"throne": Color(0.50, 0.18, 0.08), "architectium": Color(0.36, 0.40, 0.36), "workshop": Color(0.45, 0.28, 0.10),
+	"golem_hall": Color(0.18, 0.32, 0.45), "rune_gallery": Color(0.18, 0.32, 0.45),
+	"dark_cave": Color(0.20, 0.20, 0.23), "void": Color(0.22, 0.12, 0.34), "altar": Color(0.55, 0.48, 0.22),
+	"spider_lair": Color(0.35, 0.15, 0.50),
+}
 const TEASER := [Vector2(0.78, 0.36), Vector2(0.84, 0.20)]     # next Colosseum fog space, "50 THE SUN"
 const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1" on later pages
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
@@ -26,26 +38,16 @@ const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
 	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "titan": 0.16, "arch_golem": 0.15,
 	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11}
-## Board page per Colosseum: title, zone labels [text, x, y, colour], tile colours by level offset (0-5).
+## Board page per Colosseum: title, board gradient, boss label colour. Tile colours and the
+## zone labels come from each level's map (MAP_TILE / StoryLevels.MAPS "zone").
 const PAGES := {
 	1: {"title": "STORY MODE  -  COLOSSEUM 1: THE ASHEN DEPTHS",
-		"zones": [["THE ASHEN WASTES", 0.2, 0.1, Color(1.0, 0.7, 0.4, 0.8)], ["THE CAVES", 0.5, 0.97, Color(0.8, 0.7, 1.0, 0.8)]],
-		"tiles": [Color(0.55, 0.22, 0.14), Color(0.55, 0.22, 0.14), Color(0.55, 0.22, 0.14), Color(0.30, 0.20, 0.38), Color(0.30, 0.20, 0.38), Color(0.20, 0.40, 0.12)],
 		"board": [Color(0.42, 0.16, 0.08), Color(0.18, 0.10, 0.16)], "boss_label": Color(0.7, 1.0, 0.4)},
 	2: {"title": "STORY MODE  -  COLOSSEUM 2: THE ASCENT",
-		"zones": [["THE ELEVATOR", 0.12, 0.97, Color(0.7, 0.85, 1.0, 0.8)], ["HOME OF THE ENLIGHTENED", 0.36, 0.1, Color(1.0, 0.9, 0.55, 0.9)],
-			["THE SEWERS", 0.56, 0.97, Color(0.6, 1.0, 0.5, 0.8)], ["BLASPHEMY", 0.64, 0.06, Color(1.0, 0.5, 0.3, 0.9)]],
-		"tiles": [Color(0.30, 0.32, 0.38), Color(0.75, 0.66, 0.40), Color(0.75, 0.66, 0.40), Color(0.18, 0.32, 0.16), Color(0.18, 0.32, 0.16), Color(0.50, 0.10, 0.08)],
 		"board": [Color(0.22, 0.22, 0.28), Color(0.32, 0.10, 0.08)], "boss_label": Color(1.0, 0.6, 0.35)},
 	3: {"title": "STORY MODE  -  COLOSSEUM 3: THE BURNING CROWN",
-		"zones": [["THE BURNING THRONE", 0.16, 0.97, Color(1.0, 0.6, 0.3, 0.9)], ["MINOR ARCHITECTIUM", 0.40, 0.1, Color(0.7, 1.0, 0.7, 0.9)],
-			["BLAST WORKSHOP", 0.62, 0.97, Color(1.0, 0.75, 0.35, 0.9)], ["THE GOLEM'S HALL", 0.66, 0.06, Color(0.5, 0.85, 1.0, 0.9)]],
-		"tiles": [Color(0.50, 0.18, 0.08), Color(0.42, 0.40, 0.12), Color(0.36, 0.40, 0.36), Color(0.36, 0.40, 0.36), Color(0.45, 0.28, 0.10), Color(0.18, 0.32, 0.45)],
 		"board": [Color(0.30, 0.10, 0.05), Color(0.14, 0.18, 0.24)], "boss_label": Color(0.5, 0.85, 1.0)},
 	4: {"title": "STORY MODE  -  COLOSSEUM 4: THE VOID BELOW  (YOU ARE THE ARCHITECT)",
-		"zones": [["THE DARK CAVE", 0.14, 0.97, Color(0.75, 0.78, 0.85, 0.9)], ["THE VOID", 0.42, 0.1, Color(0.7, 0.5, 1.0, 0.9)],
-			["THE ALTAR", 0.48, 0.97, Color(1.0, 0.9, 0.55, 0.9)], ["THE SPIDER LAIR", 0.68, 0.06, Color(0.8, 0.6, 1.0, 0.9)]],
-		"tiles": [Color(0.20, 0.20, 0.23), Color(0.20, 0.20, 0.23), Color(0.22, 0.12, 0.34), Color(0.22, 0.12, 0.34), Color(0.22, 0.12, 0.34), Color(0.35, 0.15, 0.50)],
 		"board": [Color(0.10, 0.10, 0.12), Color(0.12, 0.04, 0.18)], "boss_label": Color(0.8, 0.6, 1.0)},
 }
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
@@ -154,7 +156,10 @@ func _refresh_ui() -> void:
 		_info.add_theme_color_override("font_color", UiStyle.TEXT)
 		var boss := String(lv.get("boss", "")) != ""
 		var hero_name := "You play as the ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "architect" else "Warrior only"
-		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (2 per level)" % [_pawn_space, lv["title"], "  (BOSS)" if boss else "", hero_name]
+		var tag := "  (BOSS)" if boss else ""
+		if StoryLevels.is_optional(_pawn_space):
+			tag = "  (OPTIONAL - skip it with Right)"
+		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (2 per level)" % [_pawn_space, lv["title"], tag, hero_name]
 		_play.text = "PLAY LEVEL %d" % _pawn_space
 
 
@@ -163,11 +168,25 @@ func _board_rect() -> Rect2:
 	return Rect2(Vector2(40, 96), Vector2(sz.x - 80, sz.y - 190))
 
 
-## Board position of a level's space (every Colosseum page uses the same 6-space path).
+## Board position of a level's space (on its own Colosseum's page).
 func _space_pos(level: int) -> Vector2:
 	var r := _board_rect()
-	var n: Vector2 = SPACES[clampi((level - 1) % SPACES.size(), 0, SPACES.size() - 1)]
+	var c := StoryLevels.colosseum_of(level)
+	var path := _layout(StoryLevels.size_of(c))
+	var n: Vector2 = path[clampi(level - StoryLevels.first_of(c), 0, path.size() - 1)]
 	return r.position + n * r.size
+
+
+## Path of n spaces (0..1 of the board): the classic 6-space path, or a zig-zag between a
+## low and a high row for bigger Colosseums (neighbours never overlap).
+func _layout(n: int) -> Array:
+	if n == SPACES.size():
+		return SPACES
+	var pts := []
+	for i in n:
+		var k := float(i) / float(maxi(n - 1, 1))
+		pts.append(Vector2(lerpf(0.07, 0.68, k), 0.78 if i % 2 == 0 else 0.40))
+	return pts
 
 
 func _page_data() -> Dictionary:
@@ -179,7 +198,7 @@ func _page_first() -> int:
 
 
 func _page_last() -> int:
-	return mini(_page_first() + SPACES.size() - 1, StoryLevels.count())
+	return mini(StoryLevels.last_of(_page), StoryLevels.count())
 
 
 func _teaser_pos(i: int) -> Vector2:
@@ -247,7 +266,7 @@ func _on_board_input(event: InputEvent) -> void:
 		return                                              # (Touch arrives as an emulated left click)
 	# Page arrows: the fog space leads to the next Colosseum, the left mark back
 	if mb.position.distance_to(_teaser_pos(0)) <= 40.0:
-		var nxt := _page_first() + SPACES.size()
+		var nxt := _page_last() + 1
 		if nxt <= StoryProgress.unlocked_level and nxt <= StoryLevels.count():
 			_celebrate = false
 			_hop(nxt)
@@ -364,9 +383,8 @@ func _draw_board() -> void:
 	else:
 		_draw_scenery(r)
 
-	# Zone labels
-	for z in _page_data()["zones"]:
-		FighterArt.label(c, r.position + Vector2(r.size.x * float(z[1]), r.size.y * float(z[2])), String(z[0]), 20, z[3])
+	# Zone labels: one per run of levels in the same area, alternating top / bottom
+	_zone_labels(r)
 
 	# Path (dotted road) between the spaces, then fading toward the next Colosseum / The Sun
 	var first := _page_first()
@@ -518,6 +536,27 @@ func _draw_scenery_n(r: Rect2) -> void:
 	c.draw_circle(sun, 70.0 + 6.0 * sin(_t * 2.0), Color(1.0, 0.8, 0.3, 0.10))
 
 
+func _zone_labels(r: Rect2) -> void:
+	var runs := []                                          # [zone, first level, last level, map]
+	for n in range(_page_first(), _page_last() + 1):
+		var key := String(StoryLevels.get_level(n).get("map", "wastes"))
+		var zone := String(StoryLevels.MAPS.get(key, {}).get("zone", ""))
+		if runs.is_empty() or runs[-1][0] != zone:
+			runs.append([zone, n, n, key])
+		else:
+			runs[-1][2] = n
+	for i in runs.size():
+		var run: Array = runs[i]
+		if String(run[0]) == "":
+			continue
+		var x := (_space_pos(int(run[1])).x + _space_pos(int(run[2])).x) * 0.5
+		var y := r.position.y + r.size.y * (0.06 if i % 2 == 1 else 0.98)
+		var col: Color = MAP_TILE.get(String(run[3]), Color(0.8, 0.7, 0.6))
+		col = col.lightened(0.55)
+		col.a = 0.9
+		FighterArt.label(_board, Vector2(x, y), String(run[0]), 18, col)
+
+
 func _road(a: Vector2, b: Vector2, lit: bool, alpha: float = 1.0) -> void:
 	var mid := (a + b) * 0.5 + (b - a).orthogonal().normalized() * 26.0
 	var steps := 14
@@ -545,21 +584,27 @@ func _space(n: int) -> void:
 	var base := FighterArt.rrect_points(rect.grow(4.0), 14.0)
 	c.draw_colored_polygon(base, WOOD_DARK)
 	var top := FighterArt.rrect_points(Rect2(rect.position + Vector2(0, -6), rect.size), 12.0)
-	var tiles: Array = _page_data()["tiles"]
-	var fill: Color = tiles[(n - 1) % tiles.size()]
+	var optional := StoryLevels.is_optional(n)
+	var fill: Color = MAP_TILE.get(String(StoryLevels.get_level(n).get("map", "wastes")), Color(0.4, 0.3, 0.25))
 	if not unlocked:
 		fill = Color(0.25, 0.23, 0.23)
 	c.draw_colored_polygon(top, fill)
 	if here:
 		c.draw_polyline(_closed(top), Color(1, 1, 1, 0.5 + 0.5 * sin(_t * 5.0)), 6.0, true)
-	c.draw_polyline(_closed(top), GOLD if cleared else Color(0, 0, 0), 3.5, true)
+	if optional and not cleared:                            # Optional: dashed gold border
+		var pts := _closed(top)
+		for i in pts.size() - 1:
+			if i % 2 == 0:
+				c.draw_line(pts[i], pts[i + 1], GOLD, 3.5, true)
+	else:
+		c.draw_polyline(_closed(top), GOLD if cleared else Color(0, 0, 0), 3.5, true)
 	# Mini enemy figure on the tile
 	var center := rect.get_center() + Vector2(0, -6)
 	if unlocked:
-		var art := StoryLevels.enemy_script(StoryLevels.tile_enemy(n))
-		var sc: float = FIGURE_SCALE.get(StoryLevels.tile_enemy(n), 0.3)
+		var id := StoryLevels.tile_enemy(n)
+		var sc: float = FIGURE_SCALE.get(StoryLevels.base_id(id), 0.3)
 		c.draw_set_transform(center + Vector2(0, s * 0.32), 0.0, Vector2(sc, sc))
-		art.call("draw_portrait", c, _t)
+		StoryLevels.draw_portrait(c, id, _t)
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
 		_lock(center)
@@ -571,6 +616,8 @@ func _space(n: int) -> void:
 	if boss:
 		var mini_boss := String(StoryLevels.get_level(n).get("boss_sub", "")).begins_with("Mini-Boss")
 		FighterArt.label(c, rect.get_center() + Vector2(0, s * 0.5 + 18.0), "MINI-BOSS" if mini_boss else "BOSS", 16, _page_data()["boss_label"])
+	elif optional:
+		FighterArt.label(c, rect.get_center() + Vector2(0, s * 0.5 + 18.0), "OPTIONAL", 14, GOLD)
 	if cleared:                                            # Check mark
 		var ck := rect.end + Vector2(-8, -12)
 		c.draw_circle(ck, 12.0, Color(0, 0, 0))
@@ -586,7 +633,7 @@ func _back_pos() -> Vector2:
 func _teasers() -> void:
 	var c := _board
 	var p := _teaser_pos(0)
-	var nxt := _page_first() + SPACES.size()
+	var nxt := _page_last() + 1
 	var open := nxt <= StoryProgress.unlocked_level and nxt <= StoryLevels.count()
 	var pulse := 0.5 + 0.5 * sin(_t * 4.0)
 	c.draw_circle(p, 34.0, Color(1.0, 0.8, 0.3, 0.35 + 0.25 * pulse) if open else Color(0.5, 0.45, 0.45, 0.25))

@@ -37,7 +37,16 @@ extends StaticBody2D
 		_apply_theme()
 		queue_redraw()
 
+## Underground maps (caves, sewers): solid rock fills everything under the floor instead of a
+## floating island with a hanging underside (StoryLevels.MAPS "solid").
+@export var solid := false:
+	set(v):
+		solid = v
+		queue_redraw()
+
 const CAP := 26.0                                 # Thickness of the paved top layer
+const SOLID_DEPTH := 2600.0                       # How far the solid rock reaches down
+const SOLID_SIDE := 1600.0                        # ...and past each edge (hidden by the cave walls)
 const OUTLINE := Color(0.0, 0.0, 0.0)
 
 # Palette (set by _apply_theme)
@@ -373,8 +382,12 @@ static func _hex(center: Vector2, r: float, rot: float = 0.0) -> PackedVector2Ar
 func _draw() -> void:
 	if _poly.size() < 3:
 		return
+	if solid:
+		_draw_solid_fill()
 	# Underside crystal spikes (behind the rock body)
 	for d in _drips:
+		if solid:
+			break                                         # No hanging underside in solid ground
 		var p: Vector2 = d["pos"]
 		var w: float = d["w"]
 		var l: float = d["len"]
@@ -438,8 +451,11 @@ func _draw() -> void:
 	if ground_theme >= 1:      # Thin glowing rim light along the walkable edge
 		draw_line(Vector2(-hw + 14, 2), Vector2(hw - 14, 2), Color(CRACK.r, CRACK.g, CRACK.b, 0.6), 2.0)
 
-	# Thick black cartoon outline
-	_outline(_poly, 7.0)
+	# Thick black cartoon outline (solid ground: only along the walkable top)
+	if solid:
+		draw_line(Vector2(-hw - SOLID_SIDE, 0), Vector2(hw + SOLID_SIDE, 0), OUTLINE, 7.0)
+	else:
+		_outline(_poly, 7.0)
 	if ground_theme == 14:      # Void: bones and skulls half sunk in the floor
 		var bx := -hw + 70.0
 		var bi := 0
@@ -465,6 +481,51 @@ func _draw() -> void:
 		while x < hw - 40.0:
 			draw_line(Vector2(x, CAP), Vector2(x, CAP + 10.0 + fmod(x * 0.37, 14.0)), Color(0.45, 0.8, 0.35, 0.7), 4.0)
 			x += 140.0
+
+
+## Solid bedrock under (and beside) the island: same palette, darker the deeper it goes,
+## with strata lines and embedded stones, so the floor reads as the cave's real ground.
+func _draw_solid_fill() -> void:
+	var hw := width * 0.5
+	var x0 := -hw - SOLID_SIDE
+	var x1 := hw + SOLID_SIDE
+	var top_c := STONE
+	var mid_c := STONE.lerp(STONE_DEEP, 0.8)
+	var deep_c := mid_c.darkened(0.55)
+	draw_polygon(PackedVector2Array([Vector2(x0, 0), Vector2(x1, 0), Vector2(x1, depth), Vector2(x0, depth)]),
+		PackedColorArray([top_c, top_c, mid_c, mid_c]))
+	draw_polygon(PackedVector2Array([Vector2(x0, depth), Vector2(x1, depth), Vector2(x1, SOLID_DEPTH), Vector2(x0, SOLID_DEPTH)]),
+		PackedColorArray([mid_c, mid_c, deep_c, deep_c]))
+	# Paved cap continues to the walls
+	draw_rect(Rect2(x0, 0, SOLID_SIDE, CAP), STONE_TOP)
+	draw_rect(Rect2(hw, 0, SOLID_SIDE, CAP), STONE_TOP)
+	draw_line(Vector2(x0, CAP), Vector2(x1, CAP), OUTLINE, 4.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value + 913
+	# Strata lines
+	var y := CAP + 50.0
+	while y < 1100.0:
+		var pts := PackedVector2Array()
+		var x := x0
+		while x <= x1:
+			pts.append(Vector2(x, y + rng.randf_range(-6.0, 6.0)))
+			x += 80.0
+		draw_polyline(pts, Color(STONE_DARK.r, STONE_DARK.g, STONE_DARK.b, 0.8), rng.randf_range(6.0, 14.0), true)
+		y += rng.randf_range(60.0, 110.0)
+	# Embedded stones + glowing seams of the theme colour
+	for i in 70:
+		var p := Vector2(rng.randf_range(x0 + 40.0, x1 - 40.0), rng.randf_range(CAP + 30.0, 1000.0))
+		var r := rng.randf_range(4.0, 12.0)
+		draw_circle(p, r + 2.0, OUTLINE)
+		draw_circle(p, r, PEBBLE_LIGHT.darkened(clampf(p.y / 1400.0, 0.0, 0.6)))
+	for i in 10:
+		var p := Vector2(rng.randf_range(x0 + 60.0, x1 - 60.0), rng.randf_range(CAP + 60.0, 700.0))
+		var line := PackedVector2Array([p])
+		for j in 4:
+			p += Vector2(rng.randf_range(-24.0, 24.0), rng.randf_range(14.0, 30.0))
+			line.append(p)
+		draw_polyline(line, Color(CRACK.r, CRACK.g, CRACK.b, 0.25), CRACK_WIDTH * 3.0, true)
+		draw_polyline(line, CRACK, CRACK_WIDTH, true)
 
 
 ## Elevator platform: yellow/black hazard stripes on the lip + steel cables up the shaft.

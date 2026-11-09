@@ -1,5 +1,5 @@
 class_name EnlightenedGuard
-extends SimpleEnemy
+extends ArmedSoldier
 ## ENLIGHTENED GUARD (Story Mode, Colosseum 2 - Home of the Enlightened Ones): a tall
 ## sentinel in white armour with gold trim, a faceless golden helm, a floating halo,
 ## a long spear and a sun shield. Holds the line and keeps you at spear's length.
@@ -18,9 +18,27 @@ const GOLD_SHADE := Color(0.65, 0.45, 0.10)
 const GOLD_HI := Color(1.0, 0.92, 0.6)
 const SHAFT := Color(0.55, 0.40, 0.22)
 const GLOW := Color(1.0, 0.95, 0.65)
+## Other weapons (ArmedSoldier kit): id suffix -> name. The plain "guard" keeps spear + sun shield.
+const WEAPON_NAMES := {"short_sword": "Enlightened Blade", "hammer": "Enlightened Smiter",
+	"greatshield": "Enlightened Bulwark", "bow": "Enlightened Archer"}
+
+
+func native_weapon() -> String:
+	return "spear"
+
+
+func weapon_names() -> Dictionary:
+	return WEAPON_NAMES
+
+
+static func palette() -> Dictionary:
+	return {"arm": WHITE, "arm_shade": WHITE_SHADE, "arm_hi": WHITE_HI, "hand": GOLD,
+		"metal": Color(0.96, 0.9, 0.7), "accent": GOLD, "dark": GOLD_SHADE, "wood": SHAFT}
 
 
 func _make_data() -> CharacterData:
+	if not is_native():
+		return weapon_data(30)
 	keep_min = 60.0
 	keep_max = 130.0
 	attack_chance = 0.6
@@ -41,6 +59,9 @@ func flavor_lines() -> Array[String]:
 
 
 func _attack(p: EnemyPattern) -> void:
+	if not is_native():
+		_weapon_attack(p)
+		return
 	match p.id:
 		"thrust":
 			hitbox.activate(make_hit(dmg(p), Vector2(facing * THRUST_KB.x, THRUST_KB.y), "guard_thrust"),
@@ -65,10 +86,16 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 	draw_guard(c, {"t": t, "pose": "idle"})
 
 
+## Board tile / roster portrait of a weapon variant ("bow", "greatshield"...).
+static func draw_portrait_weapon(c: CanvasItem, t: float, w: String) -> void:
+	draw_guard(c, {"t": t, "pose": "idle", "weapon": w})
+
+
 static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
 	var pose: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
+	var w: String = s.get("weapon", "")
 	var bob := sin(t * 2.0) * 1.5
 
 	# Halo glow behind
@@ -76,6 +103,12 @@ static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 	EnemyArt.aura(c, head, 26.0, GLOW, t)
 
 	EnemyArt.legs(c, s, -58.0, 10.0, 11.0, WHITE, WHITE_SHADE, WHITE_HI, GOLD_SHADE, 18.0)
+	var chest := Vector2(0, -92 + bob)
+	if w != "":
+		ArmedSoldier.draw_weapon_back(c, s, chest, palette())
+		_draw_body(c, chest, head, t, dead)
+		ArmedSoldier.draw_weapon_front(c, s, chest, palette())
+		return
 
 	# Spear (behind the body when idle, forward on the thrust)
 	var hand := Vector2(26, -78 + bob)
@@ -102,33 +135,12 @@ static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(tip - d * 6.0 + n * 9.0, tip - d * 6.0 - n * 9.0, GOLD_SHADE, 4.0)
 
 	# Armoured body: white plate, gold trim, tabard
-	var chest := Vector2(0, -92 + bob)
-	var torso := PackedVector2Array([chest + Vector2(-22, -26), chest + Vector2(24, -26), chest + Vector2(20, 30), chest + Vector2(-20, 30)])
-	c.draw_polygon(torso, PackedColorArray([WHITE_HI, WHITE, WHITE_SHADE, WHITE_SHADE]))
-	FighterArt.outline(c, torso, 4.0)
-	var tabard := PackedVector2Array([chest + Vector2(-10, 0), chest + Vector2(12, 0), chest + Vector2(10, 46), chest + Vector2(0, 52), chest + Vector2(-8, 46)])
-	c.draw_colored_polygon(tabard, GOLD)
-	FighterArt.outline(c, tabard, 2.5)
-	EnemyArt.star(c, chest + Vector2(1, 14), 6.0, WHITE_HI, 1.5)              # Sun emblem
-	c.draw_line(chest + Vector2(-22, -24), chest + Vector2(24, -24), GOLD, 4.0)
-	FighterArt.ball(c, chest + Vector2(-20, -22), 11.0, WHITE, WHITE_SHADE, WHITE_HI)   # Pauldron
+	_draw_torso(c, chest)
 
 	# Arm holding the spear
 	EnemyArt.arm(c, chest + Vector2(14, -18), hand, 9.0, WHITE, WHITE_SHADE, WHITE_HI, GOLD, 6.5)
 
-	# Helm: smooth golden mask, glowing eye slit, white plume
-	c.draw_colored_polygon(PackedVector2Array([head + Vector2(-16, -8), head + Vector2(-30, -22 + sin(t * 3.0) * 2.0), head + Vector2(-12, -18)]), WHITE)
-	FighterArt.ball(c, head, 16.0, GOLD, GOLD_SHADE, GOLD_HI)
-	if dead:
-		EnemyArt.ko_eye(c, head + Vector2(7, -1), 3.0, t)
-	else:
-		c.draw_line(head + Vector2(0, -2), head + Vector2(14, -2), Color(GLOW.r, GLOW.g, GLOW.b, 0.5), 6.0)
-		c.draw_line(head + Vector2(0, -2), head + Vector2(14, -2), Color.WHITE, 2.5)
-	# Halo
-	c.draw_set_transform(head + Vector2(0, -24), 0.0, Vector2(1.0, 0.3))
-	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, Color(GLOW.r, GLOW.g, GLOW.b, 0.35), 8.0, true)
-	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, GOLD_HI, 3.0, true)
-	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	_draw_helm(c, head, t, dead)
 
 	# Sun shield on the front arm
 	var sh := chest + Vector2(22, 8)
@@ -143,3 +155,35 @@ static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 	EnemyArt.star(c, sh, 6.0, GOLD_HI, 1.5)
 	if pose == "thrust" or pose == "bash":                                   # Swoosh
 		c.draw_line(Vector2(40, -80), Vector2(110, -80), Color(1, 1, 0.8, 0.5), 3.0)
+
+
+static func _draw_body(c: CanvasItem, chest: Vector2, head: Vector2, t: float, dead: bool) -> void:
+	_draw_torso(c, chest)
+	_draw_helm(c, head, t, dead)
+
+
+static func _draw_torso(c: CanvasItem, chest: Vector2) -> void:
+	var torso := PackedVector2Array([chest + Vector2(-22, -26), chest + Vector2(24, -26), chest + Vector2(20, 30), chest + Vector2(-20, 30)])
+	c.draw_polygon(torso, PackedColorArray([WHITE_HI, WHITE, WHITE_SHADE, WHITE_SHADE]))
+	FighterArt.outline(c, torso, 4.0)
+	var tabard := PackedVector2Array([chest + Vector2(-10, 0), chest + Vector2(12, 0), chest + Vector2(10, 46), chest + Vector2(0, 52), chest + Vector2(-8, 46)])
+	c.draw_colored_polygon(tabard, GOLD)
+	FighterArt.outline(c, tabard, 2.5)
+	EnemyArt.star(c, chest + Vector2(1, 14), 6.0, WHITE_HI, 1.5)              # Sun emblem
+	c.draw_line(chest + Vector2(-22, -24), chest + Vector2(24, -24), GOLD, 4.0)
+	FighterArt.ball(c, chest + Vector2(-20, -22), 11.0, WHITE, WHITE_SHADE, WHITE_HI)   # Pauldron
+
+
+## Helm: smooth golden mask, glowing eye slit, white plume, halo.
+static func _draw_helm(c: CanvasItem, head: Vector2, t: float, dead: bool) -> void:
+	c.draw_colored_polygon(PackedVector2Array([head + Vector2(-16, -8), head + Vector2(-30, -22 + sin(t * 3.0) * 2.0), head + Vector2(-12, -18)]), WHITE)
+	FighterArt.ball(c, head, 16.0, GOLD, GOLD_SHADE, GOLD_HI)
+	if dead:
+		EnemyArt.ko_eye(c, head + Vector2(7, -1), 3.0, t)
+	else:
+		c.draw_line(head + Vector2(0, -2), head + Vector2(14, -2), Color(GLOW.r, GLOW.g, GLOW.b, 0.5), 6.0)
+		c.draw_line(head + Vector2(0, -2), head + Vector2(14, -2), Color.WHITE, 2.5)
+	c.draw_set_transform(head + Vector2(0, -24), 0.0, Vector2(1.0, 0.3))
+	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, Color(GLOW.r, GLOW.g, GLOW.b, 0.35), 8.0, true)
+	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, GOLD_HI, 3.0, true)
+	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

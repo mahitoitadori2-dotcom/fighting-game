@@ -134,6 +134,23 @@ $GODOT_HEAD_INCLUDE
 		return;
 	}
 
+	// ---------- Phones: cap the render resolution ----------
+	// iPhones report devicePixelRatio 3, so the canvas was ~2500 x 1170 real pixels: several
+	// full-size GPU buffers redrawn every frame. Together with the rest of the page that pushed
+	// phones over their memory limit and the browser killed + RELOADED the tab after a few
+	// minutes. Godot reads window.devicePixelRatio for the canvas size, so on touch devices it
+	// is capped to a long side of ~1400 px (still sharp at the game's 1280 x 720 design size).
+	if (isTouch) {
+		try {
+			const realDpr = window.devicePixelRatio || 1;
+			const longSide = Math.max(window.screen.width || 0, window.screen.height || 0) || 900;
+			const cappedDpr = Math.max(1, Math.min(realDpr, 1400 / longSide));
+			if (cappedDpr < realDpr) {
+				Object.defineProperty(window, 'devicePixelRatio', { get: function () { return cappedDpr; }, configurable: true });
+			}
+		} catch (e) {}
+	}
+
 	// ---------- Download everything BEFORE the tap, so the tap starts instantly ----------
 	const engine = new Engine(Object.assign({}, GODOT_CONFIG, {
 		onProgress: function (current, total) {
@@ -200,6 +217,17 @@ $GODOT_HEAD_INCLUDE
 			fail('The game crashed while starting', 'Reload the page to try again.<br><small>' + String(err && err.message || err) + '</small>');
 		});
 	}
+	// The phone took the GPU away (memory pressure, app switch): explain it instead of a
+	// frozen / black screen. Story progress is saved after every level.
+	$('canvas').addEventListener('webglcontextlost', function (e) {
+		e.preventDefault();
+		fail('The graphics were reset by your device',
+			'This happens when the phone runs low on memory. Your Story progress is saved.<br><br>' +
+			'<button id="reload" type="button" style="font:inherit;font-weight:900;padding:12px 30px;border:4px solid #000;border-radius:14px;background:#ffcc33">RESTART</button>');
+		const r = $('reload');
+		if (r) { r.addEventListener('click', function () { window.location.reload(); }); }
+	}, false);
+
 	$('tap').addEventListener('click', begin);
 	$('tap').addEventListener('touchend', begin, { passive: false });
 

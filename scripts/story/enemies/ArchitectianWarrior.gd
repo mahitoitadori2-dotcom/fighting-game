@@ -1,5 +1,5 @@
 class_name ArchitectianWarrior
-extends SimpleEnemy
+extends ArmedSoldier
 ## ARCHITECTIAN WARRIOR (Story Mode, Colosseum 3 - the Minor Architectium): a soldier of the
 ## Architect's people. White plate armour with green trim, a dark visor, a big engineer's
 ## HAMMER and a round SHIELD with a gear on it. Fights as a unit.
@@ -22,10 +22,29 @@ const DARK_SHADE := Color(0.12, 0.13, 0.16)
 const STEEL := Color(0.62, 0.65, 0.70)
 const WOOD := Color(0.48, 0.32, 0.18)
 
+## Other weapons (ArmedSoldier kit). The plain "warrior_a" keeps hammer + gear shield.
+const WEAPON_NAMES := {"short_sword": "Architectian Swordsman", "spear": "Architectian Lancer",
+	"greatshield": "Architectian Bulwark", "bow": "Architectian Archer"}
+
 var _blocking := false
 
 
+func native_weapon() -> String:
+	return "hammer"
+
+
+func weapon_names() -> Dictionary:
+	return WEAPON_NAMES
+
+
+static func palette() -> Dictionary:
+	return {"arm": WHITE, "arm_shade": WHITE_SHADE, "arm_hi": Color.WHITE, "hand": GREEN_SHADE,
+		"metal": STEEL, "accent": GREEN, "dark": DARK, "wood": WOOD}
+
+
 func _make_data() -> CharacterData:
+	if not is_native():
+		return weapon_data(32)
 	keep_min = 50.0
 	keep_max = 130.0
 	attack_chance = 0.6
@@ -48,6 +67,9 @@ func flavor_lines() -> Array[String]:
 
 
 func _attack(p: EnemyPattern) -> void:
+	if not is_native():
+		_weapon_attack(p)
+		return
 	match p.id:
 		"swing":
 			hitbox.activate(make_hit(dmg(p), Vector2(facing * SWING_KB.x, SWING_KB.y), "architectian_hammer"),
@@ -80,11 +102,13 @@ func _call_formation() -> void:
 		Effects.popup(o, o.global_position + Vector2(0, -180), "IN FORMATION!", GREEN, 16)
 
 
-func _on_attack_update(p: EnemyPattern, _delta: float) -> void:
+func _on_attack_update(p: EnemyPattern, delta: float) -> void:
 	if p.id == "formation":
 		velocity.x = facing * CHARGE_SPEED
 		if is_on_wall() or not ground_ahead(50.0):
 			state_time = state_len
+	else:
+		super._on_attack_update(p, delta)
 
 
 func _on_attack_end(p: EnemyPattern) -> void:
@@ -92,6 +116,8 @@ func _on_attack_end(p: EnemyPattern) -> void:
 		_set_block(false)
 	elif p.id == "formation":
 		velocity.x *= 0.2
+	else:
+		super._on_attack_end(p)
 
 
 func _cancel_pattern() -> void:
@@ -108,7 +134,7 @@ func _set_block(on: bool) -> void:
 
 
 func _owns_velocity_x() -> bool:
-	return estate == EState.ATTACK and current != null and current.id == "formation"
+	return (estate == EState.ATTACK and current != null and current.id == "formation") or super._owns_velocity_x()
 
 
 func art_state() -> Dictionary:
@@ -128,14 +154,25 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 	draw_warrior(c, {"t": t, "pose": "idle"})
 
 
+## Board tile / roster portrait of a weapon variant ("bow", "greatshield"...).
+static func draw_portrait_weapon(c: CanvasItem, t: float, w: String) -> void:
+	draw_warrior(c, {"t": t, "pose": "idle", "weapon": w})
+
+
 static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
 	var pose: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var blocking: bool = s.get("blocking", false)
+	var w: String = s.get("weapon", "")
 	var bob := sin(t * 2.0) * 1.5
 	EnemyArt.legs(c, s, -60.0, 10.0, 12.0, GREEN, GREEN_SHADE, GREEN.lightened(0.3), DARK, 18.0)
 	var chest := Vector2(0, -96 + bob)
+	if w != "":
+		ArmedSoldier.draw_weapon_back(c, s, chest, palette())
+		_draw_body(c, chest, t, dead)
+		ArmedSoldier.draw_weapon_front(c, s, chest, palette())
+		return
 	# Hammer arm (behind)
 	var hand := chest + Vector2(-20, 26)
 	var ang := -2.0
@@ -161,24 +198,7 @@ static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(head_pos + n * 20.0, head_pos - n * 20.0, GREEN, 3.0)
 	FighterArt.outline(c, hammer, 3.0)
 	EnemyArt.arm(c, chest + Vector2(-10, -18), hand, 9.0, WHITE_SHADE, WHITE_SHADE.darkened(0.2), WHITE, GREEN_SHADE, 6.5)
-	# White breastplate with green trim and a gear emblem
-	var plate := PackedVector2Array([chest + Vector2(-22, -28), chest + Vector2(24, -28), chest + Vector2(20, 36), chest + Vector2(-20, 36)])
-	c.draw_polygon(plate, PackedColorArray([WHITE, WHITE, WHITE_SHADE, WHITE_SHADE]))
-	c.draw_line(chest + Vector2(-22, -26), chest + Vector2(24, -26), GREEN, 4.0)
-	c.draw_line(chest + Vector2(-20, 34), chest + Vector2(20, 34), DARK, 5.0)
-	_gear(c, chest + Vector2(2, 4), 9.0, GREEN, t * 0.0)
-	FighterArt.outline(c, plate, 4.0)
-	FighterArt.ball(c, chest + Vector2(-18, -24), 11.0, WHITE, WHITE_SHADE, Color.WHITE)
-	# Helmet: white dome, dark visor with a green slit
-	var head := chest + Vector2(4, -44)
-	FighterArt.ball(c, head, 16.0, WHITE, WHITE_SHADE, Color.WHITE)
-	var visor := FighterArt.rrect_points(Rect2(head.x - 4, head.y - 6, 20, 10), 4.0)
-	c.draw_colored_polygon(visor, DARK_SHADE)
-	if dead:
-		EnemyArt.ko_eye(c, head + Vector2(8, -1), 3.0, t)
-	else:
-		c.draw_line(head + Vector2(-1, -1), head + Vector2(14, -1), GREEN, 2.5)
-	c.draw_line(head + Vector2(0, -16), head + Vector2(-8, -26), GREEN, 4.0)     # Crest
+	_draw_body(c, chest, t, dead)
 	# Shield (front)
 	var sh := chest + Vector2(24, 10)
 	if blocking or pose == "block" or pose == "block_tele":
@@ -192,6 +212,26 @@ static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, disc, 3.5)
 	if blocking:
 		c.draw_arc(sh + Vector2(10, 0), 34.0, -1.3, 1.3, 12, Color(0.7, 0.9, 1.0, 0.6 + 0.3 * sin(t * 12.0)), 4.0, true)
+
+
+## White breastplate with green trim and a gear emblem + helmet (white dome, dark visor, green slit).
+static func _draw_body(c: CanvasItem, chest: Vector2, t: float, dead: bool) -> void:
+	var plate := PackedVector2Array([chest + Vector2(-22, -28), chest + Vector2(24, -28), chest + Vector2(20, 36), chest + Vector2(-20, 36)])
+	c.draw_polygon(plate, PackedColorArray([WHITE, WHITE, WHITE_SHADE, WHITE_SHADE]))
+	c.draw_line(chest + Vector2(-22, -26), chest + Vector2(24, -26), GREEN, 4.0)
+	c.draw_line(chest + Vector2(-20, 34), chest + Vector2(20, 34), DARK, 5.0)
+	_gear(c, chest + Vector2(2, 4), 9.0, GREEN, 0.0)
+	FighterArt.outline(c, plate, 4.0)
+	FighterArt.ball(c, chest + Vector2(-18, -24), 11.0, WHITE, WHITE_SHADE, Color.WHITE)
+	var head := chest + Vector2(4, -44)
+	FighterArt.ball(c, head, 16.0, WHITE, WHITE_SHADE, Color.WHITE)
+	var visor := FighterArt.rrect_points(Rect2(head.x - 4, head.y - 6, 20, 10), 4.0)
+	c.draw_colored_polygon(visor, DARK_SHADE)
+	if dead:
+		EnemyArt.ko_eye(c, head + Vector2(8, -1), 3.0, t)
+	else:
+		c.draw_line(head + Vector2(-1, -1), head + Vector2(14, -1), GREEN, 2.5)
+	c.draw_line(head + Vector2(0, -16), head + Vector2(-8, -26), GREEN, 4.0)     # Crest
 
 
 static func _gear(c: CanvasItem, p: Vector2, r: float, col: Color, rot: float) -> void:

@@ -26,6 +26,10 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 - [ ] Play the 3 Fights-mode bosses yourself and tune them (`HP`, pattern cooldowns and damage, `phase2_*` in `scripts/enemies/bosses/`).
 - [ ] Check whether Kharlemings can still stand on top of each other on level 5 (their name tags overlap).
 - [ ] Test on a real iPhone 13: loading, touch controls, and audio after the tap.
+- [ ] **Web on phones: check the page no longer reloads by itself** (reported 2026-11-09: it reloaded 1-3 minutes after opening). Play 5+ minutes on a phone, through several Story areas. See [Performance](Performance.md).
+- [ ] Play the new Story levels (5, 7, 11, 14, 18, 21-23, 25, 33) and tune the new soldier weapons (`ArmedSoldier.gd`: HP per weapon, `FRONT_GUARD` of the great shield, arrow damage).
+- [ ] Check the optional Shining level (32) both ways and by skipping it, then play level 34.
+- [ ] Try the new **Touch UI Size** slider (Settings) on a phone and pick a good default.
 
 ## Website
 

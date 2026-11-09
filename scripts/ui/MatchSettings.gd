@@ -26,6 +26,30 @@ static var lives := 1
 ## Touch controls: 0 = AUTO (only on touchscreens), 1 = ON (also for testing on PC), 2 = OFF
 static var touch_mode := 0
 const TOUCH_NAMES := ["AUTO", "ON", "OFF"]
+## MOBILE UI SCALER: size of the touch buttons + joystick (1.0 = default). Saved on the device.
+static var touch_ui_scale := 1.0
+const TOUCH_SCALE_MIN := 0.6
+const TOUCH_SCALE_MAX := 1.6
+const CONTROLS_PATH := "user://controls.cfg"
+static var _controls_loaded := false
+
+
+static func load_controls() -> void:
+	if _controls_loaded:
+		return
+	_controls_loaded = true
+	var cfg := ConfigFile.new()
+	if cfg.load(CONTROLS_PATH) != OK:
+		return
+	touch_mode = clampi(int(cfg.get_value("touch", "mode", touch_mode)), 0, 2)
+	touch_ui_scale = clampf(float(cfg.get_value("touch", "ui_scale", 1.0)), TOUCH_SCALE_MIN, TOUCH_SCALE_MAX)
+
+
+static func save_controls() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("touch", "mode", touch_mode)
+	cfg.set_value("touch", "ui_scale", touch_ui_scale)
+	cfg.save(CONTROLS_PATH)
 static var enemy_lives := 1           # PvE enemies / bosses (Rotor...): 1 = one HP bar
 
 static var sandbox := false
@@ -43,6 +67,7 @@ static func fps_counter_active() -> bool:
 
 
 static func touch_enabled() -> bool:
+	load_controls()
 	if touch_mode == 1:
 		return true
 	if touch_mode == 2:
@@ -120,6 +145,7 @@ var _back: Button
 
 func _ready() -> void:
 	SoundManager.play_music("menu")
+	load_controls()
 	_build()
 	_refresh()
 	_back.grab_focus.call_deferred()
@@ -191,6 +217,7 @@ func _build_match_section(rows: VBoxContainer) -> void:
 func _build_controls_section(rows: VBoxContainer) -> void:
 	rows.add_child(_section_title("CONTROLS"))
 	rows.add_child(_stepper("touch", "Touch Controls (mobile)", _change_touch))
+	rows.add_child(_touch_scale_row())
 	var pad := UiStyle.label("Controller: Stick move  A jump  X attack  RB/LT block  Y / B / LB = moves 1 / 2 / 3  RT ultimate  Start menu", 14, UiStyle.TEXT_DIM, 4)
 	pad.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pad.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -247,7 +274,37 @@ func _volume_row(text: String, which: String) -> Control:
 
 func _change_touch(step: int) -> void:
 	touch_mode = wrapi(touch_mode + step, 0, 3)
+	save_controls()
 	_refresh()
+
+
+## MOBILE UI SCALER: slider for the size of the touch buttons and joystick (60% - 160%).
+func _touch_scale_row() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var name_label := UiStyle.label("Touch UI Size", 20, UiStyle.TEXT, 6)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_label.custom_minimum_size = Vector2(200, 0)
+	row.add_child(name_label)
+	var slider := HSlider.new()
+	slider.min_value = TOUCH_SCALE_MIN * 100.0
+	slider.max_value = TOUCH_SCALE_MAX * 100.0
+	slider.step = 10
+	slider.value = roundf(touch_ui_scale * 100.0)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slider.custom_minimum_size = Vector2(220, 36)
+	slider.focus_mode = Control.FOCUS_ALL
+	row.add_child(slider)
+	var value := UiStyle.label("%d%%" % int(slider.value), 20, UiStyle.ACCENT_BLUE, 6)
+	value.custom_minimum_size = Vector2(70, 0)
+	row.add_child(value)
+	slider.value_changed.connect(func(v: float) -> void:
+		touch_ui_scale = v / 100.0
+		value.text = "%d%%" % int(v))
+	slider.drag_ended.connect(func(_changed: bool) -> void: save_controls())
+	slider.focus_exited.connect(func() -> void: save_controls())
+	return row
 
 
 func _build_sandbox_section(rows: VBoxContainer) -> void:
@@ -406,6 +463,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _go_back() -> void:
+	save_controls()
 	var target := return_scene
 	return_scene = CharacterRoster.PRE_FIGHT
 	get_tree().change_scene_to_file(target)

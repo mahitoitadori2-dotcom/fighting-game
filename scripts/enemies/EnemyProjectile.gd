@@ -351,6 +351,24 @@ func _draw() -> void:
 			_draw_void_bolt(a)
 		"eye_beam":                                       # Void Massacre: white eye beam
 			_draw_eye_beam(a)
+		"arrow":                                          # Story archers (tint = fletching / head)
+			_draw_arrow(a)
+
+
+## Arrow along +x (ARC: the node rotation follows the flight) or along `dir` (LINEAR).
+func _draw_arrow(a: float) -> void:
+	var d := 1.0 if kind == Kind.ARC else dir
+	var tip := Vector2(24.0 * d, 0)
+	var tail := Vector2(-24.0 * d, 0)
+	draw_line(tail, tip, Color(0, 0, 0, a), 5.0, true)
+	draw_line(tail, tip, Color(0.85, 0.78, 0.62, a), 2.5, true)
+	var head := PackedVector2Array([tip + Vector2(-8.0 * d, -6), tip + Vector2(6.0 * d, 0), tip + Vector2(-8.0 * d, 6)])
+	draw_colored_polygon(head, Color(tint.r, tint.g, tint.b, a))
+	FighterArt.outline(self, head, 2.0, Color(0, 0, 0, a))
+	for s in [-1.0, 1.0]:
+		draw_line(tail + Vector2(2.0 * d, 0), tail + Vector2(-6.0 * d, 7.0 * s), Color(tint.r, tint.g, tint.b, a), 3.0, true)
+	if kind == Kind.LINEAR:
+		draw_line(tail, tail - Vector2(26.0 * d, 0), Color(1, 1, 1, 0.25 * a), 2.0, true)   # Speed streak
 
 
 func _draw_rings(col: Color, a: float) -> void:
