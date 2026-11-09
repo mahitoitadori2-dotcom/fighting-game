@@ -20,7 +20,8 @@ const MAIN_MENU := "res://scenes/MainMenu.tscn"
 const CHARACTER_SELECT := "res://scenes/CharacterSelect.tscn"
 const ARENA := "res://Main.tscn"              # Kept for old code: the Test Arena
 const PRE_FIGHT := "res://scenes/PreFight.tscn"
-const MATCH_SETTINGS := "res://scenes/MatchSettings.tscn"
+const MATCH_SETTINGS := "res://scenes/MatchSettings.tscn"   # Also the general SETTINGS screen (MatchSettings.screen_mode)
+const MAP_CATALOGUE := "res://scenes/MapCatalogue.tscn"
 const DUMMY_ID := "dummy"
 
 ## YOUR character. Always set. Survives scene changes (static).

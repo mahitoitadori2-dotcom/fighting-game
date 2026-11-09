@@ -246,7 +246,9 @@ func _paint_hive(sz: Vector2) -> void:
 		var hx := rng.randf() * sz.x
 		var hw := rng.randf_range(120.0, 260.0)
 		var hy := sz.y * rng.randf_range(0.62, 0.8)
-		_painter.draw_colored_polygon(PackedVector2Array([Vector2(hx - hw, sz.y), Vector2(hx - hw * 0.4, hy + 20.0), Vector2(hx, hy), Vector2(hx + hw * 0.5, hy + 30.0), Vector2(hx + hw, sz.y)]), Color(0.08, 0.08, 0.09))
+		var low := sz.y - 2.0                                     # Small previews: keep every point above the bottom edge
+		_painter.draw_colored_polygon(PackedVector2Array([Vector2(hx - hw, sz.y), Vector2(hx - hw * 0.4, minf(hy + 20.0, low)), Vector2(hx, minf(hy, low)),
+			Vector2(hx + hw * 0.5, minf(hy + 30.0, low)), Vector2(hx + hw, sz.y)]), Color(0.08, 0.08, 0.09))
 		_painter.draw_arc(Vector2(hx + hw * 0.2, hy + 10.0), 22.0, 0.0, TAU, 12, Color(0.12, 0.12, 0.13), 6.0)   # Gear
 		_painter.draw_line(Vector2(hx - hw * 0.5, hy + 30.0), Vector2(hx + hw * 0.1, hy - 30.0), Color(0.12, 0.12, 0.13), 7.0)  # Pipe
 	# Egg pods (glowing cyan cocoons) on the far wall

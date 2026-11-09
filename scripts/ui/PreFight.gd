@@ -42,7 +42,9 @@ func _ready() -> void:
 
 	var settings := UiStyle.make_button("MATCH SETTINGS")
 	settings.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	settings.pressed.connect(func() -> void: get_tree().change_scene_to_file(CharacterRoster.MATCH_SETTINGS))
+	settings.pressed.connect(func() -> void:
+		MatchSettings.screen_mode = "match"                  # Lives + Sandbox only
+		get_tree().change_scene_to_file(CharacterRoster.MATCH_SETTINGS))
 	col.add_child(settings)
 
 	var back := UiStyle.make_button("BACK", Vector2(200, 50), 20)

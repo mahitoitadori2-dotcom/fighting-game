@@ -60,6 +60,9 @@ static var god_mode := false
 static var show_fps := false          # Sandbox: FPS / performance counter in the fight
 ## Where BACK goes (Main Menu > SETTINGS sets it to the Main Menu; reset after use).
 static var return_scene := CharacterRoster.PRE_FIGHT
+## Which screen this scene shows: "match" = MATCH SETTINGS (Lives, Enemy Lives, Sandbox), from the
+## pre-fight screen; "general" = SETTINGS (Touch controls, Touch UI Size, Audio), from the Main Menu.
+static var screen_mode := "match"
 
 
 static func fps_counter_active() -> bool:
@@ -168,7 +171,8 @@ func _build() -> void:
 	_back = UiStyle.make_button("< BACK", Vector2(150, 50), 22)
 	_back.pressed.connect(_go_back)
 	header.add_child(_back)
-	var title := UiStyle.label("MATCH SETTINGS", 42)
+	var general := screen_mode == "general"
+	var title := UiStyle.label("SETTINGS" if general else "MATCH SETTINGS", 42)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	var spacer := Control.new()
@@ -196,13 +200,16 @@ func _build() -> void:
 	rows.add_theme_constant_override("separation", 12)
 	panel.add_child(rows)
 
-	_build_match_section(rows)
-	rows.add_child(HSeparator.new())
-	_build_controls_section(rows)
-	rows.add_child(HSeparator.new())
-	_build_audio_section(rows)
-	rows.add_child(HSeparator.new())
-	_build_sandbox_section(rows)
+	if general:
+		# SETTINGS (Main Menu): how the game feels / sounds on this device
+		_build_controls_section(rows)
+		rows.add_child(HSeparator.new())
+		_build_audio_section(rows)
+	else:
+		# MATCH SETTINGS (pre-fight screen): rules of the next fight
+		_build_match_section(rows)
+		rows.add_child(HSeparator.new())
+		_build_sandbox_section(rows)
 
 
 func _build_match_section(rows: VBoxContainer) -> void:
@@ -436,8 +443,11 @@ func _on_reset() -> void:
 
 
 func _refresh() -> void:
+	if screen_mode == "general":
+		_values["touch"].text = TOUCH_NAMES[touch_mode]
+		_summary.text = "Controls and sound for this device.  (Lives and Sandbox are in MATCH SETTINGS before a fight.)"
+		return
 	_values["lives"].text = str(lives)
-	_values["touch"].text = TOUCH_NAMES[touch_mode]
 	_values["enemy_lives"].text = str(enemy_lives)
 	_values["damage"].text = _mult_text(DAMAGE_OPTIONS[damage_idx])
 	_values["gauge"].text = _mult_text(GAUGE_OPTIONS[gauge_idx])
@@ -466,4 +476,5 @@ func _go_back() -> void:
 	save_controls()
 	var target := return_scene
 	return_scene = CharacterRoster.PRE_FIGHT
+	screen_mode = "match"
 	get_tree().change_scene_to_file(target)

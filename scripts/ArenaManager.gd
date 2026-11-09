@@ -3,17 +3,9 @@ extends Node2D
 ## Put ONE of these in every arena scene. On start it spawns:
 ##   P1 = YOUR character (keyboard)      at p1_spawn
 ##   P2 = the OPPONENT (CPU) or the Dummy at p2_spawn
-## It also holds the list of arenas the Main Menu offers.
+## The arenas (2 Versus arenas + every Story Mode map) are listed in MapCatalog.entries().
 
-## Every arena the Main Menu can pick. Add new arenas here.
-const ARENAS: Array[Dictionary] = [
-	{"id": "test", "name": "Test Arena", "scene": "res://Main.tscn",
-		"desc": "Floating stone island under the Hexagon towers"},
-	{"id": "void", "name": "Void Arena", "scene": "res://scenes/VoidArena.tscn",
-		"desc": "Black rock, green fog and void tentacles"},
-]
-
-## Survives scene changes (static).
+## Survives scene changes (static). An id from MapCatalog ("test", "void", "story_<map>").
 static var selected_arena := "test"
 ## AI vs AI: set true and P1 is also driven by its character's AI.
 static var p1_cpu := false
@@ -26,10 +18,7 @@ var p2: Fighter
 
 
 static func arena_entry(id: String) -> Dictionary:
-	for a in ARENAS:
-		if a["id"] == id:
-			return a
-	return ARENAS[0]
+	return MapCatalog.entry(id)
 
 
 static func selected_arena_entry() -> Dictionary:

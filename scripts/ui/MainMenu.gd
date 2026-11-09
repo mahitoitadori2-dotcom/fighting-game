@@ -1,8 +1,9 @@
 extends Control
 ## Title screen: UNIVERSAL BEATDOWN.
-##   Arena picker (Test Arena / Void Arena)
-##   Play               -> loads the picked arena: YOU vs OPPONENT (or Dummy)
-##   Switch Characters  -> Character Select
+##   Arena: the picked map + CHANGE ARENA (opens the Map Catalogue: Versus + every Story map)
+##   Play               -> pre-fight screen (START / MATCH SETTINGS) for the picked arena
+##   Story Mode, Switch Characters, Map Catalogue
+##   Settings           -> controls, touch UI size, audio (Match Settings live on the pre-fight screen)
 
 var _play: Button
 var _arena_desc: Label
@@ -41,22 +42,17 @@ func _build() -> void:
 	gap.custom_minimum_size = Vector2(0, 10)
 	col.add_child(gap)
 
-	# --- Arena picker ---
-	col.add_child(UiStyle.label("ARENA", 20, UiStyle.TEXT_DIM, 6))
-	var arenas := HBoxContainer.new()
-	arenas.alignment = BoxContainer.ALIGNMENT_CENTER
-	arenas.add_theme_constant_override("separation", 14)
-	col.add_child(arenas)
-	var group := ButtonGroup.new()
-	for a in ArenaManager.ARENAS:
-		var b := UiStyle.make_button(String(a["name"]).to_upper(), Vector2(200, 50), 20)
-		b.toggle_mode = true
-		b.button_group = group
-		b.button_pressed = a["id"] == ArenaManager.selected_arena
-		b.add_theme_stylebox_override("pressed", UiStyle.box(Color(0.18, 0.62, 0.30), UiStyle.ACCENT_GREEN, 4))
-		b.toggled.connect(_on_arena_toggled.bind(a["id"]))
-		arenas.add_child(b)
-	_arena_desc = UiStyle.label(ArenaManager.selected_arena_entry()["desc"], 15, UiStyle.TEXT_DIM, 5)
+	# --- Arena (pick it in the Map Catalogue) ---
+	var arena := ArenaManager.selected_arena_entry()
+	var arena_row := HBoxContainer.new()
+	arena_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	arena_row.add_theme_constant_override("separation", 14)
+	col.add_child(arena_row)
+	arena_row.add_child(UiStyle.label("ARENA:  %s" % String(arena["name"]).to_upper(), 22, UiStyle.ACCENT_GREEN, 6))
+	var change := UiStyle.make_button("CHANGE ARENA", Vector2(220, 46), 18)
+	change.pressed.connect(_on_catalogue)
+	arena_row.add_child(change)
+	_arena_desc = UiStyle.label("%s   (%s)" % [arena["desc"], arena["source"]], 15, UiStyle.TEXT_DIM, 5)
 	col.add_child(_arena_desc)
 
 	var gap2 := Control.new()
@@ -78,6 +74,11 @@ func _build() -> void:
 	switch_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	switch_btn.pressed.connect(_on_switch)
 	col.add_child(switch_btn)
+
+	var cat_btn := UiStyle.make_button("MAP CATALOGUE")
+	cat_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cat_btn.pressed.connect(_on_catalogue)
+	col.add_child(cat_btn)
 
 	var settings_btn := UiStyle.make_button("SETTINGS")
 	settings_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -116,17 +117,17 @@ func _add_portrait(entry: Dictionary, left: bool) -> void:
 		portrait.pivot_offset = Vector2(120, 135)
 
 
-func _on_arena_toggled(on: bool, id: String) -> void:
-	if on:
-		ArenaManager.selected_arena = id
-		_arena_desc.text = ArenaManager.arena_entry(id)["desc"]
+func _on_catalogue() -> void:
+	get_tree().change_scene_to_file(CharacterRoster.MAP_CATALOGUE)
 
 
 func _on_play() -> void:
 	get_tree().change_scene_to_file(CharacterRoster.PRE_FIGHT)      # START / MATCH SETTINGS screen
 
 
+## General SETTINGS (controls, touch size, audio) - separate from the Match Settings.
 func _on_settings() -> void:
+	MatchSettings.screen_mode = "general"
 	MatchSettings.return_scene = CharacterRoster.MAIN_MENU      # BACK comes here, not to the pre-fight screen
 	get_tree().change_scene_to_file(CharacterRoster.MATCH_SETTINGS)
 

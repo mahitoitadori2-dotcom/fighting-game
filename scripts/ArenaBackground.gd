@@ -320,6 +320,13 @@ func _draw_building(c: CanvasItem, base: Vector2, b: Dictionary, h: float) -> vo
 	c.draw_rect(rect, OUTLINE, false, 3.0)
 
 
+static func _min_y(pts: PackedVector2Array) -> float:
+	var m := INF
+	for p in pts:
+		m = minf(m, p.y)
+	return m
+
+
 func _draw_rock(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: float) -> void:
 	var last: Vector2 = pts[pts.size() - 1]
 	if base.x + last.x < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0:
@@ -327,13 +334,21 @@ func _draw_rock(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: float)
 	var poly := PackedVector2Array()
 	poly.append(Vector2(base.x, h + 10.0))
 	for p in pts:
-		poly.append(base + p)
+		var q := base + p
+		q.y = minf(q.y, h + 9.0)                     # Small views (Map Catalogue thumbnails): never below the bottom edge
+		poly.append(q)
 	poly.append(Vector2(base.x + last.x, h + 10.0))
+	if base.y + _min_y(pts) >= h + 9.0:
+		return                                       # Entirely below the view
 	c.draw_colored_polygon(poly, ROCK_BODY)
 	# Shaded right faces + highlight on left faces of each peak
 	for i in range(1, pts.size()):
 		var a := base + pts[i - 1]
 		var b := base + pts[i]
+		a.y = minf(a.y, h + 9.0)
+		b.y = minf(b.y, h + 9.0)
+		if absf(b.y - a.y) < 0.5 and a.y >= h + 9.0:
+			continue
 		if b.y > a.y:   # Descending slope = shadow side
 			c.draw_colored_polygon(PackedVector2Array([a, b, Vector2(b.x, h + 10.0), Vector2(a.x, h + 10.0)]), ROCK_SIDE)
 		else:

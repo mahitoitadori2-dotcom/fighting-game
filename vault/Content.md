@@ -80,11 +80,16 @@ All enemies, in Versus and in Story Mode, use the same system: `BaseEnemy` + `En
 - Attacks are telegraphed before they hit.
 - In a group, at most 2 enemies attack at the same time.
 
-## Match Settings
+## Arenas and the Map Catalogue
 
-- Sandbox options: damage, gauge and cooldown multipliers, and God Mode.
-- An FPS counter.
-- Touch controls (on by default on phones and tablets), with a **Touch UI Size** slider (60%-160%, saved on the device) that makes the buttons and joystick bigger or smaller.
+Versus has **30 arenas**: the Test Arena, the Void Arena, and **every Story Mode map** from Colosseums 1-5 (near-duplicates left out). Story maps are fought as floating islands with their backdrop, floor and fog (no cave walls, so you can still knock each other off). They all use one scene, `scenes/StoryMapArena.tscn`, dressed by `scripts/VersusMap.gd`; the list is in `scripts/ui/MapCatalog.gd`.
+
+The **Map Catalogue** (Main Menu > MAP CATALOGUE, or CHANGE ARENA) shows every map as a card with a live-drawn thumbnail and where it comes from. Click a card to see the map big (animated), with its description and SELECT ARENA / FIGHT HERE / CLOSE.
+
+## Settings and Match Settings (separate screens)
+
+- **Settings** (Main Menu): touch controls AUTO / ON / OFF, **Touch UI Size** (60%-160%, saved on the device), controller help, Music / SFX volume, Mute.
+- **Match Settings** (the pre-fight screen, after PLAY): Lives, Enemy Lives, and Sandbox (damage, gauge and cooldown multipliers, God Mode, FPS counter).
 
 On the touch controls, the move buttons sit in a row ordered **1, 2, 3 from right to left** (1 is nearest the right edge), above ATK. JUMP, BLOCK and G sit on the inner ring.
 
