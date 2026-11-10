@@ -202,6 +202,8 @@ func _build() -> void:
 
 	if general:
 		# SETTINGS (Main Menu): how the game feels / sounds on this device
+		_build_graphics_section(rows)
+		rows.add_child(HSeparator.new())
 		_build_controls_section(rows)
 		rows.add_child(HSeparator.new())
 		_build_audio_section(rows)
@@ -219,6 +221,24 @@ func _build_match_section(rows: VBoxContainer) -> void:
 	var later := UiStyle.label("Timer / Rounds: coming soon", 14, UiStyle.TEXT_DIM, 4)
 	later.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	rows.add_child(later)
+
+
+## GRAPHICS: Potato / Fast / Regular / Real (GraphicsSettings, saved to user://graphics.cfg).
+var _graphics_desc: Label
+
+
+func _build_graphics_section(rows: VBoxContainer) -> void:
+	rows.add_child(_section_title("GRAPHICS"))
+	rows.add_child(_stepper("graphics", "Graphics Quality", _change_graphics))
+	_graphics_desc = UiStyle.label("", 14, UiStyle.TEXT_DIM, 4)
+	_graphics_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_graphics_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	rows.add_child(_graphics_desc)
+
+
+func _change_graphics(step: int) -> void:
+	GraphicsSettings.set_level(clampi(GraphicsSettings.level + step, GraphicsSettings.POTATO, GraphicsSettings.REAL), get_tree())
+	_refresh()
 
 
 func _build_controls_section(rows: VBoxContainer) -> void:
@@ -445,7 +465,9 @@ func _on_reset() -> void:
 func _refresh() -> void:
 	if screen_mode == "general":
 		_values["touch"].text = TOUCH_NAMES[touch_mode]
-		_summary.text = "Controls and sound for this device.  (Lives and Sandbox are in MATCH SETTINGS before a fight.)"
+		_values["graphics"].text = GraphicsSettings.NAMES[GraphicsSettings.level]
+		_graphics_desc.text = GraphicsSettings.DESCS[GraphicsSettings.level]
+		_summary.text = "Graphics, controls and sound for this device.  (Lives, Enemy Lives and Sandbox are in MATCH SETTINGS before a fight.)"
 		return
 	_values["lives"].text = str(lives)
 	_values["enemy_lives"].text = str(enemy_lives)

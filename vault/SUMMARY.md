@@ -2,7 +2,7 @@
 class: state
 validity: current
 type: summary
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 
 # Universal Beatdown - Summary
@@ -30,7 +30,7 @@ Play Colosseum 5 yourself (especially the finale escape and The Sun) and tune th
 - [Game content](Content.md): fighters, moves and Versus enemies.
 - [Story Mode](StoryMode.md): Colosseums 1-4, levels, maps, soldier weapon types, rules and bosses.
 - [Audio](Audio.md): the sound manager and how to replace the placeholder sounds.
-- [Performance](Performance.md): pooling, particle limits and test results.
+- [Performance](Performance.md): pooling, particle limits, the 4-level Graphics setting and test results.
 - [Build and release](BuildAndRelease.md): GitHub Actions, the website, releases and local builds.
 - [Project layout](ProjectLayout.md): where the files are.
 - [Roadmap](Roadmap.md): the large future plans.

@@ -23,6 +23,7 @@ general/text_to_speech=true
 
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 SoundManager="*res://scripts/audio/SoundManager.gd"
+Graphics="*res://scripts/GraphicsSettings.gd"
 
 [display]
 

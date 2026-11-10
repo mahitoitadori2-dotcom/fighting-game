@@ -31,6 +31,22 @@ On phones the web game reloaded 1-3 minutes after opening. Nothing in the page r
 
 **Status:** not yet confirmed on a real phone (see the [To-do list](Todo.md)).
 
+## Graphics setting (added 2026-11-10)
+
+Main Menu > SETTINGS > GRAPHICS has 4 levels. The choice is saved on the device. REGULAR is the default. The code is in `scripts/GraphicsSettings.gd`, loaded at start as the autoload "Graphics".
+
+| Level | For | What changes |
+|---|---|---|
+| **Potato** | Really weak devices | Draws at 1280x720 and stretches it, 30 FPS cap, max 40 particles, about a third of the hit sparks, no trails, backgrounds update every 3rd frame, no clouds, lit windows, embers or void fog |
+| **Fast** | Phones, old PCs | Draws at 1280x720 and stretches it, 60 FPS cap, max 90 particles, 60% sparks and trails, backgrounds update every 2nd frame, no far clouds or far void tentacles |
+| **Regular** | Normal PCs | The original graphics |
+| **Real** | Good PCs | Glow on bright things, 1.6x sparks, 1.5x longer trails, max 320 particles, no FPS cap |
+
+- Changes apply at once, also in the middle of a menu.
+- Smooth edges (MSAA / FXAA) are not possible: the Compatibility renderer the game uses does not support them, so Real uses glow instead.
+- Story backgrounds other than the arena, Void and Hell/Story backdrops (embers) are not changed yet. They are mostly drawn once, so they cost little.
+- **Not verified:** the goal of at least 40 FPS on an iPhone 11 with FAST. Checked only on PC (no errors, the visuals change as expected).
+
 ## Open work
 
 Some projectiles are not pooled yet. They are in the [To-do list](Todo.md).

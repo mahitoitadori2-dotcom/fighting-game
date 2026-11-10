@@ -141,7 +141,7 @@ static func ground_below(ctx: Node2D, pos: Vector2, max_drop: float = 600.0) -> 
 # ============================================================
 static func hit_sparks(ctx: Node, pos: Vector2, count: int = 6, size_mult: float = 1.0) -> void:
 	var s := _spawn(ctx, HitSparkFx, pos) as HitSparkFx
-	s.count = count
+	s.count = GraphicsSettings.fx_count(count)         # Fewer on Potato / Fast, more on Real
 	s.size_mult = size_mult
 	_add(ctx, s)
 
@@ -257,6 +257,9 @@ static func _burst(ctx: Node, pos: Vector2, radius: float, style: int) -> void:
 ## Fading ribbon behind a moving node (rockets, beams, bats, throne, spikes...).
 static func trail(target: Node2D, color: Color, width: float = 10.0, length: int = 12) -> void:
 	if target == null or not target.is_inside_tree():
+		return
+	length = GraphicsSettings.trail_length(length)    # 0 on Potato = no trail at all
+	if length < 2:
 		return
 	var t := OptimizationManager.take(TrailFx) as TrailFx
 	t.target = target

@@ -3,7 +3,7 @@ extends Control
 ##   Arena: the picked map + CHANGE ARENA (opens the Map Catalogue: Versus + every Story map)
 ##   Play               -> pre-fight screen (START / MATCH SETTINGS) for the picked arena
 ##   Story Mode, Switch Characters, Map Catalogue
-##   Settings           -> controls, touch UI size, audio (Match Settings live on the pre-fight screen)
+##   Settings           -> graphics, controls, touch UI size, audio (Match Settings live on the pre-fight screen)
 
 var _play: Button
 var _arena_desc: Label

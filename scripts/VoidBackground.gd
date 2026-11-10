@@ -48,7 +48,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	_painter.queue_redraw()
+	if GraphicsSettings.bg_should_redraw():
+		_painter.queue_redraw()
 
 
 func _camera_pos() -> Vector2:
@@ -116,6 +117,8 @@ func paint(c: CanvasItem) -> void:
 	# Far tentacles
 	var tf_base := horizon + 90.0 - (cam.y - 300.0) * 0.05
 	for start in _starts(-cam.x * 0.12, TENTACLE_PERIOD, w):
+		if not GraphicsSettings.bg_full():
+			break                                    # Far tentacles: Regular / Real only
 		for tt in _tentacles_far:
 			_draw_tentacle(c, Vector2(start + float(tt["x"]), tf_base), tt, 0.75, w)
 	_fog_band(c, tf_base - 70.0, h, w, 0.5)
@@ -126,15 +129,16 @@ func paint(c: CanvasItem) -> void:
 		for tt in _tentacles_near:
 			_draw_tentacle(c, Vector2(start + float(tt["x"]), tn_base), tt, 1.0, w)
 
-	# Rolling fog blobs
-	for f in _fog_blobs:
+	# Rolling fog blobs + sparks: skipped on Potato
+	var deco: Array = _fog_blobs if GraphicsSettings.bg_detail() else []
+	for f in deco:
 		var fx := fposmod(f.x * (w + 400.0) + _t * f.w - cam.x * 0.15, w + 400.0) - 200.0
 		c.draw_circle(Vector2(fx, f.y * h), f.z, Color(FOG.r, FOG.g, FOG.b, 0.10))
 		c.draw_circle(Vector2(fx + f.z * 0.6, f.y * h + 10.0), f.z * 0.7, Color(FOG.r, FOG.g, FOG.b, 0.08))
 	_fog_band(c, tn_base - 40.0, h, w, 0.55)
 
 	# Floating sparks (rise, flicker, wrap)
-	for s in _sparks:
+	for s in (_sparks if GraphicsSettings.bg_detail() else []):
 		var sx := fposmod(s.x * w - cam.x * 0.3 + sin(_t * 0.8 + s.w) * 20.0, w)
 		var sy := fposmod(s.y - _t * s.z, 1.0) * h
 		var flick := 0.5 + 0.5 * sin(_t * 6.0 + s.w * 3.0)

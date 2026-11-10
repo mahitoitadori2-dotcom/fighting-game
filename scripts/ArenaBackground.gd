@@ -63,7 +63,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	_painter.queue_redraw()
+	if GraphicsSettings.bg_should_redraw():
+		_painter.queue_redraw()
 
 
 func _camera_pos() -> Vector2:
@@ -143,7 +144,8 @@ func paint(c: CanvasItem) -> void:
 	_grad(c, horizon, h, w, SKY_HORIZON, VALLEY_BOTTOM)
 
 	_draw_sun(c, Vector2(w * 0.8 - cam.x * 0.01, h * 0.2))
-	_draw_clouds(c, _clouds_far, -cam.x * 0.03 - _t * 6.0, w, h, 0.85)
+	if GraphicsSettings.bg_full():
+		_draw_clouds(c, _clouds_far, -cam.x * 0.03 - _t * 6.0, w, h, 0.85)
 
 	# Far: the Hexagon
 	for start in _starts(-cam.x * 0.05, HEX_PERIOD, w):
@@ -158,7 +160,8 @@ func paint(c: CanvasItem) -> void:
 			_draw_building(c, Vector2(start + float(b["x"]), city_base), b, h)
 	_mist(c, city_base - 25.0, h, w, 0.6)
 
-	_draw_clouds(c, _clouds_near, -cam.x * 0.2 - _t * 12.0, w, h, 0.95)
+	if GraphicsSettings.bg_detail():
+		_draw_clouds(c, _clouds_near, -cam.x * 0.2 - _t * 12.0, w, h, 0.95)
 
 	# Near: rocky spires
 	var rock_base := horizon + 150.0 - (cam.y - 300.0) * 0.08
@@ -288,11 +291,11 @@ func _draw_building(c: CanvasItem, base: Vector2, b: Dictionary, h: float) -> vo
 	var rect := Rect2(base.x, top, w, h + 10.0 - top)
 	c.draw_rect(rect, CITY_BODY)
 	c.draw_rect(Rect2(base.x + w * 0.78, top, w * 0.22, rect.size.y), CITY_SIDE)
-	# Windows
+	# Windows (dozens of rects per building: skipped on Potato)
 	var lit: Array = b["lit"]
 	var i := 0
 	var wy := top + 14.0
-	while wy < base.y - 6.0:
+	while wy < base.y - 6.0 and GraphicsSettings.bg_detail():
 		var wx := base.x + 9.0
 		while wx < base.x + w * 0.78 - 14.0:
 			c.draw_rect(Rect2(wx, wy, 8, 11), CITY_WINDOW if lit[i % lit.size()] else CITY_WINDOW_OFF)

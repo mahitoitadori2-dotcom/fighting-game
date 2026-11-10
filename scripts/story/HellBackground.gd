@@ -57,7 +57,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	_embers.queue_redraw()
+	_embers.visible = GraphicsSettings.bg_detail()      # No embers on Potato
+	if _embers.visible and GraphicsSettings.bg_should_redraw():
+		_embers.queue_redraw()
 
 
 # ============================================================
