@@ -48,7 +48,8 @@ func _physics_process(delta: float) -> void:
 		return
 	for b in get_overlapping_bodies():
 		var f := b as Fighter
-		if f != null and not f.is_dead and (f != source or triggers_on_owner):
+		if f != null and not f.is_dead and (f != source or triggers_on_owner) \
+				and (f == source or not CombatManager.passes_through(source, f)):   # Allies don't set it off
 			# COUNTERPLAY: the Time Stop user stepping on an HNCT bomb shatters the
 			# time stop and pays the penalty (handled by the fighter) instead of normal damage.
 			if CombatManager.is_time_stopped() and f == CombatManager.time_stop_owner and f.has_method("break_time_stop"):

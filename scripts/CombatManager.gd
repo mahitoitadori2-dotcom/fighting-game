@@ -171,6 +171,17 @@ static func apply_hit(hit: HitData, victim: Fighter) -> String:
 
 
 ## Same team (team 0 = no team: only allied with itself).
+## True if an attack or projectile from `source` must pass THROUGH `f` (f is source itself
+## or on source's team): it neither hits nor stops there. Used by every hitbox / projectile
+## contact check, so your rockets fly through your Story partner to the enemy behind it.
+static func passes_through(source: Fighter, f: Fighter) -> bool:
+	if f == null:
+		return true
+	if source == null or not is_instance_valid(source):
+		return false
+	return are_allies(source, f)
+
+
 static func are_allies(a: Fighter, b: Fighter) -> bool:
 	if a == b:
 		return true

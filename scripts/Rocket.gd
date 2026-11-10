@@ -105,7 +105,8 @@ func _physics_process(delta: float) -> void:
 
 	for area in get_overlapping_areas():
 		var hb := area as Hurtbox
-		if hb != null and hb.fighter != source and not hb.fighter.is_dead:
+		if hb != null and hb.fighter != source and not hb.fighter.is_dead \
+				and not CombatManager.passes_through(source, hb.fighter):     # Flies through allies
 			_hit(hb.fighter)
 			return
 	if get_overlapping_bodies().size() > 0:      # Island / world

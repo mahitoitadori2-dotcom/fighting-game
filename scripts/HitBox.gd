@@ -53,7 +53,8 @@ func _physics_process(_delta: float) -> void:
 		return                # Frozen by Time Stop: attacks hang in place
 	for area in get_overlapping_areas():
 		var hb := area as Hurtbox
-		if hb == null or hb.fighter == owner_fighter or hb.fighter.is_dead:
+		if hb == null or hb.fighter == owner_fighter or hb.fighter.is_dead \
+				or CombatManager.passes_through(owner_fighter, hb.fighter):    # Allies: swing / grab passes through
 			continue
 		if _hit_list.has(hb.fighter):
 			continue
