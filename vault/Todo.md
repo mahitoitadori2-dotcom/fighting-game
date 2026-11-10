@@ -30,6 +30,7 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 - [ ] Play the new Story levels (5, 7, 11, 14, 18, 21-23, 25, 33) and tune the new soldier weapons (`ArmedSoldier.gd`: HP per weapon, `FRONT_GUARD` of the great shield, arrow damage).
 - [ ] Check the optional Shining level (32) both ways and by skipping it, then play level 34.
 - [ ] **Graphics setting on an iPhone 11:** pick FAST, turn on the FPS counter (Sandbox), and check the fight stays at 40+ FPS, also during ultimates and big Story boss fights. Also check that POTATO and REAL look right on PC. See [Performance](Performance.md).
+- [ ] **iPhone web after the memory fixes (2026-11-10):** play 5+ minutes with Story + the Map Catalogue. Check: no crash, sound plays after the tap, and the sound stops when you leave Safari or lock the phone. See [Performance](Performance.md).
 - [ ] Try the new **Touch UI Size** slider (Settings) on a phone and pick a good default.
 - [ ] **Play Colosseum 5** (levels 35-50). Nothing there was beaten yet, by CPU or human:
   - The 8 bosses (HP / patterns in `scripts/story/c5/*.gd`; shared hard-boss rules in `C5Boss.gd` and `BossBrain.gd`).

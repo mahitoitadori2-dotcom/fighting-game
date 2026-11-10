@@ -81,17 +81,18 @@ static func entry(id: String) -> Dictionary:
 # PREVIEWS (thumbnails + the big preview): STILL PICTURES
 # Each map is rendered ONCE, one map at a time, in a hidden SubViewport (backdrop + island),
 # copied into a plain ImageTexture and the viewport is freed straight away. Nothing animates
-# and no backdrop keeps running while browsing. Pictures are cached for the whole session,
-# so re-opening the catalogue is instant.
+# and no backdrop keeps running while browsing. Thumbnails are cached for the whole session,
+# so re-opening the catalogue is instant (big previews are not: they are large).
 # ============================================================
 static var _shots := {}          # "id@WxH" -> Texture2D
-static var _queue: Array = []    # [TextureRect, entry, size]
+static var _queue: Array = []    # [TextureRect, entry, size, keep]
 static var _busy := false
 
 
 ## A still picture of the map. It fills in as soon as it is rendered (instantly if cached).
-## priority = jump the queue (the big preview should not wait for every thumbnail).
-static func make_preview(e: Dictionary, size: Vector2i, priority: bool = false) -> TextureRect:
+## big = the large preview: jumps the queue and is NOT kept after it closes (a big
+## picture is ~3 MB; keeping one per map would pile up on phones).
+static func make_preview(e: Dictionary, size: Vector2i, big: bool = false) -> TextureRect:
 	var tr := TextureRect.new()
 	tr.custom_minimum_size = Vector2(size)
 	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -101,10 +102,10 @@ static func make_preview(e: Dictionary, size: Vector2i, priority: bool = false) 
 	if _shots.has(key):
 		tr.texture = _shots[key]
 		return tr
-	if priority:
-		_queue.push_front([tr, e, size])
+	if big:
+		_queue.push_front([tr, e, size, false])
 	else:
-		_queue.append([tr, e, size])
+		_queue.append([tr, e, size, true])
 	if not _busy:
 		_pump()
 	return tr
@@ -124,10 +125,13 @@ static func _pump() -> void:
 		if not is_instance_valid(tr):                 # Left the catalogue / closed the preview
 			continue
 		var key := _shot_key(job[1], job[2])
-		if not _shots.has(key):
-			_shots[key] = await _render(tree, job[1], job[2])
+		var tex: Texture2D = _shots.get(key)
+		if tex == null:
+			tex = await _render(tree, job[1], job[2])
+			if bool(job[3]):
+				_shots[key] = tex                         # Thumbnails are kept (small)
 		if is_instance_valid(tr):
-			tr.texture = _shots[key]
+			tr.texture = tex
 	_busy = false
 
 

@@ -23,7 +23,7 @@ Universal Beatdown is a free 2D platform fighter, made in Godot 4.7.
 
 ## Next step
 
-Play Colosseum 5 yourself (especially the finale escape and The Sun) and tune the bosses. Test the web game on a phone for a few minutes to confirm the page no longer reloads by itself. See [To-do list](Todo.md).
+Play Colosseum 5 yourself (especially the finale escape and The Sun) and tune the bosses. Test the web game on an iPhone for a few minutes after the 2026-11-10 memory and sound fixes (no crash, sound works, silent in the background). See [To-do list](Todo.md).
 
 ## Details
 

@@ -151,6 +151,52 @@ $GODOT_HEAD_INCLUDE
 		} catch (e) {}
 	}
 
+	// ---------- Audio: keep the engine's sound alive, and silent in the background ----------
+	// Every AudioContext the engine creates is remembered here, so the page can:
+	//  * RESUME it on every tap / click / key. The engine makes its context after the
+	//    "Tap to Start" gesture has ended, so browsers (Chrome, Safari) leave it suspended
+	//    = no sound. Any later touch now wakes it up.
+	//  * SUSPEND it when the tab is hidden / the phone is locked, so iPhone stops showing
+	//    "playing audio" for a game running in the background (and stops spending
+	//    battery and memory on it). It resumes when the tab is visible again.
+	const NativeAC = window.AudioContext || window.webkitAudioContext;
+	const audioContexts = [];
+	if (NativeAC) {
+		try {
+			const Tracked = class extends NativeAC {
+				constructor(opts) { super(opts); audioContexts.push(this); }
+			};
+			window.AudioContext = Tracked;
+			if (window.webkitAudioContext) { window.webkitAudioContext = Tracked; }
+		} catch (e) {}
+	}
+	function liveContexts() {
+		for (let i = audioContexts.length - 1; i >= 0; i--) {
+			if (audioContexts[i].state === 'closed') { audioContexts.splice(i, 1); }
+		}
+		return audioContexts;
+	}
+	function resumeAudio() {
+		if (document.hidden) { return; }
+		for (const c of liveContexts()) {
+			if (c.state !== 'running') { c.resume().catch(function () {}); }
+		}
+	}
+	function suspendAudio() {
+		for (const c of liveContexts()) {
+			if (c.state === 'running') { c.suspend().catch(function () {}); }
+		}
+	}
+	for (const ev of ['pointerdown', 'touchend', 'keydown', 'click']) {
+		window.addEventListener(ev, resumeAudio, { capture: true, passive: true });
+	}
+	document.addEventListener('visibilitychange', function () {
+		if (document.hidden) { suspendAudio(); } else { resumeAudio(); }
+	});
+	window.addEventListener('pagehide', suspendAudio);
+	window.addEventListener('blur', function () { if (isTouch) { suspendAudio(); } });
+	window.addEventListener('focus', resumeAudio);
+
 	// ---------- Download everything BEFORE the tap, so the tap starts instantly ----------
 	const engine = new Engine(Object.assign({}, GODOT_CONFIG, {
 		onProgress: function (current, total) {
@@ -187,9 +233,8 @@ $GODOT_HEAD_INCLUDE
 		// WebAudio inside this user gesture (iOS blocks audio until the first tap).
 		try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; } } catch (e) {}
 		try {
-			const AC = window.AudioContext || window.webkitAudioContext;
-			if (AC) {
-				const ctx = new AC();
+			if (NativeAC) {
+				const ctx = new NativeAC();              // Not tracked: closed again right away
 				const src = ctx.createBufferSource();
 				src.buffer = ctx.createBuffer(1, 1, 22050);
 				src.connect(ctx.destination);

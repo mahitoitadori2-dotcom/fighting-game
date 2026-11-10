@@ -7,7 +7,7 @@ extends Node
 ##   FAST     mobiles + old computers (iPhone 11 target: 40+ FPS): base-res render
 ##            (no hi-DPI fill cost), 60 FPS cap, fewer sparks, short trails,
 ##            backgrounds redrawn every other frame, lighter backgrounds.
-##   REGULAR  the original graphics (default).
+##   REGULAR  the original graphics (default on PCs; phones start on FAST).
 ##   REAL     good PCs: glow / bloom on bright things, more sparks, longer trails,
 ##            bigger particle cap, uncapped frame rate.
 ##
@@ -51,9 +51,12 @@ static func load_settings() -> void:
 	if _loaded:
 		return
 	_loaded = true
+	# Phones (web) start on FAST: base-res render = far less GPU memory on hi-DPI screens.
+	var phone := OS.has_feature("web_ios") or OS.has_feature("web_android")
+	level = FAST if phone else REGULAR
 	var cfg := ConfigFile.new()
 	if cfg.load(PATH) == OK:
-		level = clampi(int(cfg.get_value("graphics", "level", REGULAR)), POTATO, REAL)
+		level = clampi(int(cfg.get_value("graphics", "level", level)), POTATO, REAL)
 
 
 static func save_settings() -> void:

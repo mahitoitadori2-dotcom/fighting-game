@@ -51,7 +51,18 @@ Main Menu > SETTINGS > GRAPHICS has 4 levels. The choice is saved on the device.
 
 Every card in the Map Catalogue used to run its map's full animated backdrop (embers, scrolling and so on) live, about 30 at once. Opening the catalogue crashed the game or dropped it to about 1 FPS. Now each map is drawn once, one at a time, and kept as a still picture. Nothing moves while you browse, and the pictures are kept until you close the game, so opening the catalogue again is instant. The catalogue's background no longer scrolls either. The code is in `scripts/ui/MapCatalog.gd`.
 
-**Status:** checked on PC (all 30 pictures appear, no errors). Not tested on a phone.
+**Status:** checked on PC (all 30 pictures appear, no errors). Not tested on a phone. Big previews are not kept after closing (only the small thumbnails are), so they can't pile up.
+
+## iPhone web: low-memory crash (2026-11-10)
+
+A memory probe visited every screen and Story levels 1-50: the game's own memory stays flat (no leak). The biggest waste was **text**: every font size and outline was cached as its own set of textures, and on hi-DPI screens even bigger copies.
+
+- **One shared font atlas (MSDF)** for all sizes and outlines (`project.godot`, `gui/theme/default_font_multichannel_signed_distance_field`). Text looks the same. In a Story level, texture memory went from 40 MB to 9 MB, graphics memory from 51 MB to 21 MB, game memory from 148 MB to 122 MB (measured on PC).
+- **Phones start on FAST graphics** (base-resolution render) instead of REGULAR. A choice saved in Settings still wins.
+- **Sound in the background:** the web page now pauses the game's audio when the tab is hidden or the phone is locked, so iPhone no longer shows it "playing" in the background. It comes back when you return (`web_shell/shell.html`).
+- **No sound in the browser:** the page now wakes the game's audio on every tap, click or key. Browsers can leave it paused because the engine starts its audio just after the Start tap. In Chrome on PC the sound worked both before and after the fix, so the original no-sound problem could not be reproduced here.
+
+**Status:** not tested on a real iPhone yet. The web engine file itself is about 40 MB. If iPhones still crash, the next step is a slimmed custom web engine (3D and unused parts removed), built by GitHub Actions.
 
 ## Open work
 
