@@ -159,6 +159,7 @@ Cutscenes: `c5_intro`, `mountain_climb`, `reach_peak`, `fall_to_earth` (painted 
 - 2 flasks per level (R / touch "+"), each heals 50%. They refill after each boss intro.
 - At most 2 enemies attack at the same time.
 - Progress saves after each level.
+- **Boss buff (2026-11-10, to balance the Story-only hero buffs):** every level boss (all Colosseums, including The Sun) has **1.35x HP**, attacks **25% more often** (cooldowns x0.8) and moves **12% faster**. Damage is **not** changed. It also applies to later forms (Blasphemy Caeser phase 2, Colosseum 5 bosses' forms) and stacks with phase 2 / rage. Example: The Sun 760 to 1026 HP, The Consumer 860 to 1161. Numbers: `BOSS_HP_MULT`, `BOSS_CD_MULT`, `BOSS_SPEED_MULT` in `StoryManager.gd`. Mini-bosses inside waves and the Versus Fights-mode bosses are not changed. Checked by script; not played by hand yet.
 
 ## Testing (2026-11-09)
 

@@ -40,6 +40,11 @@ var phase2_cooldown_mult := 0.8          # Cooldowns 20% faster
 var cooldown_mult := 1.0
 var phase_speed_mult := 1.0
 var damage_mult := 1.0                   # Story modifiers (Colosseum 4: The Shining choice)
+## STORY BOSS BUFF (StoryManager.buff_boss): tougher WITHOUT hitting harder. Separate from
+## cooldown_mult / phase_speed_mult so phase 2, rage and transforms never reset it.
+var boss_hp_mult := 1.0                  # Applied to max HP (also to later forms)
+var boss_cd_mult := 1.0                  # Attack cooldowns x this (< 1 = attacks more often)
+var boss_speed_mult := 1.0               # Move speed x this
 
 var anim_time := 0.0
 var walk_phase := 0.0
@@ -126,7 +131,7 @@ func _cancel_pattern() -> void:
 	hitbox.deactivate()
 	if current != null:
 		_on_attack_end(current)
-		current.cooldown_left = current.cooldown * cooldown_mult * 0.5
+		current.cooldown_left = current.cooldown * cooldown_mult * boss_cd_mult * 0.5
 	current = null
 	estate = EState.IDLE
 
@@ -225,7 +230,7 @@ func _run_state(delta: float) -> void:
 			if state_time >= state_len:
 				hitbox.deactivate()
 				_on_attack_end(current)
-				current.cooldown_left = current.cooldown * cooldown_mult
+				current.cooldown_left = current.cooldown * cooldown_mult * boss_cd_mult
 				estate = EState.RECOVER
 				state_time = 0.0
 				state_len = current.recover_time
@@ -247,7 +252,7 @@ func _movement(delta: float) -> void:
 	var busy := estate == EState.TELEGRAPH or estate == EState.ATTACK or estate == EState.RECOVER
 	var goal := 0.0
 	if not busy and stun_timer <= 0.0:
-		goal = move_dir * speed * phase_speed_mult * speed_mult()
+		goal = move_dir * speed * phase_speed_mult * boss_speed_mult * speed_mult()
 		if move_dir != 0.0:
 			facing = 1 if move_dir > 0.0 else -1
 	var rate := data.acceleration if goal != 0.0 else data.deceleration

@@ -424,6 +424,24 @@ func _altar_stage() -> void:
 	gate.queue_free()
 
 
+## STORY BOSS BUFF (2026-11-10, to match the Story-only hero buffs): every level boss gets
+## more HP, attacks more often and moves faster - but does NOT hit harder.
+const BOSS_HP_MULT := 1.35
+const BOSS_CD_MULT := 0.8                    # Cooldowns x0.8 = attacks 25% more often
+const BOSS_SPEED_MULT := 1.12
+
+
+func buff_boss(e: BaseEnemy) -> void:
+	if e == null or e.data == null:
+		return
+	e.boss_hp_mult = BOSS_HP_MULT
+	e.boss_cd_mult = BOSS_CD_MULT
+	e.boss_speed_mult = BOSS_SPEED_MULT
+	e.data.max_hp = roundi(float(e.data.max_hp) * BOSS_HP_MULT)
+	e.hp = e.data.max_hp
+	e.health_changed.emit(e.hp, e.data.max_hp)
+
+
 ## Weaken / strengthen void enemies after the altar choice (Colosseum 4 only).
 func _apply_void_mod(e: BaseEnemy, id: String) -> void:
 	if shining_choice == "" or not (id in ["void_soul", "tentacle", "masker", "void_massacre", "escapist", "crawling"]):
@@ -623,6 +641,7 @@ func _boss_intro() -> void:
 		boss.z_index = -3                                  # Climbs up from BEHIND the floor
 	add_child(boss)
 	_apply_void_mod(boss, String(level["boss"]))
+	buff_boss(boss)
 	boss.died.connect(_on_boss_died)
 	if boss.has_signal("transform_started"):
 		boss.connect("transform_started", _on_boss_transform)
@@ -713,6 +732,7 @@ func _quick_boss_intro() -> void:
 	boss.respawn_enabled = false
 	boss.position = Vector2(bx, _ground_y)
 	add_child(boss)
+	buff_boss(boss)
 	boss.died.connect(_on_boss_died)
 	if boss.has_signal("transform_started"):
 		boss.connect("transform_started", _on_boss_transform)

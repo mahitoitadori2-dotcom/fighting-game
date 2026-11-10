@@ -137,7 +137,7 @@ func finish_transform() -> void:
 	form_music = String(fd.get("music", ""))         # StoryManager plays it after the transform
 	enemy_name = String(fd.get("name", enemy_name))
 	data.character_name = enemy_name
-	data.max_hp = int(fd.get("hp", data.max_hp))
+	data.max_hp = roundi(float(fd.get("hp", data.max_hp)) * boss_hp_mult)   # Story boss buff carries over
 	hp = data.max_hp
 	var body: Vector2 = fd.get("body", data.body_size)
 	data.body_size = body

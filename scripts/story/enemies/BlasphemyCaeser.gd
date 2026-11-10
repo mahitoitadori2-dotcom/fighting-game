@@ -167,8 +167,8 @@ func finish_transform() -> void:
 	phase = 2
 	enraged = true
 	_draw_t = 0.0                                  # Starts pulling the blade out of its throat
-	data.max_hp = P2_HP
-	hp = P2_HP
+	data.max_hp = roundi(float(P2_HP) * boss_hp_mult)   # Story boss buff carries over
+	hp = data.max_hp
 	data.body_size = P2_BODY
 	data.move_speed = P2_SPEED
 	speed = P2_SPEED
