@@ -77,6 +77,17 @@ Each has its own music. Minos and Sisyphus speak voice lines (text-to-speech for
 - **King Minos** (180 HP): Serpent Slam, Judgment Kick, Ghost Serpent, Prime Combo, Ground Eruption.
 - **Sisyphus** (200 HP): Boulder Throw, Chain Slam, Sisyphus Punch (breaks guard), Ground Shatter. Rage Mode below 50%.
 - **Geyron** (190 HP): white dragon with a light-blade tail: Light Sword Slash, Holy Beam, Wing Dash, Judgment Spears, Angel Flurry. Roars only.
+- **Kokusen** (2500 HP, added 2026-11-10, Versus / Enemy Test only, not in Story): a towering sorcerer with a dark crimson head, **four glowing eyes**, a cruel grin and a long flowing black robe. He **flies** (switches between ground and air by himself, and follows you up if you go high). Every melee hit is an **Onslaught**. Music: `boss_satan`. Code: `Kokusen.gd` + `KokusenFx.gd`.
+  - **Sorcerer Strike** (melee, 5, Onslaught)
+  - **1 Cut**: tens of slashes forward (aimed at you in the air), 2 each, at most 4 can hit you
+  - **2 Underground Flame**: ground = 5 giant rolling fireballs that set the floor on fire; air = many smaller, faster fireballs at you
+  - **3 Greatest One** (ground only, grab): hand slammed into his chest, lunge, grab, 6 slow rips (3 each) - he always fails to tear you apart, you break loose and he staggers; mash to escape early
+  - **4 Unknown Force**: ground = pulls you in (short stun); air = repels you far away (6 damage)
+  - **5 Meteor Rain** (cinematic): you freeze while he flies up; a cutscene shows him above the Earth summoning a meteor shower that burns up in the atmosphere, only one survives; back in the arena you can move again: debris falls first, then the giant meteor (20, unblockable) on a red warning mark
+  - **6 No Fear In Sight**: barrage of flame slashes, 3 each, at most 4 can hit you
+  - **7 Closed World** (cinematic): close-up as his four eyes open wide; then a circle of fire surrounds the arena and sends flame slashes, fire pillars (warning on the floor) and debris for ~3.5 s (at most 6 hits), ending in a blast that hits everyone inside (8)
+  - He cannot be hurt during his two cinematics. The cinematics never come in the first 14 / 26 s of a fight. Phase 2 below 50% HP: faster, attacks more often, more slashes.
+  - **Balance:** in a CPU Warrior test he dealt about 100 damage in 30 s, including both cinematics (forced early for the test). With 2500 HP the fight is very long on purpose; tune `HP`, the volley caps (`CUT_CAP`...) and pattern damage in `Kokusen.gd`. Not played by hand yet.
 
 They were only tested CPU vs boss. The code is in `scripts/enemies/bosses/`.
 

@@ -23,6 +23,7 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Boss numbers: HP / patterns in `ArchitectianTitan.gd`, `ArchitectsGolem.gd`, `VoidMassacre.gd`.
   - The Shining choice: `_apply_void_mod` in `StoryManager.gd` (weak 0.7x, strong 1.35x HP and 1.25x damage).
 - [ ] Play Story with the new Story-only buffs (Warrior and Architect, 2026-11-10): Story may be easier now, especially Colosseum 4 (Architect) and Colosseum 5 (both heroes buffed). Bosses were buffed to match (1.35x HP, attack more often, faster; same damage): check boss fights don't drag on too long. See [Game content](Content.md).
+- [ ] **Fight Kokusen yourself** (Character Select > Enemy Test): is 2500 HP too long a fight? Are Meteor Rain and Closed World fair to dodge? Does flight feel good against every fighter (especially the flying APHA Architect)?
 - [ ] Play the 3 Fights-mode bosses yourself and tune them (`HP`, pattern cooldowns and damage, `phase2_*` in `scripts/enemies/bosses/`).
 - [ ] Check whether Kharlemings can still stand on top of each other on level 5 (their name tags overlap).
 - [ ] Test on a real iPhone 13: loading, touch controls, and audio after the tap.

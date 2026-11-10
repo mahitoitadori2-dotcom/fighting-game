@@ -41,6 +41,7 @@ static func entries() -> Array[Dictionary]:
 	list.append(_entry("minos", "King Minos", "King Minos", KingMinos, Color(0.70, 0.88, 1.0), KingMinos.HP, "boss_minos"))
 	list.append(_entry("sisyphus", "Sisyphus", "Sisyphus", Sisyphus, Color(1.0, 0.70, 0.25), Sisyphus.HP, "boss_sisyphus"))
 	list.append(_entry("geyron", "Geyron", "Geyron", Geyron, Color(1.0, 0.30, 0.30), Geyron.HP, "boss_geyron"))
+	list.append(_entry("kokusen", "Kokusen", "Kokusen", Kokusen, Color(0.85, 0.12, 0.18), Kokusen.HP, "boss_satan"))
 	_cache = list
 	return list
 
