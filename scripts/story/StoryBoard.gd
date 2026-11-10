@@ -75,6 +75,7 @@ var _hop_t := -1.0                 # < 0 = not hopping
 var _land_t := 10.0                # Time since landing (squash + dust)
 var _celebrate := false
 var _play: Button
+var _switch: Button
 var _info: Label
 var _title: Label
 var _page := 1                     # Colosseum shown on the board
@@ -135,8 +136,8 @@ func _build_ui() -> void:
 	row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	row.offset_top = -74
 	row.offset_bottom = -14
-	row.offset_left = -420
-	row.offset_right = 420
+	row.offset_left = -500
+	row.offset_right = 500
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 14)
 	add_child(row)
@@ -146,6 +147,11 @@ func _build_ui() -> void:
 	_play = UiStyle.make_button("PLAY", Vector2(330, 56), 22)
 	_play.pressed.connect(_on_play)
 	row.add_child(_play)
+	# Colosseum 5 only: swap which hero you play (the other one is your CPU partner)
+	_switch = UiStyle.make_button("SWITCH HERO", Vector2(230, 56), 18)
+	_switch.pressed.connect(_switch_hero)
+	_switch.visible = false
+	row.add_child(_switch)
 	var reset := UiStyle.make_button("RESET", Vector2(150, 56), 16)
 	reset.pressed.connect(_reset.bind(reset))
 	row.add_child(reset)
@@ -153,6 +159,10 @@ func _build_ui() -> void:
 
 func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
+	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate
+	_switch.visible = choice
+	if choice:
+		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
 	_title.text = String(_page_data().get("title", "STORY MODE"))
 	if _celebrate:
 		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun"}
@@ -324,9 +334,8 @@ func _on_play() -> void:
 		return
 	_busy = true
 	StoryProgress.current_level = _pawn_space
-	# Colosseum 5: pick your hero at its first level (or whenever no hero was picked yet)
-	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) == "choice" \
-			and (_pawn_space == StoryLevels.first_of(StoryLevels.colosseum_of(_pawn_space)) or StoryProgress.c5_hero == ""):
+	# Colosseum 5: pick your hero the first time (later: the SWITCH / PLAY AS button on the board)
+	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) == "choice" and StoryProgress.c5_hero == "":
 		var pick := HeroSelect.new()
 		add_child(pick)
 		await pick.chosen
@@ -347,6 +356,17 @@ func _on_play() -> void:
 		add_child(fall)
 		await fall.finished
 	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+
+
+## Colosseum 5: play as the other hero from now on (saved). The one you leave becomes
+## your CPU partner.
+func _switch_hero() -> void:
+	if _busy or _hop_t >= 0.0:
+		return
+	var now := StoryLevels.hero_of(_pawn_space)
+	StoryProgress.set_c5_hero("warrior" if now == "architect" else "architect")
+	SoundManager.play_sfx("spawn")
+	_refresh_ui()
 
 
 func _autoplay_next() -> void:

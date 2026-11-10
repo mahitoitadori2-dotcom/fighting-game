@@ -4,9 +4,10 @@ extends SimpleEnemy
 ## the shape of a MOUTH: two smoky lips stretched into a huge grin, crooked white teeth, embers
 ## glowing in the dark between them. No eyes, no body - just the grin, drifting and LAUGHING.
 ##
-##   Grin Bite    6 dmg, 1.8 s - the cloud lunges and the jaws snap shut on you
-##   Fire Spit    5 dmg, 2.6 s - spits a fireball out of the dark between its teeth
-##   Cackle       4 dmg, 6.0 s - laughs so hard the smoke bursts out around it (heals 4 HP)
+##   Grin Bite    4 dmg, 2.3 s - the cloud lunges and the jaws snap shut on you
+##   Fire Spit    4 dmg, 3.2 s - spits a fireball out of the dark between its teeth
+##   Cackle       3 dmg, 7.5 s - laughs so hard the smoke bursts out around it (heals 2 HP)
+## (Nerfed 2026-11-10: was 40 HP, 6 / 5 / 4 dmg, 1.8 / 2.6 / 6.0 s, heal 4, attack chance 0.6.)
 
 const HOVER := 34.0
 const SMOKE := Color(0.06, 0.05, 0.07)
@@ -20,17 +21,17 @@ var _floor := INF
 func _make_data() -> CharacterData:
 	keep_min = 90.0
 	keep_max = 300.0
-	attack_chance = 0.6
+	attack_chance = 0.45
 	phase2_threshold = -1.0
-	return SimpleEnemy.make_data("Devilish Grin", 40, Vector2(96, 90), 200.0)
+	return SimpleEnemy.make_data("Devilish Grin", 30, Vector2(96, 90), 200.0)
 
 
 static func make_patterns() -> Array[EnemyPattern]:
 	var list: Array[EnemyPattern] = []
 	#                          id       name            cd    dmg  min    max    anim     tele  active rec   big    weights
-	list.append(EnemyPattern.make("gslash", "GRIN BITE", 1.8, 6, 0.0, 130.0, "gslash", 0.30, 0.20, 0.40, false, [2.0, 2.0]))
-	list.append(EnemyPattern.make("spit", "FIRE SPIT", 2.6, 5, 140.0, 700.0, "spit", 0.45, 0.15, 0.40, false, [1.8, 1.8]))
-	list.append(EnemyPattern.make("cackle", "CACKLE!", 6.0, 4, 0.0, 170.0, "cackle", 0.55, 0.40, 0.40, true, [1.0, 1.0]))
+	list.append(EnemyPattern.make("gslash", "GRIN BITE", 2.3, 4, 0.0, 130.0, "gslash", 0.38, 0.20, 0.40, false, [2.0, 2.0]))
+	list.append(EnemyPattern.make("spit", "FIRE SPIT", 3.2, 4, 140.0, 700.0, "spit", 0.50, 0.15, 0.40, false, [1.8, 1.8]))
+	list.append(EnemyPattern.make("cackle", "CACKLE!", 7.5, 3, 0.0, 170.0, "cackle", 0.60, 0.40, 0.40, true, [1.0, 1.0]))
 	return list
 
 
@@ -75,7 +76,7 @@ func _attack(p: EnemyPattern) -> void:
 		"cackle":
 			hit_in_radius(global_position + Vector2(0, -45), 120.0, dmg(p), Vector2(300, -260), "cackle")
 			Effects.void_burst(self, global_position + Vector2(0, -45), 120.0)
-			heal(4)
+			heal(2)
 			Effects.popup(self, global_position + Vector2(0, -130), "HAHAHAHA!", Color(1.0, 0.4, 0.3), 20)
 			SoundManager.play_sfx("roar", -10.0, 0.3)
 

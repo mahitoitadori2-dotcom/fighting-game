@@ -1,8 +1,8 @@
 class_name HeroSelect
 extends CanvasLayer
-## COLOSSEUM 5: CHOOSE YOUR HERO (shown on the Story board when you start Level 35, or any
-## Colosseum 5 level before a choice was made). Pick the WARRIOR or the ARCHITECT; the other one
-## becomes your CPU PARTNER for the whole Colosseum. Saved in StoryProgress.c5_hero.
+## COLOSSEUM 5: CHOOSE YOUR HERO (shown on the Story board the first time you start a
+## Colosseum 5 level). Pick the WARRIOR or the ARCHITECT; the other one becomes your CPU
+## PARTNER. Saved in StoryProgress.c5_hero; change it any time with the board's PLAY AS button.
 ## Mouse / touch: tap a PLAY AS button. Keyboard / controller: Left / Right + Enter (button focus).
 
 signal chosen(hero: String)

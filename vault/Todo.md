@@ -35,7 +35,8 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 - [ ] **Play Colosseum 5** (levels 35-50). Nothing there was beaten yet, by CPU or human:
   - The 8 bosses (HP / patterns in `scripts/story/c5/*.gd`; shared hard-boss rules in `C5Boss.gd` and `BossBrain.gd`).
   - The Sun finale: throwing the bomb and the platform escape (`SunFinale.gd`: `PLATFORMS`, `WALL_SPEED`, `FALL_DAMAGE`). Check every gap can be jumped by both heroes.
-  - The CPU partner: does it keep up, help enough, not get in the way (`Companion.gd`).
+  - The CPU partner: does it keep up, help enough, not get in the way (`Companion.gd`). Since 2026-11-10 it is a HARD CPU with a G Gauge and 1 flask: check it isn't too strong now. Only tested by CPU-vs-CPU runs (it used ultimates 5 times in 30 s as the Warrior).
+  - The nerfed Devilish Grin and Pained One (coin flip TAILS): still a threat, or too easy now?
   - The Executor's memory fog (reversed controls, 3.5 s): fun or too annoying?
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).
 

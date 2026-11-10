@@ -42,8 +42,9 @@ static func is_time_stopped() -> bool:
 
 
 ## True if `f` (or anything owned by `f`) must be frozen right now.
+## The owner's ALLIES are not frozen (Story Colosseum 5: you and your CPU partner).
 static func is_frozen(f: Fighter) -> bool:
-	return is_time_stopped() and f != time_stop_owner
+	return is_time_stopped() and not are_allies(f, time_stop_owner)
 
 
 func _ready() -> void:

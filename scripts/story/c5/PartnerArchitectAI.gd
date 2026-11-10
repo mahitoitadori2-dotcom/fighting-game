@@ -1,6 +1,17 @@
 class_name PartnerArchitectAI
 extends ArchitectAI
-## Colosseum 5 CPU partner: the Architect's normal MEDIUM brain + following you (Companion).
+## Colosseum 5 CPU partner: the Architect's brain on HARD settings (Companion.make_strong)
+## + following you (Companion).
+
+
+func _init() -> void:
+	super._init()
+	Companion.make_strong(self)
+
+
+func think() -> void:
+	if not Companion.try_ultimate(self):
+		super.think()
 
 
 func update(fighter: Fighter, delta: float) -> void:

@@ -19,6 +19,7 @@ signal boss_defeated
 
 const FLASKS_PER_LEVEL := 2
 const FLASK_HEAL := 0.5
+const PARTNER_FLASKS := 1                    # Colosseum 5 CPU partner (refilled with yours)
 const MAX_ATTACKERS := 2
 const ARENA_SCENE := "res://scenes/StoryArena.tscn"
 const STORY_MENU := "res://scenes/StoryMenu.tscn"
@@ -41,6 +42,7 @@ var hero := "warrior"
 ## Colosseum 5: the other hero, played by a MEDIUM CPU, fighting beside you (revives when it falls).
 var partner: ControlledFighter = null
 var flasks := FLASKS_PER_LEVEL
+var partner_flasks := PARTNER_FLASKS
 ## Colosseum 4: "" = no effect, "killed" = The Shining died (Void weaker), "spared" = you
 ## walked past it or skipped its optional level (Void Massacre stronger). Set on the altar
 ## level (32) and saved; the "void_mod" levels after it (33, 34) read it back.
@@ -217,8 +219,9 @@ func _spawn_player() -> void:
 	player.died.connect(_on_player_died)
 
 
-## Colosseum 5: the hero you did NOT pick fights beside you (CPU, medium). No G Gauge (no
-## ultimates, so no Time Stop freezes you), no big move names, revives next to you.
+## Colosseum 5: the hero you did NOT pick fights beside you (CPU, hard). It has a G Gauge
+## and uses ultimates (its Time Stop never freezes you), carries PARTNER_FLASKS flasks,
+## shows no big move names and revives next to you.
 func _spawn_partner() -> void:
 	var other := "warrior" if hero == "architect" else "architect"
 	if other == "architect":
@@ -238,8 +241,6 @@ func _spawn_partner() -> void:
 	partner.respawn_enabled = true
 	partner.quiet_announce = true
 	add_child(partner)
-	partner.data.gauge_enabled = false
-	partner.gauge = null
 	partner.data.respawn_delay = Companion.REVIVE_TIME
 	if other == "architect":
 		partner.data.punch_offset = Vector2(44, -58)     # Same Story reach as when you play him
@@ -674,6 +675,7 @@ func _boss_intro() -> void:
 	ArenaCamera.focus_offset = Vector2(0, -110)
 	# Flasks refill after the boss intro
 	flasks = FLASKS_PER_LEVEL
+	partner_flasks = PARTNER_FLASKS
 	Effects.popup(player, player.global_position + Vector2(0, -170), "FLASKS REFILLED!", Color(0.5, 1.0, 0.5), 24)
 	SoundManager.play_sfx("heal")
 	ArenaCamera.focus = null
@@ -713,6 +715,7 @@ func _quick_boss_intro() -> void:
 	SoundManager.play_sfx("ultimate", -4.0)
 	SoundManager.play_music(String(level.get("boss_music", "boss")))
 	flasks = FLASKS_PER_LEVEL
+	partner_flasks = PARTNER_FLASKS
 	boss_bar_visible = true
 	var col: Color = level.get("boss_color", Color(1, 1, 1))
 	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), col)
@@ -907,6 +910,20 @@ func _process(_delta: float) -> void:
 		use_flask()
 	elif autoplay and player != null and not player.is_dead and flasks > 0 and player.hp < player.data.max_hp * 0.4:
 		use_flask()                                # Testing: the CPU drinks like a player would
+	_partner_flask_check()
+
+
+## Colosseum 5: the CPU partner drinks its own flask when it gets low.
+func _partner_flask_check() -> void:
+	if partner == null or not is_instance_valid(partner) or partner.is_dead or partner_flasks <= 0:
+		return
+	if _over or not CombatManager.fight_active or partner.hp >= partner.data.max_hp * Companion.FLASK_AT:
+		return
+	partner_flasks -= 1
+	SoundManager.play_sfx("flask_drink", -4.0)
+	partner.heal(roundi(partner.data.max_hp * FLASK_HEAL))
+	Effects.gold_burst(partner, partner.global_position + Vector2(0, -64), 60.0)
+	Effects.popup(partner, partner.global_position + Vector2(0, -200), "PARTNER FLASK!", Color(0.5, 1.0, 0.5), 18)
 
 
 func use_flask() -> void:

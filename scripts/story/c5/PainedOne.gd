@@ -4,9 +4,11 @@ extends SimpleEnemy
 ## creature: grey bloated skin full of stitches and nails, a chain wrapped around its arms, a
 ## face frozen in a sob. Slow, but every hit is HEAVY.
 ##
-##   Crushing Fist   10 dmg, 2.8 s - a slow overhead smash
-##   Agony Scream     5 dmg, 6.5 s - screams: a ring of sound flies out both ways (jump it),
-##                                   and anyone right next to it is STUNNED
+##   Crushing Fist    7 dmg, 3.4 s - a slow overhead smash (longer wind-up: 0.9 s)
+##   Agony Scream     4 dmg, 8.0 s - screams: a ring of sound flies out both ways (jump it),
+##                                   and anyone right next to it is STUNNED (0.4 s)
+## (Nerfed 2026-11-10: was 70 HP, 10 / 5 dmg, 2.8 / 6.5 s, 0.75 s wind-up, 0.7 s stun,
+##  attack chance 0.55.)
 
 const SKIN := Color(0.58, 0.56, 0.58)
 const SKIN_SHADE := Color(0.38, 0.36, 0.40)
@@ -19,9 +21,9 @@ const TEAR := Color(0.55, 0.75, 1.0)
 func _make_data() -> CharacterData:
 	keep_min = 30.0
 	keep_max = 110.0
-	attack_chance = 0.55
+	attack_chance = 0.45
 	phase2_threshold = -1.0
-	var d := SimpleEnemy.make_data("Pained One", 70, Vector2(86, 150), 105.0)
+	var d := SimpleEnemy.make_data("Pained One", 52, Vector2(86, 150), 105.0)
 	d.hitstun_time = 0.1
 	return d
 
@@ -34,8 +36,8 @@ func _ready() -> void:
 static func make_patterns() -> Array[EnemyPattern]:
 	var list: Array[EnemyPattern] = []
 	#                          id       name               cd    dmg  min   max    anim    tele  active rec   big    weights        armored
-	list.append(EnemyPattern.make("fist", "CRUSHING FIST!", 2.8, 10, 0.0, 135.0, "fist", 0.75, 0.18, 0.70, true, [2.0, 2.0], true))
-	list.append(EnemyPattern.make("scream", "AGONY SCREAM!", 6.5, 5, 0.0, 520.0, "scream", 0.70, 0.60, 0.60, true, [1.2, 1.2], true))
+	list.append(EnemyPattern.make("fist", "CRUSHING FIST!", 3.4, 7, 0.0, 135.0, "fist", 0.90, 0.18, 0.70, true, [2.0, 2.0], true))
+	list.append(EnemyPattern.make("scream", "AGONY SCREAM!", 8.0, 4, 0.0, 520.0, "scream", 0.80, 0.60, 0.60, true, [1.2, 1.2], true))
 	list[1].note = "a ring of sound rolls out both ways: jump it"
 	return list
 
@@ -65,7 +67,7 @@ func _attack(p: EnemyPattern) -> void:
 				w.knockback = Vector2(220, -300)
 				w.move = "agony_scream"
 				launch(w, global_position + Vector2(d * 50.0, -24.0))
-			stun_in_radius(global_position + Vector2(0, -70), 120.0, 0.7)
+			stun_in_radius(global_position + Vector2(0, -70), 120.0, 0.4)
 			Effects.shake(self, 9.0)
 			SoundManager.play_sfx("roar", -2.0, 0.2)
 

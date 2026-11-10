@@ -1,17 +1,39 @@
 class_name Companion
 extends RefCounted
-## CPU PARTNER (Story Mode, Colosseum 5). You pick the Warrior or the Architect; the other
-## one fights beside you, played by its normal MEDIUM CPU brain (WarriorAI / ArchitectAI)
-## with this follow layer on top:
+## CPU PARTNER (Story Mode, Colosseum 5). You pick the Warrior or the Architect (switch any
+## time on the Story board); the other one fights beside you, played by its CPU brain
+## (WarriorAI / ArchitectAI) on HARD settings (make_strong) with this follow layer on top:
 ##   * it only fights enemies that are close to YOU (it never runs off across the arena)
 ##   * too far from you, or nothing to fight: it runs back to you (and jumps up after you)
 ##   * it never dies for good: StoryManager revives it beside you after REVIVE_TIME seconds
-## Partner CPUs never use ultimates (no G Gauge), so no Time Stop freezes you.
+##   * it has a G GAUGE and uses its ultimates (a Time Stop never freezes its allies = you)
+##   * it carries FLASKS (StoryManager.PARTNER_FLASKS) and drinks one below FLASK_AT HP
 
 const FOLLOW_FAR := 380.0          # Further than this from you: comes back
 const FOLLOW_NEAR := 110.0         # Close enough: stops following
 const ENGAGE := 640.0              # Only fights enemies within this distance of YOU
 const REVIVE_TIME := 4.0
+const FLASK_AT := 0.35             # Drinks a flask below this share of its HP
+
+
+## Partner ultimates: it stays close to you, so the normal "far away" ultimate rules
+## would never fire. With any G bar and an enemy in fighting range it uses it now and then.
+## Returns true if it pressed G (think() should stop there).
+static func try_ultimate(ai: BaseAI) -> bool:
+	if ai.bars() >= 1 and ai.dist < 520.0 and ai.chance(0.3):
+		ai.press("ultimate")
+		return true
+	return false
+
+
+## HARD CPU: faster reactions, almost no dropped inputs, blocks and uses Onslaught often.
+static func make_strong(ai: BaseAI) -> void:
+	ai.reaction_min = 0.1
+	ai.reaction_max = 0.16
+	ai.mistake_chance = 0.05
+	ai.wander_chance = 0.02
+	ai.block_chance = 0.55
+	ai.onslaught_chance = 0.85
 
 ## The human player the partner follows (set by StoryManager).
 static var leader: Fighter = null

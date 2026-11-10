@@ -111,11 +111,13 @@ The shared weapon code is in `scripts/story/enemies/ArmedSoldier.gd`.
 
 ## Colosseum 5: The Final Ascent (35-50)
 
-**Pick your hero:** when you start Level 35 the board asks "Warrior or Architect?". The other one is your **CPU partner** in every Colosseum 5 level (MEDIUM CPU). It follows you, fights enemies near you, has no ultimates (so no Time Stop on you), and when it falls it **revives next to you after 4 seconds**. Its HP is on the HUD under yours. With a partner, 3 enemies may attack at once instead of 2.
+**Pick your hero:** the first time you start a Colosseum 5 level the board asks "Warrior or Architect?". **Switch any time** with the **PLAY AS WARRIOR / PLAY AS ARCHITECT** button on the Story board (shown on Colosseum 5 levels; saved). The other one is your **CPU partner** in every Colosseum 5 level.
+
+**The CPU partner (updated 2026-11-10):** a **HARD CPU** (faster reactions, few mistakes, blocks and uses Onslaught more). It follows you and fights enemies near you. It has its own **G Gauge** and uses its ultimates; a Time Stop never freezes its own team, so the Warrior partner's Time Stop does not freeze you (and yours doesn't freeze it). It carries **1 flask** (refilled with yours at the boss) and drinks it below 35% HP. When it falls it **revives next to you after 4 seconds**. Its HP, G bar and flask are on the HUD under yours. With a partner, 3 enemies may attack at once instead of 2. Numbers: `Companion.gd` (`make_strong`, `FLASK_AT`), `StoryManager.gd` (`PARTNER_FLASKS`).
 
 **Coin flip (hidden):** at the start of every Colosseum 5 level (except The Sun) a coin is flipped in the background. Nothing is shown; the extra enemies just join the first wave:
 - HEADS: 2 **Ambushers** (shadow stalkers: start nearly invisible, Shadow Pounce, Twin Slash, Vanish behind you)
-- TAILS: a **Devilish Grin** (a floating black cloud shaped like a grinning mouth: Grin Bite, Fire Spit, Cackle) and a **Pained One** (huge, slow, suffering: Crushing Fist, Agony Scream that stuns up close)
+- TAILS: a **Devilish Grin** (a floating black cloud shaped like a grinning mouth: Grin Bite, Fire Spit, Cackle) and a **Pained One** (huge, slow, suffering: Crushing Fist, Agony Scream that stuns up close). **Both nerfed 2026-11-10:** Grin 40 to 30 HP, less damage, slower attacks, Cackle heals 2 instead of 4. Pained One 70 to 52 HP, Fist 10 to 7 damage with a longer wind-up, Scream 5 to 4 damage, stun 0.7 to 0.4 s, slower attacks.
 
 | Level | Title | Arena | Boss (soundtrack) |
 |---|---|---|---|

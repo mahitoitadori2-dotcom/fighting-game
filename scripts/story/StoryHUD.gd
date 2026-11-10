@@ -88,6 +88,16 @@ func _paint() -> void:
 				var pk := float(pa.hp) / maxf(float(pa.data.max_hp), 1.0)
 				FighterArt.label(_painter, Vector2(x, py + 12), "PARTNER  %s (CPU)   %d / %d" % [pname, pa.hp, pa.data.max_hp], 15, Color(0.75, 0.9, 1.0), false)
 				_bar(Rect2(x, py + 20, 200, 12), pk, Color(0.3, 0.7, 1.0))
+				# Its G Gauge (3 small segments) and its flask
+				if pa.gauge != null:
+					var pv := pa.gauge.value / pa.gauge.segment_size
+					for i in 3:
+						var seg := Rect2(x + float(i) * 67.0, py + 36, 63, 6)
+						_painter.draw_rect(seg, Color(0, 0, 0))
+						var fill := Color(0.1, 0.65, 1.0) if pv >= float(i + 1) else (Color(0.1, 0.35, 0.65) if pv > float(i) else Color(0.12, 0.18, 0.25))
+						_painter.draw_rect(seg.grow(-1.0), fill)
+				for i in StoryManager.PARTNER_FLASKS:
+					_flask(Vector2(x + 214 + float(i) * 30.0, py + 8), i < manager.partner_flasks)
 
 	# ---------------- Level title + wave ----------------
 	var cx := sz.x * 0.5
