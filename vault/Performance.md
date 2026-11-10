@@ -47,6 +47,12 @@ Main Menu > SETTINGS > GRAPHICS has 4 levels. The choice is saved on the device.
 - Story backgrounds other than the arena, Void and Hell/Story backdrops (embers) are not changed yet. They are mostly drawn once, so they cost little.
 - **Not verified:** the goal of at least 40 FPS on an iPhone 11 with FAST. Checked only on PC (no errors, the visuals change as expected).
 
+## Map Catalogue: crash / 1 FPS fixed (2026-11-10)
+
+Every card in the Map Catalogue used to run its map's full animated backdrop (embers, scrolling and so on) live, about 30 at once. Opening the catalogue crashed the game or dropped it to about 1 FPS. Now each map is drawn once, one at a time, and kept as a still picture. Nothing moves while you browse, and the pictures are kept until you close the game, so opening the catalogue again is instant. The catalogue's background no longer scrolls either. The code is in `scripts/ui/MapCatalog.gd`.
+
+**Status:** checked on PC (all 30 pictures appear, no errors). Not tested on a phone.
+
 ## Open work
 
 Some projectiles are not pooled yet. They are in the [To-do list](Todo.md).

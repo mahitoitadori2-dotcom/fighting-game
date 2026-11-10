@@ -100,7 +100,7 @@ All enemies, in Versus and in Story Mode, use the same system: `BaseEnemy` + `En
 
 Versus has **30 arenas**: the Test Arena, the Void Arena, and **every Story Mode map** from Colosseums 1-5 (near-duplicates left out). Story maps are fought as floating islands with their backdrop, floor and fog (no cave walls, so you can still knock each other off). They all use one scene, `scenes/StoryMapArena.tscn`, dressed by `scripts/VersusMap.gd`; the list is in `scripts/ui/MapCatalog.gd`.
 
-The **Map Catalogue** (Main Menu > MAP CATALOGUE, or CHANGE ARENA) shows every map as a card with a live-drawn thumbnail and where it comes from. Click a card to see the map big (animated), with its description and SELECT ARENA / FIGHT HERE / CLOSE.
+The **Map Catalogue** (Main Menu > MAP CATALOGUE, or CHANGE ARENA) shows every map as a card with a still picture and where it comes from. Click a card to see the map big (also a still picture), with its description and SELECT ARENA / FIGHT HERE / CLOSE.
 
 ## Settings and Match Settings (separate screens)
 

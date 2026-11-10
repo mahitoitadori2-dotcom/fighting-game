@@ -78,23 +78,79 @@ static func entry(id: String) -> Dictionary:
 
 
 # ============================================================
-# PREVIEWS (thumbnails + the big preview): a SubViewport with the map's backdrop + its island
+# PREVIEWS (thumbnails + the big preview): STILL PICTURES
+# Each map is rendered ONCE, one map at a time, in a hidden SubViewport (backdrop + island),
+# copied into a plain ImageTexture and the viewport is freed straight away. Nothing animates
+# and no backdrop keeps running while browsing. Pictures are cached for the whole session,
+# so re-opening the catalogue is instant.
 # ============================================================
-## A preview of the map inside `parent`. live = keeps animating (big preview), else drawn once.
-static func make_preview(e: Dictionary, size: Vector2i, live: bool) -> SubViewportContainer:
-	var box := SubViewportContainer.new()
-	box.stretch = true
-	box.custom_minimum_size = Vector2(size)
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+static var _shots := {}          # "id@WxH" -> Texture2D
+static var _queue: Array = []    # [TextureRect, entry, size]
+static var _busy := false
+
+
+## A still picture of the map. It fills in as soon as it is rendered (instantly if cached).
+## priority = jump the queue (the big preview should not wait for every thumbnail).
+static func make_preview(e: Dictionary, size: Vector2i, priority: bool = false) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.custom_minimum_size = Vector2(size)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var key := _shot_key(e, size)
+	if _shots.has(key):
+		tr.texture = _shots[key]
+		return tr
+	if priority:
+		_queue.push_front([tr, e, size])
+	else:
+		_queue.append([tr, e, size])
+	if not _busy:
+		_pump()
+	return tr
+
+
+static func _shot_key(e: Dictionary, size: Vector2i) -> String:
+	return "%s@%dx%d" % [e["id"], size.x, size.y]
+
+
+## Renders the queued pictures one after another (only one map exists at any time).
+static func _pump() -> void:
+	_busy = true
+	var tree := Engine.get_main_loop() as SceneTree
+	while not _queue.is_empty():
+		var job: Array = _queue.pop_front()
+		var tr: TextureRect = job[0]
+		if not is_instance_valid(tr):                 # Left the catalogue / closed the preview
+			continue
+		var key := _shot_key(job[1], job[2])
+		if not _shots.has(key):
+			_shots[key] = await _render(tree, job[1], job[2])
+		if is_instance_valid(tr):
+			tr.texture = _shots[key]
+	_busy = false
+
+
+static func _render(tree: SceneTree, e: Dictionary, size: Vector2i) -> Texture2D:
 	var vp := SubViewport.new()
 	vp.size = size
 	vp.disable_3d = true
 	vp.transparent_bg = false
 	vp.handle_input_locally = false
-	vp.own_world_3d = true
+	vp.gui_disable_input = true
 	vp.world_2d = World2D.new()                       # Its own physics world: the preview island never touches the game
-	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if live else SubViewport.UPDATE_ONCE
-	box.add_child(vp)
+	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_fill(vp, e, size)
+	tree.root.add_child.call_deferred(vp)            # Deferred: the first request comes while the scene is still setting up
+	await tree.process_frame
+	await RenderingServer.frame_post_draw
+	var img := vp.get_texture().get_image()
+	vp.queue_free()
+	return ImageTexture.create_from_image(img)
+
+
+## The map's backdrop + its island, scaled to `size`.
+static func _fill(vp: SubViewport, e: Dictionary, size: Vector2i) -> void:
 	var key := String(e.get("map", ""))
 	var theme := 2
 	if key == "":
@@ -115,6 +171,3 @@ static func make_preview(e: Dictionary, size: Vector2i, live: bool) -> SubViewpo
 	g.scale = Vector2(k, k)
 	g.position = Vector2(float(size.x) * 0.5, float(size.y) * 0.74)
 	vp.add_child(g)
-	if not live:
-		g.set_process(false)
-	return box

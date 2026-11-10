@@ -1,7 +1,7 @@
 extends Control
-## MAP CATALOGUE: every map in the game as a clickable card (live-drawn thumbnail, name,
-## where it comes from). Click / tap a card (or Enter on it) to SHOW the map: a big animated
-## preview with its description, and buttons to pick it for Versus:
+## MAP CATALOGUE: every map in the game as a clickable card (still-picture thumbnail, name,
+## where it comes from). Click / tap a card (or Enter on it) to SHOW the map: a big still
+## picture with its description, and buttons to pick it for Versus:
 ##   SELECT ARENA   - it becomes the Versus arena, back to the Main Menu
 ##   FIGHT HERE     - pick it and go straight to the pre-fight screen
 ##   CLOSE          - back to the catalogue
@@ -85,7 +85,7 @@ func _card(e: Dictionary) -> Button:
 	v.offset_bottom = -6
 	v.add_theme_constant_override("separation", 2)
 	b.add_child(v)
-	v.add_child(MapCatalog.make_preview(e, CARD, false))
+	v.add_child(MapCatalog.make_preview(e, CARD))
 	var nm := UiStyle.label(String(e["name"]).to_upper() + ("   (SELECTED)" if picked else ""), 15, UiStyle.ACCENT_GREEN if picked else UiStyle.TEXT, 3)
 	nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	nm.clip_text = true
