@@ -73,7 +73,7 @@ Caves and sewers no longer float. Solid rock fills everything under the floor in
 | 21 | The Bulwark Line (new) | Architectium | Bulwarks (great shield) with Archers and a Lancer |
 | 22 | The Forge Floor (new) | Blast Workshop | Warriors, Sparklings, a Copper Corpse, a Lancer |
 | 23 | The Smelter (new) | Blast Workshop | Bulwark, Archers, Swordsman, Sparkling, Copper Corpse |
-| 24 | The Blast Workshop | Blast Workshop | Mini-boss **Architectian Titan** |
+| 24 | The Blast Workshop | Blast Workshop | Mini-boss **Forge Mother** |
 | 25 | The Rune Gallery (new) | The Golem's Hall | All the Architectian weapon types |
 | 26 | The Architect's Golem | The Golem's Hall | Boss **Architect's Golem** |
 
@@ -152,6 +152,28 @@ Every boss has its own arena and its own soundtrack. Mother Nature only opens af
 - **Finale:** at 0 HP The Consumer collapses. Grab the **Solar Bomb**, press ATTACK to throw it into its maw, then **escape** across 12 crumbling platforms while a wall of fire chases you (falling costs 12 HP and puts you back on the last platform). Reach the ledge, then the ending cutscene: you fall back to Earth. **THE END.**
 
 Cutscenes: `c5_intro`, `mountain_climb`, `reach_peak`, `fall_to_earth` (painted in `scripts/story/c5/C5Cutscenes.gd`). All Colosseum 5 code is in `scripts/story/c5/`.
+
+## Boss Extension Levels (added 2026-11-10)
+
+After you beat certain bosses, **3 extra levels** open that go DOWN or UP from that boss's arena: 2 enemy levels + 1 final boss. They are named after the boss's initials: **BC2, BC3, BC4**... The Blinded Lord has none.
+
+- **How to play:** on the Story board, press **BOSS EXTENSIONS** (on Colosseum pages 2, 3 and 4), or click the small sign next to a boss (e.g. "BC v"; the three pips show your progress). In the menu, choose **WARRIOR or ARCHITECT** (solo, not duo; duo is only Colosseum 5) and pick a level. Locked until its boss is beaten; each level unlocks the next.
+- **Rules:** same as normal levels: 2 flasks (R), refilled after the boss intro; small HP bars over enemies, big bar at the top for bosses (the Story boss buff applies too). **Saved after every level** (also after each extension boss). After a level you return to the board with the extension menu open.
+- Every new arena (5 fight arenas + 5 unique boss arenas) is in the **Map Catalogue** and playable in Versus. Each boss has its **own music**.
+
+| Ext | Opens after | Where | Level 2 | Level 3 | Level 4 (boss) |
+|---|---|---|---|---|---|
+| **BC** | Blasphemy Caeser (15) | down, the Caeser's crypts | Blasphemy Followers: Sword (slash, lunge, shield block) + Wizard (bolts, volley, teleport) | Small Serpents (bite, strike, swarms) + Humane Serpents (spear thrust / rush, tail swipe) | **The Caeser's Grave** (440 HP): rotten body in a broken coffin. Grave Slam (shockwaves), Restless Souls (chase you), Soul Burst, Serpent Swarm (from the floor), Serpents of the Grave (helpers). Arena: the Caeser's Tomb |
+| **AC** | Atomic Creation (17) | the exploded nuclear reactor | Mutated Humans: Radiation Punch, Leap Punch, Scream (stun) | Atomic Rocks: Roll, Radiation Burst, **explode when they die** | **Radioactive Giant Metallic Architects Chorus** (520 HP): Radioactive Slam (puddles), Radiation Wave, Atomic Explosion (3 blasts), Chorus Scream (stun + summons Mutated Humans). Arena: the Reactor Core |
+| **FM** | Forge Mother (24) | beyond, into The Forge | Forge Workers: Hammer Swing, Hot Metal throw (fire pool) | Coal Throwers (coal, volley, fire pools) + Oven Owners (Oven Blast, Fire Shield -70% dmg + burns, Body Slam) | **The Forge Father** (380 HP): Forge Hammer, Forge Fire Wave, Coal Throw. **Phase 2:** melts himself into the **Metallic Abomination** (new 340 HP bar, much faster): Metal Lash, Liquid Lunge, Metal Spikes, Molten Blast. Arena: the Heart of the Forge |
+| **AG** | Architect's Golem (26) | up, the Saint Rocks sanctuary | Saint Rollers (Rock Roll, Bump), Saint Warriors (Hammer, Shield Bash, Rock Guard), Saint Watchers (Rune Shot, Watch laser) | the same three, harder mix | **Saint Architect's Golem** (500 HP): Golem Slam, Rune Blast, Architectian Power (floor wave + pillar), Metal Shards, Rune Shield (-75% dmg). Arena: the Saint Sanctum |
+| **VM** | Void Massacre (34) | down, deeper into the Void | Crawling Victims: Claw, Grab (mash to escape) | Spiders: Shooter (web bolts), Biter (bite, lunge), Venomous (poison bite + pools, venom spit) | **3 Void Horrids at once** (170 HP each, own big bar each): small Void Massacres with white eyes and spider legs; one stays close, one mid, one far. Leg Stab, Pounce, Eye Beam, Void Web (slowing puddle). Arena: the Horrid Nest |
+
+HP above is before the Story boss buff (x1.35). **Architectian Titan was renamed Forge Mother** everywhere (same stats and look).
+
+Code: levels / maps in `StoryLevels.gd` (`EXTENSIONS`, `EXT_LEVELS`, internal level numbers 101-115), enemies + bosses in `scripts/story/ext/`, menu `ExtensionMenu.gd`, backdrops `ext/ExtBackdrops.gd`, saves `StoryProgress.ext_done` / `ext_hero`. Group bosses: a boss with `spawn_group()` (StoryManager `boss_group`).
+
+**Tested by script only** (2026-11-10): all 15 levels played start to finish by a CPU hero (Warrior and Architect alternating). Every enemy appeared and attacked, every boss intro, the Forge Father's phase 2, the 3-Horrid group with 3 bars, every level clear + save, and the return to the board with the menu. The probe ended fights early, so **difficulty is not tuned yet** (the Horrids were already softened once: three at once hit too hard).
 
 ## Rules
 

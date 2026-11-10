@@ -339,7 +339,7 @@ func _draw() -> void:
 			_draw_magma()
 		"lava_wave":                                      # Lava Wave rolling along the floor
 			_draw_lava_wave(a)
-		"scrap":                                          # Architectian Titan: gears / metal plates
+		"scrap":                                          # Forge Mother: gears / metal plates
 			draw_set_transform(Vector2.ZERO, _age * 9.0 * dir - rotation, Vector2.ONE)
 			_draw_scrap()
 		"stone_block":                                    # Architect's Golem: thrown stone block

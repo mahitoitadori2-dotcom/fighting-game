@@ -72,6 +72,9 @@ func _paint() -> void:
 	if C5Backdrops.handles(theme):                         # Colosseum 5 (C5Backdrops.gd)
 		C5Backdrops.paint(_painter, theme, sz)
 		return
+	if ExtBackdrops.handles(theme):                        # Boss extensions (ExtBackdrops.gd)
+		ExtBackdrops.paint(_painter, theme, sz)
+		return
 	match theme:
 		"cave":
 			_paint_cave(sz)
@@ -776,6 +779,9 @@ func _paint_embers() -> void:
 	var sz := _painter.size
 	if C5Backdrops.handles(theme):
 		C5Backdrops.embers(_embers, theme, sz, _t, _ember_data)
+		return
+	if ExtBackdrops.handles(theme):
+		ExtBackdrops.embers(_embers, theme, sz, _t, _ember_data)
 		return
 	match theme:
 		"elevator":

@@ -42,6 +42,17 @@ const DESC := {
 	"ash_cathedral": "The False God's black cathedral with a burning altar.",
 	"satan_cave": "Satan's mountain cave of lava and a throne of horns.",
 	"sun_peak": "The Sun Peak, above the clouds in blinding light.",
+	# Boss extensions
+	"crypts": "The Caeser's crypts: serpent idols, bone niches and candles under the arena.",
+	"caeser_tomb": "The Caeser's Tomb: a broken coffin under a ribcage of serpent bones.",
+	"saint_rocks": "The Saint Rocks: a sanctuary of living rock and golden runes high above the Golem's Hall.",
+	"saint_sanctum": "The Saint Sanctum: runes and Architect metal, where the Golem was rebuilt.",
+	"deep_void": "Deeper into the Void: webs, hanging cocoons and crawling victims.",
+	"horrid_nest": "The Horrid Nest: a web cathedral full of white eyes in the dark.",
+	"reactor_waste": "The radioactive wasteland around the exploded reactor.",
+	"reactor_core": "The Reactor Core: a melted reactor glowing green.",
+	"the_forge": "The Forge: catwalks, coal chutes, ovens and rivers of molten metal.",
+	"forge_heart": "The Heart of the Forge: a giant crucible of molten metal.",
 }
 
 static var _cache: Array = []
@@ -58,15 +69,23 @@ static func entries() -> Array:
 			"desc": "Black rock, green fog and void tentacles"},
 	]
 	var seen := {}
-	for n in range(1, StoryLevels.count() + 1):
+	var levels: Array = range(1, StoryLevels.count() + 1)
+	for k in StoryLevels.EXT_ORDER:                     # Boss extension arenas (fight + boss arena each)
+		var first := int(StoryLevels.EXTENSIONS[k]["first"])
+		levels.append_array([first, first + 1, first + 2])
+	for n: int in levels:
 		var key := String(StoryLevels.get_level(n).get("map", ""))
 		for k in [key, String(StoryLevels.get_level(n).get("boss_map", ""))]:
 			if k == "" or seen.has(k) or SKIP.has(k) or not StoryLevels.MAPS.has(k):
 				continue
 			seen[k] = true
 			var m: Dictionary = StoryLevels.MAPS[k]
+			var src := "Story Mode - Colosseum %d" % StoryLevels.colosseum_of(n)
+			if StoryLevels.is_ext(n):
+				var ek := StoryLevels.ext_of(n)
+				src = "Story Mode - %s Extension (%s)" % [String(StoryLevels.EXTENSIONS[ek]["name"]).capitalize(), ek]
 			_cache.append({"id": "story_" + k, "name": String(m.get("zone", k)).capitalize(), "scene": STORY_SCENE, "map": k,
-				"source": "Story Mode - Colosseum %d" % StoryLevels.colosseum_of(n), "desc": String(DESC.get(k, ""))})
+				"source": src, "desc": String(DESC.get(k, ""))})
 	return _cache
 
 

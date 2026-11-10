@@ -94,7 +94,10 @@ func _ready() -> void:
 	active = true
 	add_to_group("story_manager")
 	StoryProgress.load_progress()
-	level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
+	if StoryLevels.is_ext(StoryProgress.current_level):
+		level_number = StoryProgress.current_level          # Boss extension level (BC2...)
+	else:
+		level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
 	level = StoryLevels.get_level(level_number)
 	if bool(level.get("void_mod", false)):
 		# Skipping the optional Shining level counts as leaving it alive
@@ -506,7 +509,7 @@ func _intro() -> void:
 		intro += "\nThe Shining lives: the Void Massacre is STRONGER."
 	if partner != null:
 		intro += "\nYour partner: %s (CPU)" % partner.data.character_name.to_upper()
-	_show_banner("LEVEL %d" % level_number, intro, Color(1.0, 0.7, 0.3))
+	_show_banner(StoryLevels.level_label(level_number), intro, Color(1.0, 0.7, 0.3))
 	await _wait(1.2 if bool(level.get("quick_boss", false)) else 2.4)
 	_hide_banner()
 	CombatManager.fight_active = true
@@ -643,6 +646,7 @@ func _boss_intro() -> void:
 	_apply_void_mod(boss, String(level["boss"]))
 	buff_boss(boss)
 	boss.died.connect(_on_boss_died)
+	_spawn_boss_group()
 	if boss.has_signal("transform_started"):
 		boss.connect("transform_started", _on_boss_transform)
 	if boss.has_signal("finale_started"):
@@ -775,8 +779,30 @@ func _on_finale() -> void:
 func _on_boss_died() -> void:
 	if _over:
 		return
+	for m in boss_group:                                # Group boss (Void Horrids): ALL must die
+		if m != null and is_instance_valid(m) and not (m as BaseEnemy).is_dead:
+			return
 	boss_bar_visible = false
 	boss_defeated.emit()
+
+
+## GROUP BOSS (boss extension VM4: three Void Horrids): a boss with spawn_group() brings its
+## siblings. Each gets the Story boss buff and its own HP bar; the level ends when all are dead.
+var boss_group: Array = []
+
+
+func _spawn_boss_group() -> void:
+	boss_group.clear()
+	if boss == null or not boss.has_method("spawn_group"):
+		return
+	boss_group.append(boss)
+	for m in boss.call("spawn_group"):
+		var e := m as BaseEnemy
+		if e == null:
+			continue
+		buff_boss(e)
+		e.died.connect(_on_boss_died)
+		boss_group.append(e)
 
 
 ## Phase 1 of a two-form boss hit 0 HP (Blasphemy Caeser): TRANSFORM cutscene, then phase 2.
@@ -892,6 +918,20 @@ func _boss_death_cutscene() -> void:
 func _level_clear() -> void:
 	CombatManager.fight_active = false
 	wave_text = ""
+	if StoryLevels.is_ext(level_number):
+		# BOSS EXTENSION level: saved, then back to the board with the extension menu open
+		StoryProgress.complete_ext(level_number)
+		if autoplay:
+			print("STORY autoplay: %s CLEAR (player hp %d)" % [StoryLevels.ext_code(level_number), player.hp])
+		var last := StoryLevels.ext_index(level_number) == 2
+		_show_banner("%s CLEAR!" % StoryLevels.ext_code(level_number), "Extension complete!  Progress saved" if last else "Progress saved", Color(0.6, 1.0, 0.6))
+		SoundManager.play_sfx("ultimate")
+		await _wait(1.8)
+		_hide_banner()
+		StoryBoard.ext_return = StoryLevels.ext_of(level_number)
+		StoryProgress.current_level = int(StoryLevels.EXTENSIONS[StoryBoard.ext_return]["parent"])
+		get_tree().change_scene_to_file(STORY_MENU)
+		return
 	StoryProgress.complete_level(level_number)     # SAVED here
 	if autoplay:
 		print("STORY autoplay: level %d CLEAR (player hp %d, flasks %d)" % [level_number, player.hp, flasks])
@@ -919,7 +959,7 @@ func _on_player_died() -> void:
 	Engine.time_scale = 1.0
 	var panel := _panel()
 	panel.add_child(UiStyle.label("YOU DIED", 80, Color(0.9, 0.2, 0.15), 16))
-	panel.add_child(UiStyle.label("Level %d: %s" % [level_number, level.get("title", "")], 22, UiStyle.TEXT_DIM, 8))
+	panel.add_child(UiStyle.label("%s: %s" % [StoryLevels.level_label(level_number).capitalize(), level.get("title", "")], 22, UiStyle.TEXT_DIM, 8))
 	_panel_button(panel, "RETRY LEVEL", func() -> void: get_tree().change_scene_to_file(ARENA_SCENE))
 	_panel_button(panel, "STORY MENU", func() -> void: get_tree().change_scene_to_file(STORY_MENU))
 	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))

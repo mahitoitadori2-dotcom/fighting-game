@@ -24,6 +24,10 @@ static var shining_choice := ""
 static var optional_done: Array = []
 ## Colosseum 5: the hero you picked ("warrior" / "architect"); the other one is your CPU partner.
 static var c5_hero := ""
+## BOSS EXTENSIONS: how many levels of each extension are beaten ("BC" -> 0..3) and the hero
+## used for extension levels ("warrior" / "architect").
+static var ext_done := {}
+static var ext_hero := ""
 static var _loaded := false
 
 
@@ -39,6 +43,8 @@ static func load_progress() -> void:
 	shining_choice = String(cfg.get_value("story", "shining_choice", ""))
 	optional_done = cfg.get_value("story", "optional_done", [])
 	c5_hero = String(cfg.get_value("story", "c5_hero", ""))
+	ext_done = cfg.get_value("story", "ext_done", {})
+	ext_hero = String(cfg.get_value("story", "ext_hero", ""))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -57,7 +63,42 @@ static func save_progress() -> void:
 	cfg.set_value("story", "shining_choice", shining_choice)
 	cfg.set_value("story", "optional_done", optional_done)
 	cfg.set_value("story", "c5_hero", c5_hero)
+	cfg.set_value("story", "ext_done", ext_done)
+	cfg.set_value("story", "ext_hero", ext_hero)
 	cfg.save(SAVE_PATH)
+
+
+# ============================================================
+# BOSS EXTENSIONS
+# ============================================================
+## An extension is open once its parent boss level is beaten.
+static func ext_open(key: String) -> bool:
+	return level_cleared(int(StoryLevels.EXTENSIONS[key]["parent"]))
+
+
+## How many of the 3 levels of an extension are beaten.
+static func ext_cleared(key: String) -> int:
+	return int(ext_done.get(key, 0))
+
+
+## May this extension level (internal number) be played? (open + the one before it beaten)
+static func ext_level_unlocked(n: int) -> bool:
+	var key := StoryLevels.ext_of(n)
+	return key != "" and ext_open(key) and StoryLevels.ext_index(n) <= ext_cleared(key)
+
+
+## Extension level beaten: SAVED (after every level, so also after each extension boss).
+static func complete_ext(n: int) -> void:
+	var key := StoryLevels.ext_of(n)
+	if key == "":
+		return
+	ext_done[key] = maxi(ext_cleared(key), StoryLevels.ext_index(n) + 1)
+	save_progress()
+
+
+static func set_ext_hero(hero: String) -> void:
+	ext_hero = hero
+	save_progress()
 
 
 ## Level beaten: unlock the next one (an OPTIONAL next level also unlocks the one after it,
@@ -102,4 +143,6 @@ static func reset() -> void:
 	shining_choice = ""
 	optional_done = []
 	c5_hero = ""
+	ext_done = {}
+	ext_hero = ""
 	save_progress()

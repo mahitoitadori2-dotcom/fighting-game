@@ -20,7 +20,7 @@ const LOOKS := {
 	"chain": {"w": 60.0, "h": 90.0, "life": 0.35, "col": Color(0.7, 0.7, 0.75), "sfx": "chain"},
 	# Blasphemy Caeser (Story, Colosseum 2): a column of magma bursts out of the floor
 	"geyser": {"w": 84.0, "h": 320.0, "life": 0.7, "col": Color(1.0, 0.42, 0.08), "sfx": "geyser"},
-	# Architectian Titan (Story, Colosseum 3): a floor vent of the workshop blows up
+	# Forge Mother (Story, Colosseum 3): a floor vent of the workshop blows up
 	"blast": {"w": 110.0, "h": 220.0, "life": 0.6, "col": Color(1.0, 0.6, 0.15), "sfx": "explosion"},
 	# Void Tentacle / Void Massacre (Story, Colosseum 4): a void tendril bursts out of the floor
 	"tendril": {"w": 64.0, "h": 200.0, "life": 0.55, "col": Color(0.45, 0.2, 0.8), "sfx": "void_goo"},

@@ -101,12 +101,31 @@ func _paint() -> void:
 
 	# ---------------- Level title + wave ----------------
 	var cx := sz.x * 0.5
-	FighterArt.label(_painter, Vector2(cx, 26), "COLOSSEUM %d  -  LEVEL %d: %s" % [StoryLevels.colosseum_of(manager.level_number), manager.level_number, manager.level.get("title", "")], 18, Color(1.0, 0.75, 0.4))
+	var head_text := "COLOSSEUM %d  -  LEVEL %d: %s" % [StoryLevels.colosseum_of(manager.level_number), manager.level_number, manager.level.get("title", "")]
+	if StoryLevels.is_ext(manager.level_number):
+		var ek := StoryLevels.ext_of(manager.level_number)
+		head_text = "%s EXTENSION  -  %s: %s" % [StoryLevels.EXTENSIONS[ek]["name"], StoryLevels.ext_code(manager.level_number), manager.level.get("title", "")]
+	FighterArt.label(_painter, Vector2(cx, 26), head_text, 18, Color(1.0, 0.75, 0.4))
 	if manager.wave_text != "":
 		FighterArt.label(_painter, Vector2(cx, 50), manager.wave_text, 15, Color(1, 1, 1, 0.85))
 
 	# ---------------- Boss bar (boss fight only) ----------------
 	var boss := manager.boss
+	if not manager.boss_group.is_empty() and manager.boss_bar_visible:
+		# GROUP BOSS (Void Horrids): one big bar per member, side by side
+		var n := manager.boss_group.size()
+		var bw2 := minf(300.0, (sz.x - 80.0) / float(n) - 16.0)
+		for i in n:
+			var m := manager.boss_group[i] as BaseEnemy
+			if m == null or not is_instance_valid(m):
+				continue
+			var x0 := cx - (float(n) * (bw2 + 16.0)) * 0.5 + float(i) * (bw2 + 16.0) + 8.0
+			var r2 := Rect2(x0, 86, bw2, 18)
+			var alive := not m.is_dead
+			FighterArt.label(_painter, Vector2(r2.get_center().x, 76), m.boss_title() if alive else "DEFEATED", 16,
+				(Color(1.0, 0.95, 0.4) if m.enraged else Color.WHITE) if alive else Color(1, 1, 1, 0.45))
+			_bar(r2, float(m.hp) / maxf(float(m.data.max_hp), 1.0) if alive else 0.0, Color(0.55, 0.95, 0.2) if not m.enraged else Color(1.0, 0.85, 0.15))
+		boss = null                                        # (the single bar below is skipped)
 	if boss != null and is_instance_valid(boss) and not boss.is_dead and manager.boss_bar_visible:
 		var bw := minf(560.0, sz.x - 80.0)
 		var r := Rect2(cx - bw * 0.5, 86, bw, 20)

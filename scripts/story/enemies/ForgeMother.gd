@@ -1,6 +1,6 @@
-class_name ArchitectianTitan
+class_name ForgeMother
 extends SimpleEnemy
-## ARCHITECTIAN TITAN - MINI-BOSS of Colosseum 3 (Level 17, the Blast Workshop).
+## FORGE MOTHER (renamed from Architectian Titan) - MINI-BOSS of Colosseum 3 (Level 17, the Blast Workshop).
 ## A huge forge-guardian in dark iron armour with brass plates and a FURNACE glowing in its
 ## chest, swinging a giant smithing hammer. Below 50% the furnace overheats (phase 2).
 ##
@@ -33,7 +33,7 @@ func _make_data() -> CharacterData:
 	phase2_cooldown_mult = 0.7
 	knockback_scale = 0.1
 	grab_immune = true
-	var d := SimpleEnemy.make_data("Architectian Titan", 210, Vector2(150, 290), 85.0)
+	var d := SimpleEnemy.make_data("Forge Mother", 210, Vector2(150, 290), 85.0)
 	d.hitstun_time = 0.05
 	d.respawn_delay = 99.0
 	return d
@@ -78,7 +78,7 @@ func _attack(p: EnemyPattern) -> void:
 	match p.id:
 		"slam":
 			var hx := global_position.x + facing * 150.0
-			hit_in_radius(Vector2(hx, global_position.y - 50.0), 120.0, dmg(p), SLAM_KB, "titan_slam")
+			hit_in_radius(Vector2(hx, global_position.y - 50.0), 120.0, dmg(p), SLAM_KB, "forge_slam")
 			Effects.explosion(self, Vector2(hx, global_position.y - 30.0), 130.0, true, true)
 			for d in [-1.0, 1.0]:
 				var s := spawn_projectile()
@@ -91,13 +91,13 @@ func _attack(p: EnemyPattern) -> void:
 				s.size = Vector2(46, 34)
 				s.damage = maxi(1, dmg(p) / 2)
 				s.knockback = Vector2(220, -300)
-				s.move = "titan_shock"
+				s.move = "forge_shock"
 				launch(s, Vector2(hx + d * 70.0, global_position.y - 12.0))
 			Effects.shake(self, 16.0)
 			SoundManager.play_sfx("slam")
 			SoundManager.play_sfx("explosion", -4.0)
 		"sweep":
-			hitbox.activate(make_hit(dmg(p), Vector2(facing * SWEEP_KB.x, SWEEP_KB.y), "titan_sweep"),
+			hitbox.activate(make_hit(dmg(p), Vector2(facing * SWEEP_KB.x, SWEEP_KB.y), "forge_sweep"),
 				Vector2(facing * 110.0, -36.0), Vector2(240, 64))
 			SoundManager.play_sfx("whoosh")
 		"workshop":
@@ -129,7 +129,7 @@ func _throw_scrap(to_x: float, damage: int) -> void:
 	r.pierce = false
 	r.size = Vector2(44, 44)
 	r.lifetime = 3.0
-	r.move = "titan_scrap"
+	r.move = "forge_scrap"
 	var from := global_position + Vector2(facing * 60.0, -260.0)
 	var drop := global_position.y - from.y
 	var t := SCRAP_FLIGHT
@@ -141,14 +141,14 @@ func _throw_scrap(to_x: float, damage: int) -> void:
 # ART (facing right, origin = feet, ~200 x 320)
 # ============================================================
 func draw_model_on(c: CanvasItem) -> void:
-	draw_titan(c, art_state())
+	draw_forge_mother(c, art_state())
 
 
 static func draw_portrait(c: CanvasItem, t: float) -> void:
-	draw_titan(c, {"t": t, "pose": "idle"})
+	draw_forge_mother(c, {"t": t, "pose": "idle"})
 
 
-static func draw_titan(c: CanvasItem, s: Dictionary) -> void:
+static func draw_forge_mother(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
 	var pose: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)

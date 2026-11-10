@@ -12,6 +12,8 @@ extends Control
 
 ## Set by StoryManager when a level is cleared: the pawn starts here and hops forward.
 static var advance_from := 0
+## Set by StoryManager after a BOSS EXTENSION level: the board reopens that extension's menu.
+static var ext_return := ""
 
 const HOP_TIME := 0.75
 const TILE := 74.0
@@ -40,7 +42,7 @@ const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
-	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "titan": 0.16, "arch_golem": 0.15,
+	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "forge_mother": 0.16, "arch_golem": 0.15,
 	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11,
 	"ambusher": 0.45, "grin": 0.42, "pained": 0.3, "imp": 0.8, "needle": 0.36, "brothers": 0.3, "animal_lord": 0.13,
 	"executor": 0.14, "mother_nature": 0.15, "false_god": 0.12, "satan": 0.1, "the_sun": 0.11}
@@ -76,6 +78,7 @@ var _land_t := 10.0                # Time since landing (squash + dust)
 var _celebrate := false
 var _play: Button
 var _switch: Button
+var _ext_btn: Button
 var _info: Label
 var _title: Label
 var _page := 1                     # Colosseum shown on the board
@@ -88,6 +91,16 @@ func _ready() -> void:
 	_build_ui()
 	_pawn_space = clampi(StoryProgress.current_level, 1, StoryProgress.unlocked_level)
 	_page = StoryLevels.colosseum_of(_pawn_space)
+	if ext_return != "":
+		# Back from a boss extension level: stand on its boss and reopen the extension menu
+		var key := ext_return
+		ext_return = ""
+		advance_from = 0
+		_pawn_space = clampi(int(StoryLevels.EXTENSIONS[key]["parent"]), 1, StoryProgress.unlocked_level)
+		_page = StoryLevels.colosseum_of(_pawn_space)
+		_refresh_ui()
+		_open_extensions.call_deferred(key)
+		return
 	if advance_from > 0:
 		var from := advance_from
 		advance_from = 0
@@ -152,6 +165,11 @@ func _build_ui() -> void:
 	_switch.pressed.connect(_switch_hero)
 	_switch.visible = false
 	row.add_child(_switch)
+	# Boss extensions of this page (BC, AG, VM, AC, FM)
+	_ext_btn = UiStyle.make_button("BOSS EXTENSIONS", Vector2(230, 56), 17)
+	_ext_btn.pressed.connect(func() -> void: _open_extensions(""))
+	_ext_btn.visible = false
+	row.add_child(_ext_btn)
 	var reset := UiStyle.make_button("RESET", Vector2(150, 56), 16)
 	reset.pressed.connect(_reset.bind(reset))
 	row.add_child(reset)
@@ -161,6 +179,7 @@ func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
 	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate
 	_switch.visible = choice
+	_ext_btn.visible = not StoryLevels.exts_on_page(_page).is_empty()
 	if choice:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
 	_title.text = String(_page_data().get("title", "STORY MODE"))
@@ -298,6 +317,10 @@ func _on_board_input(event: InputEvent) -> void:
 		else:
 			SoundManager.play_sfx("block")
 		return
+	for k in StoryLevels.exts_on_page(_page):               # Boss extension signs
+		if mb.position.distance_to(_ext_badge_pos(k)) <= 34.0:
+			_open_extensions(k)
+			return
 	if _page > 1 and mb.position.distance_to(_back_pos()) <= 40.0:
 		_celebrate = false
 		_hop(_page_first() - 1)
@@ -367,6 +390,35 @@ func _switch_hero() -> void:
 	StoryProgress.set_c5_hero("warrior" if now == "architect" else "architect")
 	SoundManager.play_sfx("spawn")
 	_refresh_ui()
+
+
+## BOSS EXTENSIONS menu for this page (focus = an extension key to highlight, or "").
+func _open_extensions(focus: String) -> void:
+	if _busy or _hop_t >= 0.0:
+		return
+	var keys := StoryLevels.exts_on_page(_page)
+	if keys.is_empty():
+		return
+	var menu := ExtensionMenu.new()
+	menu.keys = keys
+	menu.focus_key = focus
+	add_child(menu)
+	menu.chosen.connect(_play_ext)
+	menu.closed.connect(func() -> void: _play.grab_focus.call_deferred())
+
+
+## Fall into a boss extension level with the hero picked in the menu.
+func _play_ext(n: int) -> void:
+	if _busy:
+		return
+	_busy = true
+	StoryProgress.current_level = n
+	var fall := CaveFall.new()
+	fall.hero_art = ArchitectArt if StoryLevels.hero_of(n) == "architect" else WarriorArt
+	fall.caption = "%s:  %s" % [StoryLevels.ext_code(n), StoryLevels.get_level(n)["title"]]
+	add_child(fall)
+	await fall.finished
+	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
 
 
 func _autoplay_next() -> void:
@@ -444,6 +496,7 @@ func _draw_board() -> void:
 	for n in range(first, last + 1):
 		_space(n)
 	_teasers()
+	_ext_badges()
 
 	# Pawn (+ shadow)
 	var pp := _pawn_pos()
@@ -465,6 +518,40 @@ func _draw_board() -> void:
 			var a := TAU * float(i) / 14.0 + _t * 1.5
 			var rr := 70.0 + 14.0 * sin(_t * 4.0 + float(i))
 			c.draw_circle(_space_pos(_page_last()) + Vector2.from_angle(a) * rr, 4.0, Color.from_hsv(fmod(float(i) / 14.0 + _t * 0.2, 1.0), 0.6, 1.0))
+
+
+func _ext_badge_pos(k: String) -> Vector2:
+	var e: Dictionary = StoryLevels.EXTENSIONS[k]
+	var dir := String(e["dir"])
+	var off := Vector2(0, 66) if dir == "down" else (Vector2(0, -70) if dir == "up" else Vector2(62, -50))
+	return _space_pos(int(e["parent"])) + off
+
+
+## BOSS EXTENSIONS: a small sign next to each boss space that has one ("BC" + arrow down / up),
+## locked until that boss is beaten, with check marks for the cleared levels.
+func _ext_badges() -> void:
+	var c := _board
+	for k in StoryLevels.exts_on_page(_page):
+		var e: Dictionary = StoryLevels.EXTENSIONS[k]
+		var base := _space_pos(int(e["parent"]))
+		var dir := String(e["dir"])
+		var p := _ext_badge_pos(k)
+		var off := p - base
+		var open := StoryProgress.ext_open(k)
+		var done := StoryProgress.ext_cleared(k)
+		var col := GOLD if open else Color(0.55, 0.55, 0.6)
+		c.draw_line(base + off * 0.45, p - off.normalized() * 18.0, Color(col.r, col.g, col.b, 0.8), 4.0)
+		var box := Rect2(p - Vector2(30, 16), Vector2(60, 32))
+		FighterArt.rrect(c, box, Color(0.12, 0.08, 0.06), Color(0.08, 0.05, 0.04), col.darkened(0.3), 8.0, 3.0)
+		FighterArt.label(c, p + Vector2(0, 6), k, 16, col)
+		var arrow := "v" if dir == "down" else ("^" if dir == "up" else ">")
+		FighterArt.label(c, p + Vector2(22, 6), arrow, 14, col)
+		for i in 3:                                          # Progress pips
+			var pip := p + Vector2(-14 + float(i) * 14.0, 22)
+			c.draw_circle(pip, 4.5, EnemyArt.BLACK)
+			c.draw_circle(pip, 3.2, Color(0.4, 1.0, 0.4) if i < done else Color(0.3, 0.3, 0.32))
+		if not open:
+			FighterArt.label(c, p + Vector2(0, -22), "LOCKED", 11, Color(0.8, 0.8, 0.85, 0.8))
 
 
 func _draw_scenery(r: Rect2) -> void:

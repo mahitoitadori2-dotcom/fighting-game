@@ -3,7 +3,7 @@ extends RefCounted
 ## STORY MODE level list (Level 50 = The Sun). Colosseums have DIFFERENT sizes (COLOSSEUM_SIZES):
 ##   COLOSSEUM 1 = levels 1-6    (The Ashen Depths, boss: the Blinded Lord)
 ##   COLOSSEUM 2 = levels 7-15   (The Ascent, mini-boss: Architect Chorus, boss: Blasphemy Caeser)
-##   COLOSSEUM 3 = levels 16-26  (The Burning Crown, mini-boss: Architectian Titan, boss: Architect's Golem)
+##   COLOSSEUM 3 = levels 16-26  (The Burning Crown, mini-boss: Forge Mother, boss: Architect's Golem)
 ##   COLOSSEUM 4 = levels 27-34  (The Void Below, OPTIONAL level 32: The Shining, boss: Void Massacre)
 ##   COLOSSEUM 5 = levels 35-50  (The Final Ascent: pick Warrior or Architect, the other is your CPU
 ##                               partner; a COIN FLIP adds enemies every level; 7 bosses up to THE SUN)
@@ -80,7 +80,7 @@ const MAPS := {
 	"throne":       {"bg": "throne", "ground": 10, "walls": "burnt", "half_width": 780.0, "music": "story_throne", "zone": "THE BURNING THRONE"},
 	# MINOR ARCHITECTIUM LAND: stone buildings, architect workshops, cranes and gears.
 	"architectium": {"bg": "architectium", "ground": 11, "walls": "stone", "half_width": 840.0, "music": "story_architectium", "zone": "MINOR ARCHITECTIUM"},
-	# BLAST WORKSHOP (Architectian Titan): blast furnaces, molten metal, sparks, a big open floor.
+	# BLAST WORKSHOP (Forge Mother): blast furnaces, molten metal, sparks, a big open floor.
 	"workshop":     {"bg": "workshop", "ground": 12, "walls": "foundry", "half_width": 840.0, "music": "story_workshop", "zone": "BLAST WORKSHOP"},
 	# THE GOLEM'S HALL (Architect's Golem): a vast stone hall of the Architect, glowing runes.
 	"golem_hall":   {"bg": "golem_hall", "ground": 11, "walls": "rune", "half_width": 840.0, "music": "none", "zone": "THE GOLEM'S HALL"},
@@ -119,6 +119,120 @@ const MAPS := {
 	"satan_cave":   {"bg": "satan_cave", "ground": 20, "walls": "hellrock", "half_width": 860.0, "music": "story_cave", "solid": true, "zone": "SATAN'S CAVE"},
 	# THE SUN: the Sun Peak, above the clouds, white-gold stone, blinding sky.
 	"sun_peak":     {"bg": "sun_peak", "ground": 21, "walls": "peak", "half_width": 880.0, "music": "none", "zone": "THE SUN PEAK"},
+	# ----- BOSS EXTENSIONS (ExtBackdrops.gd): a fight arena + a UNIQUE boss arena each -----
+	# BC: down into Blasphemy Caeser's crypts / his tomb
+	"crypts":        {"bg": "caeser_crypts", "ground": 9, "walls": "blasphemy", "half_width": 800.0, "music": "story_cave", "solid": true, "zone": "THE CAESER'S CRYPTS"},
+	"caeser_tomb":   {"bg": "caeser_tomb", "ground": 14, "walls": "bone", "half_width": 820.0, "music": "none", "solid": true, "zone": "THE CAESER'S TOMB"},
+	# AG: up from the Golem's Hall into the Saint Rocks sanctuary
+	"saint_rocks":   {"bg": "saint_rocks", "ground": 11, "walls": "rune", "half_width": 840.0, "music": "story_altar", "zone": "THE SAINT ROCKS"},
+	"saint_sanctum": {"bg": "saint_sanctum", "ground": 11, "walls": "rune", "half_width": 860.0, "music": "none", "zone": "THE SAINT SANCTUM"},
+	# VM: deeper into the Void
+	"deep_void":     {"bg": "deep_void", "ground": 14, "walls": "web", "half_width": 820.0, "music": "story_void", "zone": "THE DEEP VOID"},
+	"horrid_nest":   {"bg": "horrid_nest", "ground": 14, "walls": "web", "half_width": 880.0, "music": "none", "zone": "THE HORRID NEST"},
+	# AC: the nuclear reactor after the explosion - a radioactive wasteland
+	"reactor_waste": {"bg": "reactor_waste", "ground": 5, "walls": "lab", "half_width": 840.0, "music": "story_hive", "zone": "THE REACTOR WASTE"},
+	"reactor_core":  {"bg": "reactor_core", "ground": 4, "walls": "metal", "half_width": 860.0, "music": "none", "solid": true, "zone": "THE REACTOR CORE"},
+	# FM: The Forge, beyond the Forge Mother's Blast Workshop
+	"the_forge":     {"bg": "the_forge", "ground": 12, "walls": "foundry", "half_width": 840.0, "music": "story_workshop", "zone": "THE FORGE"},
+	"forge_heart":   {"bg": "forge_heart", "ground": 12, "walls": "foundry", "half_width": 860.0, "music": "none", "zone": "THE HEART OF THE FORGE"},
+}
+
+# ======================= BOSS EXTENSION LEVELS =======================
+## After a boss is beaten, 3 extra levels unlock that go DOWN or UP from its arena: 2 enemy
+## levels + 1 final boss. Code = boss initials + number (BC2, BC3, BC4...). Played with the
+## Warrior OR the Architect (picked in the extension menu; NOT duo - duo is Colosseum 5 only).
+## Internal level numbers start at EXT_BASE so they never collide with Colosseum levels.
+##   parent   the Colosseum level whose boss unlocks it      page   board page it is shown on
+##   dir      "down" / "up" / "beyond" (where it leads)       first  internal number of the 1st level
+const EXT_BASE := 101
+const EXT_ORDER := ["BC", "AC", "FM", "AG", "VM"]
+const EXTENSIONS := {
+	"BC": {"name": "BLASPHEMY CAESER", "parent": 15, "page": 2, "dir": "down", "first": 101,
+		"place": "Down into the Caeser's crypts", "boss": "THE CAESER'S GRAVE"},
+	"AG": {"name": "ARCHITECT'S GOLEM", "parent": 26, "page": 3, "dir": "up", "first": 104,
+		"place": "Up into the Saint Rocks sanctuary", "boss": "SAINT ARCHITECT'S GOLEM"},
+	"VM": {"name": "VOID MASSACRE", "parent": 34, "page": 4, "dir": "down", "first": 107,
+		"place": "Deeper into the Void", "boss": "THE VOID HORRIDS"},
+	"AC": {"name": "ATOMIC CREATION", "parent": 17, "page": 3, "dir": "down", "first": 110,
+		"place": "The nuclear reactor, after the explosion", "boss": "RADIOACTIVE CHORUS"},
+	"FM": {"name": "FORGE MOTHER", "parent": 24, "page": 3, "dir": "beyond", "first": 113,
+		"place": "Into The Forge, beyond the Blast Workshop", "boss": "THE FORGE FATHER"},
+}
+
+const EXT_LEVELS := {
+	# ----- BC: BLASPHEMY CAESER - the Caeser's crypts -----
+	101: {"title": "THE SERPENT CULT", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
+		"intro": "Below the Blasphemy Arena: the Caeser's crypts. His followers still pray down here.",
+		"waves": [["bf_sword", "bf_wizard", "bf_sword"], ["bf_sword", "bf_sword", "bf_wizard", "bf_wizard"]], "boss": ""},
+	102: {"title": "THE NEST OF SERPENTS", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
+		"intro": "Deeper down. The walls are moving - serpents, hundreds of them.",
+		"waves": [["serpent_small", "serpent_small", "serpent_small", "serpent_humane"], ["serpent_humane", "serpent_small", "serpent_humane", "serpent_small", "serpent_small"]], "boss": ""},
+	103: {"title": "THE CAESER'S GRAVE", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
+		"intro": "The last door. Something old is still breathing behind it.",
+		"waves": [["bf_wizard", "serpent_small", "serpent_small", "bf_sword"]], "boss": "caeser_grave",
+		"boss_map": "caeser_tomb", "boss_map_title": "THE CAESER'S TOMB", "boss_map_sub": "A broken coffin... and it is not empty.",
+		"boss_music": "boss_grave", "boss_color": Color(0.65, 1.0, 0.75),
+		"boss_sub": "BC4  -  What is left of the God-Devourer", "boss_line": "I... devoured... GODS...  I will devour... YOU...",
+		"boss_death_title": "THE CAESER'S GRAVE IS SEALED", "boss_death_sub": "The serpents go still. The Blasphemy Caeser extension is complete."},
+	# ----- AG: ARCHITECT'S GOLEM - the Saint Rocks sanctuary -----
+	104: {"title": "THE SAINT ROCKS", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
+		"intro": "A stair behind the Golem's Hall leads UP, into a sanctuary of living saint-rock.",
+		"waves": [["saint_roller", "saint_warrior", "saint_roller"], ["saint_watcher", "saint_warrior", "saint_roller"]], "boss": ""},
+	105: {"title": "THE WATCHERS' STAIR", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
+		"intro": "Tall shapes watch from every ledge. Their eyes follow you.",
+		"waves": [["saint_watcher", "saint_watcher", "saint_warrior"], ["saint_warrior", "saint_roller", "saint_watcher", "saint_warrior"]], "boss": ""},
+	106: {"title": "THE SAINT ARCHITECT'S GOLEM", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
+		"intro": "The top of the sanctuary. Runes and Architect metal hum in the stone.",
+		"waves": [["saint_roller", "saint_warrior", "saint_watcher"]], "boss": "saint_golem", "boss_intro": "rise",
+		"boss_map": "saint_sanctum", "boss_map_title": "THE SAINT SANCTUM", "boss_map_sub": "The Golem was REBUILT... with the Architect's own metal.",
+		"boss_music": "boss_saint_golem", "boss_color": Color(0.45, 0.95, 1.0),
+		"boss_sub": "AG4  -  Runes and Architectian Power", "boss_line": "...SANCTIFIED.   ...REBUILT.   ...DISMANTLE.",
+		"boss_death": "sink", "boss_death_title": "THE SAINT GOLEM CRUMBLES",
+		"boss_death_sub": "The runes fade. The Architect's Golem extension is complete."},
+	# ----- VM: VOID MASSACRE - deeper into the Void -----
+	107: {"title": "THE CRAWLING VICTIMS", "theme": "deep_void", "map": "deep_void", "hero": "ext",
+		"intro": "Below the Spider Lair the Void goes on. The ones it swallowed are still crawling.",
+		"waves": [["victim", "victim", "victim"], ["victim", "victim", "victim", "victim", "victim"]], "boss": ""},
+	108: {"title": "THE SPIDER DEEP", "theme": "deep_void", "map": "deep_void", "hero": "ext",
+		"intro": "Webs again. Smaller spiders... but so many more of them.",
+		"waves": [["spider_biter", "spider_shooter", "spider_biter"], ["spider_venom", "spider_shooter", "spider_biter", "spider_venom"]], "boss": ""},
+	109: {"title": "THE VOID HORRIDS", "theme": "deep_void", "map": "deep_void", "hero": "ext",
+		"intro": "Something clicks in three places at once.",
+		"waves": [["victim", "spider_biter", "victim"]], "boss": "void_horrid", "boss_pos": "center",
+		"boss_map": "horrid_nest", "boss_map_title": "THE HORRID NEST", "boss_map_sub": "The Massacre had children.",
+		"boss_music": "boss_horrids", "boss_color": Color(0.85, 0.85, 1.0),
+		"boss_sub": "VM4  -  Three Void Horrids at once", "boss_line": "*three sets of white eyes open*",
+		"boss_death_title": "THE VOID HORRIDS ARE DEAD", "boss_death_sub": "The Void goes quiet. The Void Massacre extension is complete."},
+	# ----- AC: ATOMIC CREATION - the reactor after the explosion -----
+	110: {"title": "THE REACTOR WASTE", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
+		"intro": "Where the Atomic Creation came from: a reactor that blew apart. Nothing here is human anymore.",
+		"waves": [["mutant", "mutant"], ["mutant", "mutant", "mutant"]], "boss": ""},
+	111: {"title": "THE ATOMIC FIELD", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
+		"intro": "The rocks glow. The rocks MOVE. Don't stand next to them when they break.",
+		"waves": [["atomic_rock", "atomic_rock", "mutant"], ["atomic_rock", "mutant", "atomic_rock", "atomic_rock"]], "boss": ""},
+	112: {"title": "THE RADIOACTIVE CHORUS", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
+		"intro": "Singing. From inside the reactor. Many voices, all metal.",
+		"waves": [["mutant", "atomic_rock", "mutant"]], "boss": "rad_chorus", "boss_intro": "rise", "boss_pos": "center",
+		"boss_map": "reactor_core", "boss_map_title": "THE REACTOR CORE", "boss_map_sub": "The Architect Chorus... melted into the reactor.",
+		"boss_music": "boss_reactor", "boss_color": Color(0.45, 1.0, 0.3),
+		"boss_sub": "AC4  -  Radioactive Giant Metallic Architects Chorus", "boss_line": "WE... SING... THE... MELTDOWN...",
+		"boss_death": "sink", "boss_death_title": "THE CHORUS FALLS SILENT",
+		"boss_death_sub": "The core goes dark. The Atomic Creation extension is complete."},
+	# ----- FM: FORGE MOTHER - The Forge -----
+	113: {"title": "THE FORGE", "theme": "the_forge", "map": "the_forge", "hero": "ext",
+		"intro": "Behind the Blast Workshop: The Forge itself. Its workers never stopped.",
+		"waves": [["forge_worker", "forge_worker"], ["forge_worker", "forge_worker", "forge_worker"]], "boss": ""},
+	114: {"title": "COAL AND OVENS", "theme": "the_forge", "map": "the_forge", "hero": "ext",
+		"intro": "Burning coal rains from the catwalks. Something carries an oven on its back.",
+		"waves": [["coal_thrower", "forge_worker", "coal_thrower"], ["oven_owner", "coal_thrower", "forge_worker", "coal_thrower"]], "boss": ""},
+	115: {"title": "THE FORGE FATHER", "theme": "the_forge", "map": "the_forge", "hero": "ext",
+		"intro": "The Forge Mother was only the beginning. Her maker waits in the heart of the fire.",
+		"waves": [["forge_worker", "coal_thrower", "oven_owner"]], "boss": "forge_father",
+		"boss_map": "forge_heart", "boss_map_title": "THE HEART OF THE FORGE", "boss_map_sub": "Molten metal, coal and fire. And HIM.",
+		"boss_music": "boss_forge_father", "boss_color": Color(1.0, 0.55, 0.15),
+		"boss_sub": "FM4  -  Maker of the Forge Mother", "boss_line": "THE MOTHER WAS WEAK.   I AM THE FORGE.",
+		"boss_death": "sink", "boss_death_title": "THE FORGE FATHER IS MELTED DOWN",
+		"boss_death_sub": "The Forge goes cold. The Forge Mother extension is complete."},
 }
 
 const LEVELS := {
@@ -217,11 +331,11 @@ const LEVELS := {
 		"waves": [["warrior_a_shield", "warrior_a", "sparkling"], ["warrior_a_bow", "warrior_a_bow", "copper", "warrior_a_sword"]], "boss": ""},
 	24: {"title": "THE BLAST WORKSHOP", "theme": "workshop", "map": "workshop",
 		"intro": "Blast furnaces roar. Something enormous hammers the anvil.",
-		"waves": [], "boss": "titan",
+		"waves": [], "boss": "forge_mother",
 		"boss_music": "boss_titan", "boss_color": Color(1.0, 0.6, 0.2),
 		"boss_sub": "Mini-Boss  -  Forge-Guardian of the Architectium",
 		"boss_line": "THE FORGE...  NEVER...  COOLS.",
-		"boss_death_title": "THE ARCHITECTIAN TITAN HAS FALLEN", "boss_death_sub": "The furnaces go quiet."},
+		"boss_death_title": "THE FORGE MOTHER HAS FALLEN", "boss_death_sub": "The furnaces go quiet."},
 	25: {"title": "THE RUNE GALLERY", "theme": "golem_hall", "map": "rune_gallery",
 		"intro": "The Architect's own guard watches the hall. The runes hum under your feet.",
 		"waves": [["warrior_a_spear", "warrior_a_shield", "warrior_a_spear"], ["warrior_a_bow", "warrior_a", "warrior_a_shield", "warrior_a_sword"]], "boss": ""},
@@ -358,7 +472,49 @@ const LEVELS := {
 
 
 static func get_level(n: int) -> Dictionary:
+	if EXT_LEVELS.has(n):
+		return EXT_LEVELS[n]
 	return LEVELS.get(clampi(n, 1, LEVELS.size()), LEVELS[1])
+
+
+# ----- Boss extensions -----
+static func is_ext(n: int) -> bool:
+	return EXT_LEVELS.has(n)
+
+
+## "BC" for levels 101-103 ... "" for normal levels.
+static func ext_of(n: int) -> String:
+	for k in EXTENSIONS:
+		var first := int(EXTENSIONS[k]["first"])
+		if n >= first and n < first + 3:
+			return String(k)
+	return ""
+
+
+## Position inside its extension: 0, 1, 2 (= BC2, BC3, BC4).
+static func ext_index(n: int) -> int:
+	var k := ext_of(n)
+	return n - int(EXTENSIONS[k]["first"]) if k != "" else 0
+
+
+## "BC2", "BC3", "BC4"...
+static func ext_code(n: int) -> String:
+	var k := ext_of(n)
+	return "%s%d" % [k, ext_index(n) + 2] if k != "" else ""
+
+
+## Banner / HUD name of a level: "LEVEL 7" or "BC2".
+static func level_label(n: int) -> String:
+	return ext_code(n) if is_ext(n) else "LEVEL %d" % n
+
+
+## The extensions shown on a Colosseum's board page.
+static func exts_on_page(page: int) -> Array:
+	var out: Array = []
+	for k in EXT_ORDER:
+		if int(EXTENSIONS[k]["page"]) == page:
+			out.append(k)
+	return out
 
 
 static func map_of(n: int) -> Dictionary:
@@ -374,6 +530,8 @@ static func hero_of(n: int) -> String:
 	var h := String(get_level(n).get("hero", PLAYER_CHARACTER))
 	if h == "choice":
 		return StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
+	if h == "ext":                                     # Boss extensions: Warrior OR Architect (picked in the menu)
+		return StoryProgress.ext_hero if StoryProgress.ext_hero != "" else PLAYER_CHARACTER
 	return h
 
 
@@ -401,6 +559,8 @@ static func last_of(colosseum: int) -> int:
 
 
 static func colosseum_of(n: int) -> int:
+	if is_ext(n):                                      # An extension belongs to its parent's Colosseum
+		return colosseum_of(int(EXTENSIONS[ext_of(n)]["parent"]))
 	var c := 1
 	while n > last_of(c):
 		c += 1
@@ -450,8 +610,8 @@ static func enemy_script(id: String) -> Script:
 			return AtomicCreation
 		"warrior_a":
 			return ArchitectianWarrior
-		"titan":
-			return ArchitectianTitan
+		"forge_mother":
+			return ForgeMother
 		"arch_golem":
 			return ArchitectsGolem
 		"crawling":
@@ -492,6 +652,45 @@ static func enemy_script(id: String) -> Script:
 			return Satan
 		"the_sun":
 			return TheSun
+		# ----- Boss extensions -----
+		"bf_sword":
+			return BlasphemyFollowerSword
+		"bf_wizard":
+			return BlasphemyFollowerWizard
+		"serpent_small":
+			return SmallSerpent
+		"serpent_humane":
+			return HumaneSerpent
+		"saint_roller":
+			return SaintRoller
+		"saint_warrior":
+			return SaintWarrior
+		"saint_watcher":
+			return SaintWatcher
+		"victim":
+			return CrawlingVictim
+		"spider_shooter", "spider_biter", "spider_venom":
+			return VoidSpider
+		"mutant":
+			return MutatedHuman
+		"atomic_rock":
+			return AtomicRock
+		"forge_worker":
+			return ForgeWorker
+		"coal_thrower":
+			return CoalThrower
+		"oven_owner":
+			return OvenOwner
+		"caeser_grave":
+			return CaesersGrave
+		"saint_golem":
+			return SaintGolem
+		"void_horrid":
+			return VoidHorrid
+		"rad_chorus":
+			return RadioactiveChorus
+		"forge_father":
+			return ForgeFather
 	return Parasite
 
 
@@ -563,8 +762,8 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return AtomicCreation.new()
 		"warrior_a":
 			return ArchitectianWarrior.new()
-		"titan":
-			return ArchitectianTitan.new()
+		"forge_mother":
+			return ForgeMother.new()
 		"arch_golem":
 			return ArchitectsGolem.new()
 		"crawling":
@@ -605,5 +804,46 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return Satan.new()
 		"the_sun":
 			return TheSun.new()
+		# ----- Boss extensions -----
+		"bf_sword":
+			return BlasphemyFollowerSword.new()
+		"bf_wizard":
+			return BlasphemyFollowerWizard.new()
+		"serpent_small":
+			return SmallSerpent.new()
+		"serpent_humane":
+			return HumaneSerpent.new()
+		"saint_roller":
+			return SaintRoller.new()
+		"saint_warrior":
+			return SaintWarrior.new()
+		"saint_watcher":
+			return SaintWatcher.new()
+		"victim":
+			return CrawlingVictim.new()
+		"spider_shooter", "spider_biter", "spider_venom":
+			var sp := VoidSpider.new()
+			sp.kind = id.trim_prefix("spider_")
+			return sp
+		"mutant":
+			return MutatedHuman.new()
+		"atomic_rock":
+			return AtomicRock.new()
+		"forge_worker":
+			return ForgeWorker.new()
+		"coal_thrower":
+			return CoalThrower.new()
+		"oven_owner":
+			return OvenOwner.new()
+		"caeser_grave":
+			return CaesersGrave.new()
+		"saint_golem":
+			return SaintGolem.new()
+		"void_horrid":
+			return VoidHorrid.new()
+		"rad_chorus":
+			return RadioactiveChorus.new()
+		"forge_father":
+			return ForgeFather.new()
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()
