@@ -209,6 +209,7 @@ func _spawn_player() -> void:
 	else:
 		player.ctl = FighterInput.new()
 	add_child(player)
+	_story_buff(player)
 	if hero == "architect":
 		# Story only (own data copy, Versus unchanged): the punch box reaches head to toes,
 		# like the Warrior's sword, so it also hits short enemies (Black Crawlings...).
@@ -241,6 +242,7 @@ func _spawn_partner() -> void:
 	partner.respawn_enabled = true
 	partner.quiet_announce = true
 	add_child(partner)
+	_story_buff(partner)
 	partner.data.respawn_delay = Companion.REVIVE_TIME
 	if other == "architect":
 		partner.data.punch_offset = Vector2(44, -58)     # Same Story reach as when you play him
@@ -248,6 +250,13 @@ func _spawn_partner() -> void:
 	partner.died.connect(_on_partner_died)
 	partner.respawned.connect(_on_partner_revived)
 	Companion.leader = player
+
+
+## Story Mode buff for the heroes (WarriorData / ArchitectData.apply_story_buff). Each
+## fighter has its own data copy, so Versus keeps the normal numbers.
+func _story_buff(f: Fighter) -> void:
+	if f != null and f.data != null and f.data.has_method("apply_story_buff"):
+		f.data.call("apply_story_buff")
 
 
 func _on_partner_died() -> void:

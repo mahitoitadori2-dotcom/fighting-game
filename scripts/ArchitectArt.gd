@@ -55,8 +55,8 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 		s = 7.0
 		lift_f = 12.0
 		lift_b = 4.0
-	_leg(c, Vector2(-6, -52), Vector2(-8.0 - s, -5.0 - lift_b), true)
-	_leg(c, Vector2(6, -52), Vector2(8.0 + s, -5.0 - lift_f), false)
+	_leg(c, Vector2(-5, -53), Vector2(-7.0 - s, -5.0 - lift_b), true)
+	_leg(c, Vector2(5, -53), Vector2(7.0 + s, -5.0 - lift_f), false)
 
 	# --- Arm poses ---
 	var e := clampf(punch_ext, 0.0, 1.0)
@@ -75,30 +75,50 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 	var b_hand := Vector2(-9.0 + swing, -55).lerp(Vector2(22, -86), b)
 	_arm(c, Vector2(-4, -92), b_el, b_hand, true)         # Far arm (darker)
 
-	# --- Torso: dark undersuit + PURE WHITE chest plate ---
-	FighterArt.rrect(c, Rect2(-17, -100, 34, 48), DARK, DARK_SHADE, DARK_HI, 8.0, 4.0)
-	FighterArt.rrect(c, Rect2(-18, -101, 36, 39), WHITE, WHITE_SHADE, WHITE, 9.0, 4.0)
-	c.draw_line(Vector2(-11, -70), Vector2(11, -70), DARK_SHADE, 2.5)       # Plate seam
-	c.draw_line(Vector2(-14, -94), Vector2(-14, -74), WHITE_SHADE, 2.0)     # Plate edge detail
-	FighterArt.rrect(c, Rect2(-17, -57, 34, 9), DARK_SHADE, VISOR, DARK, 3.0, 3.0)   # Belt
-	c.draw_rect(Rect2(-3, -55, 6, 5), CORE)                                  # Belt buckle light
+	# --- Torso: ATHLETIC V shape - broad shoulders, chest plate, narrow waist ---
+	var torso := PackedVector2Array([Vector2(-19, -101), Vector2(19, -101), Vector2(23, -96),
+		Vector2(21, -88), Vector2(13, -70), Vector2(10, -53), Vector2(-10, -53), Vector2(-13, -70),
+		Vector2(-21, -88), Vector2(-23, -96)])
+	c.draw_colored_polygon(torso, DARK)
+	c.draw_colored_polygon(PackedVector2Array([Vector2(-13, -70), Vector2(-10, -53), Vector2(-6, -53),
+		Vector2(-8, -70)]), DARK_SHADE)                                             # Shaded flank
+	for k in 3:                                                                  # Six-pack under the plate
+		var ay := -70.0 + float(k) * 4.5
+		c.draw_line(Vector2(-7, ay), Vector2(7, ay), DARK_HI, 1.8)
+	c.draw_line(Vector2(0, -72), Vector2(0, -58), DARK_HI, 1.8)
+	FighterArt.outline(c, torso, 4.0)
+	# PURE WHITE chest plate: shoulder caps + two pecs, ending above the abs
+	var plate := PackedVector2Array([Vector2(-20, -103), Vector2(20, -103), Vector2(24, -96),
+		Vector2(20, -83), Vector2(9, -75), Vector2(0, -77), Vector2(-9, -75), Vector2(-20, -83),
+		Vector2(-24, -96)])
+	c.draw_colored_polygon(plate, WHITE)
+	c.draw_colored_polygon(PackedVector2Array([Vector2(-24, -96), Vector2(-20, -83), Vector2(-12, -78),
+		Vector2(-17, -86), Vector2(-20, -96)]), WHITE_SHADE)                        # Shade strip
+	FighterArt.outline(c, plate, 4.0)
+	c.draw_line(Vector2(0, -98), Vector2(0, -78), WHITE_SHADE, 2.0)              # Pec split
+	c.draw_line(Vector2(-17, -84), Vector2(-3, -80), WHITE_SHADE, 2.0)           # Pec undersides
+	c.draw_line(Vector2(17, -84), Vector2(3, -80), WHITE_SHADE, 2.0)
+	FighterArt.rrect(c, Rect2(-12, -57, 24, 8), DARK_SHADE, VISOR, DARK, 3.0, 3.0)   # Belt (slim waist)
+	c.draw_rect(Rect2(-3, -55, 6, 4), CORE)                                  # Belt buckle light
 
 	# --- Glowing BLUE core ---
 	var pulse2 := 0.5 + 0.5 * sin(t * 4.0)
-	var cc := Vector2(5, -82)
-	c.draw_circle(cc, 15.0 + 3.0 * pulse2, Color(CORE.r, CORE.g, CORE.b, 0.22 + 0.15 * pulse2))
-	c.draw_circle(cc, 10.5, FighterArt.BLACK)
-	c.draw_circle(cc, 8.0, CORE)
-	c.draw_circle(cc + Vector2(-1.5, -1.5), 4.5, CORE_HI)
-	c.draw_circle(cc + Vector2(-3.0, -3.0), 1.6, Color.WHITE)
-	FighterArt.ball(c, Vector2(2, -95), 8.0, DARK, DARK_SHADE, DARK_HI)   # Shoulder joint
+	var cc := Vector2(-6, -90)                                                  # Left pec: not hidden by the arm
+	c.draw_circle(cc, 11.0 + 2.5 * pulse2, Color(CORE.r, CORE.g, CORE.b, 0.22 + 0.15 * pulse2))
+	c.draw_circle(cc, 9.0, FighterArt.BLACK)
+	c.draw_circle(cc, 6.8, CORE)
+	c.draw_circle(cc + Vector2(-1.3, -1.3), 3.8, CORE_HI)
+	c.draw_circle(cc + Vector2(-2.6, -2.6), 1.4, Color.WHITE)
+	FighterArt.ball(c, Vector2(3, -96), 8.5, DARK, DARK_SHADE, DARK_HI)   # Shoulder pad
 
-	# --- Head: PURE WHITE helmet, black visor with glowing blue slit ---
-	FighterArt.ball(c, Vector2(3, -113), 15.0, WHITE, WHITE_SHADE, WHITE)
-	FighterArt.rrect(c, Rect2(6, -120, 14, 9), VISOR, VISOR, DARK, 3.0, 3.0)
-	c.draw_rect(Rect2(9, -117, 9, 3), CORE)
-	c.draw_circle(Vector2(-7, -113), 4.0, FighterArt.BLACK)                 # Ear bolt
-	c.draw_circle(Vector2(-7, -113), 2.6, CORE)
+	# --- Head: PURE WHITE helmet (a bit smaller: athletic proportions), black visor ---
+	c.draw_line(Vector2(2, -102), Vector2(3, -110), FighterArt.BLACK, 12.0)   # Neck
+	c.draw_line(Vector2(2, -102), Vector2(3, -110), DARK, 7.0)
+	FighterArt.ball(c, Vector2(3, -117), 12.5, WHITE, WHITE_SHADE, WHITE)
+	FighterArt.rrect(c, Rect2(6, -123, 12, 8), VISOR, VISOR, DARK, 3.0, 3.0)
+	c.draw_rect(Rect2(8, -120, 8, 3), CORE)
+	c.draw_circle(Vector2(-5, -117), 3.4, FighterArt.BLACK)                 # Ear bolt
+	c.draw_circle(Vector2(-5, -117), 2.2, CORE)
 
 	_drill(c, t, drill_len)
 	_arm(c, Vector2(4, -92), el, hand, false)             # Near arm
@@ -117,25 +137,25 @@ static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool) -> void:
 	var base := GREEN_FAR if far else GREEN
 	var shade := GREEN_FAR_SHADE if far else GREEN_SHADE
 	var hi := GREEN if far else GREEN_HI
-	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
-	FighterArt.limb(c, hip, knee, 12.0, base, shade, hi)
-	FighterArt.limb(c, knee, foot + Vector2(0, -4), 11.0, base, shade, hi)
-	FighterArt.ball(c, knee, 5.5, DARK_SHADE if far else DARK, DARK_SHADE, DARK_HI)
-	c.draw_circle(knee, 1.8, CORE)
-	FighterArt.rrect(c, Rect2(foot.x - 8.0, foot.y - 4.0, 24, 9), DARK_SHADE if far else DARK, VISOR, DARK_HI, 3.0, 3.5)
+	var knee := (hip + foot) * 0.5 + Vector2(6, 0)
+	FighterArt.limb(c, hip, knee, 10.0, base, shade, hi)                   # Athletic: lean thigh
+	FighterArt.limb(c, knee, foot + Vector2(0, -4), 8.0, base, shade, hi)  # Slim shin
+	FighterArt.ball(c, knee, 4.5, DARK_SHADE if far else DARK, DARK_SHADE, DARK_HI)
+	c.draw_circle(knee, 1.6, CORE)
+	FighterArt.rrect(c, Rect2(foot.x - 7.0, foot.y - 4.0, 20, 8), DARK_SHADE if far else DARK, VISOR, DARK_HI, 3.0, 3.5)
 
 
 ## Dark gray arm segments, GREEN hands.
 static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2, far: bool) -> void:
 	var base := DARK_SHADE if far else DARK
 	var shade := VISOR if far else DARK_SHADE
-	FighterArt.limb(c, shoulder, elbow, 9.0, base, shade, DARK_HI)
-	FighterArt.limb(c, elbow, hand, 10.0, base, shade, DARK_HI)
-	FighterArt.ball(c, elbow, 5.0, base, shade, DARK_HI)
-	c.draw_circle(elbow, 1.8, CORE)
+	FighterArt.limb(c, shoulder, elbow, 8.5, base, shade, DARK_HI)          # Defined upper arm
+	FighterArt.limb(c, elbow, hand, 7.5, base, shade, DARK_HI)              # Lean forearm
+	FighterArt.ball(c, elbow, 4.5, base, shade, DARK_HI)
+	c.draw_circle(elbow, 1.6, CORE)
 	var g := GREEN_FAR if far else GREEN
 	var gs := GREEN_FAR_SHADE if far else GREEN_SHADE
-	FighterArt.rrect(c, Rect2(hand.x - 7.0, hand.y - 7.0, 15, 15), g, gs, GREEN_HI, 3.5, 3.5)
+	FighterArt.rrect(c, Rect2(hand.x - 6.5, hand.y - 6.5, 13, 13), g, gs, GREEN_HI, 3.5, 3.5)
 
 
 ## Armaggedon Drill: extends from the stomach.

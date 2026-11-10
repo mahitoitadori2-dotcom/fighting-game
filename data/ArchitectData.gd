@@ -74,3 +74,18 @@ func _init() -> void:
 	gauge_enabled = true
 	# CPU: distance range (px) where it likes to use each move.
 	ai_move_ranges = {"rocket": Vector2(160, 900), "hnct": Vector2(60, 260), "drill": Vector2(0, 150)}
+
+
+## STORY MODE ONLY (StoryManager calls this on the fighter's own data copy; Versus keeps
+## the defaults above). Same idea as the Warrior's Story buff: more damage, shorter cooldowns.
+func apply_story_buff() -> void:
+	punch_damage = 5                     # Punch (Versus 3)
+	rocket_damage = 13                   # Rocket Delivery + Triple Rocket (10)
+	rocket_cooldown = 4.5                # (6.0)
+	hnct_damage = 26                     # HNCT Triangle Bomb (20)
+	hnct_cooldown = 8.5                  # (12.0)
+	drill_grab_damage = 5                # Armaggedon Drill: 5 + 6 x 5 = 35 total (4 + 6 x 4 = 28)
+	drill_tick_damage = 5
+	drill_cooldown_hit = 10.0            # (15.0)
+	drill_cooldown_miss = 14.0           # (20.0)
+	goo_tick_damage = 2                  # Void Goo (1)

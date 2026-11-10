@@ -43,16 +43,26 @@ A dark, very powerful version of the Architect: black helmet, black metal chest,
 - Keys 4-7 and E are new keys; on phones the touch controls add buttons 4-7 (right to left) and FLY.
 - Tested by script: every power on the ground and in flight, all 3 cinematics, and a CPU-vs-CPU fight. **Not played by hand yet**, and he is not balanced against anyone (on purpose very strong).
 
-**Warrior buff (2026-11-08, every mode).** The numbers are in `data/WarriorData.gd`. It hasn't been played against the other fighters yet.
+**Story Mode buffs (since 2026-11-10: STORY ONLY, Versus uses the normal numbers).** The Warrior buff from 2026-11-08 used to apply everywhere; now it is only in Story, and the Architect got the same kind of buff. The numbers are in `apply_story_buff()` at the bottom of `data/WarriorData.gd` and `data/ArchitectData.gd`; `StoryManager` applies them to your hero and your Colosseum 5 partner. Checked by script (Story fighters get the buff, Versus keeps the normal numbers); not balanced by hand yet.
 
-| Move | Damage | Cooldown |
-|---|---|---|
-| Sword | 5 (was 3) | – |
-| Clinging Grab | 7 (was 5); Onslaught 10 | 3.5 s (was 5) |
-| Royal Destiny | – | 12 s (was 17) |
-| Eternal Grasp | 5 per spike (was 4) | 13 s (was 20) |
-| Mini Eternal Grasp | 4 per spike (was 3) | – |
-| Shadow Swarm | 30 (was 25) | – |
+| Warrior move | Story (Versus) |
+|---|---|
+| Sword | 5 dmg (3) |
+| Clinging Grab | 7 dmg, Onslaught 10, 3.5 s cd (5 dmg, 7, 5 s) |
+| Royal Destiny | 12 s cd (17) |
+| Eternal Grasp | 5 per spike, 13 s cd (4, 20 s) |
+| Mini Eternal Grasp | 4 per spike (3) |
+| Shadow Swarm | 30 (25) |
+
+| Architect move | Story (Versus) |
+|---|---|
+| Punch | 5 dmg (3) |
+| Rocket Delivery / Triple Rocket | 13 dmg, 4.5 s cd (10, 6 s) |
+| HNCT Triangle Bomb | 26 dmg, 8.5 s cd (20, 12 s) |
+| Armaggedon Drill | 5 + 6 x 5 = 35 dmg, 10 s cd on hit / 14 s on miss (28, 15 / 20 s) |
+| Void Goo | 2 dmg per tick (1) |
+
+**Architect look (2026-11-10):** redrawn less bulky and more athletic: broad shoulders, V-shaped chest plate with pecs, visible abs, narrow waist, leaner arms and legs, slightly smaller helmet; the blue core sits on the chest. Only the drawing changed (`ArchitectArt.gd`), not his hitbox.
 
 ## Match extras
 
