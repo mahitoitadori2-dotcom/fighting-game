@@ -16,7 +16,7 @@ The game icon (`icon.png`, 512 px) shows the 4 fighters (Architect, Warrior, Nig
 
 ## Playable fighters
 
-Versus mode has 5 fighters. Each fighter has an attack, special moves, a CPU opponent and lives; the first four also have G-Gauge ultimates. The 5th, the **APHA Architect**, has 7 powers and Flight instead (see below).
+Versus mode has 6 fighters. Each fighter has an attack, special moves, a CPU opponent and lives; all but one have G-Gauge ultimates. The **APHA Architect** has 7 powers and Flight instead (see below).
 
 | Fighter | Style | Moves 1 / 2 / 3 | Ultimates (G) |
 |---|---|---|---|
@@ -26,6 +26,18 @@ Versus mode has 5 fighters. Each fighter has an attack, special moves, a CPU opp
 | The Enlightened One | Light beams, healer | Beam Blast, Lord's Heal, Helpers! | Godly O' Light (1), Throne (2), Enlightened Gorilla Form (3) |
 
 The full list of fighters and moves is in `scripts/CharacterRoster.gd`.
+
+### Anti Architect (added 2026-11-11, Versus + Story + Extensions + Map Catalogue)
+
+The Architect's model and animations with reversed (negative) colours: black armour, orange limbs, orange core. An aggressive rusher built to Onslaught a lot: the flash comes after only 2 punches, and Workflies and Anti Laser can be Onslaughted too. Numbers: `data/AntiArchitectData.gd`; code: `scripts/anti/`.
+
+- **1 Workflies:** 2 flies that home in on the enemy (no target: straight ahead, then back). 3 each.
+- **2 Anti Laser:** thin orange laser, long range, pierces every enemy in the line. 9.
+- **3 Overcharge:** charges briefly, then explodes around him (11). Costs him 2 HP (never lethal).
+- **G1 BattleFlies:** 3 faster flies, each hits twice (4 per hit).
+- **G2 Energy Pool:** energy juice spills under him, 2 damage every 0.5 s for 5 s.
+- **G3 Never Out Of Plans:** a metal clump forms in front of him and explodes (16): energy pools, battle flies, metal shards and energy shards fly out everywhere.
+- **Story Mode:** has a Story-only buff like the other heroes (punch 5, laser 13, Overcharge 15, shorter cooldowns). Same 2 flasks (R), refilled after the boss intro.
 
 ### APHA Architect (added 2026-11-09, Versus only)
 

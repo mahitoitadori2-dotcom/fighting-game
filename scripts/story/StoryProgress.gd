@@ -28,6 +28,9 @@ static var c5_hero := ""
 ## used for extension levels ("warrior" / "architect").
 static var ext_done := {}
 static var ext_hero := ""
+## ANTI ARCHITECT run: true = every main Story level is played SOLO as the Anti Architect
+## (Colosseum 5 too, with no CPU partner). Toggled on the Story board.
+static var anti_story := false
 static var _loaded := false
 
 
@@ -45,6 +48,7 @@ static func load_progress() -> void:
 	c5_hero = String(cfg.get_value("story", "c5_hero", ""))
 	ext_done = cfg.get_value("story", "ext_done", {})
 	ext_hero = String(cfg.get_value("story", "ext_hero", ""))
+	anti_story = bool(cfg.get_value("story", "anti_story", false))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -65,7 +69,13 @@ static func save_progress() -> void:
 	cfg.set_value("story", "c5_hero", c5_hero)
 	cfg.set_value("story", "ext_done", ext_done)
 	cfg.set_value("story", "ext_hero", ext_hero)
+	cfg.set_value("story", "anti_story", anti_story)
 	cfg.save(SAVE_PATH)
+
+
+static func set_anti_story(on: bool) -> void:
+	anti_story = on
+	save_progress()
 
 
 # ============================================================
@@ -145,4 +155,5 @@ static func reset() -> void:
 	c5_hero = ""
 	ext_done = {}
 	ext_hero = ""
+	anti_story = false
 	save_progress()

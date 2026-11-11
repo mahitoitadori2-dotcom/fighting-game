@@ -34,6 +34,7 @@ static func all() -> Array[Dictionary]:
 	var list: Array[Dictionary] = []
 	list.append(_architect())
 	list.append(_warrior())
+	list.append(_anti_architect())
 	list.append(_fire_lord())
 	list.append(_enlightened_one())
 	list.append(_apha_architect())
@@ -144,6 +145,36 @@ static func _warrior() -> Dictionary:
 				"info": "2 Bar Ultimate, face beam, %d damage" % d.beam_damage},
 			{"key": "G", "name": "The Fall of the Physic",
 				"info": "3 Bar Ultimate, TIME STOP %ss. Stepping on an HNCT bomb breaks it: -%d HP, all moves on cooldown, Afterburn" % [_num(d.timestop_duration), d.timestop_bomb_penalty_hp]},
+		],
+	}
+
+
+static func _anti_architect() -> Dictionary:
+	var d := AntiArchitectData.new()
+	return {
+		"id": "anti",
+		"name": "Anti Architect",
+		"short": "Anti Architect",
+		"selectable": true,
+		"accent": Color(1.0, 0.45, 0.05),
+		"art": AntiArchitectArt,
+		"fighter": AntiArchitect,
+		"ai": AntiArchitectAI,
+		"moves": [
+			{"key": "LMB", "name": "Punch",
+				"info": "%d damage. Onslaught after only %d punches (%d damage)" % [d.punch_damage, d.onslaught_combo_hits, d.onslaught_melee_damage]},
+			{"key": "1", "name": "Workflies",
+				"info": "%d homing flies, %d damage each, %ss cooldown" % [d.workfly_count, d.workfly_damage, _num(d.workfly_cooldown)]},
+			{"key": "2", "name": "Anti Laser",
+				"info": "Orange laser, pierces everything in a line, %d damage, %ss cooldown" % [d.laser_damage, _num(d.laser_cooldown)]},
+			{"key": "3", "name": "Overcharge",
+				"info": "Charges, then explodes around him: %d damage, -%d HP to himself, %ss cooldown" % [d.overcharge_damage, d.overcharge_self_damage, _num(d.overcharge_cooldown)]},
+			{"key": "G", "name": "BattleFlies",
+				"info": "1 Bar Ultimate, %d fast flies, hit twice each (%d damage)" % [d.battlefly_count, d.battlefly_damage]},
+			{"key": "G", "name": "Energy Pool",
+				"info": "2 Bar Ultimate, energy juice around him, %d damage per %ss for %ss" % [d.pool_tick_damage, _num(d.pool_tick), _num(d.pool_duration)]},
+			{"key": "G", "name": "Never Out Of Plans",
+				"info": "3 Bar Ultimate, metal clump explodes (%d damage): pools, battle flies, metal + energy shards" % d.plans_damage},
 		],
 	}
 

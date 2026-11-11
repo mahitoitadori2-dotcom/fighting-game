@@ -7,26 +7,65 @@ extends RefCounted
 ## draw(c, player)        -> in-game, animated from the Player's state
 ## draw_portrait(c, t)    -> idle pose for menus / Character Select cards
 
+## PALETTE (static vars, not consts, so the ANTI ARCHITECT can draw the very same model with
+## an inverted palette: AntiArchitectArt calls set_palette(ANTI_PALETTE) around a draw).
+const NORMAL_PALETTE := {
+	"WHITE": Color(1.0, 1.0, 1.0), "WHITE_SHADE": Color(0.80, 0.84, 0.90),
+	"GREEN": Color(0.22, 0.86, 0.28), "GREEN_SHADE": Color(0.08, 0.52, 0.15), "GREEN_HI": Color(0.72, 1.0, 0.62),
+	"GREEN_FAR": Color(0.13, 0.62, 0.19), "GREEN_FAR_SHADE": Color(0.05, 0.36, 0.10),
+	"DARK": Color(0.25, 0.27, 0.31), "DARK_SHADE": Color(0.12, 0.13, 0.16), "DARK_HI": Color(0.46, 0.49, 0.55),
+	"VISOR": Color(0.07, 0.08, 0.11), "CORE": Color(0.18, 0.68, 1.0), "CORE_HI": Color(0.78, 0.95, 1.0),
+	"DRILL": Color(0.56, 0.60, 0.67), "DRILL_SHADE": Color(0.34, 0.37, 0.43),
+}
+## Negative / reverse colours: black armor plate, ORANGE limbs, pale grey details, orange core.
+const ANTI_PALETTE := {
+	"WHITE": Color(0.10, 0.10, 0.12), "WHITE_SHADE": Color(0.22, 0.18, 0.12),
+	"GREEN": Color(1.0, 0.50, 0.10), "GREEN_SHADE": Color(0.66, 0.28, 0.04), "GREEN_HI": Color(1.0, 0.78, 0.45),
+	"GREEN_FAR": Color(0.82, 0.38, 0.06), "GREEN_FAR_SHADE": Color(0.50, 0.20, 0.03),
+	"DARK": Color(0.75, 0.73, 0.69), "DARK_SHADE": Color(0.55, 0.53, 0.50), "DARK_HI": Color(0.92, 0.90, 0.86),
+	"VISOR": Color(0.93, 0.92, 0.89), "CORE": Color(1.0, 0.45, 0.05), "CORE_HI": Color(1.0, 0.82, 0.45),
+	"DRILL": Color(0.44, 0.40, 0.33), "DRILL_SHADE": Color(0.66, 0.63, 0.57),
+}
+
 # --- PURE WHITE: helmet + chest plate ---
-const WHITE := Color(1.0, 1.0, 1.0, 1.0)
-const WHITE_SHADE := Color(0.80, 0.84, 0.90, 1.0)     # Thin cartoon shade strip only
+static var WHITE := Color(1.0, 1.0, 1.0, 1.0)
+static var WHITE_SHADE := Color(0.80, 0.84, 0.90, 1.0)     # Thin cartoon shade strip only
 # --- GREEN: hands + legs ---
-const GREEN := Color(0.22, 0.86, 0.28, 1.0)
-const GREEN_SHADE := Color(0.08, 0.52, 0.15, 1.0)
-const GREEN_HI := Color(0.72, 1.0, 0.62, 1.0)
-const GREEN_FAR := Color(0.13, 0.62, 0.19, 1.0)        # Far-side limbs (slightly darker)
-const GREEN_FAR_SHADE := Color(0.05, 0.36, 0.10, 1.0)
+static var GREEN := Color(0.22, 0.86, 0.28, 1.0)
+static var GREEN_SHADE := Color(0.08, 0.52, 0.15, 1.0)
+static var GREEN_HI := Color(0.72, 1.0, 0.62, 1.0)
+static var GREEN_FAR := Color(0.13, 0.62, 0.19, 1.0)        # Far-side limbs (slightly darker)
+static var GREEN_FAR_SHADE := Color(0.05, 0.36, 0.10, 1.0)
 # --- Dark gray / black armor details ---
-const DARK := Color(0.25, 0.27, 0.31, 1.0)
-const DARK_SHADE := Color(0.12, 0.13, 0.16, 1.0)
-const DARK_HI := Color(0.46, 0.49, 0.55, 1.0)
-const VISOR := Color(0.07, 0.08, 0.11, 1.0)
+static var DARK := Color(0.25, 0.27, 0.31, 1.0)
+static var DARK_SHADE := Color(0.12, 0.13, 0.16, 1.0)
+static var DARK_HI := Color(0.46, 0.49, 0.55, 1.0)
+static var VISOR := Color(0.07, 0.08, 0.11, 1.0)
 # --- Glowing BLUE core ---
-const CORE := Color(0.18, 0.68, 1.0, 1.0)
-const CORE_HI := Color(0.78, 0.95, 1.0, 1.0)
+static var CORE := Color(0.18, 0.68, 1.0, 1.0)
+static var CORE_HI := Color(0.78, 0.95, 1.0, 1.0)
 # --- Drill metal ---
-const DRILL := Color(0.56, 0.60, 0.67, 1.0)
-const DRILL_SHADE := Color(0.34, 0.37, 0.43, 1.0)
+static var DRILL := Color(0.56, 0.60, 0.67, 1.0)
+static var DRILL_SHADE := Color(0.34, 0.37, 0.43, 1.0)
+
+
+## Swap the palette (always put NORMAL_PALETTE back right after drawing).
+static func set_palette(p: Dictionary) -> void:
+	WHITE = p["WHITE"]
+	WHITE_SHADE = p["WHITE_SHADE"]
+	GREEN = p["GREEN"]
+	GREEN_SHADE = p["GREEN_SHADE"]
+	GREEN_HI = p["GREEN_HI"]
+	GREEN_FAR = p["GREEN_FAR"]
+	GREEN_FAR_SHADE = p["GREEN_FAR_SHADE"]
+	DARK = p["DARK"]
+	DARK_SHADE = p["DARK_SHADE"]
+	DARK_HI = p["DARK_HI"]
+	VISOR = p["VISOR"]
+	CORE = p["CORE"]
+	CORE_HI = p["CORE_HI"]
+	DRILL = p["DRILL"]
+	DRILL_SHADE = p["DRILL_SHADE"]
 
 
 static func draw(c: CanvasItem, p: Player) -> void:

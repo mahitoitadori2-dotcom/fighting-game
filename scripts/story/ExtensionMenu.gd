@@ -6,6 +6,8 @@ extends CanvasLayer
 ## Not duo mode: you fight alone with the hero you pick (duo is only Colosseum 5).
 ## Mouse / touch: click. Keyboard / controller: arrows + Enter (button focus), Esc closes.
 
+const HEROES := ["warrior", "architect", "anti"]
+
 signal chosen(level: int)
 signal closed
 
@@ -77,8 +79,8 @@ func _ready() -> void:
 	hero_row.add_theme_constant_override("separation", 14)
 	col.add_child(hero_row)
 	hero_row.add_child(UiStyle.label("PLAY AS:", 20, UiStyle.TEXT, 6))
-	for h in ["warrior", "architect"]:
-		var hb := UiStyle.make_button(h.to_upper(), Vector2(200, 50), 18)
+	for h in HEROES:
+		var hb := UiStyle.make_button(StoryLevels.hero_name(h), Vector2(240, 50), 17)
 		hb.pressed.connect(_set_hero.bind(h))
 		hero_row.add_child(hb)
 		_hero_btns.append(hb)
@@ -98,9 +100,9 @@ func _set_hero(h: String) -> void:
 
 func _refresh_hero() -> void:
 	for i in _hero_btns.size():
-		var h := "warrior" if i == 0 else "architect"
+		var h: String = HEROES[i]
 		var on := StoryProgress.ext_hero == h
-		_hero_btns[i].text = (">  %s  <" % h.to_upper()) if on else h.to_upper()
+		_hero_btns[i].text = (">  %s  <" % StoryLevels.hero_name(h)) if on else StoryLevels.hero_name(h)
 		_hero_btns[i].modulate = Color(1.0, 1.0, 0.75) if on else Color(0.75, 0.75, 0.8)
 
 

@@ -25,6 +25,8 @@ The sizes are set in `COLOSSEUM_SIZES` in `scripts/story/StoryLevels.gd`. All th
 
 The level select is a board game with one page per Colosseum. Bigger Colosseums get a zig-zag path. The area names and tile colours come from each level's map. When you clear a level, your pawn hops forward. After the boss, it moves on to the next page. Switch pages with the fog space (next Colosseum), the "< N" mark (back), or Left / Right.
 
+**ANTI ARCHITECT toggle (added 2026-11-11):** the board's "ANTI ARCHITECT: ON / OFF" button (saved). When ON, every main Story level is played **solo** as the Anti Architect, Colosseum 5 included (no CPU partner and no hero choice). The Boss Extensions menu has him as a third hero next to Warrior and Architect. Tested only by the CPU (level 35 solo and extension BC2 were cleared); not tested by a human.
+
 **Old saves** (from when every Colosseum had 6 levels) move to the matching level of the new layout the first time they load.
 
 ## Underground floors

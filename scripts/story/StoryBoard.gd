@@ -79,6 +79,7 @@ var _celebrate := false
 var _play: Button
 var _switch: Button
 var _ext_btn: Button
+var _anti_btn: Button
 var _info: Label
 var _title: Label
 var _page := 1                     # Colosseum shown on the board
@@ -165,6 +166,10 @@ func _build_ui() -> void:
 	_switch.pressed.connect(_switch_hero)
 	_switch.visible = false
 	row.add_child(_switch)
+	# Anti Architect run: play every Story level SOLO as the Anti Architect (saved toggle)
+	_anti_btn = UiStyle.make_button("ANTI ARCHITECT: OFF", Vector2(250, 56), 16)
+	_anti_btn.pressed.connect(_toggle_anti)
+	row.add_child(_anti_btn)
 	# Boss extensions of this page (BC, AG, VM, AC, FM)
 	_ext_btn = UiStyle.make_button("BOSS EXTENSIONS", Vector2(230, 56), 17)
 	_ext_btn.pressed.connect(func() -> void: _open_extensions(""))
@@ -177,8 +182,10 @@ func _build_ui() -> void:
 
 func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
-	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate
+	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate and not StoryProgress.anti_story
 	_switch.visible = choice
+	_anti_btn.text = "ANTI ARCHITECT: %s" % ("ON" if StoryProgress.anti_story else "OFF")
+	_anti_btn.modulate = Color(1.0, 0.7, 0.4) if StoryProgress.anti_story else Color(1, 1, 1)
 	_ext_btn.visible = not StoryLevels.exts_on_page(_page).is_empty()
 	if choice:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
@@ -196,7 +203,9 @@ func _refresh_ui() -> void:
 		_info.add_theme_color_override("font_color", UiStyle.TEXT)
 		var boss := String(lv.get("boss", "")) != ""
 		var hero_name := "You play as the ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "architect" else "Warrior only"
-		if bool(lv.get("partner", false)):
+		if StoryProgress.anti_story:
+			hero_name = "You play as the ANTI ARCHITECT (solo)"
+		elif bool(lv.get("partner", false)):
 			var h := StoryLevels.hero_of(_pawn_space)
 			hero_name = "YOU: %s  +  CPU partner: %s" % [h.to_upper(), "ARCHITECT" if h == "warrior" else "WARRIOR"]
 		var tag := "  (BOSS)" if boss else ""
@@ -358,13 +367,13 @@ func _on_play() -> void:
 	_busy = true
 	StoryProgress.current_level = _pawn_space
 	# Colosseum 5: pick your hero the first time (later: the SWITCH / PLAY AS button on the board)
-	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) == "choice" and StoryProgress.c5_hero == "":
+	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) == "choice" and StoryProgress.c5_hero == "" and not StoryProgress.anti_story:
 		var pick := HeroSelect.new()
 		add_child(pick)
 		await pick.chosen
 		_refresh_ui()
 	var cs := String(StoryLevels.get_level(_pawn_space).get("cutscene_in", ""))
-	var art: Script = ArchitectArt if StoryLevels.hero_of(_pawn_space) == "architect" else WarriorArt
+	var art: Script = StoryLevels.hero_art(StoryLevels.hero_of(_pawn_space))
 	if cs != "":
 		# Level with its own intro cutscene (Elevator from Hell, falling into the Sewers)
 		var scene := StoryCutscene.new()
@@ -392,6 +401,18 @@ func _switch_hero() -> void:
 	_refresh_ui()
 
 
+## Anti Architect run on / off (saved). On: every main Story level is played solo as him.
+func _toggle_anti() -> void:
+	if _busy or _hop_t >= 0.0:
+		return
+	StoryProgress.set_anti_story(not StoryProgress.anti_story)
+	SoundManager.play_sfx("spawn")
+	_refresh_ui()
+	queue_redraw()
+	if _board != null:
+		_board.queue_redraw()
+
+
 ## BOSS EXTENSIONS menu for this page (focus = an extension key to highlight, or "").
 func _open_extensions(focus: String) -> void:
 	if _busy or _hop_t >= 0.0:
@@ -414,7 +435,7 @@ func _play_ext(n: int) -> void:
 	_busy = true
 	StoryProgress.current_level = n
 	var fall := CaveFall.new()
-	fall.hero_art = ArchitectArt if StoryLevels.hero_of(n) == "architect" else WarriorArt
+	fall.hero_art = StoryLevels.hero_art(StoryLevels.hero_of(n))
 	fall.caption = "%s:  %s" % [StoryLevels.ext_code(n), StoryLevels.get_level(n)["title"]]
 	add_child(fall)
 	await fall.finished
@@ -828,9 +849,13 @@ func _pawn(p: Vector2) -> void:
 	var h := 70.0 * squash
 	var base_c := p + Vector2(0, 0)
 	# Colosseum 4: you are the ARCHITECT -> white pawn, green trim, dark visor, blue core
-	var arch := StoryLevels.hero_of(_hop_to if _hop_t >= 0.0 else _pawn_space) == "architect"
+	var who := StoryLevels.hero_of(_hop_to if _hop_t >= 0.0 else _pawn_space)
+	var arch := who == "architect"
 	var pc := Color(0.95, 0.96, 0.98) if arch else StoryBoard.PAWN
 	var ps := Color(0.22, 0.86, 0.28) if arch else StoryBoard.PAWN_SHADE
+	if who == "anti":                            # Anti Architect: the negative - black pawn, orange trim
+		pc = Color(0.12, 0.12, 0.14)
+		ps = Color(1.0, 0.45, 0.05)
 	# Base disc
 	var base := EnemyArt.ellipse_points(base_c, 24, 9, 18)
 	c.draw_colored_polygon(base, ps)

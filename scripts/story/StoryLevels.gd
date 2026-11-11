@@ -528,11 +528,37 @@ static func count() -> int:
 ## Playable character of a level: "warrior" (Colosseums 1-3) or "architect" (Colosseum 4).
 static func hero_of(n: int) -> String:
 	var h := String(get_level(n).get("hero", PLAYER_CHARACTER))
+	if h != "ext" and StoryProgress.anti_story:
+		return "anti"                                      # Anti Architect run: solo, every level
 	if h == "choice":
 		return StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
 	if h == "ext":                                     # Boss extensions: Warrior OR Architect (picked in the menu)
 		return StoryProgress.ext_hero if StoryProgress.ext_hero != "" else PLAYER_CHARACTER
 	return h
+
+
+## Art script (static draw_portrait) of a Story hero id.
+static func hero_art(h: String) -> Script:
+	match h:
+		"architect":
+			return ArchitectArt
+		"anti":
+			return AntiArchitectArt
+	return WarriorArt
+
+
+static func hero_name(h: String) -> String:
+	match h:
+		"architect":
+			return "ARCHITECT"
+		"anti":
+			return "ANTI ARCHITECT"
+	return "WARRIOR"
+
+
+## Does level n have a CPU partner? (Colosseum 5 - never on an Anti Architect run: he goes alone)
+static func has_partner(n: int) -> bool:
+	return bool(get_level(n).get("partner", false)) and hero_of(n) != "anti"
 
 
 static func is_optional(n: int) -> bool:

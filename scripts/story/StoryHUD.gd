@@ -49,7 +49,7 @@ func _paint() -> void:
 		var x := 24.0
 		var y := 20.0
 		var k := float(p.hp) / maxf(float(p.data.max_hp), 1.0)
-		var who := "ARCHITECT" if manager.hero == "architect" else "WARRIOR"
+		var who := StoryLevels.hero_name(manager.hero)
 		if p.confuse_timer > 0.0:
 			who += "   -   CONFUSED (controls reversed) %.1fs" % p.confuse_timer
 		FighterArt.label(_painter, Vector2(x, y + 12), "%s   %d / %d" % [who, p.hp, p.data.max_hp], 18, Color.WHITE, false)

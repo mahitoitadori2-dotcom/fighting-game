@@ -112,7 +112,7 @@ func _ready() -> void:
 	_setup_arena()
 	_spawn_player()
 	max_attackers = MAX_ATTACKERS
-	if bool(level.get("partner", false)):
+	if StoryLevels.has_partner(level_number):
 		_spawn_partner()
 		max_attackers = MAX_ATTACKERS + 1
 	_hud = StoryHUD.new()
@@ -197,6 +197,9 @@ func _spawn_player() -> void:
 	if hero == "architect":
 		player = Player.new()                    # The Mighty Architect: own moves, look, animations
 		player.name = "P1_Architect"
+	elif hero == "anti":
+		player = AntiArchitect.new()             # The Anti Architect (solo, never duo)
+		player.name = "P1_AntiArchitect"
 	else:
 		player = Warrior.new()
 		player.name = "P1_Warrior"
@@ -208,12 +211,18 @@ func _spawn_player() -> void:
 	player.facing = 1
 	player.respawn_enabled = false               # Story: death = retry the level
 	if autoplay:
-		player.ctl = ArchitectAI.new() if hero == "architect" else WarriorAI.new()
+		match hero:
+			"architect":
+				player.ctl = ArchitectAI.new()
+			"anti":
+				player.ctl = AntiArchitectAI.new()
+			_:
+				player.ctl = WarriorAI.new()
 	else:
 		player.ctl = FighterInput.new()
 	add_child(player)
 	_story_buff(player)
-	if hero == "architect":
+	if hero == "architect" or hero == "anti":
 		# Story only (own data copy, Versus unchanged): the punch box reaches head to toes,
 		# like the Warrior's sword, so it also hits short enemies (Black Crawlings...).
 		player.data.punch_offset = Vector2(44, -58)
@@ -338,7 +347,7 @@ func _run() -> void:
 func _play_cutscene(kind: String) -> void:
 	var cs := StoryCutscene.new()
 	cs.kind = kind
-	cs.hero_art = ArchitectArt if hero == "architect" else WarriorArt
+	cs.hero_art = StoryLevels.hero_art(hero)
 	add_child(cs)
 	await cs.finished
 	cs.queue_free()
