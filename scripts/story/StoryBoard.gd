@@ -22,17 +22,16 @@ static var ext_return := ""
 const HOP_TIME := 0.75
 const TILE := 74.0
 const BOSS_TILE := 96.0
-## WIDE BOARD: spaces SPACING px apart at least (small Colosseums spread to fill the board),
-## on a slow wave (WAVE_* = 0..1 of the board height). The strip scrolls by dragging.
+## ONE MAP: every level on one strip, SPACING px apart, on a slow wave (WAVE_* = 0..1 of the
+## board height). The whole map scrolls by dragging.
 const SPACING := 170.0
-const MARGIN_L := 160.0                 # Room for the "< previous Colosseum" mark
-const MARGIN_R := 320.0                 # Room for the next-Colosseum fog space + The Sun
+const MARGIN_L := 120.0                 # Space before level 1
+const MARGIN_R := 220.0                 # Space after the last level
 const WAVE_MID := 0.56
 const WAVE_AMP := 0.25
 const WAVE_FREQ := 0.6                  # Radians per space: one full curve every ~10 spaces
 const DRAG_START := 8.0                 # px before a press becomes a drag (else it's a click)
-const OVER_TURN := 80.0                 # Pulled this far past the end -> turn to the next Colosseum
-const OVER_MAX := 150.0                 # (the pull is rubbery: half of the finger movement)
+const OVER_MAX := 150.0                 # Rubbery pull past the two ends of the map (half of the finger movement)
 ## Tile colour per map (StoryLevels.MAPS key).
 const MAP_TILE := {
 	"wastes": Color(0.55, 0.22, 0.14), "geode": Color(0.36, 0.22, 0.48), "hive": Color(0.30, 0.26, 0.24),
@@ -67,7 +66,7 @@ const PAGES := {
 		"board": [Color(0.22, 0.22, 0.28), Color(0.32, 0.10, 0.08)], "boss_label": Color(1.0, 0.6, 0.35)},
 	3: {"title": "STORY MODE  -  COLOSSEUM 3: THE BURNING CROWN",
 		"board": [Color(0.30, 0.10, 0.05), Color(0.14, 0.18, 0.24)], "boss_label": Color(0.5, 0.85, 1.0)},
-	4: {"title": "STORY MODE  -  COLOSSEUM 4: THE VOID BELOW  (YOU ARE THE ARCHITECT)",
+	4: {"title": "STORY MODE  -  COLOSSEUM 4: THE VOID BELOW",
 		"board": [Color(0.10, 0.10, 0.12), Color(0.12, 0.04, 0.18)], "boss_label": Color(0.8, 0.6, 1.0)},
 	5: {"title": "STORY MODE  -  COLOSSEUM 5: THE FINAL ASCENT",
 		"board": [Color(0.18, 0.08, 0.08), Color(0.55, 0.42, 0.20)], "boss_label": Color(1.0, 0.85, 0.4)},
@@ -88,7 +87,6 @@ var _cv: Control                   # The scrolling content (same coordinates as 
 var _scroll := 0.0                 # px the current Colosseum strip is scrolled to the left
 var _scroll_target := 0.0
 var _over := 0.0                   # Overscroll while dragging past an end (< 0 left, > 0 right)
-var _slide := 0.0                  # Page-turn slide offset (eases back to 0)
 var _press_pos := Vector2.ZERO
 var _press_scroll := 0.0
 var _pressed := false
@@ -281,45 +279,72 @@ func _board_rect() -> Rect2:
 	return Rect2(Vector2(40, 96), Vector2(sz.x - 80, sz.y - 190))
 
 
-## Distance between two spaces of Colosseum c (small Colosseums spread out to fill the board).
-func _spacing(c: int) -> float:
-	var r := _board_rect()
-	var n := StoryLevels.size_of(c)
-	return maxf(SPACING, (r.size.x - MARGIN_L - MARGIN_R) / float(maxi(n - 1, 1)))
+## ONE CONTINUOUS MAP: every level of every part (Colosseums 1-5 + The Enlightened Chase) sits on
+## ONE strip, SPACING apart, with a PART_GAP "gate" between two parts. The wave runs through the
+## whole map. _page = the part in the middle of the view (title, scenery, buttons follow it).
+const PART_GAP := 240.0
 
 
-## Width of Colosseum c's whole strip (wider than the board = it scrolls).
-func _content_w(c: int) -> float:
-	return MARGIN_L + float(StoryLevels.size_of(c) - 1) * _spacing(c) + MARGIN_R
+## Number of story parts on the map.
+func _parts() -> int:
+	return StoryLevels.colosseum_of(StoryLevels.count())
+
+
+## Map x of level n (before scrolling).
+func _level_x(n: int) -> float:
+	return MARGIN_L + float(n - 1) * SPACING + float(StoryLevels.colosseum_of(n) - 1) * PART_GAP
+
+
+## Map x of the gate in front of part c (between part c-1 and part c).
+func _gate_x(c: int) -> float:
+	return _level_x(StoryLevels.first_of(c)) - (SPACING + PART_GAP) * 0.5
+
+
+## Width of the whole map.
+func _map_w() -> float:
+	return _level_x(StoryLevels.count()) + MARGIN_R
 
 
 func _max_scroll() -> float:
-	return maxf(_content_w(_page) - _board_rect().size.x, 0.0)
+	return maxf(_map_w() - _board_rect().size.x, 0.0)
 
 
-## Strip position (x along the strip, y 0..1) of the i-th space: a slow wave.
-func _strip_point(c: int, i: float) -> Vector2:
-	return Vector2(MARGIN_L + i * _spacing(c), WAVE_MID + WAVE_AMP * sin(i * WAVE_FREQ + 0.3))
+## Map position (x, y 0..1 of the board height) of level n: one slow wave over the whole map.
+func _map_point(n: int) -> Vector2:
+	var g := float(n - 1)
+	return Vector2(_level_x(n), WAVE_MID + WAVE_AMP * sin(g * WAVE_FREQ + 0.3))
 
 
-## Strip x / height-fraction -> board (screen) position, with the current scroll.
+## Map x / height-fraction -> board (screen) position, with the current scroll.
 func _to_board(p: Vector2) -> Vector2:
 	var r := _board_rect()
-	return r.position + Vector2(p.x - _scroll - _over + _slide, p.y * r.size.y)
+	return r.position + Vector2(p.x - _scroll - _over, p.y * r.size.y)
 
 
-## Board position of a level's space (on its own Colosseum's strip, scrolled).
+## Board position of a level's space (scrolled).
 func _space_pos(level: int) -> Vector2:
-	var c := StoryLevels.colosseum_of(level)
-	return _to_board(_strip_point(c, float(level - StoryLevels.first_of(c))))
+	return _to_board(_map_point(level))
+
+
+## Is map x on screen (with a margin)?
+func _visible_x(screen_x: float, margin: float = 140.0) -> bool:
+	var r := _board_rect()
+	return screen_x > r.position.x - margin and screen_x < r.end.x + margin
+
+
+## The part in the middle of the view.
+func _part_at_view() -> int:
+	var mid := _scroll + _board_rect().size.x * 0.5
+	var c := 1
+	while c < _parts() and mid >= _gate_x(c + 1):
+		c += 1
+	return c
 
 
 ## Scroll so that a level's space is comfortably on screen (instant = no glide).
 func _focus(level: int, instant: bool = false) -> void:
-	if StoryLevels.colosseum_of(level) != _page:
-		return
 	var r := _board_rect()
-	var x := _strip_point(_page, float(level - _page_first())).x
+	var x := _map_point(level).x
 	var target := clampf(_scroll_target, x - r.size.x * 0.72, x - r.size.x * 0.28)
 	_scroll_target = clampf(target, 0.0, _max_scroll())
 	if instant:
@@ -338,11 +363,10 @@ func _page_last() -> int:
 	return mini(StoryLevels.last_of(_page), StoryLevels.count())
 
 
-## 0 = the fog space leading to the next part, 1 = the very last level far away (strip end).
-func _teaser_pos(i: int) -> Vector2:
-	var last_i := float(StoryLevels.size_of(_page) - 1)
-	var x := _strip_point(_page, last_i).x + (125.0 if i == 0 else 225.0)
-	return _to_board(Vector2(x, 0.40 if i == 0 else 0.20))
+## Fixed spot in the scenery (top right) where the goal glows far away (scenery only).
+func _teaser_pos(_i: int) -> Vector2:
+	var r := _board_rect()
+	return r.position + Vector2(0.84, 0.20) * r.size
 
 
 # ============================================================
@@ -351,16 +375,11 @@ func _teaser_pos(i: int) -> Vector2:
 func _hop(to_level: int) -> void:
 	if to_level == _pawn_space or _hop_t >= 0.0:
 		return
-	if StoryLevels.colosseum_of(to_level) != _page:
-		# Other Colosseum: its strip SLIDES in (from the right going forward), the pawn lands on its space
-		var forward := StoryLevels.colosseum_of(to_level) > _page
-		_page = StoryLevels.colosseum_of(to_level)
+	if absi(to_level - _pawn_space) > 1 and not _visible_x(_space_pos(to_level).x, -40.0):
+		# Far away and off screen: no long hop - the map glides there and the pawn lands
 		_pawn_space = to_level
 		_land_t = 0.0
-		_over = 0.0
-		_slide = _board_rect().size.x * (0.7 if forward else -0.7)
-		_scroll_target = 0.0 if forward else _max_scroll()
-		_focus(to_level, true)
+		_focus(to_level)
 		SoundManager.play_sfx("whoosh", -6.0)
 		SoundManager.play_sfx("spawn", -4.0)
 		_refresh_ui()
@@ -391,7 +410,10 @@ func _process(delta: float) -> void:
 	if not _dragging:
 		_scroll = lerpf(_scroll, _scroll_target, clampf(delta * 10.0, 0.0, 1.0))
 		_over = lerpf(_over, 0.0, clampf(delta * 12.0, 0.0, 1.0))
-	_slide = lerpf(_slide, 0.0, clampf(delta * 9.0, 0.0, 1.0))
+	var part := _part_at_view()                          # Title / scenery / buttons follow the view
+	if part != _page:
+		_page = part
+		_refresh_ui()
 	_cv.queue_redraw()
 	if _hop_t >= 0.0:
 		_hop_t += delta
@@ -461,29 +483,20 @@ func _on_board_input(event: InputEvent) -> void:
 			_over = clampf((raw - _scroll) * 0.5, -OVER_MAX, OVER_MAX)   # Rubbery pull past the ends
 
 
-## Let go after a drag: pulled far enough past an end -> turn to that Colosseum.
+## Let go after a drag: the whole map is one strip, so nothing to turn - it just springs back
+## at the two ends (handled in _process).
 func _end_drag() -> void:
-	if _over <= -OVER_TURN:
-		if _page > 1:
-			_celebrate = false
-			_hop(_page_first() - 1)
-	elif _over >= OVER_TURN:
-		var nxt := _page_last() + 1
-		if nxt <= StoryProgress.unlocked_level and nxt <= StoryLevels.count():
-			_celebrate = false
-			_hop(nxt)
-		else:
-			SoundManager.play_sfx("block")                  # Next Colosseum still locked
+	pass
 
 
 func _click(pos: Vector2) -> void:
 	if not _board_rect().has_point(pos):
 		return
-	for k in StoryLevels.exts_on_page(_page):               # Boss extension signs
+	for k in StoryLevels.EXT_ORDER:                         # Boss extension signs
 		if pos.distance_to(_ext_badge_pos(k)) <= 34.0:
 			_open_extensions(k)
 			return
-	for n in range(_page_first(), _page_last() + 1):
+	for n in range(1, StoryLevels.count() + 1):
 		var half := (BOSS_TILE if _is_boss(n) else TILE) * 0.5 + 6.0
 		if pos.distance_to(_space_pos(n)) <= half:
 			if n > StoryProgress.unlocked_level:
@@ -575,7 +588,9 @@ func _toggle_anti() -> void:
 func _open_extensions(focus: String) -> void:
 	if _busy or _hop_t >= 0.0:
 		return
-	var keys := StoryLevels.exts_on_page(_page)
+	# A clicked sign opens the extensions of ITS part (it may not be the part in the middle of the view)
+	var page := int(StoryLevels.EXTENSIONS[focus]["page"]) if focus != "" else _page
+	var keys := StoryLevels.exts_on_page(page)
 	if keys.is_empty():
 		return
 	var menu := ExtensionMenu.new()
@@ -638,7 +653,7 @@ func _draw_board() -> void:
 	FighterArt.outline(c, frame, 5.0)
 	var inner := FighterArt.rrect_points(r, 14.0)
 	var cols := PackedColorArray()
-	var board_cols: Array = _page_data()["board"]
+	var board_cols: Array = _board_colors()
 	for p in inner:
 		var k := clampf((p.x - r.position.x) / r.size.x, 0.0, 1.0)
 		cols.append((board_cols[0] as Color).lerp(board_cols[1], k))     # C1: wastes -> caves, C2: shaft -> magma
@@ -656,36 +671,51 @@ func _draw_board() -> void:
 	else:
 		_draw_scenery(r)
 	# Drag hint along the bottom edge of the frame
-	var hint := "<  DRAG THE BOARD  >"
-	if _page > 1 or _page_last() < StoryLevels.count():
-		hint += "      (drag past the end for the %s part)" % ("next / previous" if _page > 1 and not _final_page() else ("previous" if _final_page() else "next"))
-	FighterArt.label(c, Vector2(r.get_center().x, r.end.y + 12.0), hint, 12, Color(1.0, 0.9, 0.7, 0.75))
+	FighterArt.label(c, Vector2(r.get_center().x, r.end.y + 12.0), "<  DRAG THE MAP  >      (the whole story is one map: every part is next to the other)", 12, Color(1.0, 0.9, 0.7, 0.75))
 
 
-## The SCROLLING part of the board (on _cv, clipped to the board): zone names, the path,
-## the spaces, the page marks, the extension signs and the pawn.
+## Board gradient: the colours of the part in view, blending into the next part near its gate.
+func _board_colors() -> Array:
+	var mid := _scroll + _board_rect().size.x * 0.5
+	var c := _part_at_view()
+	var a: Array = PAGES.get(c, PAGES[1])["board"]
+	var k := 0.0
+	var other := c
+	if c < _parts():
+		var d := _gate_x(c + 1) - mid                       # Approaching the next part
+		if d < 300.0:
+			other = c + 1
+			k = 0.5 * (1.0 - clampf(d / 300.0, 0.0, 1.0))
+	if c > 1 and other == c:
+		var d2 := mid - _gate_x(c)                          # Just came from the previous part
+		if d2 < 300.0:
+			other = c - 1
+			k = 0.5 * (1.0 - clampf(d2 / 300.0, 0.0, 1.0))
+	var b: Array = PAGES.get(other, PAGES[1])["board"]
+	return [(a[0] as Color).lerp(b[0], k), (a[1] as Color).lerp(b[1], k)]
+
+
+## The SCROLLING map (on _cv, clipped to the board): zone names, part gates, the path, the
+## spaces, the extension signs and the pawn. Only what is on screen is drawn.
 func _draw_content() -> void:
 	var r := _board_rect()
 	var c := _cv
 	# Zone labels: one per run of levels in the same area, alternating top / bottom
 	_zone_labels(r)
-
-	# Path (dotted road) between the spaces, then fading toward the next Colosseum / The Sun
-	var first := _page_first()
-	var last := _page_last()
-	for n in range(first, last):
-		_road(_space_pos(n), _space_pos(n + 1), n < StoryProgress.unlocked_level)
-	var next_open := last + 1 <= StoryProgress.unlocked_level and last + 1 <= StoryLevels.count()
-	if not _final_page():
-		_road(_space_pos(last), _teaser_pos(0), next_open, 1.0 if next_open else 0.5)
-		_road(_teaser_pos(0), _teaser_pos(1), false, 0.25)
-	if _page > 1:
-		_road(_back_pos(), _space_pos(first), true, 0.7)
-
-	# Spaces
-	for n in range(first, last + 1):
-		_space(n)
-	_teasers()
+	# A GATE at the start of every part (its name on a banner)
+	for p in range(2, _parts() + 1):
+		_gate(p)
+	# Path (dotted road) through the whole story
+	var count := StoryLevels.count()
+	for n in range(1, count):
+		var a := _space_pos(n)
+		var b := _space_pos(n + 1)
+		if _visible_x(a.x) or _visible_x(b.x):
+			_road(a, b, n < StoryProgress.unlocked_level, 1.0 if n < StoryProgress.unlocked_level + 1 else 0.6)
+	# Spaces (on screen only)
+	for n in range(1, count + 1):
+		if _visible_x(_space_pos(n).x):
+			_space(n)
 	_ext_badges()
 
 	# Pawn (+ shadow)
@@ -721,7 +751,9 @@ func _ext_badge_pos(k: String) -> Vector2:
 ## locked until that boss is beaten, with check marks for the cleared levels.
 func _ext_badges() -> void:
 	var c := _cv
-	for k in StoryLevels.exts_on_page(_page):
+	for k in StoryLevels.EXT_ORDER:
+		if not _visible_x(_space_pos(int(StoryLevels.EXTENSIONS[k]["parent"])).x):
+			continue
 		var e: Dictionary = StoryLevels.EXTENSIONS[k]
 		var base := _space_pos(int(e["parent"]))
 		var dir := String(e["dir"])
@@ -884,20 +916,20 @@ func _draw_scenery_n(r: Rect2) -> void:
 
 func _zone_labels(r: Rect2) -> void:
 	var runs := []                                          # [zone, first level, last level, map]
-	for n in range(_page_first(), _page_last() + 1):
+	for n in range(1, StoryLevels.count() + 1):            # The whole map (each part starts a new run)
 		var key := String(StoryLevels.get_level(n).get("map", "wastes"))
 		var zone := String(StoryLevels.MAPS.get(key, {}).get("zone", ""))
-		if runs.is_empty() or runs[-1][0] != zone:
+		if runs.is_empty() or runs[-1][0] != zone or n == StoryLevels.first_of(StoryLevels.colosseum_of(n)):
 			runs.append([zone, n, n, key])
 		else:
 			runs[-1][2] = n
-	if runs.size() > 14:
-		return                                              # Too many areas to label: the info line names each level
 	for i in runs.size():
 		var run: Array = runs[i]
 		if String(run[0]) == "":
 			continue
 		var x := (_space_pos(int(run[1])).x + _space_pos(int(run[2])).x) * 0.5
+		if not _visible_x(x, 200.0):
+			continue
 		var y := r.position.y + r.size.y * (0.06 if i % 2 == 1 else 0.98)
 		var col: Color = MAP_TILE.get(String(run[3]), Color(0.8, 0.7, 0.6))
 		col = col.lightened(0.55)
@@ -985,47 +1017,44 @@ func _space(n: int) -> void:
 			AchievementArt.draw_icon(c, k, bp, 5.5, [Color.WHITE, bc.darkened(0.5), Color.WHITE], false)
 
 
-## "< previous Colosseum" mark at the start of the strip.
-func _back_pos() -> Vector2:
-	return _to_board(Vector2(MARGIN_L - 108.0, 0.50))
-
-
-## The last page (The Enlightened Chase, ending with Level 62): no "next part" teaser.
+## The part in view is the last one (The Enlightened Chase, ending with Level 62).
 func _final_page() -> bool:
 	return _page_last() >= StoryProgress.TOTAL_LEVELS
 
 
-func _teasers() -> void:
+## The GATE at the start of part p: two stone posts, a lintel and a banner with the part's
+## name. Locked parts get a dark, chained gate.
+func _gate(p: int) -> void:
 	var c := _cv
-	if _final_page():
-		if _page > 1:
-			var bk := _back_pos()
-			c.draw_circle(bk, 30.0, Color(1.0, 0.8, 0.3, 0.3))
-			FighterArt.label(c, bk + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
-			FighterArt.label(c, bk + Vector2(0, 46), StoryLevels.part_name(_page - 1), 12, Color(1, 1, 1, 0.7))
-			FighterArt.label(c, bk + Vector2(0, 64), "DRAG  >>>", 12, Color(1.0, 0.9, 0.6, 0.7))
+	var r := _board_rect()
+	var x := _to_board(Vector2(_gate_x(p), 0.0)).x
+	if not _visible_x(x, 160.0):
 		return
-	var p := _teaser_pos(0)
-	var nxt := _page_last() + 1
-	var open := nxt <= StoryProgress.unlocked_level and nxt <= StoryLevels.count()
-	var pulse := 0.5 + 0.5 * sin(_t * 4.0)
-	c.draw_circle(p, 34.0, Color(1.0, 0.8, 0.3, 0.35 + 0.25 * pulse) if open else Color(0.5, 0.45, 0.45, 0.25))
-	FighterArt.label(c, p + Vector2(0, 8), "%d %s" % [nxt, ">" if open else "..."], 20, Color(1, 1, 1, 0.9 if open else 0.45))
-	FighterArt.label(c, p + Vector2(0, 52), StoryLevels.part_name(_page + 1), 13, Color(1, 1, 1, 0.8 if open else 0.4))
-	FighterArt.label(c, p + Vector2(0, 70), "DRAG  <<<" if open else "LOCKED", 12, Color(1.0, 0.9, 0.6, 0.6 + 0.3 * pulse) if open else Color(1, 1, 1, 0.35))
-	if _page > 1:                                           # Way back to the previous Colosseum
-		var b := _back_pos()
-		c.draw_circle(b, 30.0, Color(1.0, 0.8, 0.3, 0.3))
-		FighterArt.label(c, b + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
-		FighterArt.label(c, b + Vector2(0, 46), StoryLevels.part_name(_page - 1), 12, Color(1, 1, 1, 0.7))
-		FighterArt.label(c, b + Vector2(0, 64), "DRAG  >>>", 12, Color(1.0, 0.9, 0.6, 0.7))
-	var sun := _teaser_pos(1)
-	c.draw_circle(sun, 30.0, Color(1.0, 0.75, 0.25, 0.6))
-	c.draw_circle(sun, 22.0, Color(1.0, 0.92, 0.5, 0.8))
-	for i in 10:
-		var a := TAU * float(i) / 10.0 + _t * 0.3
-		c.draw_line(sun + Vector2.from_angle(a) * 36.0, sun + Vector2.from_angle(a) * 48.0, Color(1.0, 0.8, 0.3, 0.6), 3.0)
-	FighterArt.label(c, sun + Vector2(0, 70), "%d: %s" % [StoryProgress.TOTAL_LEVELS, String(StoryLevels.get_level(StoryProgress.TOTAL_LEVELS).get("title", ""))], 15, Color(1.0, 0.85, 0.4, 0.8))
+	var open := StoryLevels.first_of(p) <= StoryProgress.unlocked_level
+	var top := r.position.y + r.size.y * 0.14
+	var bottom := r.end.y - 8.0
+	var stone := Color(0.32, 0.26, 0.22) if open else Color(0.18, 0.16, 0.16)
+	var accent: Color = PAGES.get(p, PAGES[1])["boss_label"]
+	# Light / fog in the gateway
+	c.draw_rect(Rect2(x - 46.0, top + 24.0, 92.0, bottom - top - 24.0), Color(accent.r, accent.g, accent.b, 0.12) if open else Color(0, 0, 0, 0.35))
+	for side: float in [-1.0, 1.0]:
+		var post := Rect2(x + side * 56.0 - 12.0, top + 10.0, 24.0, bottom - top - 10.0)
+		c.draw_rect(post, stone)
+		c.draw_rect(post, Color(0, 0, 0), false, 3.0)
+	var lintel := Rect2(x - 80.0, top, 160.0, 26.0)
+	c.draw_rect(lintel, stone.lightened(0.1))
+	c.draw_rect(lintel, Color(0, 0, 0), false, 3.0)
+	if not open:                                             # Chains across a locked gate
+		for k in 3:
+			var y := top + 80.0 + float(k) * 70.0
+			c.draw_line(Vector2(x - 44.0, y), Vector2(x + 44.0, y + 20.0), Color(0.45, 0.45, 0.5), 5.0)
+		_lock(Vector2(x, r.position.y + r.size.y * 0.55))
+	# The part's name on a banner (the board title also changes when you drag past it)
+	var full := String(PAGES.get(p, PAGES[1])["title"]).trim_prefix("STORY MODE  -  ")
+	var parts := full.split(":", false, 1)
+	FighterArt.label(c, Vector2(x, top - 8.0), parts[0], 16, accent if open else Color(0.7, 0.7, 0.75))
+	if parts.size() > 1:
+		FighterArt.label(c, Vector2(x, top + 19.0), String(parts[1]).strip_edges().split("  (")[0], 11, Color(1, 1, 1, 0.85 if open else 0.45))
 
 
 func _lock(p: Vector2) -> void:
