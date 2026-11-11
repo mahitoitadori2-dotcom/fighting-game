@@ -556,9 +556,15 @@ static func hero_name(h: String) -> String:
 	return "WARRIOR"
 
 
-## Does level n have a CPU partner? (Colosseum 5 - never on an Anti Architect run: he goes alone)
+## Does level n have a CPU partner? (Colosseum 5 - never in SOLO mode or on an Anti
+## Architect run: he goes alone)
 static func has_partner(n: int) -> bool:
-	return bool(get_level(n).get("partner", false)) and hero_of(n) != "anti"
+	return bool(get_level(n).get("partner", false)) and hero_of(n) != "anti" and not StoryProgress.c5_solo
+
+
+## A Colosseum 5 duo level played WITHOUT the partner (Solo mode / Anti Architect).
+static func is_solo(n: int) -> bool:
+	return bool(get_level(n).get("partner", false)) and not has_partner(n)
 
 
 static func is_optional(n: int) -> bool:

@@ -48,6 +48,7 @@ func _ready() -> void:
 		gauge = GGauge.new()
 		gauge.segment_size = data.gauge_segment_size
 		gauge.segment_count = data.gauge_segments
+		gauge.consumed.connect(func() -> void: used["gauge"] = true)   # Achievements
 	blocked.connect(_on_blocked_base)
 
 
@@ -120,6 +121,8 @@ func _handle_block() -> void:
 	if can and ctl.just_pressed("block"):
 		block_press_time = now()          # Used for the 0.15 s Perfect Block window
 	is_blocking = can and ctl.pressed("block")
+	if is_blocking:
+		used["blocks"] = true                      # Achievements: "no blocking" challenges
 
 
 func _on_blocked_base(_hit: HitData, perfect: bool) -> void:
@@ -145,6 +148,7 @@ func _press_move(id: String) -> void:
 	var kind: String = data.onslaught_move_types.get(id, "")
 	if kind != "" and onslaught.consume_flash(kind, id):
 		_upgrade_move(id)
+		used["powers"] = true                    # Achievements: "no powers" challenges
 		var extra: float = cooldown_totals[id] * (data.onslaught_move_cooldown_mult - 1.0)   # +50% cooldown
 		cooldowns[id] += extra
 		cooldown_totals[id] += extra
@@ -160,6 +164,7 @@ func _press_move(id: String) -> void:
 	SoundManager.play_move_sfx(id)          # drill / void_goo / flame / beam ... (SoundManager.MOVE_SFX)
 	_cast_move(id)
 	if cooldowns.get(id, 0.0) > 0.0:        # Only when the move really went off (it started its cooldown)
+		used["powers"] = true                    # Achievements: "no powers" challenges
 		announce_move(String(move_names.get(id, id)).to_upper().trim_suffix("!") + "!")
 
 

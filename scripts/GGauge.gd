@@ -4,6 +4,7 @@ extends RefCounted
 ## Gains are scaled by the Sandbox G Gauge Multiplier (0x = never fills).
 
 signal changed(value: float)
+signal consumed                          # An ultimate spent bars (Achievements: "no G Gauge")
 
 var segment_size := 100.0
 var segment_count := 3
@@ -34,6 +35,7 @@ func segments() -> int:
 ## Every ultimate in the game spends bars here, so this is the one "ultimate" sound hook.
 func consume_segments(n: int) -> void:
 	SoundManager.play_sfx("ultimate")
+	consumed.emit()
 	value = maxf(value - n * segment_size, 0.0)
 	if MatchSettings.gauge_instant():
 		value = max_value()                  # Sandbox INSTANT: refills right after use

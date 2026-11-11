@@ -109,6 +109,8 @@ func _on_fighter_died(f: Fighter) -> void:
 	f.respawn_enabled = false
 	_over = true
 	winner = p2 if f == p1 else p1
+	if winner == p1 and p1 != null:
+		Achievements.on_versus_win(CharacterRoster.selected_id, CharacterRoster.opponent_id, p1.used)
 	await get_tree().create_timer(WINNER_DELAY).timeout
 	if is_inside_tree():
 		_show_winner()

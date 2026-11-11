@@ -1,6 +1,6 @@
 class_name FpsCounter
 extends CanvasLayer
-## Sandbox performance overlay (Match Settings > Sandbox > FPS Counter).
+## Performance overlay (SETTINGS > Graphics > FPS Counter; Versus and Story Mode).
 ## Shows FPS, frame time, nodes, live particles (cap) and pooled objects.
 ## Updates 4x per second from a Timer: it costs nothing between updates.
 ##

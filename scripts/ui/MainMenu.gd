@@ -2,8 +2,9 @@ extends Control
 ## Title screen: UNIVERSAL BEATDOWN.
 ##   Arena: the picked map + CHANGE ARENA (opens the Map Catalogue: Versus + every Story map)
 ##   Play               -> pre-fight screen (START / MATCH SETTINGS) for the picked arena
-##   Story Mode, Switch Characters, Map Catalogue
-##   Settings           -> graphics, controls, touch UI size, audio (Match Settings live on the pre-fight screen)
+##   Buttons in TWO columns: PLAY / STORY MODE / SWITCH CHARACTERS (left) and
+##   MAP CATALOGUE / ACHIEVEMENTS / SETTINGS (right), EXIT under them (not on Web)
+##   Settings           -> graphics, FPS counter, controls, touch UI size, audio (Match Settings live on the pre-fight screen)
 
 var _play: Button
 var _arena_desc: Label
@@ -59,31 +60,51 @@ func _build() -> void:
 	gap2.custom_minimum_size = Vector2(0, 8)
 	col.add_child(gap2)
 
+	# Buttons: TWO columns side by side (left / right of the middle), EXIT centred under them
+	var split := HBoxContainer.new()
+	split.alignment = BoxContainer.ALIGNMENT_CENTER
+	split.add_theme_constant_override("separation", 22)
+	col.add_child(split)
+	var left := VBoxContainer.new()
+	left.add_theme_constant_override("separation", 10)
+	split.add_child(left)
+	var right := VBoxContainer.new()
+	right.add_theme_constant_override("separation", 10)
+	split.add_child(right)
+
 	_play = UiStyle.make_button("PLAY")
-	_play.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_play.pressed.connect(_on_play)
-	col.add_child(_play)
+	left.add_child(_play)
 
 	var story_btn := UiStyle.make_button("STORY MODE")
-	story_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	story_btn.add_theme_color_override("font_color", Color(1.0, 0.65, 0.3))
 	story_btn.pressed.connect(func() -> void: get_tree().change_scene_to_file(StoryManager.STORY_MENU))
-	col.add_child(story_btn)
+	left.add_child(story_btn)
 
 	var switch_btn := UiStyle.make_button("SWITCH CHARACTERS")
-	switch_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	switch_btn.pressed.connect(_on_switch)
-	col.add_child(switch_btn)
+	left.add_child(switch_btn)
 
 	var cat_btn := UiStyle.make_button("MAP CATALOGUE")
-	cat_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	cat_btn.pressed.connect(_on_catalogue)
-	col.add_child(cat_btn)
+	right.add_child(cat_btn)
+
+	var ach_btn := UiStyle.make_button("ACHIEVEMENTS  %d/%d" % [Achievements.unlocked_count(), Achievements.defs().size()])
+	ach_btn.add_theme_color_override("font_color", Color(1.0, 0.82, 0.3))
+	ach_btn.pressed.connect(func() -> void: get_tree().change_scene_to_file(CharacterRoster.ACHIEVEMENTS))
+	right.add_child(ach_btn)
 
 	var settings_btn := UiStyle.make_button("SETTINGS")
-	settings_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	settings_btn.pressed.connect(_on_settings)
-	col.add_child(settings_btn)
+	right.add_child(settings_btn)
+
+	# EXIT (quits the game; a browser tab can't be closed by the game, so not on Web)
+	if not OS.has_feature("web"):
+		var exit_btn := UiStyle.make_button("EXIT", Vector2(240, 56), 24)
+		exit_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		exit_btn.add_theme_color_override("font_color", Color(1.0, 0.55, 0.5))
+		exit_btn.pressed.connect(func() -> void: get_tree().quit())
+		col.add_child(exit_btn)
 
 	var hint := UiStyle.label(
 		"A/D or Arrows move   W/Up jump   S/Down crouch   Click/Space attack   F block   1/2/3 moves   G ultimate   Esc menu" if Input.get_connected_joypads().is_empty() else "Controller: Stick move  A jump  X attack  RB/LT block  Y/B/LB moves  RT ultimate  Start menu",

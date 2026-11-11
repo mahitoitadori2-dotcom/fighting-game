@@ -31,6 +31,11 @@ static var ext_hero := ""
 ## ANTI ARCHITECT run: true = every main Story level is played SOLO as the Anti Architect
 ## (Colosseum 5 too, with no CPU partner). Toggled on the Story board.
 static var anti_story := false
+## Colosseum 5 SOLO mode: no CPU partner (toggled on the board). Achievements + the SOLO badge.
+static var c5_solo := false
+## CHALLENGE BADGES per level: "level" -> ["no_powers", "no_blocks", "no_healing", "no_gauge",
+## "solo", "solo_no_powers"...]. The "solo_" ones = that challenge was done in SOLO mode.
+static var badges := {}
 static var _loaded := false
 
 
@@ -49,6 +54,8 @@ static func load_progress() -> void:
 	ext_done = cfg.get_value("story", "ext_done", {})
 	ext_hero = String(cfg.get_value("story", "ext_hero", ""))
 	anti_story = bool(cfg.get_value("story", "anti_story", false))
+	c5_solo = bool(cfg.get_value("story", "c5_solo", false))
+	badges = cfg.get_value("story", "badges", {})
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -70,7 +77,49 @@ static func save_progress() -> void:
 	cfg.set_value("story", "ext_done", ext_done)
 	cfg.set_value("story", "ext_hero", ext_hero)
 	cfg.set_value("story", "anti_story", anti_story)
+	cfg.set_value("story", "c5_solo", c5_solo)
+	cfg.set_value("story", "badges", badges)
 	cfg.save(SAVE_PATH)
+
+
+static func set_c5_solo(on: bool) -> void:
+	c5_solo = on
+	save_progress()
+
+
+## Adds challenge badges for a beaten level (solo = also the "solo_<kind>" versions). Saved.
+static func add_badges(level: int, kinds: Array, solo: bool) -> void:
+	var key := str(level)
+	var have: Array = badges.get(key, [])
+	for k in kinds:
+		if not have.has(k):
+			have.append(k)
+		if solo and k != "solo" and not have.has("solo_" + String(k)):
+			have.append("solo_" + String(k))
+	badges[key] = have
+	save_progress()
+
+
+static func has_badge(level: int, kind: String) -> bool:
+	return (badges.get(str(level), []) as Array).has(kind)
+
+
+## Badges shown on the board (no "solo_" duplicates).
+static func badges_of(level: int) -> Array:
+	var out: Array = []
+	for k in badges.get(str(level), []):
+		if not String(k).begins_with("solo_"):
+			out.append(k)
+	return out
+
+
+static func badge_count() -> int:
+	var n := 0
+	for key in badges:
+		for k in badges[key]:
+			if not String(k).begins_with("solo_"):
+				n += 1
+	return n
 
 
 static func set_anti_story(on: bool) -> void:
@@ -156,4 +205,6 @@ static func reset() -> void:
 	ext_done = {}
 	ext_hero = ""
 	anti_story = false
+	c5_solo = false
+	badges = {}
 	save_progress()

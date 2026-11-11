@@ -129,6 +129,10 @@ func _ready() -> void:
 		var tc := TouchControls.new()
 		tc.name = "TouchControls"
 		add_child(tc)
+	if MatchSettings.fps_counter_active():            # SETTINGS > FPS Counter
+		var fps := FpsCounter.new()
+		fps.name = "FpsCounter"
+		add_child(fps)
 	_build_ui()
 	SoundManager.play_music(String(StoryLevels.map_of(level_number).get("music", "fight")))   # Fits the area
 	if autoplay:
@@ -956,13 +960,23 @@ func _boss_death_cutscene() -> void:
 func _level_clear() -> void:
 	CombatManager.fight_active = false
 	wave_text = ""
+	# ACHIEVEMENTS + challenge BADGES (no powers / blocks / healing / G Gauge, Colosseum 5 solo)
+	var badges := Achievements.on_story_clear(level_number, player, StoryLevels.is_solo(level_number), hero)
+	var badge_text := ""
+	if not badges.is_empty():
+		var names: Array = []
+		for k in badges:
+			names.append(Achievements.KIND_NAMES.get(k, String(k)))
+		badge_text = "    |    BADGES: " + ", ".join(names)
+	if autoplay:
+		print("STORY autoplay: badges %s, used %s" % [str(badges), str(player.used)])
 	if StoryLevels.is_ext(level_number):
 		# BOSS EXTENSION level: saved, then back to the board with the extension menu open
 		StoryProgress.complete_ext(level_number)
 		if autoplay:
 			print("STORY autoplay: %s CLEAR (player hp %d)" % [StoryLevels.ext_code(level_number), player.hp])
 		var last := StoryLevels.ext_index(level_number) == 2
-		_show_banner("%s CLEAR!" % StoryLevels.ext_code(level_number), "Extension complete!  Progress saved" if last else "Progress saved", Color(0.6, 1.0, 0.6))
+		_show_banner("%s CLEAR!" % StoryLevels.ext_code(level_number), ("Extension complete!  Progress saved" if last else "Progress saved") + badge_text, Color(0.6, 1.0, 0.6))
 		SoundManager.play_sfx("ultimate")
 		await _wait(1.8)
 		_hide_banner()
@@ -973,7 +987,7 @@ func _level_clear() -> void:
 	StoryProgress.complete_level(level_number)     # SAVED here
 	if autoplay:
 		print("STORY autoplay: level %d CLEAR (player hp %d, flasks %d)" % [level_number, player.hp, flasks])
-	_show_banner("LEVEL CLEAR!", "Progress saved", Color(0.6, 1.0, 0.6))
+	_show_banner("LEVEL CLEAR!", "Progress saved" + badge_text, Color(0.6, 1.0, 0.6))
 	SoundManager.play_sfx("ultimate")
 	await _wait(1.8)
 	_hide_banner()

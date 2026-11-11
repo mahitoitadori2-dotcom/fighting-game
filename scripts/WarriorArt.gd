@@ -7,16 +7,38 @@ extends RefCounted
 ##
 ## No draw_set_transform here (the Character Select card scales us with it).
 
-const VOID := Color(0.11, 0.09, 0.15)
-const VOID_SHADE := Color(0.03, 0.02, 0.05)
-const VOID_HI := Color(0.36, 0.22, 0.52)
-const VOID_GLOW := Color(0.58, 0.32, 0.90)
-const SILVER := Color(0.82, 0.85, 0.90)
-const SILVER_SHADE := Color(0.50, 0.54, 0.62)
-const SILVER_HI := Color(0.98, 0.99, 1.0)
-const BLADE := Color(0.70, 0.72, 0.76)
-const BLADE_SHADE := Color(0.46, 0.48, 0.53)
-const BLADE_EDGE := Color(0.93, 0.95, 0.98)
+## PALETTE (static vars so a skin can swap them around a draw - GalaxySkin calls
+## set_palette(GalaxySkin.WARRIOR) then set_palette(NORMAL_PALETTE) right after).
+const NORMAL_PALETTE := {
+	"VOID": Color(0.11, 0.09, 0.15), "VOID_SHADE": Color(0.03, 0.02, 0.05), "VOID_HI": Color(0.36, 0.22, 0.52),
+	"VOID_GLOW": Color(0.58, 0.32, 0.90), "SILVER": Color(0.82, 0.85, 0.90), "SILVER_SHADE": Color(0.50, 0.54, 0.62),
+	"SILVER_HI": Color(0.98, 0.99, 1.0), "BLADE": Color(0.70, 0.72, 0.76), "BLADE_SHADE": Color(0.46, 0.48, 0.53),
+	"BLADE_EDGE": Color(0.93, 0.95, 0.98),
+}
+static var VOID := Color(0.11, 0.09, 0.15)
+static var VOID_SHADE := Color(0.03, 0.02, 0.05)
+static var VOID_HI := Color(0.36, 0.22, 0.52)
+static var VOID_GLOW := Color(0.58, 0.32, 0.90)
+static var SILVER := Color(0.82, 0.85, 0.90)
+static var SILVER_SHADE := Color(0.50, 0.54, 0.62)
+static var SILVER_HI := Color(0.98, 0.99, 1.0)
+static var BLADE := Color(0.70, 0.72, 0.76)
+static var BLADE_SHADE := Color(0.46, 0.48, 0.53)
+static var BLADE_EDGE := Color(0.93, 0.95, 0.98)
+
+
+static func set_palette(p: Dictionary) -> void:
+	VOID = p["VOID"]
+	VOID_SHADE = p["VOID_SHADE"]
+	VOID_HI = p["VOID_HI"]
+	VOID_GLOW = p["VOID_GLOW"]
+	SILVER = p["SILVER"]
+	SILVER_SHADE = p["SILVER_SHADE"]
+	SILVER_HI = p["SILVER_HI"]
+	BLADE = p["BLADE"]
+	BLADE_SHADE = p["BLADE_SHADE"]
+	BLADE_EDGE = p["BLADE_EDGE"]
+
 const GRIP := Color(0.22, 0.17, 0.14)
 const ROYAL := Color(1.0, 1.0, 1.0)
 const ROYAL_SHADE := Color(0.85, 0.86, 0.80)

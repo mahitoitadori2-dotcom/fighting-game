@@ -30,8 +30,10 @@ extends SimpleEnemy
 signal transform_started
 
 const ART_SCALE := 1.6                 # The whole drawing is scaled up this much
-const P1_HP := 280                      # High: the Warrior was buffed and his sword grows in this fight
-const P2_HP := 340
+## NERFED 2026-11-11: was 280 + 340 (x1.35 Story boss buff = ~840 HP in total, more than some
+## Colosseum 5 bosses). Now 210 + 260 (x1.35 = ~635 in total).
+const P1_HP := 210
+const P2_HP := 260
 const P1_BODY := Vector2(260, 320)
 const P2_BODY := Vector2(280, 360)
 const P1_SPEED := 100.0
@@ -96,12 +98,12 @@ static func make_patterns() -> Array[EnemyPattern]:
 	list.append(EnemyPattern.make("tail", "TAIL SWIPE!", 3.5, 7, 0.0, 380.0, "tail", 0.50, 0.30, 0.50, true, [1.6, 0.0], true))
 	list.append(EnemyPattern.make("spit", "MAGMA SPIT!", 4.0, 4, 200.0, 1000.0, "spit", 0.60, 0.30, 0.50, true, [1.5, 1.0], true))
 	# ----- PHASE 2: arms, a face and the Blasphemy Blade -----
-	list.append(EnemyPattern.make("slash", "BLADE SLASH!", 2.2, 7, 0.0, 330.0, "slash", 0.45, 0.60, 0.50, true, [0.0, 2.6], true))
+	list.append(EnemyPattern.make("slash", "BLADE SLASH!", 2.6, 6, 0.0, 330.0, "slash", 0.45, 0.60, 0.50, true, [0.0, 2.6], true))
 	list.append(EnemyPattern.make("headbite", "SERPENT HEAD BITE!", 3.2, 9, 180.0, 560.0, "headbite", 0.60, 0.35, 0.60, true, [0.0, 1.8], true))
 	list.append(EnemyPattern.make("geysers", "MAGMA GEYSERS!", 6.0, 8, 0.0, 1400.0, "geysers", 0.60, 1.20, 0.50, true, [0.0, 1.5], true))
 	list.append(EnemyPattern.make("pools", "LAVA POOLS!", 8.0, 0, 0.0, 1000.0, "geysers", 0.50, 0.40, 0.40, true, [0.0, 0.9], true))
-	list.append(EnemyPattern.make("slam", "GROUND SLAM!", 5.0, 10, 150.0, 700.0, "slam", 0.50, 1.00, 0.60, true, [0.0, 1.5], true))
-	list.append(EnemyPattern.make("wave", "LAVA WAVE!", 4.5, 9, 0.0, 1000.0, "wave", 0.65, 0.30, 0.60, true, [0.0, 1.6], true))
+	list.append(EnemyPattern.make("slam", "GROUND SLAM!", 5.5, 8, 150.0, 700.0, "slam", 0.50, 1.00, 0.60, true, [0.0, 1.5], true))
+	list.append(EnemyPattern.make("wave", "LAVA WAVE!", 5.0, 8, 0.0, 1000.0, "wave", 0.65, 0.30, 0.60, true, [0.0, 1.6], true))
 	list[2].note = "low sweep on both sides: jump it"
 	list[9].note = "phase 2: rolls along the floor, jump it"
 	return list

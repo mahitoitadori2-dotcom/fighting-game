@@ -30,6 +30,9 @@ var slot := 0                         # 1 = you, 2 = opponent (set by ArenaManag
 var respawn_enabled := true           # MatchManager turns this off when lives run out
 var team := 0                         # Same team = allies (no damage, shared heals). 0 = no team.
 var weakness_carry := 0.0             # Fractional bonus damage from weaknesses, carried to the next hit
+## ACHIEVEMENTS: what this fighter used in this fight / Story level ("powers", "blocks",
+## "gauge", "healing" -> true). Fresh for every fight (a new fighter is spawned each time).
+var used := {}
 
 # Last damage source (what killed us decides the death animation)
 var last_hit: HitData = null
@@ -235,6 +238,7 @@ func heal(amount: int) -> int:
 	var healed := hp - before
 	health_changed.emit(hp, data.max_hp)
 	if healed > 0:
+		used["healing"] = true                       # Achievements: "no healing" challenges
 		SoundManager.play_sfx("heal")
 		Effects.popup(self, global_position + Vector2(randf_range(-10.0, 10.0), -150), "+%d HP" % healed, Color(1.0, 0.88, 0.3), 24)
 	return healed

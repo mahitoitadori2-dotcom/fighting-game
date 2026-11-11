@@ -43,12 +43,14 @@ static func load_controls() -> void:
 		return
 	touch_mode = clampi(int(cfg.get_value("touch", "mode", touch_mode)), 0, 2)
 	touch_ui_scale = clampf(float(cfg.get_value("touch", "ui_scale", 1.0)), TOUCH_SCALE_MIN, TOUCH_SCALE_MAX)
+	show_fps = bool(cfg.get_value("display", "show_fps", false))
 
 
 static func save_controls() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("touch", "mode", touch_mode)
 	cfg.set_value("touch", "ui_scale", touch_ui_scale)
+	cfg.set_value("display", "show_fps", show_fps)
 	cfg.save(CONTROLS_PATH)
 static var enemy_lives := 1           # PvE enemies / bosses (Rotor...): 1 = one HP bar
 
@@ -57,7 +59,7 @@ static var damage_idx := DEFAULT_INDEX
 static var gauge_idx := DEFAULT_INDEX
 static var cooldown_idx := DEFAULT_INDEX
 static var god_mode := false
-static var show_fps := false          # Sandbox: FPS / performance counter in the fight
+static var show_fps := false          # SETTINGS > Graphics: FPS / performance counter (Versus + Story), saved
 ## Where BACK goes (Main Menu > SETTINGS sets it to the Main Menu; reset after use).
 static var return_scene := CharacterRoster.PRE_FIGHT
 ## Which screen this scene shows: "match" = MATCH SETTINGS (Lives, Enemy Lives, Sandbox), from the
@@ -66,7 +68,8 @@ static var screen_mode := "match"
 
 
 static func fps_counter_active() -> bool:
-	return sandbox and show_fps
+	load_controls()
+	return show_fps
 
 
 static func touch_enabled() -> bool:
@@ -234,6 +237,17 @@ func _build_graphics_section(rows: VBoxContainer) -> void:
 	_graphics_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_graphics_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	rows.add_child(_graphics_desc)
+	# FPS counter (was in Sandbox; now a normal setting, works in Versus AND Story)
+	var fps_row := HBoxContainer.new()
+	var fl := UiStyle.label("FPS Counter  (in a fight: F4 = +50 test projectiles)", 20, UiStyle.TEXT, 6)
+	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	fl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	fl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	fps_row.add_child(fl)
+	_fps_toggle = _make_toggle()
+	_fps_toggle.toggled.connect(_on_fps_toggled)
+	fps_row.add_child(_fps_toggle)
+	rows.add_child(fps_row)
 
 
 func _change_graphics(step: int) -> void:
@@ -361,17 +375,6 @@ func _build_sandbox_section(rows: VBoxContainer) -> void:
 	god_row.add_child(_god_toggle)
 	_sandbox_box.add_child(god_row)
 
-	var fps_row := HBoxContainer.new()
-	var fl := UiStyle.label("FPS Counter (F4 in fight = +50 test projectiles)", 20, UiStyle.TEXT, 6)
-	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	fl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	fl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	fps_row.add_child(fl)
-	_fps_toggle = _make_toggle()
-	_fps_toggle.toggled.connect(_on_fps_toggled)
-	fps_row.add_child(_fps_toggle)
-	_sandbox_box.add_child(fps_row)
-
 	var reset := UiStyle.make_button("RESET SANDBOX", Vector2(260, 46), 18)
 	reset.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	reset.pressed.connect(_on_reset)
@@ -467,7 +470,9 @@ func _refresh() -> void:
 		_values["touch"].text = TOUCH_NAMES[touch_mode]
 		_values["graphics"].text = GraphicsSettings.NAMES[GraphicsSettings.level]
 		_graphics_desc.text = GraphicsSettings.DESCS[GraphicsSettings.level]
-		_summary.text = "Graphics, controls and sound for this device.  (Lives, Enemy Lives and Sandbox are in MATCH SETTINGS before a fight.)"
+		_fps_toggle.set_pressed_no_signal(show_fps)
+		_fps_toggle.text = "ON" if show_fps else "OFF"
+		_summary.text = "Graphics, FPS counter, controls and sound for this device.  (Lives, Enemy Lives and Sandbox are in MATCH SETTINGS before a fight.)"
 		return
 	_values["lives"].text = str(lives)
 	_values["enemy_lives"].text = str(enemy_lives)
@@ -480,8 +485,6 @@ func _refresh() -> void:
 	_sandbox_toggle.text = "ON" if sandbox else "OFF"
 	_god_toggle.set_pressed_no_signal(god_mode)
 	_god_toggle.text = "ON" if god_mode else "OFF"
-	_fps_toggle.set_pressed_no_signal(show_fps)
-	_fps_toggle.text = "ON" if show_fps else "OFF"
 	_sandbox_box.visible = sandbox          # OFF = sandbox options hidden
 
 	_summary.text = "YOU: %s    VS    OPPONENT: %s    |    ARENA: %s    |    LIVES: %d%s" % [

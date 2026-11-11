@@ -9,7 +9,7 @@ extends CharacterData
 @export var sword_lunge_speed := 160.0
 ## SWORD POWER (Story boss fights, e.g. Blasphemy Caeser): each level makes the sword
 ## bigger (hitbox + art) and stronger. Level 0 = normal.
-@export var sword_power_damage := 0.3             # +30% damage per level (5 -> 7 -> 8)
+@export var sword_power_damage := 0.45            # +45% damage per level (5 -> 7 -> 10). Was +30% (Caeser buff 2026-11-11)
 @export var sword_power_size := 0.35              # +35% blade length / hitbox per level
 ## The sword's own hitbox (the punch box sat at chest height and missed short enemies:
 ## Parasites, Kharlemings...). This one covers head to toes in front of him.

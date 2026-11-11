@@ -46,7 +46,10 @@ func _ready() -> void:
 
 
 func draw_model_on(c: CanvasItem) -> void:
-	ArchitectArt.draw(c, self)
+	if Achievements.galaxy_for(self):
+		GalaxySkin.draw_architect(c, self)       # Multiversal reward
+	else:
+		ArchitectArt.draw(c, self)
 
 
 func _tick_timers(delta: float) -> void:

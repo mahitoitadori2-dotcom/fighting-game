@@ -45,7 +45,7 @@ func _ready() -> void:
 		var tc := TouchControls.new()
 		tc.name = "TouchControls"
 		add_child(tc)
-	# Sandbox > FPS Counter
+	# SETTINGS > FPS Counter
 	if MatchSettings.fps_counter_active():
 		var fps := FpsCounter.new()
 		fps.name = "FpsCounter"

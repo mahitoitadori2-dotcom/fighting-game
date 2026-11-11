@@ -80,6 +80,10 @@ var _play: Button
 var _switch: Button
 var _ext_btn: Button
 var _anti_btn: Button
+var _solo_btn: Button
+## Badge colours on the tiles (AchievementArt.draw_icon draws the icon).
+const BADGE_COLORS := {"no_powers": Color(0.95, 0.75, 0.15), "no_blocks": Color(0.30, 0.55, 1.0),
+	"no_healing": Color(0.25, 0.80, 0.35), "no_gauge": Color(0.10, 0.75, 0.90), "solo": Color(0.70, 0.35, 1.0)}
 var _info: Label
 var _title: Label
 var _page := 1                     # Colosseum shown on the board
@@ -166,6 +170,11 @@ func _build_ui() -> void:
 	_switch.pressed.connect(_switch_hero)
 	_switch.visible = false
 	row.add_child(_switch)
+	# Colosseum 5 only: SOLO mode (no CPU partner) - achievements + the SOLO badge
+	_solo_btn = UiStyle.make_button("SOLO: OFF", Vector2(170, 56), 18)
+	_solo_btn.pressed.connect(_toggle_solo)
+	_solo_btn.visible = false
+	row.add_child(_solo_btn)
 	# Anti Architect run: play every Story level SOLO as the Anti Architect (saved toggle).
 	# Own spot in the top-left corner, left of the title (the bottom row is full on C5 / extension pages).
 	_anti_btn = UiStyle.make_button("HERO: STORY HEROES", Vector2(220, 40), 14)
@@ -190,6 +199,9 @@ func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
 	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate and not StoryProgress.anti_story
 	_switch.visible = choice
+	_solo_btn.visible = choice
+	_solo_btn.text = "SOLO: %s" % ("ON" if StoryProgress.c5_solo else "OFF")
+	_solo_btn.modulate = Color(0.85, 0.6, 1.0) if StoryProgress.c5_solo else Color(1, 1, 1)
 	_anti_btn.text = "HERO: ANTI ARCHITECT" if StoryProgress.anti_story else "HERO: STORY HEROES"
 	_anti_btn.modulate = Color(1.0, 0.65, 0.3) if StoryProgress.anti_story else Color(1, 1, 1)
 	_ext_btn.visible = not StoryLevels.exts_on_page(_page).is_empty()
@@ -211,6 +223,8 @@ func _refresh_ui() -> void:
 		var hero_name := "You play as the ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "architect" else "Warrior only"
 		if StoryProgress.anti_story:
 			hero_name = "You play as the ANTI ARCHITECT (solo)"
+		elif StoryLevels.is_solo(_pawn_space):
+			hero_name = "YOU: %s  -  SOLO (no partner)" % StoryLevels.hero_of(_pawn_space).to_upper()
 		elif bool(lv.get("partner", false)):
 			var h := StoryLevels.hero_of(_pawn_space)
 			hero_name = "YOU: %s  +  CPU partner: %s" % [h.to_upper(), "ARCHITECT" if h == "warrior" else "WARRIOR"]
@@ -406,6 +420,15 @@ func _switch_hero() -> void:
 		return
 	var now := StoryLevels.hero_of(_pawn_space)
 	StoryProgress.set_c5_hero("warrior" if now == "architect" else "architect")
+	SoundManager.play_sfx("spawn")
+	_refresh_ui()
+
+
+## Colosseum 5 SOLO mode on / off (saved): fight without the CPU partner.
+func _toggle_solo() -> void:
+	if _busy or _hop_t >= 0.0:
+		return
+	StoryProgress.set_c5_solo(not StoryProgress.c5_solo)
 	SoundManager.play_sfx("spawn")
 	_refresh_ui()
 
@@ -796,6 +819,18 @@ func _space(n: int) -> void:
 		c.draw_circle(ck, 12.0, Color(0, 0, 0))
 		c.draw_circle(ck, 9.5, Color(0.3, 0.8, 0.3))
 		c.draw_polyline(PackedVector2Array([ck + Vector2(-5, 0), ck + Vector2(-1, 4), ck + Vector2(5, -4)]), Color.WHITE, 2.5, true)
+	# Challenge BADGES earned on this level (Achievements): a row along the tile's bottom edge
+	var got := StoryProgress.badges_of(n)
+	if not got.is_empty():
+		var step := 19.0
+		var x0 := rect.get_center().x - step * float(got.size() - 1) * 0.5
+		for i in got.size():
+			var k := String(got[i])
+			var bp := Vector2(x0 + step * float(i), rect.end.y - 4.0)
+			var bc: Color = BADGE_COLORS.get(k, GOLD)
+			c.draw_circle(bp, 9.5, Color(0, 0, 0))
+			c.draw_circle(bp, 7.5, bc.darkened(0.45))
+			AchievementArt.draw_icon(c, k, bp, 5.5, [Color.WHITE, bc.darkened(0.5), Color.WHITE], false)
 
 
 func _back_pos() -> Vector2:

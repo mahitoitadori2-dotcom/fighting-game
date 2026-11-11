@@ -137,8 +137,23 @@ The **Map Catalogue** (Main Menu > MAP CATALOGUE, or CHANGE ARENA) shows every m
 
 ## Settings and Match Settings (separate screens)
 
-- **Settings** (Main Menu): touch controls AUTO / ON / OFF, **Touch UI Size** (60%-160%, saved on the device), controller help, Music / SFX volume, Mute.
-- **Match Settings** (the pre-fight screen, after PLAY): Lives, Enemy Lives, and Sandbox (damage, gauge and cooldown multipliers, God Mode, FPS counter).
+- **Settings** (Main Menu): graphics, **FPS Counter** (moved here from Sandbox on 2026-11-11, saved, works in Versus AND Story), touch controls AUTO / ON / OFF, **Touch UI Size** (60%-160%, saved on the device), controller help, Music / SFX volume, Mute.
+- **Match Settings** (the pre-fight screen, after PLAY): Lives, Enemy Lives, and Sandbox (damage, gauge and cooldown multipliers, God Mode).
+
+## Main Menu (2026-11-11)
+
+Buttons in two columns next to each other: PLAY / STORY MODE / SWITCH CHARACTERS (left) and MAP CATALOGUE / ACHIEVEMENTS / SETTINGS (right), with **EXIT** under them (hidden on the Web build, where a game can't close the browser tab).
+
+## Achievements (added 2026-11-11)
+
+**139 achievements**, all in one list in `scripts/achievements/Achievements.gd` (saved to `user://achievements.cfg`). Each has its own code-drawn artwork (`AchievementArt.gd`): a framed card with the real portrait of the boss / character / enemy, or a big icon, plus a corner emblem. Unlocking one slides a pop-up in on the left (`AchievementToast.gd`). **Main Menu > ACHIEVEMENTS** shows a grid (unlocked = coloured, locked = almost black); hover or focus a card to see what you did / have to do. Tabs: All / Versus / Story / Challenges / Secret.
+
+- **Versus** (never in Sandbox): First Blood; win without Powers / Blocking / G Gauge; for EVERY character and enemy: *Trophy* (beat them) and *Bare Hands* (beat them without Powers, Blocking AND G Gauge); *Main* (win as each character); Roster Breaker; Monster Hunter.
+- **Story**: a *Trophy* for every boss, mini-boss and extension boss (e.g. "Blinded Lord Trophy"); *Pure Faith* (beat that boss level without Blocks, Healing, G Gauge AND Powers); *Solo* for every Colosseum 5 boss; 6 hard levels; both Shining choices; Colosseum 1-5 Conquered; per Colosseum x 4 challenges (e.g. "Colosseum 1: Powerless" = the No Powers badge on every level); One Hero, One Road (all of C5 solo); Deep Explorer; badge counts; 2 Anti Architect ones.
+- **Multi-Multi-Multiversal Level Of Power** (secret): every Colosseum 5 level cleared SOLO with each of the four challenges (separate runs allowed). Reward: **Galaxy skins** for the Architect and the Warrior (deep-space colours + twinkling stars, `GalaxySkin.gd`), worn in Versus and Story, switch on / off in the Achievements menu.
+- **Badges** (Story): every cleared level gives one badge per challenge kept (No Powers, No Blocks, No Healing, No G Gauge) + SOLO in Colosseum 5. Shown as small coloured icons on the board tiles and on the LEVEL CLEAR banner. Saved in `story.cfg` (Story RESET clears them; achievements stay).
+- What counts is tracked on the fighter (`Fighter.used`): a power = a move 1/2/3 that actually went off (or an Onslaught upgrade), a block = holding block, G Gauge = any ultimate, healing = any HP healed (flasks too).
+- **Adding new ones:** one `_add(...)` line + an `unlock("id")` where it's earned. New Versus characters / enemies get theirs automatically; a new Story boss only needs a line in `BOSSES`.
 
 On the touch controls, the move buttons sit in a row ordered **1, 2, 3 from right to left** (1 is nearest the right edge), above ATK. JUMP, BLOCK and G sit on the inner ring.
 
