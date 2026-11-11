@@ -8,7 +8,11 @@ extends Control
 ##   * Tap / click any unlocked space (or Left / Right) -> the pawn hops there.
 ##   * Locked spaces show a lock. Beyond Colosseum 1 the path fades into fog toward
 ##     Level 50: THE SUN.
-## Everything is drawn in code (one Control); only the pawn / pulses animate.
+##   * Each Colosseum is a WIDE strip: the spaces are far apart on a long gentle wave (no
+##     zig-zag). DRAG the board left / right (mouse or finger; wheel works too) to scroll it.
+##     Drag PAST the end of a Colosseum and let go -> the next / previous Colosseum slides in.
+## Everything is drawn in code: the frame + scenery on _board, the scrolling path / spaces /
+## pawn on _cv (inside _clip, which cuts it off at the board's edge).
 
 ## Set by StoryManager when a level is cleared: the pawn starts here and hops forward.
 static var advance_from := 0
@@ -18,10 +22,17 @@ static var ext_return := ""
 const HOP_TIME := 0.75
 const TILE := 74.0
 const BOSS_TILE := 96.0
-## Space positions of a 6-level page (0..1 of the board rect). Bigger Colosseums get a
-## zig-zag path from _layout().
-const SPACES := [Vector2(0.10, 0.80), Vector2(0.26, 0.64), Vector2(0.42, 0.79),
-	Vector2(0.56, 0.58), Vector2(0.44, 0.36), Vector2(0.64, 0.24)]
+## WIDE BOARD: spaces SPACING px apart at least (small Colosseums spread to fill the board),
+## on a slow wave (WAVE_* = 0..1 of the board height). The strip scrolls by dragging.
+const SPACING := 170.0
+const MARGIN_L := 160.0                 # Room for the "< previous Colosseum" mark
+const MARGIN_R := 320.0                 # Room for the next-Colosseum fog space + The Sun
+const WAVE_MID := 0.56
+const WAVE_AMP := 0.25
+const WAVE_FREQ := 0.6                  # Radians per space: one full curve every ~10 spaces
+const DRAG_START := 8.0                 # px before a press becomes a drag (else it's a click)
+const OVER_TURN := 80.0                 # Pulled this far past the end -> turn to the next Colosseum
+const OVER_MAX := 150.0                 # (the pull is rubbery: half of the finger movement)
 ## Tile colour per map (StoryLevels.MAPS key).
 const MAP_TILE := {
 	"wastes": Color(0.55, 0.22, 0.14), "geode": Color(0.36, 0.22, 0.48), "hive": Color(0.30, 0.26, 0.24),
@@ -37,8 +48,6 @@ const MAP_TILE := {
 	"gallows": Color(0.30, 0.16, 0.38), "world_tree": Color(0.25, 0.45, 0.22), "satan_cave": Color(0.55, 0.12, 0.06),
 	"sun_peak": Color(0.85, 0.72, 0.35), "ash_cathedral": Color(0.45, 0.10, 0.10),
 }
-const TEASER := [Vector2(0.78, 0.36), Vector2(0.84, 0.20)]     # next Colosseum fog space, "50 THE SUN"
-const BACK_MARK := Vector2(0.04, 0.50)                          # "< COLOSSEUM 1" on later pages
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
@@ -69,6 +78,16 @@ const PAWN := Color(0.50, 0.30, 0.85)
 const PAWN_SHADE := Color(0.28, 0.14, 0.52)
 
 var _board: Control
+var _clip: Control                 # Cuts the scrolling content off at the board's edge
+var _cv: Control                   # The scrolling content (same coordinates as _board)
+var _scroll := 0.0                 # px the current Colosseum strip is scrolled to the left
+var _scroll_target := 0.0
+var _over := 0.0                   # Overscroll while dragging past an end (< 0 left, > 0 right)
+var _slide := 0.0                  # Page-turn slide offset (eases back to 0)
+var _press_pos := Vector2.ZERO
+var _press_scroll := 0.0
+var _pressed := false
+var _dragging := false
 var _t := 0.0
 var _pawn_space := 1               # Space the pawn stands on (level number)
 var _hop_from := 1
@@ -139,6 +158,15 @@ func _build_ui() -> void:
 	add_child(_board)
 	_board.draw.connect(_draw_board)
 	_board.gui_input.connect(_on_board_input)
+	# Scrolling content: _clip (board-sized, clips) > _cv (screen-sized, same coords as _board)
+	_clip = Control.new()
+	_clip.clip_contents = true
+	_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_board.add_child(_clip)
+	_cv = Control.new()
+	_cv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clip.add_child(_cv)
+	_cv.draw.connect(_draw_content)
 
 	var top := VBoxContainer.new()
 	top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -243,26 +271,49 @@ func _board_rect() -> Rect2:
 	return Rect2(Vector2(40, 96), Vector2(sz.x - 80, sz.y - 190))
 
 
-## Board position of a level's space (on its own Colosseum's page).
-func _space_pos(level: int) -> Vector2:
+## Distance between two spaces of Colosseum c (small Colosseums spread out to fill the board).
+func _spacing(c: int) -> float:
 	var r := _board_rect()
+	var n := StoryLevels.size_of(c)
+	return maxf(SPACING, (r.size.x - MARGIN_L - MARGIN_R) / float(maxi(n - 1, 1)))
+
+
+## Width of Colosseum c's whole strip (wider than the board = it scrolls).
+func _content_w(c: int) -> float:
+	return MARGIN_L + float(StoryLevels.size_of(c) - 1) * _spacing(c) + MARGIN_R
+
+
+func _max_scroll() -> float:
+	return maxf(_content_w(_page) - _board_rect().size.x, 0.0)
+
+
+## Strip position (x along the strip, y 0..1) of the i-th space: a slow wave.
+func _strip_point(c: int, i: float) -> Vector2:
+	return Vector2(MARGIN_L + i * _spacing(c), WAVE_MID + WAVE_AMP * sin(i * WAVE_FREQ + 0.3))
+
+
+## Strip x / height-fraction -> board (screen) position, with the current scroll.
+func _to_board(p: Vector2) -> Vector2:
+	var r := _board_rect()
+	return r.position + Vector2(p.x - _scroll - _over + _slide, p.y * r.size.y)
+
+
+## Board position of a level's space (on its own Colosseum's strip, scrolled).
+func _space_pos(level: int) -> Vector2:
 	var c := StoryLevels.colosseum_of(level)
-	var path := _layout(StoryLevels.size_of(c))
-	var n: Vector2 = path[clampi(level - StoryLevels.first_of(c), 0, path.size() - 1)]
-	return r.position + n * r.size
+	return _to_board(_strip_point(c, float(level - StoryLevels.first_of(c))))
 
 
-## Path of n spaces (0..1 of the board): the classic 6-space path, or a zig-zag between a
-## low and a high row for bigger Colosseums (neighbours never overlap).
-func _layout(n: int) -> Array:
-	if n == SPACES.size():
-		return SPACES
-	var pts := []
-	var rows := [0.80, 0.52, 0.24] if n > 12 else [0.78, 0.40]  # 3 rows for long Colosseums
-	for i in n:
-		var k := float(i) / float(maxi(n - 1, 1))
-		pts.append(Vector2(lerpf(0.07, 0.70, k), rows[i % rows.size()]))
-	return pts
+## Scroll so that a level's space is comfortably on screen (instant = no glide).
+func _focus(level: int, instant: bool = false) -> void:
+	if StoryLevels.colosseum_of(level) != _page:
+		return
+	var r := _board_rect()
+	var x := _strip_point(_page, float(level - _page_first())).x
+	var target := clampf(_scroll_target, x - r.size.x * 0.72, x - r.size.x * 0.28)
+	_scroll_target = clampf(target, 0.0, _max_scroll())
+	if instant:
+		_scroll = _scroll_target
 
 
 func _page_data() -> Dictionary:
@@ -277,10 +328,11 @@ func _page_last() -> int:
 	return mini(StoryLevels.last_of(_page), StoryLevels.count())
 
 
+## 0 = the fog space leading to the next Colosseum, 1 = "50: THE SUN" far away (strip end).
 func _teaser_pos(i: int) -> Vector2:
-	var r := _board_rect()
-	var n: Vector2 = TEASER[i]
-	return r.position + n * r.size
+	var last_i := float(StoryLevels.size_of(_page) - 1)
+	var x := _strip_point(_page, last_i).x + (125.0 if i == 0 else 225.0)
+	return _to_board(Vector2(x, 0.40 if i == 0 else 0.20))
 
 
 # ============================================================
@@ -290,10 +342,15 @@ func _hop(to_level: int) -> void:
 	if to_level == _pawn_space or _hop_t >= 0.0:
 		return
 	if StoryLevels.colosseum_of(to_level) != _page:
-		# Other Colosseum: turn the page, the pawn lands on its space
+		# Other Colosseum: its strip SLIDES in (from the right going forward), the pawn lands on its space
+		var forward := StoryLevels.colosseum_of(to_level) > _page
 		_page = StoryLevels.colosseum_of(to_level)
 		_pawn_space = to_level
 		_land_t = 0.0
+		_over = 0.0
+		_slide = _board_rect().size.x * (0.7 if forward else -0.7)
+		_scroll_target = 0.0 if forward else _max_scroll()
+		_focus(to_level, true)
 		SoundManager.play_sfx("whoosh", -6.0)
 		SoundManager.play_sfx("spawn", -4.0)
 		_refresh_ui()
@@ -303,12 +360,29 @@ func _hop(to_level: int) -> void:
 	_hop_from = _pawn_space
 	_hop_to = to_level
 	_hop_t = 0.0
+	_focus(to_level)                                    # Glide along so the pawn stays in view
 	SoundManager.play_sfx("jump")
+
+
+var _snapped := false
 
 
 func _process(delta: float) -> void:
 	_t += delta
 	_land_t += delta
+	var r := _board_rect()
+	_clip.position = r.position
+	_clip.size = r.size
+	_cv.position = -r.position
+	_cv.size = size
+	if not _snapped:                                    # First frame (sizes are known now)
+		_snapped = true
+		_focus(_pawn_space, true)
+	if not _dragging:
+		_scroll = lerpf(_scroll, _scroll_target, clampf(delta * 10.0, 0.0, 1.0))
+		_over = lerpf(_over, 0.0, clampf(delta * 12.0, 0.0, 1.0))
+	_slide = lerpf(_slide, 0.0, clampf(delta * 9.0, 0.0, 1.0))
+	_cv.queue_redraw()
 	if _hop_t >= 0.0:
 		_hop_t += delta
 		if _hop_t >= HOP_TIME:
@@ -334,32 +408,74 @@ func _pawn_pos() -> Vector2:
 # ============================================================
 # INPUT
 # ============================================================
+## DRAG the board to scroll its strip; drag past an end + let go = next / previous Colosseum.
+## A press that doesn't move (less than DRAG_START px) is a CLICK on a space / extension sign.
+## (Touch arrives as emulated mouse events.) Mouse wheel scrolls too.
 func _on_board_input(event: InputEvent) -> void:
 	if _busy:
 		return
 	var mb := event as InputEventMouseButton
-	if mb == null or not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
-		return                                              # (Touch arrives as an emulated left click)
-	# Page arrows: the fog space leads to the next Colosseum, the left mark back
-	if mb.position.distance_to(_teaser_pos(0)) <= 40.0:
+	if mb != null:
+		if mb.pressed and mb.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_LEFT]:
+			_scroll_target = clampf(_scroll_target - 90.0, 0.0, _max_scroll())
+			return
+		if mb.pressed and mb.button_index in [MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_RIGHT]:
+			_scroll_target = clampf(_scroll_target + 90.0, 0.0, _max_scroll())
+			return
+		if mb.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mb.pressed:
+			_pressed = true
+			_dragging = false
+			_press_pos = mb.position
+			_press_scroll = _scroll
+			return
+		if not _pressed:
+			return
+		_pressed = false
+		if _dragging:
+			_dragging = false
+			_end_drag()
+		else:
+			_click(mb.position)
+		return
+	var mm := event as InputEventMouseMotion
+	if mm != null and _pressed:
+		var dx := mm.position.x - _press_pos.x
+		if not _dragging and absf(dx) > DRAG_START:
+			_dragging = true
+		if _dragging and _hop_t < 0.0:
+			var raw := _press_scroll - dx
+			_scroll = clampf(raw, 0.0, _max_scroll())
+			_scroll_target = _scroll
+			_over = clampf((raw - _scroll) * 0.5, -OVER_MAX, OVER_MAX)   # Rubbery pull past the ends
+
+
+## Let go after a drag: pulled far enough past an end -> turn to that Colosseum.
+func _end_drag() -> void:
+	if _over <= -OVER_TURN:
+		if _page > 1:
+			_celebrate = false
+			_hop(_page_first() - 1)
+	elif _over >= OVER_TURN:
 		var nxt := _page_last() + 1
 		if nxt <= StoryProgress.unlocked_level and nxt <= StoryLevels.count():
 			_celebrate = false
 			_hop(nxt)
 		else:
-			SoundManager.play_sfx("block")
+			SoundManager.play_sfx("block")                  # Next Colosseum still locked
+
+
+func _click(pos: Vector2) -> void:
+	if not _board_rect().has_point(pos):
 		return
 	for k in StoryLevels.exts_on_page(_page):               # Boss extension signs
-		if mb.position.distance_to(_ext_badge_pos(k)) <= 34.0:
+		if pos.distance_to(_ext_badge_pos(k)) <= 34.0:
 			_open_extensions(k)
 			return
-	if _page > 1 and mb.position.distance_to(_back_pos()) <= 40.0:
-		_celebrate = false
-		_hop(_page_first() - 1)
-		return
 	for n in range(_page_first(), _page_last() + 1):
 		var half := (BOSS_TILE if _is_boss(n) else TILE) * 0.5 + 6.0
-		if mb.position.distance_to(_space_pos(n)) <= half:
+		if pos.distance_to(_space_pos(n)) <= half:
 			if n > StoryProgress.unlocked_level:
 				SoundManager.play_sfx("block")              # Locked
 				return
@@ -529,7 +645,18 @@ func _draw_board() -> void:
 		_draw_scenery_n(r)
 	else:
 		_draw_scenery(r)
+	# Drag hint along the bottom edge of the frame
+	var hint := "<  DRAG THE BOARD  >"
+	if _page > 1 or _page_last() < StoryLevels.count():
+		hint += "      (drag past the end for the %s Colosseum)" % ("next / previous" if _page > 1 and not _final_page() else ("previous" if _final_page() else "next"))
+	FighterArt.label(c, Vector2(r.get_center().x, r.end.y + 12.0), hint, 12, Color(1.0, 0.9, 0.7, 0.75))
 
+
+## The SCROLLING part of the board (on _cv, clipped to the board): zone names, the path,
+## the spaces, the page marks, the extension signs and the pawn.
+func _draw_content() -> void:
+	var r := _board_rect()
+	var c := _cv
 	# Zone labels: one per run of levels in the same area, alternating top / bottom
 	_zone_labels(r)
 
@@ -583,7 +710,7 @@ func _ext_badge_pos(k: String) -> Vector2:
 ## BOSS EXTENSIONS: a small sign next to each boss space that has one ("BC" + arrow down / up),
 ## locked until that boss is beaten, with check marks for the cleared levels.
 func _ext_badges() -> void:
-	var c := _board
+	var c := _cv
 	for k in StoryLevels.exts_on_page(_page):
 		var e: Dictionary = StoryLevels.EXTENSIONS[k]
 		var base := _space_pos(int(e["parent"]))
@@ -739,8 +866,8 @@ func _zone_labels(r: Rect2) -> void:
 			runs.append([zone, n, n, key])
 		else:
 			runs[-1][2] = n
-	if runs.size() > 8:
-		return                                              # Too many areas to label (Colosseum 5): the info line names each level
+	if runs.size() > 14:
+		return                                              # Too many areas to label: the info line names each level
 	for i in runs.size():
 		var run: Array = runs[i]
 		if String(run[0]) == "":
@@ -750,7 +877,7 @@ func _zone_labels(r: Rect2) -> void:
 		var col: Color = MAP_TILE.get(String(run[3]), Color(0.8, 0.7, 0.6))
 		col = col.lightened(0.55)
 		col.a = 0.9
-		FighterArt.label(_board, Vector2(x, y), String(run[0]), 18, col)
+		FighterArt.label(_cv, Vector2(x, y), String(run[0]), 18, col)
 
 
 func _road(a: Vector2, b: Vector2, lit: bool, alpha: float = 1.0) -> void:
@@ -763,12 +890,12 @@ func _road(a: Vector2, b: Vector2, lit: bool, alpha: float = 1.0) -> void:
 
 
 func c_dot(p: Vector2, lit: bool, alpha: float) -> void:
-	_board.draw_circle(p, 6.0, Color(0, 0, 0, 0.8 * alpha))
-	_board.draw_circle(p, 4.0, Color(GOLD.r, GOLD.g, GOLD.b, alpha) if lit else Color(0.55, 0.45, 0.4, alpha))
+	_cv.draw_circle(p, 6.0, Color(0, 0, 0, 0.8 * alpha))
+	_cv.draw_circle(p, 4.0, Color(GOLD.r, GOLD.g, GOLD.b, alpha) if lit else Color(0.55, 0.45, 0.4, alpha))
 
 
 func _space(n: int) -> void:
-	var c := _board
+	var c := _cv
 	var p := _space_pos(n)
 	var boss := _is_boss(n)
 	var s := BOSS_TILE if boss else TILE
@@ -833,9 +960,9 @@ func _space(n: int) -> void:
 			AchievementArt.draw_icon(c, k, bp, 5.5, [Color.WHITE, bc.darkened(0.5), Color.WHITE], false)
 
 
+## "< previous Colosseum" mark at the start of the strip.
 func _back_pos() -> Vector2:
-	var r := _board_rect()
-	return r.position + BACK_MARK * r.size
+	return _to_board(Vector2(MARGIN_L - 108.0, 0.50))
 
 
 ## The last page (Colosseum 5, ending with Level 50: The Sun): no "next Colosseum" teaser.
@@ -844,13 +971,14 @@ func _final_page() -> bool:
 
 
 func _teasers() -> void:
-	var c := _board
+	var c := _cv
 	if _final_page():
 		if _page > 1:
 			var bk := _back_pos()
 			c.draw_circle(bk, 30.0, Color(1.0, 0.8, 0.3, 0.3))
 			FighterArt.label(c, bk + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
 			FighterArt.label(c, bk + Vector2(0, 46), "COLOSSEUM %d" % (_page - 1), 12, Color(1, 1, 1, 0.7))
+			FighterArt.label(c, bk + Vector2(0, 64), "DRAG  >>>", 12, Color(1.0, 0.9, 0.6, 0.7))
 		return
 	var p := _teaser_pos(0)
 	var nxt := _page_last() + 1
@@ -859,11 +987,13 @@ func _teasers() -> void:
 	c.draw_circle(p, 34.0, Color(1.0, 0.8, 0.3, 0.35 + 0.25 * pulse) if open else Color(0.5, 0.45, 0.45, 0.25))
 	FighterArt.label(c, p + Vector2(0, 8), "%d %s" % [nxt, ">" if open else "..."], 20, Color(1, 1, 1, 0.9 if open else 0.45))
 	FighterArt.label(c, p + Vector2(0, 52), "COLOSSEUM %d" % (_page + 1), 13, Color(1, 1, 1, 0.8 if open else 0.4))
+	FighterArt.label(c, p + Vector2(0, 70), "DRAG  <<<" if open else "LOCKED", 12, Color(1.0, 0.9, 0.6, 0.6 + 0.3 * pulse) if open else Color(1, 1, 1, 0.35))
 	if _page > 1:                                           # Way back to the previous Colosseum
 		var b := _back_pos()
 		c.draw_circle(b, 30.0, Color(1.0, 0.8, 0.3, 0.3))
 		FighterArt.label(c, b + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
 		FighterArt.label(c, b + Vector2(0, 46), "COLOSSEUM %d" % (_page - 1), 12, Color(1, 1, 1, 0.7))
+		FighterArt.label(c, b + Vector2(0, 64), "DRAG  >>>", 12, Color(1.0, 0.9, 0.6, 0.7))
 	var sun := _teaser_pos(1)
 	c.draw_circle(sun, 30.0, Color(1.0, 0.75, 0.25, 0.6))
 	c.draw_circle(sun, 22.0, Color(1.0, 0.92, 0.5, 0.8))
@@ -874,7 +1004,7 @@ func _teasers() -> void:
 
 
 func _lock(p: Vector2) -> void:
-	var c := _board
+	var c := _cv
 	c.draw_arc(p + Vector2(0, -8), 10.0, PI, TAU, 12, Color(0, 0, 0), 6.0)
 	c.draw_arc(p + Vector2(0, -8), 10.0, PI, TAU, 12, Color(0.6, 0.6, 0.6), 3.0)
 	var body := FighterArt.rrect_points(Rect2(p.x - 14, p.y - 8, 28, 22), 4.0)
@@ -885,7 +1015,7 @@ func _lock(p: Vector2) -> void:
 
 ## Classic board-game pawn in the Warrior's purple, with a little void mask.
 func _pawn(p: Vector2) -> void:
-	var c := _board
+	var c := _cv
 	var squash := 1.0
 	if _land_t < 0.25:
 		squash = 1.0 - 0.25 * sin(_land_t / 0.25 * PI)

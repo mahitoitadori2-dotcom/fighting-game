@@ -23,7 +23,9 @@ The sizes are set in `COLOSSEUM_SIZES` in `scripts/story/StoryLevels.gd`. All th
 
 ## Level select
 
-The level select is a board game with one page per Colosseum. Bigger Colosseums get a zig-zag path. The area names and tile colours come from each level's map. When you clear a level, your pawn hops forward. After the boss, it moves on to the next page. Switch pages with the fog space (next Colosseum), the "< N" mark (back), or Left / Right.
+The level select is a board game with one page per Colosseum. The area names and tile colours come from each level's map. When you clear a level, your pawn hops forward. After the boss, it moves on to the next page.
+
+**Wide, draggable board (2026-11-11):** each Colosseum is a wide strip: the spaces are at least 170 px apart on one slow wave (a curve every ~5 spaces instead of a zig-zag every space; small Colosseums spread out to fill the board). **Drag** the board left / right (mouse or finger; the mouse wheel works too) to scroll. **Drag past the end and let go** to turn to the next / previous Colosseum (it slides in); the fog space and the "< N" mark are no longer buttons, only "DRAG" hints. Clicking a space still moves the pawn there, and Left / Right still hop space by space (the board follows the pawn). Numbers: `SPACING`, `WAVE_*`, `OVER_TURN` at the top of `StoryBoard.gd`. Checked by a test with simulated drags and screenshots, not yet on a real touch screen.
 
 **SOLO mode (added 2026-11-11):** Colosseum 5 board button "SOLO: ON / OFF" (saved): fight without the CPU partner. Needed for the Solo boss achievements, the SOLO badge and the Multiversal achievement. Anti Architect runs always count as solo. Challenge badges and achievements: see [Game content](Content.md#achievements-added-2026-11-11).
 
