@@ -164,6 +164,8 @@ static func _build() -> void:
 				cart["num"] = c
 			_add("col_%d_%s" % [c, k], "%s: %s" % [part, KIND_TITLES[k]],
 				"Earn the %s badge on every level of %s (optional levels not needed)." % [KIND_NAMES[k], part], "challenge", cart)
+	_add("deep_faith", "Deep Faith", "Defeat Mother Nature to earn DEEP FAITH PAYOFF: +20% HP, +1 flask and shorter cooldowns for the Warrior and the Architect in Story Mode.", "story",
+		{"enemy": "mother_nature", "frame": "gold", "emblem": "halo", "bg": Color(0.20, 0.40, 0.18)})
 	_add("chase_warrior", "The Warrior's Pursuit", "Catch and beat The Enlightened One as the Warrior.", "story",
 		{"hero": "warrior", "frame": "gold", "emblem": "sword", "bg": Color(0.45, 0.32, 0.12)})
 	_add("chase_architect", "The Architect's Pursuit", "Catch and beat The Enlightened One as the Architect.", "story",
@@ -348,6 +350,8 @@ static func on_story_clear(n: int, player: Fighter, solo: bool, hero: String) ->
 		unlock("anti_level")
 		if n == C5_LAST:
 			unlock("anti_sun")
+	if n == StoryManager.DEEP_FAITH_AFTER:
+		unlock("deep_faith")                            # Deep Faith Payoff is now active
 	if n == StoryProgress.TOTAL_LEVELS and (hero == "warrior" or hero == "architect"):
 		unlock("chase_" + hero)                         # Caught The Enlightened One
 	if n < StoryLevels.EXT_BASE:

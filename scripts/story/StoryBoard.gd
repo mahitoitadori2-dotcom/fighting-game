@@ -270,8 +270,8 @@ func _refresh_ui() -> void:
 		if StoryLevels.is_optional(_pawn_space):
 			tag = "  (OPTIONAL - skip it with Right)"
 		var nf := StoryManager.FLASKS_PER_LEVEL
-		if StoryLevels.hero_of(_pawn_space) != "anti":
-			nf += StoryManager.DEEP_FAITH_EXTRA_FLASKS          # Deep Faith Payoff (Warrior / Architect)
+		if StoryLevels.hero_of(_pawn_space) != "anti" and StoryManager.deep_faith_unlocked():
+			nf += StoryManager.DEEP_FAITH_EXTRA_FLASKS          # Deep Faith Payoff (Warrior / Architect, after Mother Nature)
 		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (%d per level)" % [_pawn_space, lv["title"], tag, hero_name, nf]
 		_play.text = "PLAY LEVEL %d" % _pawn_space
 

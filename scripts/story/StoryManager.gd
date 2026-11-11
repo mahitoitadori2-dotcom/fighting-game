@@ -22,6 +22,8 @@ const FLASK_HEAL := 0.5
 const PARTNER_FLASKS := 1                    # Colosseum 5 CPU partner (refilled with yours)
 ## DEEP FAITH PAYOFF (Story only): a small buff for the WARRIOR and the ARCHITECT (not the Anti
 ## Architect) - as you or as the Colosseum 5 partner. More HP, +1 flask, shorter move cooldowns.
+## ONLY once MOTHER NATURE (level DEEP_FAITH_AFTER) is beaten; from then on in every level.
+const DEEP_FAITH_AFTER := 47
 const DEEP_FAITH_HP_MULT := 1.2
 const DEEP_FAITH_EXTRA_FLASKS := 1
 const DEEP_FAITH_COOLDOWN_MULT := 0.85
@@ -288,10 +290,15 @@ func _story_buff(f: Fighter) -> void:
 		f.data.call("apply_story_buff")
 
 
+## Deep Faith Payoff is earned by beating Mother Nature.
+static func deep_faith_unlocked() -> bool:
+	return StoryProgress.level_cleared(DEEP_FAITH_AFTER)
+
+
 ## DEEP FAITH PAYOFF: Warrior / Architect only (own data copy, Versus unchanged).
 ## More max HP (starts full) and every move cooldown shorter. Returns true if it applied.
 func _deep_faith(f: Fighter) -> bool:
-	if f == null or f.data == null or f is AntiArchitect:
+	if not deep_faith_unlocked() or f == null or f.data == null or f is AntiArchitect:
 		return false
 	if not (f.data is WarriorData or f.data is ArchitectData):
 		return false
@@ -1019,6 +1026,8 @@ func _level_clear() -> void:
 		for k in badges:
 			names.append(Achievements.KIND_NAMES.get(k, String(k)))
 		badge_text = "    |    BADGES: " + ", ".join(names)
+	if level_number == DEEP_FAITH_AFTER:
+		badge_text += "\nDEEP FAITH PAYOFF UNLOCKED!  Warrior + Architect: +20% HP, +1 flask, shorter cooldowns"
 	if autoplay:
 		print("STORY autoplay: badges %s, used %s" % [str(badges), str(player.used)])
 	if StoryLevels.is_ext(level_number):
