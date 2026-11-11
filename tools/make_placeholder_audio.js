@@ -167,7 +167,92 @@ function violinBoss(bpm, bars, chords, bass, melody) {
   return b;
 }
 
+// GONG: inharmonic metal partials with a long shimmering decay + a soft mallet thump.
+function gong(b, start, f, vol, dur = 4.0) {
+  [1.0, 1.48, 1.97, 2.43, 3.11, 4.2].forEach((r, i) => {
+    let ph = 0; const n = Math.round(dur * RATE), s0 = Math.round(start * RATE);
+    for (let j = 0; j < n && s0 + j < b.length; j++) {
+      const t = j / RATE;
+      ph += f * r * (1 + 0.003 * Math.sin(2 * Math.PI * (0.7 + i * 0.3) * t)) / RATE;   // shimmer
+      b[s0 + j] += Math.sin(ph * 2 * Math.PI) * vol / (1 + i * 0.7) * env(t, 0.004 + i * 0.01, dur / (1.2 + i * 0.6));
+    }
+  });
+  noise(b, start, 0.06, vol * 0.5, 0.001, 0.02, 0.15);
+}
+// CHOIR: slow-attack "aah" chord = several detuned triangle voices per note with vibrato.
+function choir(b, start, dur, notes, vol) {
+  for (const n of notes) for (const det of [0.996, 1.0, 1.004]) {
+    let ph = 0; const f = NOTE(n) * det, s0 = Math.round(start * RATE), len = Math.round(dur * RATE);
+    for (let j = 0; j < len && s0 + j < b.length; j++) {
+      const t = j / RATE; ph += f * (1 + 0.004 * Math.sin(2 * Math.PI * 5 * t)) / RATE;
+      const a = Math.min(1, t / 0.6) * Math.min(1, (dur - t) / 0.4);
+      b[s0 + j] += (tri(ph) * 0.8 + Math.sin(ph * 4 * Math.PI) * 0.2) * vol * a;
+    }
+  }
+}
+// THE ENLIGHTENED FIRST PRIME: a GONG RITUAL + CHOIR. Slow, heavy: a huge gong on every bar,
+// small gongs answering, ritual drums, a chanting choir and a low drone. D phrygian.
+function gongRitual(bpm, bars, chords, chant) {
+  const beat = 60 / bpm, barLen = 4 * beat, len = bars * barLen, b = buf(len), step = beat / 2;
+  for (let bar = 0; bar < bars; bar++) {
+    const t0 = bar * barLen;
+    gong(b, t0, 55, 0.9, barLen * 1.5);                                           // The great gong
+    gong(b, t0 + beat * 2.5, 147 + (bar % 2) * 18, 0.25, 2.0);                    // Small gong answers
+    choir(b, t0, barLen, chords[bar % chords.length], 0.05);                     // Choir chord
+    tone(b, t0, barLen, NOTE(38), NOTE(38), saw, 0.06, 0.3, barLen);             // Drone
+  }
+  const steps = Math.round(len / step);
+  for (let s = 0; s < steps; s++) {
+    const t = s * step;
+    if (s % 8 === 0 || s % 8 === 3 || s % 8 === 6) tone(b, t, 0.35, 70, 36, (p) => Math.sin(p * 2 * Math.PI), 0.8, 0.002, 0.14);   // Ritual drum
+    if (s % 4 === 2) noise(b, t, 0.05, 0.15, 0.001, 0.02, 0.9);                   // Bells / rattles
+    const c = chant[s % chant.length]; if (c) choir(b, t, step * 1.9, [c], 0.07);   // Chant line
+  }
+  return b;
+}
+// THE ENLIGHTENED ONE: CHAOS - every instrument at once, clashing: organ, violin runs,
+// harpsichord, brass, church bells, gongs, war drums; the key keeps lurching. Fast.
+function chaosBoss(bpm, bars) {
+  const beat = 60 / bpm, barLen = 4 * beat, len = bars * barLen, b = buf(len), step = beat / 4;
+  const keys = [0, 1, 6, 3, 0, 5, 1, 6];                                          // Lurching key changes
+  for (let bar = 0; bar < bars; bar++) {
+    const k = keys[bar % keys.length], t0 = bar * barLen;
+    [50, 53, 56, 59].forEach((n) => tone(b, t0, barLen, NOTE(n + k), NOTE(n + k), organ, 0.06, 0.05, barLen));   // Diminished organ
+    choir(b, t0, barLen, [62 + k, 65 + k], 0.03);
+    gong(b, t0, 62 + k * 3, 0.35, 2.5);
+    [1046, 1397].forEach((f) => tone(b, t0 + beat * 2, 0.9, f * Math.pow(2, k / 12), f * Math.pow(2, k / 12), (p) => Math.sin(p * 2 * Math.PI), 0.07, 0.002, 0.4));   // Bells
+    for (let j = 0; j < 4; j++) tone(b, t0 + j * beat + beat * 0.5, beat * 0.4, NOTE(62 + k + j * 3), NOTE(62 + k + j * 3), saw, 0.07, 0.01, 0.1);   // Brass stabs
+  }
+  const steps = Math.round(len / step);
+  for (let s = 0; s < steps; s++) {
+    const t = s * step, bar = Math.floor(s / 16), k = keys[bar % keys.length];
+    const run = [74, 75, 77, 79, 80, 79, 77, 75, 74, 71, 72, 74, 75, 77, 78, 80][s % 16] + k;
+    if (s % 2 === 0) bowed(b, t, step * 1.9, NOTE(run), 0.09);                     // Violin runs
+    if (s % 3 === 0) tone(b, t, step * 0.8, NOTE(86 - (s % 7) + k), NOTE(86 - (s % 7) + k), sq, 0.035, 0.002, 0.04);   // Harpsichord (off-grid in 3s)
+    if (s % 4 === 0) tone(b, t, 0.25, 85, 38, (p) => Math.sin(p * 2 * Math.PI), 0.7, 0.002, 0.09);   // Drums
+    if (s % 16 === 6 || s % 16 === 11 || s % 16 === 14) tone(b, t, 0.2, 110, 50, (p) => Math.sin(p * 2 * Math.PI), 0.6, 0.002, 0.07);
+    if (s % 4 === 2) noise(b, t, 0.08, 0.2, 0.001, 0.03, 0.8);                     // Snare / crash
+    if (s % 2 === 1) noise(b, t, 0.02, 0.06, 0.001, 0.008, 0.95);                  // Hats
+    if (s % 8 === 0) tone(b, t, step * 3, NOTE(38 + k), NOTE(38 + k), saw, 0.16, 0.004, 0.2);   // Bass
+  }
+  return b;
+}
+
 const MUSIC = {
+  // ----- THE ENLIGHTENED CHASE -----
+  // The road (regular fights): an urgent desert CHASE - galloping drums, hijaz-like lead, bright choir. D phrygian dominant.
+  story_chase: () => epic(150, 8,
+    [[50, 54, 57, 62], [51, 55, 58, 63], [50, 54, 57, 62], [48, 51, 55, 60]],
+    [38, 0, 38, 45, 38, 0, 38, 45, 39, 0, 39, 46, 39, 0, 39, 46, 38, 0, 38, 45, 38, 0, 38, 45, 36, 0, 36, 43, 37, 38, 39, 38],
+    [74, 75, 78, 0, 79, 78, 75, 74, 75, 0, 74, 0, 72, 0, 74, 0, 78, 79, 81, 0, 79, 78, 75, 74, 72, 0, 75, 74, 0, 0, 0, 0],
+    ['T', 't', 't', 's', 'T', 't', 's', 't', 'T', 't', 't', 's', 'T', 's', 't', 's'], organ, saw),
+  // The Enlightened First Prime: GONGS + CHOIR, a slow ritual. D phrygian.
+  boss_prime: () => gongRitual(72, 8,
+    [[50, 53, 57, 62], [51, 55, 58, 63], [48, 53, 57, 60], [46, 50, 53, 58]],
+    [74, 0, 0, 0, 75, 0, 74, 0, 72, 0, 0, 0, 70, 0, 0, 0, 69, 0, 70, 0, 72, 0, 74, 0, 75, 0, 0, 0, 74, 0, 0, 0]),
+  // The Enlightened One: CHAOS - all the instruments at once, the key lurching every bar.
+  boss_enlightened: () => chaosBoss(168, 8),
+
   // ----- STORY MODE (Colosseum 5): every boss has its own theme -----
   // Child Wielding Needle: a frantic VIOLIN theme, D minor, fast 16th-note runs
   boss_needle: () => violinBoss(150, 8,

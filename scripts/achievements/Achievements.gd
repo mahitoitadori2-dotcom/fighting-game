@@ -45,6 +45,8 @@ const BOSSES := [
 	[48, "false_god", "The False God", "boss"],
 	[49, "satan", "Satan", "boss"],
 	[50, "the_sun", "The Sun", "boss"],
+	[56, "first_prime", "The Enlightened First Prime", "mini"],
+	[62, "enlightened_one", "The Enlightened One", "boss"],
 	[103, "caeser_grave", "The Caeser's Grave", "ext"],
 	[106, "saint_golem", "The Saint Architect's Golem", "ext"],
 	[109, "void_horrid", "The Void Horrids", "ext"],
@@ -55,8 +57,11 @@ const BOSSES := [
 const HARD_LEVELS := [
 	[4, "Hive Breaker"], [5, "Through the Burning Tunnels"], [16, "Throne Room Ambush"],
 	[21, "Bulwark Breaker"], [33, "Web Cutter"], [46, "Roots of the World"],
+	[53, "Caravan Breaker"], [61, "The Gates of Light"],
 ]
-const COLOSSEUM_NAMES := ["The Ashen Depths", "The Ascent", "The Burning Crown", "The Void Below", "The Final Ascent"]
+## Story parts 1-5 are Colosseums; part 6 is THE ENLIGHTENED CHASE (not a Colosseum).
+const COLOSSEUM_NAMES := ["The Ashen Depths", "The Ascent", "The Burning Crown", "The Void Below", "The Final Ascent", "The Enlightened Chase"]
+const PARTS := 6
 const C5_FIRST := 35
 const C5_LAST := 50
 
@@ -146,13 +151,23 @@ static func _build() -> void:
 		{"enemy": "shining", "frame": "gold", "emblem": "halo", "bg": Color(0.36, 0.34, 0.16)})
 
 	# ---------------- STORY: Colosseums ----------------
-	for c in range(1, 6):
-		_add("col_%d" % c, "Colosseum %d Conquered" % c, "Beat Colosseum %d: %s." % [c, COLOSSEUM_NAMES[c - 1]], "story",
-			{"big": "crown", "frame": "gold", "bg": _col_bg(c), "num": c})
+	for c in range(1, PARTS + 1):
+		var part := _part(c)
+		var full := part if c == StoryLevels.CHASE_PART else "%s: %s" % [part, COLOSSEUM_NAMES[c - 1]]
+		var art := {"big": "crown", "frame": "gold", "bg": _col_bg(c)}
+		if c < StoryLevels.CHASE_PART:
+			art["num"] = c
+		_add("col_%d" % c, "%s Conquered" % part, "Beat %s." % full, "story", art)
 		for k in KINDS:
-			_add("col_%d_%s" % [c, k], "Colosseum %d: %s" % [c, KIND_TITLES[k]],
-				"Earn the %s badge on every level of Colosseum %d (optional levels not needed)." % [KIND_NAMES[k], c], "challenge",
-				{"big": k, "frame": "silver" if k != "no_powers" else "gold", "bg": _col_bg(c).darkened(0.3), "num": c})
+			var cart := {"big": k, "frame": "silver" if k != "no_powers" else "gold", "bg": _col_bg(c).darkened(0.3)}
+			if c < StoryLevels.CHASE_PART:
+				cart["num"] = c
+			_add("col_%d_%s" % [c, k], "%s: %s" % [part, KIND_TITLES[k]],
+				"Earn the %s badge on every level of %s (optional levels not needed)." % [KIND_NAMES[k], part], "challenge", cart)
+	_add("chase_warrior", "The Warrior's Pursuit", "Catch and beat The Enlightened One as the Warrior.", "story",
+		{"hero": "warrior", "frame": "gold", "emblem": "sword", "bg": Color(0.45, 0.32, 0.12)})
+	_add("chase_architect", "The Architect's Pursuit", "Catch and beat The Enlightened One as the Architect.", "story",
+		{"hero": "architect", "frame": "gold", "emblem": "sword", "bg": Color(0.45, 0.32, 0.12)})
 	_add("c5_solo_all", "One Hero, One Road", "Clear EVERY level of Colosseum 5 in SOLO mode.", "challenge",
 		{"big": "solo", "frame": "purple", "bg": Color(0.25, 0.08, 0.40), "num": 5})
 	_add("ext_all", "Deep Explorer", "Beat the final boss of all 5 Boss Extensions.", "story",
@@ -186,7 +201,13 @@ static func _short(nm: String) -> String:
 
 
 static func _col_bg(c: int) -> Color:
-	return [Color(0.40, 0.12, 0.06), Color(0.32, 0.28, 0.10), Color(0.40, 0.20, 0.06), Color(0.14, 0.08, 0.26), Color(0.42, 0.32, 0.10)][clampi(c - 1, 0, 4)]
+	return [Color(0.40, 0.12, 0.06), Color(0.32, 0.28, 0.10), Color(0.40, 0.20, 0.06), Color(0.14, 0.08, 0.26), Color(0.42, 0.32, 0.10),
+		Color(0.55, 0.42, 0.16)][clampi(c - 1, 0, 5)]
+
+
+## "Colosseum 3" / "The Enlightened Chase" (the 6th part is NOT a Colosseum).
+static func _part(c: int) -> String:
+	return "The Enlightened Chase" if c == StoryLevels.CHASE_PART else "Colosseum %d" % c
 
 
 static func _level_bg(n: int) -> Color:
@@ -327,6 +348,8 @@ static func on_story_clear(n: int, player: Fighter, solo: bool, hero: String) ->
 		unlock("anti_level")
 		if n == C5_LAST:
 			unlock("anti_sun")
+	if n == StoryProgress.TOTAL_LEVELS and (hero == "warrior" or hero == "architect"):
+		unlock("chase_" + hero)                         # Caught The Enlightened One
 	if n < StoryLevels.EXT_BASE:
 		var c := StoryLevels.colosseum_of(n)
 		if n == StoryLevels.last_of(c):
@@ -344,7 +367,7 @@ static func _check_meta() -> void:
 		unlock("badge_25")
 	if total >= 100:
 		unlock("badge_100")
-	for c in range(1, 6):
+	for c in range(1, PARTS + 1):
 		for k in KINDS:
 			if _colosseum_has(c, k):
 				unlock("col_%d_%s" % [c, k])

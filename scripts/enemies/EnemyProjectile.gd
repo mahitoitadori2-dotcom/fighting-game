@@ -234,6 +234,11 @@ func _update_drop() -> void:
 		Effects.hit_sparks(self, global_position + Vector2(0, -20), 10, 1.4)
 		Effects.popup(self, global_position + Vector2(0, -90), "CRASH!", Color(1.0, 0.85, 0.3), 26)
 		Effects.play_hit_sound(self, "piano_crash", global_position)
+	elif look == "relic":                                  # Enlightened Chase: a falling relic shatters
+		Effects.hit_sparks(self, global_position + Vector2(0, -16), 9, 1.2)
+		SoundManager.play_sfx("stone", -6.0)
+	elif EnlightenedFx.EXPLOSIVE.has(look):                # Enlightened Chase: barrel / grenade goes BOOM
+		EnlightenedFx.blast(get_parent(), global_position, look == "holy_grenade" or (look == "relic_bomb" and _seed % 2 == 1))
 	else:
 		Effects.explosion(self, global_position + Vector2(0, -20), radius * 0.8)
 	recycle()
@@ -288,7 +293,7 @@ func _hit_fighter(f: Fighter, origin: Vector2) -> void:
 	h.origin = origin
 	h.hit_type = "enemy"
 	h.move = move
-	if look == "missile":
+	if look == "missile" or EnlightenedFx.EXPLOSIVE.has(look):
 		h.damage_kind = HitData.KIND_EXPLOSION
 	var result := CombatManager.apply_hit(h, f)
 	if result == "hit" and on_hit.is_valid():
@@ -366,6 +371,12 @@ func _draw() -> void:
 			_draw_light_orb(a)
 		"crescent":                                       # The Brothers / blade waves (tinted)
 			_draw_crescent(a)
+		# ----- The Enlightened Chase (EnlightenedFx) -----
+		"barrel", "holy_grenade", "relic", "relic_bomb":  # Explosive barrel / holy hand grenade / falling relic
+			if kind == Kind.DROP:
+				_draw_drop()
+			else:
+				EnlightenedFx.draw_object(self, look, Vector2.ZERO, -rotation + _age * 7.0, _seed, _age)
 
 
 ## Colosseum 5 looks. ARC shots are rotated by their flight, so they are drawn along +x.
@@ -565,6 +576,8 @@ func _draw_drop() -> void:
 		_draw_piano(Vector2(0, y))
 	elif look == "debris":
 		Sisyphus.draw_boulder(self, Vector2(0, y - 22.0), 22.0, _age * 5.0)
+	elif look in ["barrel", "holy_grenade", "relic", "relic_bomb"]:
+		EnlightenedFx.draw_object(self, look, Vector2(0, y - 22.0), _age * 4.0, _seed, _age)
 	else:
 		_draw_missile(Vector2(0, y))
 

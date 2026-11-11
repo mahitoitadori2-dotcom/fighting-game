@@ -7,6 +7,8 @@ extends RefCounted
 ##   COLOSSEUM 4 = levels 27-34  (The Void Below, OPTIONAL level 32: The Shining, boss: Void Massacre)
 ##   COLOSSEUM 5 = levels 35-50  (The Final Ascent: pick Warrior or Architect, the other is your CPU
 ##                               partner; a COIN FLIP adds enemies every level; 7 bosses up to THE SUN)
+##   THE ENLIGHTENED CHASE = levels 51-62 (its own part, not a Colosseum: solo with your pick,
+##                               mini-boss The Enlightened First Prime, boss The Enlightened One)
 ## A level = waves of enemy GROUPS, then (boss levels) intro cutscene -> boss -> death cutscene.
 ##
 ##   waves        Array of groups; each group = Array of enemy ids (see make_enemy()).
@@ -35,7 +37,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16]
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12]          # 6th = THE ENLIGHTENED CHASE (levels 51-62)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -119,6 +121,17 @@ const MAPS := {
 	"satan_cave":   {"bg": "satan_cave", "ground": 20, "walls": "hellrock", "half_width": 860.0, "music": "story_cave", "solid": true, "zone": "SATAN'S CAVE"},
 	# THE SUN: the Sun Peak, above the clouds, white-gold stone, blinding sky.
 	"sun_peak":     {"bg": "sun_peak", "ground": 21, "walls": "peak", "half_width": 880.0, "music": "none", "zone": "THE SUN PEAK"},
+	# ----- THE ENLIGHTENED CHASE (C6Backdrops.gd): 3 road maps + 2 boss arenas -----
+	# GOLDEN DUNES: a gold desert at noon, his caravan tracks, obelisks with his face.
+	"golden_dunes":  {"bg": "golden_dunes", "ground": 26, "walls": "marble", "half_width": 860.0, "music": "story_chase", "zone": "THE GOLDEN DUNES"},
+	# THE PILGRIM ROAD: a paved road lined with giant golden statues of him, banners.
+	"pilgrim_road":  {"bg": "pilgrim_road", "ground": 7, "walls": "marble", "half_width": 840.0, "music": "story_chase", "zone": "THE PILGRIM ROAD"},
+	# THE GLASS OASIS: palms of golden glass, mirror-still water, a mirage of the road.
+	"glass_oasis":   {"bg": "glass_oasis", "ground": 21, "walls": "marble", "half_width": 840.0, "music": "story_chase", "zone": "THE GLASS OASIS"},
+	# The First Prime's GONG SANCTUM: a ring of huge gongs, incense smoke, a ritual circle.
+	"prime_sanctum": {"bg": "prime_sanctum", "ground": 7, "walls": "marble", "half_width": 800.0, "music": "none", "zone": "THE GONG SANCTUM"},
+	# The Enlightened One's SKY RELIQUARY: floating above golden clouds, his treasures orbiting.
+	"sky_reliquary": {"bg": "sky_reliquary", "ground": 21, "walls": "peak", "half_width": 880.0, "music": "none", "zone": "THE SKY RELIQUARY"},
 	# ----- BOSS EXTENSIONS (ExtBackdrops.gd): a fight arena + a UNIQUE boss arena each -----
 	# BC: down into Blasphemy Caeser's crypts / his tomb
 	"crypts":        {"bg": "caeser_crypts", "ground": 9, "walls": "blasphemy", "half_width": 800.0, "music": "story_cave", "solid": true, "zone": "THE CAESER'S CRYPTS"},
@@ -468,7 +481,67 @@ const LEVELS := {
 		"boss_music": "boss_sun", "boss_color": Color(1.0, 0.95, 0.7),
 		"boss_sub": "The Final Boss", "boss_line": "Little moth... fly to the light.",
 		"cutscene_out": "fall_to_earth"},
+
+	# ======================= THE ENLIGHTENED CHASE (levels 51-62) =======================
+	# Its own Story part (after Colosseum 5): SOLO with the hero you picked ("chase"); the other
+	# one was injured. The Enlightened One runs - at the start and end of every level except
+	# the last he flies over and throws explosive barrels + holy hand grenades ("bombard").
+	# Mini-boss halfway (The Enlightened First Prime), final boss The Enlightened One.
+	# No pre-fight before either boss (quick_boss).
+	51: {"title": "THE CHASE BEGINS", "theme": "golden_dunes", "map": "golden_dunes", "hero": "chase", "bombard": true,
+		"cutscene_in": "enl_chase", "arrive": "stand",
+		"intro": "He saw everything. He is RUNNING. After him!",
+		"waves": [["guard", "guard"], ["counselor", "guard_sword"]], "boss": ""},
+	52: {"title": "SANDS OF FAITH", "theme": "golden_dunes", "map": "golden_dunes", "hero": "chase", "bombard": true,
+		"intro": "Hoofbeats in the dunes. His riders are coming back for you.",
+		"waves": [["camel", "guard"], ["counselor", "camel", "guard_bow"]], "boss": ""},
+	53: {"title": "THE CARAVAN", "theme": "golden_dunes", "map": "golden_dunes", "hero": "chase", "bombard": true,
+		"intro": "A whole caravan blocks the road. Spears, shields, and too many camels.",
+		"waves": [["camel", "camel"], ["guard_shield", "counselor", "guard_hammer"], ["camel", "counselor", "guard_bow"]], "boss": ""},
+	54: {"title": "THE PILGRIM ROAD", "theme": "pilgrim_road", "map": "pilgrim_road", "hero": "chase", "bombard": true,
+		"intro": "A road of golden statues. Every statue has his face.",
+		"waves": [["counselor", "counselor", "guard"], ["camel", "guard_sword", "guard_bow"]], "boss": ""},
+	55: {"title": "THE STATUE MILE", "theme": "pilgrim_road", "map": "pilgrim_road", "hero": "chase", "bombard": true,
+		"intro": "The road narrows. Gongs ring somewhere ahead.",
+		"waves": [["guard_shield", "guard_bow", "counselor"], ["camel", "camel", "counselor"]], "boss": ""},
+	56: {"title": "THE ENLIGHTENED FIRST PRIME", "theme": "prime_sanctum", "map": "prime_sanctum", "hero": "chase", "bombard": true,
+		"quick_boss": true, "arrive": "stand",
+		"intro": "He left his First Prime behind to stop you.",
+		"waves": [], "boss": "first_prime",
+		"boss_music": "boss_prime", "boss_color": Color(1.0, 0.85, 0.4),
+		"boss_sub": "Mini-Boss  -  Warrior Mage of the Holy Gong", "boss_line": "Turn back. The Light does not forgive.",
+		"boss_death_title": "THE FIRST PRIME FALLS", "boss_death_sub": "His gong rings one last time... the road is open."},
+	57: {"title": "THE GLASS OASIS", "theme": "glass_oasis", "map": "glass_oasis", "hero": "chase", "bombard": true,
+		"intro": "An oasis of golden glass. The water shows a road that isn't there.",
+		"waves": [["counselor", "camel", "guard"], ["guard_sword", "guard_sword", "counselor"]], "boss": ""},
+	58: {"title": "MIRAGE", "theme": "glass_oasis", "map": "glass_oasis", "hero": "chase", "bombard": true,
+		"intro": "Is he here? Or is it a mirage? The riders are real enough.",
+		"waves": [["camel", "camel", "guard_bow"], ["counselor", "counselor", "guard_shield", "guard_hammer"]], "boss": ""},
+	59: {"title": "THE BURNING CARAVAN", "theme": "golden_dunes", "map": "golden_dunes", "hero": "chase", "bombard": true,
+		"intro": "He set his own caravan on fire to slow you down.",
+		"waves": [["camel", "guard_hammer", "camel"], ["counselor", "guard_bow", "guard_bow", "camel"]], "boss": ""},
+	60: {"title": "THE LAST ROAD", "theme": "pilgrim_road", "map": "pilgrim_road", "hero": "chase", "bombard": true,
+		"intro": "The statues end. The sky above the road is turning gold.",
+		"waves": [["guard_shield", "guard_shield", "counselor"], ["camel", "camel", "guard_sword", "counselor"]], "boss": ""},
+	61: {"title": "THE GATES OF LIGHT", "theme": "glass_oasis", "map": "glass_oasis", "hero": "chase", "bombard": true,
+		"intro": "His last guard. Behind the gates, a stairway into the sky.",
+		"waves": [["camel", "counselor", "guard_hammer"], ["guard_shield", "guard_bow", "camel", "counselor"], ["camel", "camel", "counselor", "guard_sword"]], "boss": ""},
+	62: {"title": "THE ENLIGHTENED ONE", "theme": "sky_reliquary", "map": "sky_reliquary", "hero": "chase",
+		"quick_boss": true, "finale": true, "arrive": "stand",
+		"intro": "No more running. He turns around.",
+		"waves": [], "boss": "enlightened_one", "boss_pos": "center",
+		"boss_music": "boss_enlightened", "boss_color": Color(1.0, 0.9, 0.5),
+		"boss_sub": "No More Running", "boss_line": "You want me? Then CATCH EVERYTHING I OWN.",
+		"cutscene_out": "enl_end"},
 }
+
+## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
+## "THE ENLIGHTENED CHASE" for the part after Colosseum 5 (it is NOT called a Colosseum).
+const CHASE_PART := 6
+
+
+static func part_name(c: int) -> String:
+	return "THE ENLIGHTENED CHASE" if c == CHASE_PART else "COLOSSEUM %d" % c
 
 
 static func get_level(n: int) -> Dictionary:
@@ -530,7 +603,7 @@ static func hero_of(n: int) -> String:
 	var h := String(get_level(n).get("hero", PLAYER_CHARACTER))
 	if h != "ext" and StoryProgress.anti_story:
 		return "anti"                                      # Anti Architect run: solo, every level
-	if h == "choice":
+	if h == "choice" or h == "chase":                  # Colosseum 5 / The Enlightened Chase: your pick
 		return StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
 	if h == "ext":                                     # Boss extensions: Warrior OR Architect (picked in the menu)
 		return StoryProgress.ext_hero if StoryProgress.ext_hero != "" else PLAYER_CHARACTER
@@ -684,6 +757,15 @@ static func enemy_script(id: String) -> Script:
 			return Satan
 		"the_sun":
 			return TheSun
+		# ----- The Enlightened Chase -----
+		"counselor":
+			return EnlightenedCounselor
+		"camel":
+			return EnlightenedCamel
+		"first_prime":
+			return FirstPrime
+		"enlightened_one":
+			return EnlightenedOneBoss
 		# ----- Boss extensions -----
 		"bf_sword":
 			return BlasphemyFollowerSword
@@ -746,7 +828,7 @@ static func tile_enemy(n: int) -> String:
 	var rank := ["parasite", "kharleming", "stray", "sparkling", "follower", "guard_bow", "warrior_a_bow", "brute",
 		"guard", "guard_sword", "copper", "warrior_a", "warrior_a_sword", "warrior_a_spear", "guard_hammer", "crawler",
 		"guard_shield", "warrior_a_shield", "golem", "hydra", "atomic", "crawling", "void_soul", "escapist", "tentacle", "masker",
-		"ambusher", "grin", "pained"]
+		"ambusher", "grin", "pained", "counselor", "camel"]
 	var best := "parasite"
 	for wave in lv.get("waves", []):
 		for id in wave:
@@ -836,6 +918,15 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return Satan.new()
 		"the_sun":
 			return TheSun.new()
+		# ----- The Enlightened Chase -----
+		"counselor":
+			return EnlightenedCounselor.new()
+		"camel":
+			return EnlightenedCamel.new()
+		"first_prime":
+			return FirstPrime.new()
+		"enlightened_one":
+			return EnlightenedOneBoss.new()
 		# ----- Boss extensions -----
 		"bf_sword":
 			return BlasphemyFollowerSword.new()

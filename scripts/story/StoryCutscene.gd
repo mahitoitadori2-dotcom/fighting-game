@@ -14,10 +14,12 @@ extends CanvasLayer
 signal finished
 
 const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0, "throne_wake": 6.0, "cave_roll": 5.0, "void_fall": 3.6,
-	"c5_intro": 6.5, "mountain_climb": 8.0, "reach_peak": 6.0, "fall_to_earth": 11.0}
+	"c5_intro": 6.5, "mountain_climb": 8.0, "reach_peak": 6.0, "fall_to_earth": 11.0,
+	"enl_chase": 7.5, "enl_end": 10.0}
 const MUSIC := {"elevator": "story_ascent", "sewer_fall": "story_sewers", "corpse_climb": "story_ascent",
 	"throne_wake": "story_throne", "cave_roll": "story_darkcave", "void_fall": "story_void",
-	"c5_intro": "story_ascent", "mountain_climb": "story_cave", "reach_peak": "story_altar", "fall_to_earth": "menu"}
+	"c5_intro": "story_ascent", "mountain_climb": "story_cave", "reach_peak": "story_altar", "fall_to_earth": "menu",
+	"enl_chase": "story_chase", "enl_end": "story_altar"}
 ## [start, end, title, subtitle]
 const CAPTIONS := {
 	"elevator": [[0.6, 3.2, "COLOSSEUM 2: THE ASCENT", ""], [3.4, 6.0, "THE ELEVATOR FROM HELL", "Up... out of the depths."]],
@@ -30,7 +32,12 @@ const CAPTIONS := {
 	"c5_intro": [[0.6, 3.0, "COLOSSEUM 5: THE FINAL ASCENT", ""], [3.2, 6.0, "TWO HEROES, ONE ROAD", "At the top of the mountain... The Sun."]],
 	"mountain_climb": [[0.5, 3.5, "THE CLIMB", "Mother Nature is gone. The mountain is next."], [4.0, 7.4, "A CAVE OF FIRE", "Near the top, the rock glows red. Someone is waiting."]],
 	"reach_peak": [[0.5, 2.6, "THE PEAK", ""], [3.0, 5.4, "THE SUN", "No turning back."]],
-	"fall_to_earth": [[0.6, 3.4, "THE CONSUMER EXPLODES", ""], [4.0, 8.0, "YOU FALL BACK TO EARTH", "...and the sky is finally quiet."], [8.4, 10.6, "THE END", "You beat Story Mode."]],
+	"fall_to_earth": [[0.6, 3.4, "THE CONSUMER EXPLODES", ""], [4.0, 8.0, "YOU FALL BACK TO EARTH", "...and the sky is finally quiet."],
+		[8.4, 10.6, "BUT SOMEONE SAW EVERYTHING", "The Enlightened One is running.  NEXT: THE ENLIGHTENED CHASE"]],
+	# The Enlightened Chase (painted by C6Cutscenes)
+	"enl_chase": [[0.5, 3.4, "THE ENLIGHTENED CHASE", ""], [3.8, 7.0, "HE IS RUNNING", "Your partner is hurt and can't follow.  You go alone."]],
+	"enl_end": [[0.5, 3.0, "THE ENLIGHTENED ONE FALLS", ""], [3.3, 6.3, "HE POINTS TO THE SKY...", "Everything he threw rises into a DARK CLOUD."],
+		[6.8, 9.6, "TO BE CONTINUED...", "The dark cloud keeps growing."]],
 }
 
 var kind := "elevator"
@@ -79,6 +86,11 @@ func _ready() -> void:
 		"fall_to_earth":
 			SoundManager.play_sfx("explosion")
 			SoundManager.play_sfx("whoosh")
+		"enl_chase":
+			SoundManager.play_sfx("dash")
+		"enl_end":
+			SoundManager.play_sfx("rumble")
+			SoundManager.play_sfx("holy", -4.0)
 
 
 func _input(event: InputEvent) -> void:
@@ -149,6 +161,8 @@ func _paint() -> void:
 			_paint_void_fall(sz, k)
 		"c5_intro", "mountain_climb", "reach_peak", "fall_to_earth":
 			C5Cutscenes.paint(_painter, kind, sz, k, _t)
+		"enl_chase", "enl_end":
+			C6Cutscenes.paint(_painter, kind, sz, k, _t)
 		_:
 			_paint_elevator(sz, k)
 	# Captions

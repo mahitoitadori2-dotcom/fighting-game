@@ -42,6 +42,12 @@ const DESC := {
 	"ash_cathedral": "The False God's black cathedral with a burning altar.",
 	"satan_cave": "Satan's mountain cave of lava and a throne of horns.",
 	"sun_peak": "The Sun Peak, above the clouds in blinding light.",
+	# The Enlightened Chase
+	"golden_dunes": "The Golden Dunes: a gold desert at noon, caravan tracks and obelisks with his face.",
+	"pilgrim_road": "The Pilgrim Road: a paved road between giant golden statues of the Enlightened One.",
+	"glass_oasis": "The Glass Oasis: palms of golden glass and mirror-still water.",
+	"prime_sanctum": "The Gong Sanctum: the First Prime's ring of giant gongs and incense smoke.",
+	"sky_reliquary": "The Sky Reliquary: above golden clouds, the Enlightened One's hoard floating around him.",
 	# Boss extensions
 	"crypts": "The Caeser's crypts: serpent idols, bone niches and candles under the arena.",
 	"caeser_tomb": "The Caeser's Tomb: a broken coffin under a ribcage of serpent bones.",
@@ -80,7 +86,7 @@ static func entries() -> Array:
 				continue
 			seen[k] = true
 			var m: Dictionary = StoryLevels.MAPS[k]
-			var src := "Story Mode - Colosseum %d" % StoryLevels.colosseum_of(n)
+			var src := "Story Mode - %s" % StoryLevels.part_name(StoryLevels.colosseum_of(n)).capitalize()
 			if StoryLevels.is_ext(n):
 				var ek := StoryLevels.ext_of(n)
 				src = "Story Mode - %s Extension (%s)" % [String(StoryLevels.EXTENSIONS[ek]["name"]).capitalize(), ek]

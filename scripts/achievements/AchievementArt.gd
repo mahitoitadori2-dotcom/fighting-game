@@ -18,7 +18,8 @@ const FRAMES := {
 ## Figure scale for Story enemies at a 100 px card (the board's FIGURE_SCALE is used for
 ## the rest; these are the extension bosses and a few that need their own size).
 const ENEMY_SCALE := {"caeser_grave": 0.17, "saint_golem": 0.15, "void_horrid": 0.36, "rad_chorus": 0.12,
-	"forge_father": 0.15, "atomic": 0.26, "escapist": 0.55, "masker": 0.30, "shining": 0.42}
+	"forge_father": 0.15, "atomic": 0.26, "escapist": 0.55, "masker": 0.30, "shining": 0.42,
+	"first_prime": 0.24, "enlightened_one": 0.22}
 const BLACK := Color(0, 0, 0)
 const SLASH := Color(0.95, 0.18, 0.15)
 

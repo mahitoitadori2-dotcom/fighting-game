@@ -47,6 +47,8 @@ const MAP_TILE := {
 	"silk_loom": Color(0.42, 0.28, 0.48), "mirror_hall": Color(0.55, 0.55, 0.60), "beast_den": Color(0.42, 0.28, 0.16),
 	"gallows": Color(0.30, 0.16, 0.38), "world_tree": Color(0.25, 0.45, 0.22), "satan_cave": Color(0.55, 0.12, 0.06),
 	"sun_peak": Color(0.85, 0.72, 0.35), "ash_cathedral": Color(0.45, 0.10, 0.10),
+	"golden_dunes": Color(0.78, 0.58, 0.28), "pilgrim_road": Color(0.70, 0.62, 0.48), "glass_oasis": Color(0.35, 0.60, 0.70),
+	"prime_sanctum": Color(0.55, 0.36, 0.14), "sky_reliquary": Color(0.92, 0.80, 0.45),
 }
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
@@ -54,7 +56,8 @@ const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra
 	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "forge_mother": 0.16, "arch_golem": 0.15,
 	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11,
 	"ambusher": 0.45, "grin": 0.42, "pained": 0.3, "imp": 0.8, "needle": 0.36, "brothers": 0.3, "animal_lord": 0.13,
-	"executor": 0.14, "mother_nature": 0.15, "false_god": 0.12, "satan": 0.1, "the_sun": 0.11}
+	"executor": 0.14, "mother_nature": 0.15, "false_god": 0.12, "satan": 0.1, "the_sun": 0.11,
+	"counselor": 0.32, "camel": 0.2, "first_prime": 0.22, "enlightened_one": 0.26}
 ## Board page per Colosseum: title, board gradient, boss label colour. Tile colours and the
 ## zone labels come from each level's map (MAP_TILE / StoryLevels.MAPS "zone").
 const PAGES := {
@@ -68,6 +71,8 @@ const PAGES := {
 		"board": [Color(0.10, 0.10, 0.12), Color(0.12, 0.04, 0.18)], "boss_label": Color(0.8, 0.6, 1.0)},
 	5: {"title": "STORY MODE  -  COLOSSEUM 5: THE FINAL ASCENT",
 		"board": [Color(0.18, 0.08, 0.08), Color(0.55, 0.42, 0.20)], "boss_label": Color(1.0, 0.85, 0.4)},
+	6: {"title": "STORY MODE  -  THE ENLIGHTENED CHASE",
+		"board": [Color(0.62, 0.45, 0.20), Color(0.85, 0.70, 0.38)], "boss_label": Color(1.0, 0.95, 0.6)},
 }
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
 
@@ -225,9 +230,10 @@ func _build_ui() -> void:
 
 func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
-	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate and not StoryProgress.anti_story
+	# Colosseum 5 ("choice") and The Enlightened Chase ("chase"): you can switch your hero
+	var choice := String(lv.get("hero", "")) in ["choice", "chase"] and not _celebrate and not StoryProgress.anti_story
 	_switch.visible = choice
-	_solo_btn.visible = choice
+	_solo_btn.visible = choice and bool(lv.get("partner", false))       # SOLO only matters with a partner
 	_solo_btn.text = "SOLO: %s" % ("ON" if StoryProgress.c5_solo else "OFF")
 	_solo_btn.modulate = Color(0.85, 0.6, 1.0) if StoryProgress.c5_solo else Color(1, 1, 1)
 	_anti_btn.text = "HERO: ANTI ARCHITECT" if StoryProgress.anti_story else "HERO: STORY HEROES"
@@ -237,12 +243,12 @@ func _refresh_ui() -> void:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
 	_title.text = String(_page_data().get("title", "STORY MODE"))
 	if _celebrate:
-		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun"}
-		if _page >= 5:
-			_info.text = "THE END.  The Sun has fallen and you fell back to Earth.  You beat Story Mode!"
+		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun", 6: "The Enlightened One"}
+		if _final_page():
+			_info.text = "TO BE CONTINUED...  The Enlightened One has fallen, but his hoard rose into a dark cloud."
 		else:
-			_info.text = "COLOSSEUM %d COMPLETE!  %s has fallen.  Colosseum %d coming soon...  (Level 50: The Sun)" % [
-				_page, boss_names.get(_page, "The boss"), _page + 1]
+			_info.text = "%s COMPLETE!  %s has fallen.  Next: %s" % [
+				StoryLevels.part_name(_page), boss_names.get(_page, "The boss"), StoryLevels.part_name(_page + 1)]
 		_info.add_theme_color_override("font_color", GOLD)
 		_play.text = "REPLAY BOSS"
 	else:
@@ -256,7 +262,11 @@ func _refresh_ui() -> void:
 		elif bool(lv.get("partner", false)):
 			var h := StoryLevels.hero_of(_pawn_space)
 			hero_name = "YOU: %s  +  CPU partner: %s" % [h.to_upper(), "ARCHITECT" if h == "warrior" else "WARRIOR"]
+		elif String(lv.get("hero", "")) == "chase":
+			hero_name = "YOU: %s  -  alone (your partner is hurt)" % StoryLevels.hero_of(_pawn_space).to_upper()
 		var tag := "  (BOSS)" if boss else ""
+		if String(lv.get("boss_sub", "")).begins_with("Mini-Boss"):
+			tag = "  (MINI-BOSS)"
 		if StoryLevels.is_optional(_pawn_space):
 			tag = "  (OPTIONAL - skip it with Right)"
 		var nf := StoryManager.FLASKS_PER_LEVEL
@@ -328,7 +338,7 @@ func _page_last() -> int:
 	return mini(StoryLevels.last_of(_page), StoryLevels.count())
 
 
-## 0 = the fog space leading to the next Colosseum, 1 = "50: THE SUN" far away (strip end).
+## 0 = the fog space leading to the next part, 1 = the very last level far away (strip end).
 func _teaser_pos(i: int) -> Vector2:
 	var last_i := float(StoryLevels.size_of(_page) - 1)
 	var x := _strip_point(_page, last_i).x + (125.0 if i == 0 else 225.0)
@@ -506,7 +516,7 @@ func _on_play() -> void:
 	_busy = true
 	StoryProgress.current_level = _pawn_space
 	# Colosseum 5: pick your hero the first time (later: the SWITCH / PLAY AS button on the board)
-	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) == "choice" and StoryProgress.c5_hero == "" and not StoryProgress.anti_story:
+	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) in ["choice", "chase"] and StoryProgress.c5_hero == "" and not StoryProgress.anti_story:
 		var pick := HeroSelect.new()
 		add_child(pick)
 		await pick.chosen
@@ -648,7 +658,7 @@ func _draw_board() -> void:
 	# Drag hint along the bottom edge of the frame
 	var hint := "<  DRAG THE BOARD  >"
 	if _page > 1 or _page_last() < StoryLevels.count():
-		hint += "      (drag past the end for the %s Colosseum)" % ("next / previous" if _page > 1 and not _final_page() else ("previous" if _final_page() else "next"))
+		hint += "      (drag past the end for the %s part)" % ("next / previous" if _page > 1 and not _final_page() else ("previous" if _final_page() else "next"))
 	FighterArt.label(c, Vector2(r.get_center().x, r.end.y + 12.0), hint, 12, Color(1.0, 0.9, 0.7, 0.75))
 
 
@@ -826,6 +836,21 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, true)
+	elif _page >= StoryLevels.CHASE_PART:
+		# The Enlightened Chase: golden dunes, statues of him, a stairway of light into the sky (right)
+		var base6 := r.position.y + r.size.y
+		for k in 3:
+			var dx := r.position.x + r.size.x * (0.1 + 0.32 * float(k))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(dx - 160.0, base6), Vector2(dx, base6 - 60.0 - 20.0 * float(k)), Vector2(dx + 170.0, base6)]), Color(0.95, 0.75, 0.40, 0.35))
+		for k in 4:
+			var sx := r.position.x + r.size.x * (0.12 + 0.2 * float(k))
+			var sy := r.position.y + r.size.y * 0.30
+			c.draw_rect(Rect2(sx - 8.0, sy - 40.0, 16.0, 46.0), Color(0.80, 0.60, 0.28, 0.6))
+			c.draw_circle(Vector2(sx, sy - 48.0), 9.0, Color(0.80, 0.60, 0.28, 0.6))
+			c.draw_arc(Vector2(sx, sy - 50.0), 14.0, 0.0, TAU, 16, Color(1.0, 0.9, 0.5, 0.6), 2.0)
+		for k in 8:                                            # Stairway of light (final level)
+			var st := r.position + Vector2(r.size.x * (0.80 + 0.02 * float(k)), r.size.y * (0.42 - 0.045 * float(k)))
+			c.draw_rect(Rect2(st.x - 22.0, st.y, 44.0, 8.0), Color(1.0, 0.92, 0.6, 0.35 + 0.05 * float(k)))
 	elif _page >= 5:
 		# Colosseum 5: the mountain rising to the right, its peak glowing (The Sun), a red sky
 		var base := r.position.y + r.size.y
@@ -965,7 +990,7 @@ func _back_pos() -> Vector2:
 	return _to_board(Vector2(MARGIN_L - 108.0, 0.50))
 
 
-## The last page (Colosseum 5, ending with Level 50: The Sun): no "next Colosseum" teaser.
+## The last page (The Enlightened Chase, ending with Level 62): no "next part" teaser.
 func _final_page() -> bool:
 	return _page_last() >= StoryProgress.TOTAL_LEVELS
 
@@ -977,7 +1002,7 @@ func _teasers() -> void:
 			var bk := _back_pos()
 			c.draw_circle(bk, 30.0, Color(1.0, 0.8, 0.3, 0.3))
 			FighterArt.label(c, bk + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
-			FighterArt.label(c, bk + Vector2(0, 46), "COLOSSEUM %d" % (_page - 1), 12, Color(1, 1, 1, 0.7))
+			FighterArt.label(c, bk + Vector2(0, 46), StoryLevels.part_name(_page - 1), 12, Color(1, 1, 1, 0.7))
 			FighterArt.label(c, bk + Vector2(0, 64), "DRAG  >>>", 12, Color(1.0, 0.9, 0.6, 0.7))
 		return
 	var p := _teaser_pos(0)
@@ -986,13 +1011,13 @@ func _teasers() -> void:
 	var pulse := 0.5 + 0.5 * sin(_t * 4.0)
 	c.draw_circle(p, 34.0, Color(1.0, 0.8, 0.3, 0.35 + 0.25 * pulse) if open else Color(0.5, 0.45, 0.45, 0.25))
 	FighterArt.label(c, p + Vector2(0, 8), "%d %s" % [nxt, ">" if open else "..."], 20, Color(1, 1, 1, 0.9 if open else 0.45))
-	FighterArt.label(c, p + Vector2(0, 52), "COLOSSEUM %d" % (_page + 1), 13, Color(1, 1, 1, 0.8 if open else 0.4))
+	FighterArt.label(c, p + Vector2(0, 52), StoryLevels.part_name(_page + 1), 13, Color(1, 1, 1, 0.8 if open else 0.4))
 	FighterArt.label(c, p + Vector2(0, 70), "DRAG  <<<" if open else "LOCKED", 12, Color(1.0, 0.9, 0.6, 0.6 + 0.3 * pulse) if open else Color(1, 1, 1, 0.35))
 	if _page > 1:                                           # Way back to the previous Colosseum
 		var b := _back_pos()
 		c.draw_circle(b, 30.0, Color(1.0, 0.8, 0.3, 0.3))
 		FighterArt.label(c, b + Vector2(0, 7), "< %d" % (_page_first() - 1), 18, Color(1, 1, 1, 0.85))
-		FighterArt.label(c, b + Vector2(0, 46), "COLOSSEUM %d" % (_page - 1), 12, Color(1, 1, 1, 0.7))
+		FighterArt.label(c, b + Vector2(0, 46), StoryLevels.part_name(_page - 1), 12, Color(1, 1, 1, 0.7))
 		FighterArt.label(c, b + Vector2(0, 64), "DRAG  >>>", 12, Color(1.0, 0.9, 0.6, 0.7))
 	var sun := _teaser_pos(1)
 	c.draw_circle(sun, 30.0, Color(1.0, 0.75, 0.25, 0.6))
@@ -1000,7 +1025,7 @@ func _teasers() -> void:
 	for i in 10:
 		var a := TAU * float(i) / 10.0 + _t * 0.3
 		c.draw_line(sun + Vector2.from_angle(a) * 36.0, sun + Vector2.from_angle(a) * 48.0, Color(1.0, 0.8, 0.3, 0.6), 3.0)
-	FighterArt.label(c, sun + Vector2(0, 70), "50: THE SUN", 15, Color(1.0, 0.85, 0.4, 0.8))
+	FighterArt.label(c, sun + Vector2(0, 70), "%d: %s" % [StoryProgress.TOTAL_LEVELS, String(StoryLevels.get_level(StoryProgress.TOTAL_LEVELS).get("title", ""))], 15, Color(1.0, 0.85, 0.4, 0.8))
 
 
 func _lock(p: Vector2) -> void:

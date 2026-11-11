@@ -339,6 +339,10 @@ func _run() -> void:
 		var sm := String(level.get("stage_map", ""))
 		if sm != "":
 			await _switch_map(sm, String(level.get("stage_title", "")), String(level.get("stage_sub", "")), Color(0.75, 0.6, 1.0))
+	if bool(level.get("bombard", false)):
+		await _enl_bombard(false)                  # The Enlightened Chase: he flies over and throws things
+		if _over:
+			return
 	var waves: Array = (level.get("waves", []) as Array).duplicate(true)
 	if bool(level.get("coin_flip", false)) and not bool(level.get("quick_boss", false)):
 		# Colosseum 5: the coin decides who ELSE joins this level (added to the first wave)
@@ -364,9 +368,14 @@ func _run() -> void:
 		if _over:
 			return
 		if bool(level.get("finale", false)):
-			# The Sun: the finale already played out - straight to the ending cutscene
+			# The Sun / The Enlightened One: straight to the ending cutscene. Stop the fight first and
+			# clear everything still falling / flying, so nothing can hit you after the boss is dead.
+			CombatManager.fight_active = false
+			_clear_hazards()
 			if String(level.get("cutscene_out", "")) != "":
 				await _play_cutscene(String(level["cutscene_out"]))
+			if _over:
+				return
 		else:
 			await _boss_death_cutscene()
 	elif String(level.get("cutscene_out", "")) != "":
@@ -374,7 +383,49 @@ func _run() -> void:
 		if bool(level.get("floor_break", false)):
 			await _floor_break()
 		await _play_cutscene(String(level["cutscene_out"]))
+	if bool(level.get("bombard", false)) and not _over:
+		await _enl_bombard(true)                   # ...and again as he runs on to the next level
+		if _over:
+			return
 	await _level_clear()
+
+
+## Removes enemy projectiles / falling objects / lasers / boss hazards still in the arena.
+func _clear_hazards() -> void:
+	for n in get_tree().current_scene.find_children("*", "", true, false):
+		if n is EnemyProjectile:
+			(n as EnemyProjectile).recycle()
+		elif n is EnlightenedFx.Laser or n is BossHazard:
+			n.queue_free()
+
+
+## THE ENLIGHTENED CHASE: the Enlightened One flies over the arena throwing explosive barrels
+## and holy hand grenades (start and end of every level except the last). Dodge them!
+func _enl_bombard(at_end: bool) -> void:
+	wave_text = ""
+	_show_banner("THE ENLIGHTENED ONE!", "He throws everything he has at you!  Dodge!" if not at_end else "He got away again... and he left you a present!", Color(1.0, 0.85, 0.4))
+	SoundManager.play_sfx("holy")
+	await _wait(1.0)
+	_hide_banner()
+	CombatManager.fight_active = true             # You can move (and must dodge)
+	var left := wall_left_x if has_walls else player.global_position.x - 700.0
+	var right := wall_right_x if has_walls else player.global_position.x + 700.0
+	var th := EnlightenedFx.Thrower.new()
+	th.target = player
+	th.floor_y = _ground_y
+	var from_right := randf() < 0.5
+	th.from_x = right + 120.0 if from_right else left - 120.0
+	th.to_x = left - 160.0 if from_right else right + 160.0
+	th.throws = 8 if not at_end else 6
+	th.damage = 5
+	add_child(th)
+	await th.done
+	if _over:
+		return
+	if not at_end:
+		_show_banner("HE FLED!", "His guards block the road.", Color(1.0, 0.85, 0.4))
+		await _wait(1.0)
+		_hide_banner()
 
 
 func _play_cutscene(kind: String) -> void:

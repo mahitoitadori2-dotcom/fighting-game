@@ -9,7 +9,7 @@ updated: 2026-11-09
 
 Back to [Summary](SUMMARY.md).
 
-Story Mode has 50 levels in 5 Colosseums, ending with Level 50: **The Sun**. All 50 levels are playable.
+Story Mode has 62 levels: 5 Colosseums (1-50, up to **The Sun**) and then **THE ENLIGHTENED CHASE** (51-62), its own story part (NOT called a Colosseum). The story is not over: it ends on "TO BE CONTINUED...".
 
 | Colosseum | Levels | Count | Areas (levels each) |
 |---|---|---|---|
@@ -18,6 +18,7 @@ Story Mode has 50 levels in 5 Colosseums, ending with Level 50: **The Sun**. All
 | 3 The Burning Crown | 16-26 | 11 | Burning Throne 3, Minor Architectium 3, Blast Workshop 3, Golem's Hall 2 |
 | 4 The Void Below | 27-34 | 8 | Dark Cave 2, Void 3, Altar 1 (optional), Spider Lair 2 |
 | 5 The Final Ascent | 35-50 | 16 | Road levels (Thornwood, Fallen Ruins, Foothills) + 8 boss arenas |
+| **The Enlightened Chase** | 51-62 | 12 | Golden Dunes 4, Pilgrim Road 3, Glass Oasis 3 + Gong Sanctum (First Prime) + Sky Reliquary (Enlightened One) |
 
 The sizes are set in `COLOSSEUM_SIZES` in `scripts/story/StoryLevels.gd`. All the level and map data is in that file. The full-screen cutscenes are in `scripts/story/StoryCutscene.gd`.
 
@@ -162,6 +163,21 @@ Every boss has its own arena and its own soundtrack. Mother Nature only opens af
 - **Finale:** at 0 HP The Consumer collapses. Grab the **Solar Bomb**, press ATTACK to throw it into its maw, then **escape** across 12 crumbling platforms while a wall of fire chases you (falling costs 12 HP and puts you back on the last platform). Reach the ledge, then the ending cutscene: you fall back to Earth. **THE END.**
 
 Cutscenes: `c5_intro`, `mountain_climb`, `reach_peak`, `fall_to_earth` (painted in `scripts/story/c5/C5Cutscenes.gd`). All Colosseum 5 code is in `scripts/story/c5/`.
+
+## The Enlightened Chase (51-62, added 2026-11-11)
+
+Its own story part after Colosseum 5 (the UI always says "THE ENLIGHTENED CHASE", never "Colosseum 6"). Beating The Sun opens it (old saves too). Code: `scripts/story/c6/`.
+
+- **Intro cutscene** ("enl_chase"): the Enlightened One runs away across the dunes, your hero runs after him, the other hero lies injured ("GO...! CATCH HIM!").
+- **Solo** with the hero you picked (Colosseum 5 pick, PLAY AS button on the board; Anti Architect toggle works too). Deep Faith Payoff applies.
+- **Bombard:** at the start AND end of every level except the last, the Enlightened One flies over the arena throwing explosive barrels and holy hand grenades (`EnlightenedFx.Thrower`, 5 dmg each). You can move and must dodge.
+- **Enemies:** Enlightened Guards (all 5 weapon types), **Enlightened Counselor** (holy bolt, light pillar under you, HEALS his allies 10 HP: kill him first), **Enlightened Camel Rider** (camel + spear warrior: Camel Charge 9, Spear Thrust 7, Camel Spit 4, Trample 8 with shockwaves).
+- **Mini-boss, Level 56: The Enlightened First Prime** (warrior mage, Gong Sanctum, no pre-fight): Holy Blade, Golden Arc / Triple Arc (golden crescents), Holy Smite pillars, Staff Nova, Blink Strike, enraged Gong of Judgment. 300 HP (x1.35 Story boss buff).
+- **Final boss, Level 62: The Enlightened One** (Sky Reliquary, no pre-fight). He never attacks himself and keeps away from you: random objects from his hoard fall on the arena all fight (shadows warn you; some explode), plus Rain of Relics / Explosive Offerings / The Hoard Falls, and Flee (blinks away). **Phase 2 (Ascended):** + Enlightened Lasers (low = jump, high = stay down, one from the sky) and Light Balls. 180 + 210 HP (x1.35). After every spell he stands still for ~1.1-1.5 s: your window to hit him.
+- **Ending cutscene** ("enl_end"): he points at the sky, everything he threw rises into a DARK CLOUD. "TO BE CONTINUED..."
+- **Music:** `story_chase` (desert chase), `boss_prime` (gong ritual + choir), `boss_enlightened` (chaos: organ, violin, harpsichord, brass, bells, gongs, drums, the key lurching every bar).
+- **Bosses nerfed the same day** after CPU tests (the CPU died to both at first): First Prime 420 -> 300 HP, all hits -1/-2, longer cooldowns; Enlightened One 380/420 -> 180/210 HP, fewer / weaker falling objects, flees much less, long openings after each spell. Also fixed: an object still falling could kill you after he died and the level still counted as cleared.
+- **Tested (CPU only, it never dodges shadows):** 51, 52, 53 cleared; the First Prime beaten after the nerf; the Enlightened One won about half the time after the nerf. Not played by a human.
 
 ## Boss Extension Levels (added 2026-11-10)
 

@@ -11,8 +11,8 @@ extends RefCounted
 ## are moved to the matching level of the new layout when they load.
 
 const SAVE_PATH := "user://story.cfg"
-const TOTAL_LEVELS := 50                 # Level 50 = The Sun
-const AVAILABLE_LEVELS := 50             # Colosseums 1-5: the whole story, up to The Sun
+const TOTAL_LEVELS := 62                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE
+const AVAILABLE_LEVELS := 62             # Colosseums 1-5 + The Enlightened Chase (beating The Sun opens it)
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]

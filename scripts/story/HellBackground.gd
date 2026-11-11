@@ -75,6 +75,9 @@ func _paint() -> void:
 	if ExtBackdrops.handles(theme):                        # Boss extensions (ExtBackdrops.gd)
 		ExtBackdrops.paint(_painter, theme, sz)
 		return
+	if C6Backdrops.handles(theme):                         # The Enlightened Chase (C6Backdrops.gd)
+		C6Backdrops.paint(_painter, theme, sz)
+		return
 	match theme:
 		"cave":
 			_paint_cave(sz)
@@ -782,6 +785,9 @@ func _paint_embers() -> void:
 		return
 	if ExtBackdrops.handles(theme):
 		ExtBackdrops.embers(_embers, theme, sz, _t, _ember_data)
+		return
+	if C6Backdrops.handles(theme):
+		C6Backdrops.embers(_embers, theme, sz, _t, _ember_data)
 		return
 	match theme:
 		"elevator":

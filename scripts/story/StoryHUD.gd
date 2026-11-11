@@ -105,7 +105,7 @@ func _paint() -> void:
 
 	# ---------------- Level title + wave ----------------
 	var cx := sz.x * 0.5
-	var head_text := "COLOSSEUM %d  -  LEVEL %d: %s" % [StoryLevels.colosseum_of(manager.level_number), manager.level_number, manager.level.get("title", "")]
+	var head_text := "%s  -  LEVEL %d: %s" % [StoryLevels.part_name(StoryLevels.colosseum_of(manager.level_number)), manager.level_number, manager.level.get("title", "")]
 	if StoryLevels.is_ext(manager.level_number):
 		var ek := StoryLevels.ext_of(manager.level_number)
 		head_text = "%s EXTENSION  -  %s: %s" % [StoryLevels.EXTENSIONS[ek]["name"], StoryLevels.ext_code(manager.level_number), manager.level.get("title", "")]
