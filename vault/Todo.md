@@ -40,6 +40,7 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - The CPU partner: does it keep up, help enough, not get in the way (`Companion.gd`). Since 2026-11-10 it is a HARD CPU with a G Gauge and 1 flask: check it isn't too strong now. Only tested by CPU-vs-CPU runs (it used ultimates 5 times in 30 s as the Warrior).
   - The nerfed Devilish Grin and Pained One (coin flip TAILS): still a threat, or too easy now?
   - The Executor's memory fog (reversed controls, 3.5 s): fun or too annoying?
+- [ ] Play Story with **Deep Faith Payoff** (Warrior / Architect: +20% HP, 3 flasks, -15% cooldowns, stacks on the older Story buff): is Story now too easy? Tune `DEEP_FAITH_*` in `StoryManager.gd`.
 - [ ] **Play the Anti Architect yourself** (Versus + Story toggle). Colosseum 5 is built for a duo, so solo Anti may be too hard there; tune `apply_story_buff` in `AntiArchitectData.gd`. Check the Overcharge self-damage feels fair.
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).
 

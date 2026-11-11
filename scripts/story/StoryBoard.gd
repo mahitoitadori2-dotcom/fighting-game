@@ -158,7 +158,7 @@ func _build_ui() -> void:
 	var back := UiStyle.make_button("< BACK", Vector2(150, 56), 20)
 	back.pressed.connect(_go_back)
 	row.add_child(back)
-	_play = UiStyle.make_button("PLAY", Vector2(330, 56), 22)
+	_play = UiStyle.make_button("PLAY", Vector2(280, 56), 22)
 	_play.pressed.connect(_on_play)
 	row.add_child(_play)
 	# Colosseum 5 only: swap which hero you play (the other one is your CPU partner)
@@ -166,10 +166,16 @@ func _build_ui() -> void:
 	_switch.pressed.connect(_switch_hero)
 	_switch.visible = false
 	row.add_child(_switch)
-	# Anti Architect run: play every Story level SOLO as the Anti Architect (saved toggle)
-	_anti_btn = UiStyle.make_button("ANTI ARCHITECT: OFF", Vector2(250, 56), 16)
+	# Anti Architect run: play every Story level SOLO as the Anti Architect (saved toggle).
+	# Own spot in the top-left corner, left of the title (the bottom row is full on C5 / extension pages).
+	_anti_btn = UiStyle.make_button("HERO: STORY HEROES", Vector2(220, 40), 14)
+	_anti_btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_anti_btn.offset_left = 12
+	_anti_btn.offset_right = 232
+	_anti_btn.offset_top = 12
+	_anti_btn.offset_bottom = 52
 	_anti_btn.pressed.connect(_toggle_anti)
-	row.add_child(_anti_btn)
+	add_child(_anti_btn)
 	# Boss extensions of this page (BC, AG, VM, AC, FM)
 	_ext_btn = UiStyle.make_button("BOSS EXTENSIONS", Vector2(230, 56), 17)
 	_ext_btn.pressed.connect(func() -> void: _open_extensions(""))
@@ -184,8 +190,8 @@ func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
 	var choice := String(lv.get("hero", "")) == "choice" and not _celebrate and not StoryProgress.anti_story
 	_switch.visible = choice
-	_anti_btn.text = "ANTI ARCHITECT: %s" % ("ON" if StoryProgress.anti_story else "OFF")
-	_anti_btn.modulate = Color(1.0, 0.7, 0.4) if StoryProgress.anti_story else Color(1, 1, 1)
+	_anti_btn.text = "HERO: ANTI ARCHITECT" if StoryProgress.anti_story else "HERO: STORY HEROES"
+	_anti_btn.modulate = Color(1.0, 0.65, 0.3) if StoryProgress.anti_story else Color(1, 1, 1)
 	_ext_btn.visible = not StoryLevels.exts_on_page(_page).is_empty()
 	if choice:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
@@ -211,7 +217,10 @@ func _refresh_ui() -> void:
 		var tag := "  (BOSS)" if boss else ""
 		if StoryLevels.is_optional(_pawn_space):
 			tag = "  (OPTIONAL - skip it with Right)"
-		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (2 per level)" % [_pawn_space, lv["title"], tag, hero_name]
+		var nf := StoryManager.FLASKS_PER_LEVEL
+		if StoryLevels.hero_of(_pawn_space) != "anti":
+			nf += StoryManager.DEEP_FAITH_EXTRA_FLASKS          # Deep Faith Payoff (Warrior / Architect)
+		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (%d per level)" % [_pawn_space, lv["title"], tag, hero_name, nf]
 		_play.text = "PLAY LEVEL %d" % _pawn_space
 
 

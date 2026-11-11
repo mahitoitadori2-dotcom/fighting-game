@@ -66,9 +66,13 @@ func _paint() -> void:
 		# Flasks
 		var fy := y + 80
 		FighterArt.label(_painter, Vector2(x, fy + 4), "FLASKS", 15, Color(0.75, 1.0, 0.75), false)
-		for i in StoryManager.FLASKS_PER_LEVEL:
+		for i in manager.max_flasks:
 			_flask(Vector2(x + 86 + float(i) * 30.0, fy), i < manager.flasks)
-		FighterArt.label(_painter, Vector2(x + 150, fy + 4), "[R]  +%d%% HP" % int(StoryManager.FLASK_HEAL * 100.0), 14, Color(1, 1, 1, 0.7), false)
+		var fx := x + 92.0 + float(manager.max_flasks) * 30.0
+		var ftxt := "[R]  +%d%% HP" % int(StoryManager.FLASK_HEAL * 100.0)
+		if manager.max_flasks > StoryManager.FLASKS_PER_LEVEL:
+			ftxt += "    DEEP FAITH PAYOFF"
+		FighterArt.label(_painter, Vector2(fx, fy + 4), ftxt, 14, Color(1, 1, 1, 0.7), false)
 		# Cooldowns
 		var cf := p as ControlledFighter
 		if cf != null:
@@ -96,7 +100,7 @@ func _paint() -> void:
 						_painter.draw_rect(seg, Color(0, 0, 0))
 						var fill := Color(0.1, 0.65, 1.0) if pv >= float(i + 1) else (Color(0.1, 0.35, 0.65) if pv > float(i) else Color(0.12, 0.18, 0.25))
 						_painter.draw_rect(seg.grow(-1.0), fill)
-				for i in StoryManager.PARTNER_FLASKS:
+				for i in manager.max_partner_flasks:
 					_flask(Vector2(x + 214 + float(i) * 30.0, py + 8), i < manager.partner_flasks)
 
 	# ---------------- Level title + wave ----------------

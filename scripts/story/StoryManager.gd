@@ -20,6 +20,11 @@ signal boss_defeated
 const FLASKS_PER_LEVEL := 2
 const FLASK_HEAL := 0.5
 const PARTNER_FLASKS := 1                    # Colosseum 5 CPU partner (refilled with yours)
+## DEEP FAITH PAYOFF (Story only): a small buff for the WARRIOR and the ARCHITECT (not the Anti
+## Architect) - as you or as the Colosseum 5 partner. More HP, +1 flask, shorter move cooldowns.
+const DEEP_FAITH_HP_MULT := 1.2
+const DEEP_FAITH_EXTRA_FLASKS := 1
+const DEEP_FAITH_COOLDOWN_MULT := 0.85
 const MAX_ATTACKERS := 2
 const ARENA_SCENE := "res://scenes/StoryArena.tscn"
 const STORY_MENU := "res://scenes/StoryMenu.tscn"
@@ -43,6 +48,8 @@ var hero := "warrior"
 var partner: ControlledFighter = null
 var flasks := FLASKS_PER_LEVEL
 var partner_flasks := PARTNER_FLASKS
+var max_flasks := FLASKS_PER_LEVEL           # + DEEP_FAITH_EXTRA_FLASKS for the Warrior / Architect
+var max_partner_flasks := PARTNER_FLASKS
 ## Colosseum 4: "" = no effect, "killed" = The Shining died (Void weaker), "spared" = you
 ## walked past it or skipped its optional level (Void Massacre stronger). Set on the altar
 ## level (32) and saved; the "void_mod" levels after it (33, 34) read it back.
@@ -222,6 +229,9 @@ func _spawn_player() -> void:
 		player.ctl = FighterInput.new()
 	add_child(player)
 	_story_buff(player)
+	if _deep_faith(player):
+		max_flasks = FLASKS_PER_LEVEL + DEEP_FAITH_EXTRA_FLASKS
+		flasks = max_flasks
 	if hero == "architect" or hero == "anti":
 		# Story only (own data copy, Versus unchanged): the punch box reaches head to toes,
 		# like the Warrior's sword, so it also hits short enemies (Black Crawlings...).
@@ -255,6 +265,9 @@ func _spawn_partner() -> void:
 	partner.quiet_announce = true
 	add_child(partner)
 	_story_buff(partner)
+	if _deep_faith(partner):
+		max_partner_flasks = PARTNER_FLASKS + DEEP_FAITH_EXTRA_FLASKS
+		partner_flasks = max_partner_flasks
 	partner.data.respawn_delay = Companion.REVIVE_TIME
 	if other == "architect":
 		partner.data.punch_offset = Vector2(44, -58)     # Same Story reach as when you play him
@@ -269,6 +282,22 @@ func _spawn_partner() -> void:
 func _story_buff(f: Fighter) -> void:
 	if f != null and f.data != null and f.data.has_method("apply_story_buff"):
 		f.data.call("apply_story_buff")
+
+
+## DEEP FAITH PAYOFF: Warrior / Architect only (own data copy, Versus unchanged).
+## More max HP (starts full) and every move cooldown shorter. Returns true if it applied.
+func _deep_faith(f: Fighter) -> bool:
+	if f == null or f.data == null or f is AntiArchitect:
+		return false
+	if not (f.data is WarriorData or f.data is ArchitectData):
+		return false
+	f.data.max_hp = roundi(float(f.data.max_hp) * DEEP_FAITH_HP_MULT)
+	f.hp = f.data.max_hp
+	for prop in f.data.get_property_list():
+		var n := String(prop["name"])
+		if n.contains("cooldown") and not n.ends_with("_mult") and int(prop["type"]) == TYPE_FLOAT:
+			f.data.set(n, float(f.data.get(n)) * DEEP_FAITH_COOLDOWN_MULT)
+	return true
 
 
 func _on_partner_died() -> void:
@@ -715,8 +744,8 @@ func _boss_intro() -> void:
 	_hide_banner()
 	ArenaCamera.focus_offset = Vector2(0, -110)
 	# Flasks refill after the boss intro
-	flasks = FLASKS_PER_LEVEL
-	partner_flasks = PARTNER_FLASKS
+	flasks = max_flasks
+	partner_flasks = max_partner_flasks
 	Effects.popup(player, player.global_position + Vector2(0, -170), "FLASKS REFILLED!", Color(0.5, 1.0, 0.5), 24)
 	SoundManager.play_sfx("heal")
 	ArenaCamera.focus = null
@@ -756,8 +785,8 @@ func _quick_boss_intro() -> void:
 	SoundManager.play_sfx("holy")
 	SoundManager.play_sfx("ultimate", -4.0)
 	SoundManager.play_music(String(level.get("boss_music", "boss")))
-	flasks = FLASKS_PER_LEVEL
-	partner_flasks = PARTNER_FLASKS
+	flasks = max_flasks
+	partner_flasks = max_partner_flasks
 	boss_bar_visible = true
 	var col: Color = level.get("boss_color", Color(1, 1, 1))
 	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), col)

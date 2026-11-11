@@ -25,7 +25,9 @@ The sizes are set in `COLOSSEUM_SIZES` in `scripts/story/StoryLevels.gd`. All th
 
 The level select is a board game with one page per Colosseum. Bigger Colosseums get a zig-zag path. The area names and tile colours come from each level's map. When you clear a level, your pawn hops forward. After the boss, it moves on to the next page. Switch pages with the fog space (next Colosseum), the "< N" mark (back), or Left / Right.
 
-**ANTI ARCHITECT toggle (added 2026-11-11):** the board's "ANTI ARCHITECT: ON / OFF" button (saved). When ON, every main Story level is played **solo** as the Anti Architect, Colosseum 5 included (no CPU partner and no hero choice). The Boss Extensions menu has him as a third hero next to Warrior and Architect. Tested only by the CPU (level 35 solo and extension BC2 were cleared); not tested by a human.
+**DEEP FAITH PAYOFF (added 2026-11-11):** a small Story-only buff for the Warrior and the Architect (you or the C5 partner, not the Anti Architect): +20% max HP, +1 flask (3 per level, partner 2), move cooldowns 15% shorter. Numbers: `DEEP_FAITH_*` in `StoryManager.gd`. The HUD shows "DEEP FAITH PAYOFF" next to the flasks. Checked by a test run (Warrior 120 HP, 3 flasks); not played by a human.
+
+**ANTI ARCHITECT toggle (added 2026-11-11):** the board's "HERO: STORY HEROES / ANTI ARCHITECT" button in the top-left corner (saved). The first version sat in the bottom row and was pushed off-screen on C5 / extension pages (fixed the same day). When ON, every main Story level is played **solo** as the Anti Architect, Colosseum 5 included (no CPU partner and no hero choice). The Boss Extensions menu has him as a third hero next to Warrior and Architect. Tested only by the CPU (level 35 solo and extension BC2 were cleared); not tested by a human.
 
 **Old saves** (from when every Colosseum had 6 levels) move to the matching level of the new layout the first time they load.
 
