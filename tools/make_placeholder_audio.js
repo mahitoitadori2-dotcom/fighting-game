@@ -496,8 +496,11 @@ for (const [name, fn] of Object.entries(SFX)) {
   if (!force && fs.existsSync(f)) { kept++; continue; }
   writeWav(f, fn()); made++;
 }
+// MUSIC is now rendered with real instruments by tools/make_music.js (it reads the notes from
+// MUSIC above). The old synth versions are only written with --synth-music.
 for (const [name, fn] of Object.entries(MUSIC)) {
   const f = path.join(ROOT, 'audio', 'music', name + '.wav');
+  if (!process.argv.includes('--synth-music')) continue;
   if (!force && fs.existsSync(f)) { kept++; continue; }
   writeWav(f, fn()); made++;
 }
