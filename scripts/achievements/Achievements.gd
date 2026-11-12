@@ -60,8 +60,8 @@ const HARD_LEVELS := [
 	[53, "Caravan Breaker"], [61, "The Gates of Light"],
 ]
 ## Story parts 1-5 are Colosseums; part 6 is THE ENLIGHTENED CHASE (not a Colosseum).
-const COLOSSEUM_NAMES := ["The Ashen Depths", "The Ascent", "The Burning Crown", "The Void Below", "The Final Ascent", "The Enlightened Chase"]
-const PARTS := 6
+const COLOSSEUM_NAMES := ["The Ashen Depths", "The Ascent", "The Burning Crown", "The Void Below", "The Final Ascent", "The Enlightened Chase", "DemiLand"]
+const PARTS := 7
 const C5_FIRST := 35
 const C5_LAST := 50
 
@@ -152,6 +152,8 @@ static func _build() -> void:
 
 	# ---------------- STORY: Colosseums ----------------
 	for c in range(1, PARTS + 1):
+		if c == StoryLevels.DEMI_PART:
+			continue                                     # DemiLand has its own achievements (below)
 		var part := _part(c)
 		var full := part if c == StoryLevels.CHASE_PART else "%s: %s" % [part, COLOSSEUM_NAMES[c - 1]]
 		var art := {"big": "crown", "frame": "gold", "bg": _col_bg(c)}
@@ -172,6 +174,25 @@ static func _build() -> void:
 		{"hero": "architect", "frame": "gold", "emblem": "sword", "bg": Color(0.45, 0.32, 0.12)})
 	_add("c5_solo_all", "One Hero, One Road", "Clear EVERY level of Colosseum 5 in SOLO mode.", "challenge",
 		{"big": "solo", "frame": "purple", "bg": Color(0.25, 0.08, 0.40), "num": 5})
+	_add("demi_clear", "The Ancient Door", "Open the Ancient Door of DemiLand with all three artifacts.", "story",
+		{"big": "crown", "frame": "gold", "bg": Color(0.22, 0.20, 0.26)})
+	_add("demi_tribe_master", "Tribe Master Trophy", "Defeat the Tribe Master in the Tribe Village of DemiLand.", "story",
+		{"enemy": "tribe_master", "frame": "gold", "emblem": "trophy", "bg": Color(0.36, 0.14, 0.08)})
+	_add("demi_last_tiger", "Last Tiger Trophy", "Defeat the Last Tiger in the Tiger Ravine of DemiLand.", "story",
+		{"enemy": "last_tiger", "frame": "gold", "emblem": "trophy", "bg": Color(0.40, 0.24, 0.08)})
+	_add("demi_tree_lord", "Tree Lord Trophy", "Defeat the LIVING Tree Lord in the Dead Grove of DemiLand.", "story",
+		{"enemy": "tree_lord", "frame": "gold", "emblem": "trophy", "bg": Color(0.14, 0.26, 0.12)})
+	for b in [["tribe_master", "Tribe Master"], ["last_tiger", "Last Tiger"], ["tree_lord", "Tree Lord"]]:
+		_add("demi_pure_" + String(b[0]), "%s: Bare Will" % b[1], "Beat the %s without drinking a flask or using a Power." % b[1], "challenge",
+			{"enemy": b[0], "frame": "silver", "emblem": "halo", "bg": Color(0.14, 0.13, 0.16)})
+	_add("demi_explorer", "Cartographer of Ash", "Walk into every region of DemiLand.", "story",
+		{"big": "star", "frame": "bronze", "bg": Color(0.18, 0.17, 0.20)})
+	_add("demi_deathless", "Never Woke at a CamTon", "Open the Ancient Door without dying once in DemiLand.", "challenge",
+		{"big": "skull", "frame": "red", "bg": Color(0.20, 0.06, 0.06)})
+	_add("demi_no_rest", "No Rest for the Living", "Open the Ancient Door without resting at a CamTon.", "challenge",
+		{"big": "no_healing", "frame": "silver", "bg": Color(0.20, 0.12, 0.06)})
+	_add("demi_dodges", "Through the Blade", "Dodge 25 attacks with the invincibility of your roll in one DemiLand run.", "challenge",
+		{"big": "no_blocks", "frame": "purple", "bg": Color(0.16, 0.10, 0.26)})
 	_add("ext_all", "Deep Explorer", "Beat the final boss of all 5 Boss Extensions.", "story",
 		{"big": "crown", "frame": "silver", "bg": Color(0.10, 0.22, 0.30)})
 
@@ -204,11 +225,13 @@ static func _short(nm: String) -> String:
 
 static func _col_bg(c: int) -> Color:
 	return [Color(0.40, 0.12, 0.06), Color(0.32, 0.28, 0.10), Color(0.40, 0.20, 0.06), Color(0.14, 0.08, 0.26), Color(0.42, 0.32, 0.10),
-		Color(0.55, 0.42, 0.16)][clampi(c - 1, 0, 5)]
+		Color(0.55, 0.42, 0.16), Color(0.18, 0.17, 0.20)][clampi(c - 1, 0, 6)]
 
 
 ## "Colosseum 3" / "The Enlightened Chase" (the 6th part is NOT a Colosseum).
 static func _part(c: int) -> String:
+	if c == StoryLevels.DEMI_PART:
+		return "DemiLand"
 	return "The Enlightened Chase" if c == StoryLevels.CHASE_PART else "Colosseum %d" % c
 
 
@@ -352,7 +375,7 @@ static func on_story_clear(n: int, player: Fighter, solo: bool, hero: String) ->
 			unlock("anti_sun")
 	if n == StoryManager.DEEP_FAITH_AFTER:
 		unlock("deep_faith")                            # Deep Faith Payoff is now active
-	if n == StoryProgress.TOTAL_LEVELS and (hero == "warrior" or hero == "architect"):
+	if n == StoryLevels.last_of(StoryLevels.CHASE_PART) and (hero == "warrior" or hero == "architect"):
 		unlock("chase_" + hero)                         # Caught The Enlightened One
 	if n < StoryLevels.EXT_BASE:
 		var c := StoryLevels.colosseum_of(n)
@@ -372,6 +395,8 @@ static func _check_meta() -> void:
 	if total >= 100:
 		unlock("badge_100")
 	for c in range(1, PARTS + 1):
+		if c == StoryLevels.DEMI_PART:
+			continue
 		for k in KINDS:
 			if _colosseum_has(c, k):
 				unlock("col_%d_%s" % [c, k])

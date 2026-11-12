@@ -26,7 +26,8 @@ extends CanvasLayer
 @export_enum("surface", "cave", "geode", "hive", "lab", "elevator", "enlightened", "sewer", "blasphemy",
 	"throne", "architectium", "workshop", "golem_hall", "dark_cave", "void", "altar", "spider_lair",
 	"thornwood", "fallen_ruins", "foothills", "silk_loom", "mirror_hall", "beast_den", "gallows", "world_tree",
-	"satan_cave", "sun_peak", "sun_collapse", "ash_cathedral") var theme := "surface":
+	"satan_cave", "sun_peak", "sun_collapse", "ash_cathedral",
+	"demi_plains", "demi_village", "demi_ravine", "demi_grove", "demi_door") var theme := "surface":
 	set(v):
 		theme = v
 		if _painter != null:
@@ -77,6 +78,9 @@ func _paint() -> void:
 		return
 	if C6Backdrops.handles(theme):                         # The Enlightened Chase (C6Backdrops.gd)
 		C6Backdrops.paint(_painter, theme, sz)
+		return
+	if DemiBackdrops.handles(theme):                       # DemiLand (DemiBackdrops.gd)
+		DemiBackdrops.paint(_painter, theme, sz)
 		return
 	match theme:
 		"cave":
@@ -788,6 +792,9 @@ func _paint_embers() -> void:
 		return
 	if C6Backdrops.handles(theme):
 		C6Backdrops.embers(_embers, theme, sz, _t, _ember_data)
+		return
+	if DemiBackdrops.handles(theme):
+		DemiBackdrops.embers(_embers, theme, sz, _t, _ember_data)
 		return
 	match theme:
 		"elevator":

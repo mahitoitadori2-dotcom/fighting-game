@@ -29,7 +29,10 @@ extends RefCounted
 ##   altar        true = The Shining's altar (kill it or leave through the dark gate)
 ##   void_mod     true = void enemies are weakened / the Massacre strengthened by the Shining choice
 ##   tile         enemy shown on the board tile (default: the boss / the toughest enemy)
-##   hero         "warrior" (default), "architect", or "choice" (Colosseum 5: the hero you picked)
+##   hero         "warrior" (default), "architect", or "choice" (Colosseum 5: the hero you picked),
+##                "demi" (DemiLand: the hero who did NOT chase the Enlightened One)
+##   open_world   true = an OPEN WORLD level (DemiLand: DemiLand.tscn, Souls rules, 5-15 minutes)
+##   world_maps   open world: the map keys of its regions (Map Catalogue, region backdrops)
 ##   partner      true = the other hero fights beside you as a CPU partner (revives when it falls)
 ##   coin_flip    true = coin flip at the start: HEADS 2 Ambushers / TAILS Devilish Grin + Pained One
 ##   quick_boss   true = NO pre-fight: straight into the boss (The Sun)
@@ -37,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12]          # 6th = THE ENLIGHTENED CHASE (levels 51-62)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1]       # 6th = THE ENLIGHTENED CHASE (levels 51-62), 7th = DEMILAND (63)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -148,6 +151,13 @@ const MAPS := {
 	# FM: The Forge, beyond the Forge Mother's Blast Workshop
 	"the_forge":     {"bg": "the_forge", "ground": 12, "walls": "foundry", "half_width": 840.0, "music": "story_workshop", "zone": "THE FORGE"},
 	"forge_heart":   {"bg": "forge_heart", "ground": 12, "walls": "foundry", "half_width": 860.0, "music": "none", "zone": "THE HEART OF THE FORGE"},
+	# ----- DEMILAND (DemiBackdrops.gd): ONE open world, 5 regions (each also a Versus map) -----
+	# A dark land under a dark sky (darker than dark at night). Dead trees, primitive people.
+	"demi_plains":  {"bg": "demi_plains", "ground": 27, "walls": "thorn", "half_width": 860.0, "music": "story_demiland", "zone": "THE DEAD PLAINS"},
+	"demi_village": {"bg": "demi_village", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE TRIBE VILLAGE"},
+	"demi_ravine":  {"bg": "demi_ravine", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE TIGER RAVINE"},
+	"demi_grove":   {"bg": "demi_grove", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE DEAD GROVE"},
+	"demi_door":    {"bg": "demi_door", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE ANCIENT DOOR"},
 }
 
 # ======================= BOSS EXTENSION LEVELS =======================
@@ -533,15 +543,35 @@ const LEVELS := {
 		"boss_music": "boss_enlightened", "boss_color": Color(1.0, 0.9, 0.5),
 		"boss_sub": "No More Running", "boss_line": "You want me? Then CATCH EVERYTHING I OWN.",
 		"cutscene_out": "enl_end"},
+
+	# ======================= DEMILAND (level 63) =======================
+	# Its own Story part: ONE OPEN-WORLD level (5-15 minutes, DemiLand.gd). You play the hero who
+	# did NOT chase the Enlightened One. Souls rules (roll + stamina), shrines, day / night, a map.
+	# 3 bosses (Tribe Master, Last Tiger, LIVING Tree Lord), each drops an ARTIFACT; put all three
+	# into the Ancient Door to open it and finish.
+	63: {"title": "DEMILAND", "theme": "demi_door", "map": "demi_door", "hero": "demi", "open_world": true,
+		"world_maps": ["demi_plains", "demi_village", "demi_ravine", "demi_grove", "demi_door"],
+		"intro": "A dark land. Dead trees. Primitive people. Everything else is extinct.",
+		"waves": [], "boss": "", "tile": "tribe_master"},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
 ## "THE ENLIGHTENED CHASE" for the part after Colosseum 5 (it is NOT called a Colosseum).
 const CHASE_PART := 6
+## DEMILAND: the part after The Enlightened Chase (one open-world level, 63).
+const DEMI_PART := 7
+const DEMI_LEVEL := 63
 
 
 static func part_name(c: int) -> String:
+	if c == DEMI_PART:
+		return "DEMILAND"
 	return "THE ENLIGHTENED CHASE" if c == CHASE_PART else "COLOSSEUM %d" % c
+
+
+## Is level n an open-world level (DemiLand)?
+static func is_open_world(n: int) -> bool:
+	return bool(get_level(n).get("open_world", false))
 
 
 static func get_level(n: int) -> Dictionary:
@@ -605,6 +635,9 @@ static func hero_of(n: int) -> String:
 		return "anti"                                      # Anti Architect run: solo, every level
 	if h == "choice" or h == "chase":                  # Colosseum 5 / The Enlightened Chase: your pick
 		return StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
+	if h == "demi":                                    # DemiLand: the one who did NOT chase him
+		var chased := StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
+		return "architect" if chased == "warrior" else "warrior"
 	if h == "ext":                                     # Boss extensions: Warrior OR Architect (picked in the menu)
 		return StoryProgress.ext_hero if StoryProgress.ext_hero != "" else PLAYER_CHARACTER
 	return h
@@ -805,6 +838,27 @@ static func enemy_script(id: String) -> Script:
 			return RadioactiveChorus
 		"forge_father":
 			return ForgeFather
+		# ----- DemiLand -----
+		"tribe_hunter":
+			return TribeHunter
+		"tribe_brute":
+			return TribeBrute
+		"tribe_shaman":
+			return TribeShaman
+		"tiger_cub":
+			return TigerCub
+		"pelt_cultist":
+			return PeltCultist
+		"husk":
+			return HuskTreant
+		"sapling":
+			return RotSapling
+		"tribe_master":
+			return TribeMaster
+		"last_tiger":
+			return LastTiger
+		"tree_lord":
+			return TreeLord
 	return Parasite
 
 
@@ -968,5 +1022,8 @@ static func make_enemy(id: String) -> BaseEnemy:
 			return RadioactiveChorus.new()
 		"forge_father":
 			return ForgeFather.new()
+	if id in ["tribe_hunter", "tribe_brute", "tribe_shaman", "tiger_cub", "pelt_cultist", "husk", "sapling",
+			"tribe_master", "last_tiger", "tree_lord"]:
+		return enemy_script(id).new()                    # DemiLand enemies + bosses
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()

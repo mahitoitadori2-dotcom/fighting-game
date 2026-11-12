@@ -48,6 +48,7 @@ const MAP_TILE := {
 	"sun_peak": Color(0.85, 0.72, 0.35), "ash_cathedral": Color(0.45, 0.10, 0.10),
 	"golden_dunes": Color(0.78, 0.58, 0.28), "pilgrim_road": Color(0.70, 0.62, 0.48), "glass_oasis": Color(0.35, 0.60, 0.70),
 	"prime_sanctum": Color(0.55, 0.36, 0.14), "sky_reliquary": Color(0.92, 0.80, 0.45),
+	"demi_door": Color(0.20, 0.18, 0.22),
 }
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
@@ -56,7 +57,8 @@ const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra
 	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11,
 	"ambusher": 0.45, "grin": 0.42, "pained": 0.3, "imp": 0.8, "needle": 0.36, "brothers": 0.3, "animal_lord": 0.13,
 	"executor": 0.14, "mother_nature": 0.15, "false_god": 0.12, "satan": 0.1, "the_sun": 0.11,
-	"counselor": 0.32, "camel": 0.2, "first_prime": 0.22, "enlightened_one": 0.26}
+	"counselor": 0.32, "camel": 0.2, "first_prime": 0.22, "enlightened_one": 0.26,
+	"tribe_master": 0.2, "last_tiger": 0.22, "tree_lord": 0.14}
 ## Board page per Colosseum: title, board gradient, boss label colour. Tile colours and the
 ## zone labels come from each level's map (MAP_TILE / StoryLevels.MAPS "zone").
 const PAGES := {
@@ -72,7 +74,10 @@ const PAGES := {
 		"board": [Color(0.18, 0.08, 0.08), Color(0.55, 0.42, 0.20)], "boss_label": Color(1.0, 0.85, 0.4)},
 	6: {"title": "STORY MODE  -  THE ENLIGHTENED CHASE",
 		"board": [Color(0.62, 0.45, 0.20), Color(0.85, 0.70, 0.38)], "boss_label": Color(1.0, 0.95, 0.6)},
+	7: {"title": "STORY MODE  -  DEMILAND",
+		"board": [Color(0.12, 0.11, 0.13), Color(0.20, 0.17, 0.18)], "boss_label": Color(0.8, 0.72, 0.95)},
 }
+const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
 
 const WOOD := Color(0.30, 0.17, 0.09)
@@ -241,9 +246,9 @@ func _refresh_ui() -> void:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
 	_title.text = String(_page_data().get("title", "STORY MODE"))
 	if _celebrate:
-		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun", 6: "The Enlightened One"}
+		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun", 6: "The Enlightened One", 7: "The Ancient Door"}
 		if _final_page():
-			_info.text = "TO BE CONTINUED...  The Enlightened One has fallen, but his hoard rose into a dark cloud."
+			_info.text = "TO BE CONTINUED...  The Ancient Door of DemiLand stands open. What waits beyond it?"
 		else:
 			_info.text = "%s COMPLETE!  %s has fallen.  Next: %s" % [
 				StoryLevels.part_name(_page), boss_names.get(_page, "The boss"), StoryLevels.part_name(_page + 1)]
@@ -262,7 +267,11 @@ func _refresh_ui() -> void:
 			hero_name = "YOU: %s  +  CPU partner: %s" % [h.to_upper(), "ARCHITECT" if h == "warrior" else "WARRIOR"]
 		elif String(lv.get("hero", "")) == "chase":
 			hero_name = "YOU: %s  -  alone (your partner is hurt)" % StoryLevels.hero_of(_pawn_space).to_upper()
+		elif String(lv.get("hero", "")) == "demi":
+			hero_name = "YOU: %s  -  the one who did NOT chase him" % StoryLevels.hero_of(_pawn_space).to_upper()
 		var tag := "  (BOSS)" if boss else ""
+		if StoryLevels.is_open_world(_pawn_space):
+			tag = "  (OPEN WORLD  -  5-15 min)"
 		if String(lv.get("boss_sub", "")).begins_with("Mini-Boss"):
 			tag = "  (MINI-BOSS)"
 		if StoryLevels.is_optional(_pawn_space):
@@ -498,7 +507,10 @@ func _click(pos: Vector2) -> void:
 			return
 	for n in range(1, StoryLevels.count() + 1):
 		var half := (BOSS_TILE if _is_boss(n) else TILE) * 0.5 + 6.0
-		if pos.distance_to(_space_pos(n)) <= half:
+		var hit := pos.distance_to(_space_pos(n)) <= half
+		if StoryLevels.is_open_world(n):
+			hit = _world_rect(n).grow(6.0).has_point(pos)
+		if hit:
 			if n > StoryProgress.unlocked_level:
 				SoundManager.play_sfx("block")              # Locked
 				return
@@ -557,7 +569,7 @@ func _on_play() -> void:
 		fall.caption = "LEVEL %d:  %s" % [_pawn_space, StoryLevels.get_level(_pawn_space)["title"]]
 		add_child(fall)
 		await fall.finished
-	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+	get_tree().change_scene_to_file(DEMI_SCENE if StoryLevels.is_open_world(_pawn_space) else StoryManager.ARENA_SCENE)
 
 
 ## Colosseum 5: play as the other hero from now on (saved). The one you leave becomes
@@ -884,6 +896,19 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, true)
+	elif _page >= StoryLevels.DEMI_PART:
+		# DemiLand: a dark land of dead trees under a dark sky, a colossal door in the middle
+		var base7 := r.position.y + r.size.y
+		for k in 9:
+			var tx := r.position.x + r.size.x * (0.05 + 0.11 * float(k))
+			var th := 70.0 + 30.0 * sin(float(k) * 1.9)
+			c.draw_line(Vector2(tx, base7 - 6.0), Vector2(tx + 4.0, base7 - th), Color(0.04, 0.035, 0.04, 0.8), 5.0)
+			c.draw_line(Vector2(tx + 2.0, base7 - th * 0.6), Vector2(tx + 22.0, base7 - th * 0.85), Color(0.04, 0.035, 0.04, 0.8), 3.0)
+			c.draw_line(Vector2(tx + 2.0, base7 - th * 0.45), Vector2(tx - 18.0, base7 - th * 0.7), Color(0.04, 0.035, 0.04, 0.8), 3.0)
+		var door := Rect2(r.position.x + r.size.x * 0.80 - 40.0, r.position.y + r.size.y * 0.12, 80.0, r.size.y * 0.5)
+		c.draw_rect(door, Color(0.10, 0.09, 0.12, 0.85))
+		c.draw_rect(door.grow(-12.0), Color(0.03, 0.03, 0.04, 0.9))
+		c.draw_circle(door.get_center(), 40.0 + 4.0 * sin(_t * 2.0), Color(0.6, 0.5, 0.9, 0.08))
 	elif _page >= StoryLevels.CHASE_PART:
 		# The Enlightened Chase: golden dunes, statues of him, a stairway of light into the sky (right)
 		var base6 := r.position.y + r.size.y
@@ -967,7 +992,53 @@ func c_dot(p: Vector2, lit: bool, alpha: float) -> void:
 	_cv.draw_circle(p, 4.0, Color(GOLD.r, GOLD.g, GOLD.b, alpha) if lit else Color(0.55, 0.45, 0.4, alpha))
 
 
+## The OPEN-WORLD level (DemiLand) is a RECTANGLE on the board: a little map of the land.
+func _world_rect(n: int) -> Rect2:
+	var p := _space_pos(n)
+	return Rect2(p - Vector2(110, 50), Vector2(220, 100))
+
+
+func _world_space(n: int) -> void:
+	var c := _cv
+	var r := _world_rect(n)
+	var unlocked := n <= StoryProgress.unlocked_level
+	var cleared := StoryProgress.level_cleared(n)
+	var here := n == _pawn_space and _hop_t < 0.0
+	c.draw_colored_polygon(FighterArt.rrect_points(r.grow(5.0), 10.0), WOOD_DARK)
+	var top := Rect2(r.position + Vector2(0, -6), r.size)
+	c.draw_colored_polygon(FighterArt.rrect_points(top, 8.0), Color(0.13, 0.12, 0.14) if unlocked else Color(0.22, 0.21, 0.21))
+	if unlocked:
+		# The land in miniature: five regions, the floor, the door in the middle, three boss marks
+		for reg in DemiWorld.REGIONS:
+			var x0 := top.position.x + (float(reg["x0"]) + DemiWorld.HALF) / (DemiWorld.HALF * 2.0) * top.size.x
+			var x1 := top.position.x + (float(reg["x1"]) + DemiWorld.HALF) / (DemiWorld.HALF * 2.0) * top.size.x
+			c.draw_rect(Rect2(x0 + 2.0, top.position.y + 6.0, x1 - x0 - 4.0, top.size.y - 12.0), (reg["col"] as Color).darkened(0.3))
+		var gy := top.position.y + top.size.y * 0.72
+		c.draw_line(Vector2(top.position.x + 6.0, gy), Vector2(top.end.x - 6.0, gy), Color(0.5, 0.45, 0.4), 2.0)
+		var dx := top.get_center().x
+		c.draw_rect(Rect2(dx - 7.0, gy - 26.0, 14.0, 26.0), Color(0.45, 0.42, 0.55))
+		for b in DemiWorld.BOSSES:
+			var bx := top.position.x + (float(b["x"]) + DemiWorld.HALF) / (DemiWorld.HALF * 2.0) * top.size.x
+			c.draw_set_transform(Vector2(bx, gy), 0.0, Vector2(0.09, 0.09))
+			StoryLevels.draw_portrait(c, String(b["id"]), _t)
+			c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		FighterArt.label(c, Vector2(top.get_center().x, top.position.y + 22.0), "DEMILAND", 18, Color(0.85, 0.80, 0.95))
+	else:
+		_lock(top.get_center())
+	c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), GOLD if cleared else Color(0, 0, 0), 3.5, true)
+	if here:
+		c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), Color(1, 1, 1, 0.5 + 0.5 * sin(_t * 5.0)), 6.0, true)
+	var badge := r.position + Vector2(6, -2)
+	c.draw_circle(badge, 14.0, Color(0, 0, 0))
+	c.draw_circle(badge, 11.5, GOLD if unlocked else Color(0.5, 0.5, 0.5))
+	FighterArt.label(c, badge + Vector2(0, 6), str(n), 16, Color(0.1, 0.05, 0.02))
+	FighterArt.label(c, Vector2(r.get_center().x, r.end.y + 20.0), "OPEN WORLD", 15, _page_data()["boss_label"])
+
+
 func _space(n: int) -> void:
+	if StoryLevels.is_open_world(n):
+		_world_space(n)
+		return
 	var c := _cv
 	var p := _space_pos(n)
 	var boss := _is_boss(n)

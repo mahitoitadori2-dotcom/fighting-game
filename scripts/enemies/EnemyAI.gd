@@ -20,6 +20,10 @@ var dy := 0.0
 var _think := 0.0
 var _ground: ArenaGround
 
+## OPEN WORLD (DemiLand): enemies only notice a target closer than this (0 = always, every
+## other mode). Further away they just stand where they are.
+static var leash := 0.0
+
 
 func _init() -> void:
 	rng.randomize()
@@ -37,6 +41,9 @@ func update(enemy: BaseEnemy, delta: float) -> void:
 		e.move_dir = 0.0
 		return
 	var d := target.global_position - e.global_position
+	if leash > 0.0 and absf(d.x) > leash:
+		e.move_dir = 0.0                          # Too far away: hasn't noticed you
+		return
 	dist = absf(d.x)
 	dir = 1.0 if d.x >= 0.0 else -1.0
 	dy = d.y

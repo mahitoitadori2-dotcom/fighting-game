@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/CombatManager.gd" id="1_combat"]
+[ext_resource type="Script" path="res://scripts/story/HellBackground.gd" id="2_bg"]
+[ext_resource type="Script" path="res://scripts/ArenaGround.gd" id="3_ground"]
+[ext_resource type="Script" path="res://scripts/story/CaveWall.gd" id="4_wall"]
+[ext_resource type="Script" path="res://scripts/story/demi/DemiLand.gd" id="5_demi"]
+[ext_resource type="Script" path="res://scripts/story/demi/DemiCamera.gd" id="6_cam"]
+
+[node name="DemiLand" type="Node2D"]
+script = ExtResource("1_combat")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+script = ExtResource("2_bg")
+
+[node name="ArenaGround" type="StaticBody2D" parent="."]
+position = Vector2(0, 525)
+script = ExtResource("3_ground")
+width = 18300.0
+depth = 320.0
+seed_value = 63
+ground_theme = 2
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(-9000, 525)
+script = ExtResource("4_wall")
+side = -1
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(9000, 525)
+script = ExtResource("4_wall")
+side = 1
+
+[node name="StoryManager" type="Node2D" parent="."]
+script = ExtResource("5_demi")
+player_spawn = Vector2(-310, 525)
+
+[node name="ArenaCamera" type="Camera2D" parent="."]
+position = Vector2(-310, 375)
+zoom = Vector2(0.8, 0.8)
+script = ExtResource("6_cam")
+min_zoom = 0.62
+max_zoom = 0.82
+padding = Vector2(760, 440)

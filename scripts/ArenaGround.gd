@@ -33,7 +33,7 @@ extends StaticBody2D
 @export_enum("Stone", "Void", "Hell", "Geode", "Scrap", "Lab", "Elevator", "Marble", "Sewer", "Blasphemy",
 	"Burnt", "Cobble", "Foundry", "DarkRock", "Bones",
 	"Loom", "Mirror", "Den", "Gallows", "Garden", "Hellrock", "SunStone", "Thorn", "Ruin", "Snow", "Cathedral",
-	"Sand") var ground_theme := 0:
+	"Sand", "Ash") var ground_theme := 0:
 	set(v):
 		ground_theme = v
 		_apply_theme()
@@ -198,6 +198,9 @@ const C2_THEMES := {
 	# ----- The Enlightened Chase -----
 	26: [Color(1.0, 0.82, 0.35), 1.5, Color(0.88, 0.72, 0.42), Color(0.98, 0.86, 0.56), Color(0.70, 0.55, 0.30), Color(0.74, 0.58, 0.34),     # Sand: golden desert
 		Color(0.60, 0.46, 0.26), Color(0.50, 0.38, 0.20), Color(0.92, 0.80, 0.52), Color(1.0, 0.85, 0.35), Color(1.0, 0.97, 0.75), Color(0.75, 0.55, 0.15)],
+	# ----- DemiLand -----
+	27: [Color(0.30, 0.26, 0.24), 1.5, Color(0.17, 0.15, 0.15), Color(0.26, 0.23, 0.22), Color(0.10, 0.09, 0.09), Color(0.11, 0.10, 0.10),     # Ash: dead grey-black soil
+		Color(0.08, 0.07, 0.07), Color(0.06, 0.05, 0.06), Color(0.22, 0.20, 0.19), Color(0.55, 0.50, 0.62), Color(0.80, 0.78, 0.86), Color(0.30, 0.26, 0.36)],
 }
 
 

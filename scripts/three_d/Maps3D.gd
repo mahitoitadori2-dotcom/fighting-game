@@ -25,6 +25,7 @@ const FAMILY := {
 	"the_forge": "lava", "forge_heart": "lava",
 	"golden_dunes": "desert", "pilgrim_road": "desert", "glass_oasis": "desert",
 	"prime_sanctum": "holy", "sky_reliquary": "holy",
+	"demi_plains": "forest", "demi_village": "forest", "demi_ravine": "cave", "demi_grove": "forest", "demi_door": "void",
 }
 
 

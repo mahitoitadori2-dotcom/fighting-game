@@ -507,7 +507,8 @@ function renderPiece(p) {
 
 const scores = loadScores();
 const only = process.argv.slice(2).filter((x) => !x.startsWith('--'));
-for (const name of Object.keys(scores)) {
+const names = [...new Set([...Object.keys(scores), ...Object.keys(PIECES)])];   // Tracks that exist ONLY as new pieces too
+for (const name of names) {
   if (only.length && !only.includes(name)) continue;
   const t = Date.now();
   const out = PIECES[name] ? renderPiece(PIECES[name]) : render(sf, name, scores[name]);

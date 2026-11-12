@@ -179,6 +179,22 @@ Its own story part after Colosseum 5 (the UI always says "THE ENLIGHTENED CHASE"
 - **Bosses nerfed the same day** after CPU tests (the CPU died to both at first): First Prime 420 -> 300 HP, all hits -1/-2, longer cooldowns; Enlightened One 380/420 -> 180/210 HP, fewer / weaker falling objects, flees much less, long openings after each spell. Also fixed: an object still falling could kill you after he died and the level still counted as cleared.
 - **Tested (CPU only, it never dodges shadows):** 51, 52, 53 cleared; the First Prime beaten after the nerf; the Enlightened One won about half the time after the nerf. Not played by a human.
 
+## DemiLand (level 63, added 2026-11-12)
+
+The next Story part after The Enlightened Chase: ONE **open-world** level (5-15 minutes instead of 1-3). On the board it is a **rectangle** (a little map of the land), not a square. Scene `scenes/DemiLand.tscn`, code `scripts/story/demi/` (layout + scenery: `DemiWorld.gd`, flow: `DemiLand.gd`).
+
+- **The land:** a dark land with a dark sky by day and an even darker night (day 4 min / night 2 min). Primitive people live here, the trees are dead, everything else is extinct. One long strip, west to east: **Tiger Ravine | Dead Plains | Ancient Door (start) | Tribe Village | Dead Grove**. Each region has its own backdrop and is a Versus map in the Map Catalogue.
+- **Hero:** the one who did NOT chase the Enlightened One (the other of your Colosseum 5 pick; Anti Architect run = the Anti Architect). **Souls rules** are on (roll instead of block, stamina). Deep Faith Payoff applies.
+- **CamTons (checkpoints):** old rock pillars that make flames around themselves once woken. Walk to one to wake it, press **DOWN** to rest: full HP + flasks, but every enemy camp comes back. When you die ("YOU DIED") you wake at the last CamTon; artifacts are kept. 5 CamTons.
+- **Enemies** (9 camps, they wake when you come near, one more at night; they only notice you when you are close): Tribe Hunter (spear throw / stab), Tribe Brute (club, ground pound), Tribe Shaman (curse fire, bone rain, War Drum heals), Tiger Cub (bite, pounce), Pelt Cultist (bone darts, leap slash), Husk (walking dead tree: sweep, root spike), Rot Sapling (hop bite, seed spit).
+- **Bosses** (walk into the arena: a **wall of rock + fog** rises on both sides, every other creature goes back to sleep, nothing interrupts): **The Tribe Master** (village; War Club, Spear Volley, Chieftain Leap + shockwaves, Totem Fire, War Cry summons 2 hunters, enraged Drums of War), **The Last Tiger** (ravine; Claw, Maul, Pounce, Charge, Roar stun, enraged The Last Hunt = 3 charges), **The LIVING Tree Lord** (grove; first the Dead Tree Lord, then it wakes up glowing green: Branch Sweep, Root Spikes, Uproot Slam, Seed Rain, Saplings, enraged Thorn Storm). HP 330 / 300 / 240+300 (x1.35 Story buff). Each drops an **artifact**: Bone Crown, Tiger's Fang, Living Heart.
+- **Goal:** put the three artifacts into the **Ancient Door** (walk up to it). It opens = level clear. **No mission list.**
+- **Map:** M / TAB / R3 / the MAP button. Accurate (drawn from the same layout as the world), fills in as you explore: regions, scenery, CamTons, camps, bosses (crossed out when beaten), the door's sockets, you. The game does not pause.
+- **Music:** `story_demiland` (day), `story_demiland_night`, `boss_tribe`, `boss_tiger`, `boss_treelord` (all new compositions, real instruments).
+- **Achievements:** The Ancient Door, 3 boss trophies, 3 "Bare Will" (a boss without flasks or Powers), Cartographer of Ash (every region), Never Woke at a CamTon (no deaths), No Rest for the Living (no resting), Through the Blade (25 dodges).
+- **Fixed during testing:** the Last Tiger's Charge hit every frame (up to 60 hits a second): now one hit per charge. Camps woke two at a time: now one.
+- **Tested** (CPU + scripted): every boss fight starts with both walls and no other enemies, every boss drops its artifact, the door opens with 3, the level saves as cleared and you return to the board. The CPU alone could not beat the bosses (it lost ~8-14 HP per 12 s while taking only 25% damage): **balance not checked by a human.** Progress inside the level is NOT saved if you quit.
+
 ## Boss Extension Levels (added 2026-11-10)
 
 After you beat certain bosses, **3 extra levels** open that go DOWN or UP from that boss's arena: 2 enemy levels + 1 final boss. They are named after the boss's initials: **BC2, BC3, BC4**... The Blinded Lord has none.

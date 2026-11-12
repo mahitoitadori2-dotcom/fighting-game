@@ -59,6 +59,12 @@ const DESC := {
 	"reactor_core": "The Reactor Core: a melted reactor glowing green.",
 	"the_forge": "The Forge: catwalks, coal chutes, ovens and rivers of molten metal.",
 	"forge_heart": "The Heart of the Forge: a giant crucible of molten metal.",
+	# DemiLand (one open world, five regions)
+	"demi_plains": "DemiLand - the Dead Plains: flat ash fields, dead forests, broken mountains under a dark sky.",
+	"demi_village": "DemiLand - the Tribe Village: huts on a hill, smoke columns and totems of the primitive people.",
+	"demi_ravine": "DemiLand - the Tiger Ravine: cliff walls, orange dust and a giant tiger skull on the rocks.",
+	"demi_grove": "DemiLand - the Dead Grove: colossal dead trees in the mist, one of them still alive.",
+	"demi_door": "DemiLand - the Ancient Door: a colossal ruined monolith with faint violet runes.",
 }
 
 static var _cache: Array = []
@@ -81,7 +87,9 @@ static func entries() -> Array:
 		levels.append_array([first, first + 1, first + 2])
 	for n: int in levels:
 		var key := String(StoryLevels.get_level(n).get("map", ""))
-		for k in [key, String(StoryLevels.get_level(n).get("boss_map", ""))]:
+		var keys: Array = [key, String(StoryLevels.get_level(n).get("boss_map", ""))]
+		keys.append_array(StoryLevels.get_level(n).get("world_maps", []))     # Open world: every region is a map
+		for k in keys:
 			if k == "" or seen.has(k) or SKIP.has(k) or not StoryLevels.MAPS.has(k):
 				continue
 			seen[k] = true

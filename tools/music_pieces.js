@@ -205,10 +205,97 @@ const PIECES = {
       { t: 'hit', inst: 'drums', key: 54, from: 0, to: 16, beats: [1, 4], vel: 70 },
       { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 96, dur: 3 },
     ] },
+  // ======================= DEMILAND (open world) =======================
+  // ---------------- DEMILAND (day): an open field under a dead sky (Elden Ring) ----------------
+  // E minor 3/4. A: harp + solo cello. A': solo violin. B: horn + choir swell over the whole land.
+  story_demiland: { bpm: 66, meter: 3, rev: 0.4,
+    chords: 'Em Em C C G G D D  Em Em C C Am Am B B  C C G G Am B Em Em',
+    parts: [
+      { t: 'arp', inst: 'harp', from: 0, to: 24, pat: [[0, 0, 1.5], [1, 1, 1], [2, 2, 1]], oct: 1, vel: 58 },
+      { t: 'pad', inst: 'slowstrings', from: 0, to: 24, vel: 50 },
+      { t: 'bass', inst: 'contrabass', from: 0, to: 24, pat: [[0, 3]], vel: 56 },
+      { t: 'mel', inst: 'cello', bar: 0, oct: -1, vel: 90, notes: 'E4:2 B4:1 A4:1.5 G4:0.5 F#4:1 G4:3 E4:3 D4:2 G4:1 F#4:1.5 E4:0.5 D4:1 A4:3 F#4:3' },
+      { t: 'mel', inst: 'violin', bar: 8, vel: 94, notes: 'E5:2 B5:1 A5:1.5 G5:0.5 F#5:1 G5:2 E5:1 C5:3 A4:1 C5:1 E5:1 A5:3 B5:1.5 A5:0.5 G5:1 F#5:3' },
+      { t: 'mel', inst: 'horn', bar: 16, vel: 100, notes: 'E5:2 G5:1 C6:3 B5:2 G5:1 D5:3 C5:1 E5:1 A5:1 B5:2 D#5:1 E5:3 E5:3' },
+      { t: 'pad', inst: 'choir', from: 16, to: 24, oct: 1, vel: 64 },
+      { t: 'hit', inst: 'timpani', key: 40, from: 16, to: 24, beats: [0], every: 2, vel: 80 },
+      { t: 'hit', inst: 'bells', key: 64, from: 0, to: 24, beats: [0], every: 8, vel: 46, dur: 4 },
+    ] },
+
+  // ---------------- DEMILAND (night): darker than dark ----------------
+  // D minor 4/4, very slow. Low drones, a lonely piano, far bells, voices in the dark.
+  story_demiland_night: { bpm: 54, meter: 4, rev: 0.45,
+    chords: 'Dm Dm Bb Bb Gm Gm A A Dm Bb A Dm',
+    parts: [
+      { t: 'pad', inst: 'slowstrings', from: 0, to: 12, oct: -1, vel: 50 },
+      { t: 'pad', inst: 'oohs', from: 0, to: 12, vel: 40 },
+      { t: 'bass', inst: 'contrabass', from: 0, to: 12, pat: [[0, 4]], vel: 58 },
+      { t: 'mel', inst: 'piano', bar: 0, vel: 70, notes: 'D5:3 r:1 C5:2 A4:2 Bb4:4 r:4 G4:2 Bb4:2 D5:4 C#5:4 r:4 F5:2 E5:2 D5:4 C#5:2 E5:2 D5:4' },
+      { t: 'mel', inst: 'celesta', bar: 0, oct: 1, vel: 34, shift: 1.0, notes: 'D5:3 r:1 C5:2 A4:2 Bb4:4 r:4 G4:2 Bb4:2 D5:4 C#5:4 r:4 F5:2 E5:2 D5:4 C#5:2 E5:2 D5:4' },
+      { t: 'hit', inst: 'bells', key: 50, from: 0, to: 12, beats: [0], every: 3, vel: 52, dur: 5 },
+      { t: 'hit', inst: 'timpani', key: 38, from: 0, to: 12, beats: [0], every: 4, vel: 50 },
+    ] },
+
+  // ---------------- THE TRIBE MASTER: a primitive war ritual ----------------
+  // A minor 4/4. Taiko + timpani war drums, stabbing low strings, a chanting choir, then horns.
+  boss_tribe: { bpm: 126, meter: 4,
+    chords: 'Am Am Bb Am Am G F E  Am Am Bb Am F G Bb E',
+    parts: [
+      { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 12, 0, 1, 0, 12, 0], step: 0.5, oct: -1, vel: 88 },
+      { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1], [0.75, 0.5], [2, 1], [3, 0.5]], vel: 100 },
+      { t: 'bass', inst: 'tuba', from: 0, to: 16, pat: [[0, 2]], vel: 76 },
+      { t: 'mel', inst: 'choir', bar: 0, vel: 104, notes: 'A4:2 A4:1 C5:1 B4:2 A4:2 Bb4:2 A4:1 G4:1 A4:4 E5:2 D5:1 C5:1 B4:2 G4:2 A4:2 F4:2 E4:4' },
+      { t: 'mel', inst: 'trombone', bar: 0, oct: -1, vel: 88, notes: 'A4:2 A4:1 C5:1 B4:2 A4:2 Bb4:2 A4:1 G4:1 A4:4 E5:2 D5:1 C5:1 B4:2 G4:2 A4:2 F4:2 E4:4' },
+      { t: 'mel', inst: 'horn', bar: 8, vel: 112, notes: 'E5:1 F5:1 E5:1 D5:1 C5:2 A4:2 D5:1 F5:1 D5:1 Bb4:1 A4:4 A4:1 C5:1 F5:1 A5:1 G5:2 D5:2 F5:2 D5:1 Bb4:1 B4:4' },
+      { t: 'mel', inst: 'trumpet', bar: 8, oct: 1, vel: 86, notes: 'E5:1 F5:1 E5:1 D5:1 C5:2 A4:2 D5:1 F5:1 D5:1 Bb4:1 A4:4 A4:1 C5:1 F5:1 A5:1 G5:2 D5:2 F5:2 D5:1 Bb4:1 B4:4' },
+      { t: 'pad', inst: 'choir', from: 8, to: 16, vel: 70 },
+      { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 0.75, 1.5, 2, 3, 3.5], vel: 112 },
+      { t: 'hit', inst: 'timpani', key: 33, from: 0, to: 16, beats: [0, 2], vel: 110 },
+      { t: 'hit', inst: 'drums', key: 82, from: 0, to: 16, beats: [0.5, 1, 2.5, 3], vel: 64 },
+      { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 100, dur: 3 },
+    ] },
+
+  // ---------------- THE LAST TIGER: a feral, starving hunt ----------------
+  // C# minor 6/8 (eighth = beat), fast. Galloping strings, racing violin, then horns + trombones.
+  boss_tiger: { bpm: 300, meter: 6,
+    chords: 'C#m C#m A A F#m F#m G# G#  C#m C#m A A D D G# G#',
+    parts: [
+      { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 7, 0, 0, 7], step: 1, oct: -1, vel: 86 },
+      { t: 'pad', inst: 'tremolo', from: 0, to: 16, vel: 56 },
+      { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 2], [3, 2]], vel: 100 },
+      { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 1], [2, 1], [3, 1], [5, 1]], oct: 1, vel: 84 },
+      { t: 'mel', inst: 'violin', bar: 0, vel: 110, notes: 'C#5:1 D#5:1 E5:1 G#5:3 F#5:1 E5:1 D#5:1 E5:3 E5:1 F#5:1 G#5:1 A5:3 A5:6 F#5:1 G#5:1 A5:1 C#6:3 B5:1 A5:1 G#5:1 F#5:3 D#5:1 E5:1 F#5:1 G#5:3 B#4:3 G#4:3' },
+      { t: 'mel', inst: 'horn', bar: 8, vel: 114, notes: 'C#5:3 E5:3 G#5:3 F#5:1 E5:1 D#5:1 E5:3 C#5:3 A4:6 C#5:3 E5:3 A5:3 F#5:3 G#5:3 F#5:1 E5:1 D#5:1 B#4:6' },
+      { t: 'mel', inst: 'trombone', bar: 8, oct: -1, vel: 98, notes: 'C#5:3 E5:3 G#5:3 F#5:1 E5:1 D#5:1 E5:3 C#5:3 A4:6 C#5:3 E5:3 A5:3 F#5:3 G#5:3 F#5:1 E5:1 D#5:1 B#4:6' },
+      { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 3], vel: 114 },
+      { t: 'hit', inst: 'timpani', key: 37, from: 0, to: 16, beats: [0], vel: 104 },
+      { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [5], vel: 72 },
+      { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 98, dur: 3 },
+    ] },
+
+  // ---------------- THE LIVING TREE LORD: the funeral of nature ----------------
+  // G minor 3/4, slow and heavy. Organ, low strings, an oboe lament, then horns + a full choir.
+  boss_treelord: { bpm: 80, meter: 3, rev: 0.4,
+    chords: 'Gm Gm Eb Eb Cm Cm D D  Gm Gm Eb Eb Cm D Gm Gm',
+    parts: [
+      { t: 'pad', inst: 'organ', from: 0, to: 16, vel: 70 },
+      { t: 'pad', inst: 'strings', from: 0, to: 16, oct: -1, vel: 62 },
+      { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1.5], [1.5, 1.5]], vel: 92 },
+      { t: 'bass', inst: 'bassoon', from: 0, to: 8, pat: [[0, 3]], oct: 1, vel: 70 },
+      { t: 'mel', inst: 'oboe', bar: 0, vel: 98, notes: 'G4:2 A4:1 Bb4:2 D5:1 C5:1.5 Bb4:0.5 A4:1 G4:3 Eb5:2 D5:1 C5:2 Bb4:1 A4:1.5 G4:0.5 F#4:1 D4:3' },
+      { t: 'mel', inst: 'cello', bar: 0, oct: -1, vel: 76, notes: 'G4:2 A4:1 Bb4:2 D5:1 C5:1.5 Bb4:0.5 A4:1 G4:3 Eb5:2 D5:1 C5:2 Bb4:1 A4:1.5 G4:0.5 F#4:1 D4:3' },
+      { t: 'mel', inst: 'horn', bar: 8, vel: 110, notes: 'D5:2 G5:1 F5:2 D5:1 Eb5:2 G5:1 Bb5:3 C6:2 G5:1 F#5:1.5 E5:0.5 F#5:1 G5:3 G5:3' },
+      { t: 'mel', inst: 'choir', bar: 8, vel: 96, notes: 'D5:2 G5:1 F5:2 D5:1 Eb5:2 G5:1 Bb5:3 C6:2 G5:1 F#5:1.5 E5:0.5 F#5:1 G5:3 G5:3' },
+      { t: 'pad', inst: 'choir', from: 8, to: 16, vel: 66 },
+      { t: 'hit', inst: 'timpani', key: 31, from: 0, to: 16, beats: [0], vel: 108 },
+      { t: 'hit', inst: 'timpani', key: 38, from: 8, to: 16, beats: [2, 2.5], vel: 88 },
+      { t: 'hit', inst: 'bells', key: 55, from: 0, to: 16, beats: [0], every: 4, vel: 70, dur: 4 },
+      { t: 'hit', inst: 'drums', key: 59, from: 0, to: 16, beats: [0], every: 8, vel: 96, dur: 4 },
+    ] },
 };
 
 // ------------------------------------------------------------------------------------------
-const NN = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+const NN ={ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 function midi(s) {                                       // "C#4" -> 61 (B#4 = C5, Cb4 = B3)
   const m = /^([A-G])([#b]?)(-?\d)$/.exec(s);
   if (!m) throw new Error('bad note: ' + s);
