@@ -484,12 +484,33 @@ if (process.argv.includes('--check')) {                // List which recording e
   }
   process.exit(0);
 }
+// NEW COMPOSITIONS (tools/music_pieces.js): rendered twice back to back, the second copy is
+// kept, so the first copy's reverb / release tails flow into its start (seamless loop).
+const { PIECES, build } = require('./music_pieces.js');
+const DRUMS = new Set(['drums']);
+function renderPiece(p) {
+  const { notes, beats } = build(p);
+  const spb = 60 / p.bpm, L = beats * spb;
+  const buf = new Float32Array(Math.ceil((L * 2 + 4) * SR));
+  let s = 11;
+  const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+  for (let copy = 0; copy < 2; copy++) {
+    for (const n of notes) {
+      const at = copy * L + n.at * spb + (DRUMS.has(n.inst) ? 0 : (rnd() - 0.5) * 0.014);
+      note(sf, buf, I[n.inst], n.key, n.vel + Math.round((rnd() - 0.5) * 8), Math.max(0, at), n.dur * spb, 1.0);
+    }
+  }
+  const wet = reverb(buf, 0.88, 0.3, p.rev || 0.34, 0.85);
+  const a = Math.round(L * SR);
+  return wet.slice(a, a + Math.round(L * SR));
+}
+
 const scores = loadScores();
-const only = process.argv.slice(2);
+const only = process.argv.slice(2).filter((x) => !x.startsWith('--'));
 for (const name of Object.keys(scores)) {
   if (only.length && !only.includes(name)) continue;
   const t = Date.now();
-  const out = render(sf, name, scores[name]);
+  const out = PIECES[name] ? renderPiece(PIECES[name]) : render(sf, name, scores[name]);
   writeWav(path.join(ROOT, 'audio', 'music', name + '.wav'), out);
   console.log(`${name}: ${(out.length / SR).toFixed(1)} s  (${((Date.now() - t) / 1000).toFixed(1)} s)`);
 }
