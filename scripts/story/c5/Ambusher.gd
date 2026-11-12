@@ -141,4 +141,4 @@ static func draw_ambusher(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_circle(head + Vector2(ex, 0), 5.0, Color(EYE.r, EYE.g, EYE.b, 0.3))
 			c.draw_circle(head + Vector2(ex, 0), 2.6, EYE)
 	if pose == "slash":
-		c.draw_arc(chest + Vector2(30, 0), 54.0, -1.2, 1.0, 12, Color(1, 1, 1, 0.5), 3.0, true)
+		c.draw_arc(chest + Vector2(30, 0), 54.0, -1.2, 1.0, 12, Color(1, 1, 1, 0.5), 3.0, FighterArt.AA)

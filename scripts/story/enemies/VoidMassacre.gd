@@ -324,7 +324,7 @@ class DropShadow extends Node2D:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.25))
 		draw_circle(Vector2.ZERO, 150.0, Color(0, 0, 0, 0.45))
 		var blink := 0.5 + 0.5 * sin(_t * (30.0 if danger else 12.0))
-		draw_arc(Vector2.ZERO, 180.0, 0.0, TAU, 32, Color(1.0, 0.25, 0.2, 0.4 + 0.5 * blink), 8.0, true)
+		draw_arc(Vector2.ZERO, 180.0, 0.0, TAU, 32, Color(1.0, 0.25, 0.2, 0.4 + 0.5 * blink), 8.0, FighterArt.AA)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -366,8 +366,8 @@ static func draw_massacre(c: CanvasItem, s: Dictionary) -> void:
 				foot = Vector2(220 + float(i) * 20.0, -220.0) if pose == "legs_tele" else Vector2(240 + float(i) * 30.0, -4)
 			var knee := Vector2((hip.x + foot.x) * 0.5, -210.0 - absf(u - 0.5) * 30.0 + (10.0 if far else 0.0))
 			var col := LEG.darkened(0.4) if far else LEG
-			c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 12.0 if far else 14.0, true)
-			c.draw_polyline(PackedVector2Array([hip, knee, foot]), col, 8.0 if far else 10.0, true)
+			c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 12.0 if far else 14.0, FighterArt.AA)
+			c.draw_polyline(PackedVector2Array([hip, knee, foot]), col, 8.0 if far else 10.0, FighterArt.AA)
 			if not far:
 				c.draw_line(knee + Vector2(-4, 2), knee.lerp(foot, 0.3), Color(SHEEN.r, SHEEN.g, SHEEN.b, 0.35), 3.0)
 				c.draw_circle(knee, 5.0, BODY_HI)
@@ -410,4 +410,4 @@ static func draw_massacre(c: CanvasItem, s: Dictionary) -> void:
 	if pose == "beam_tele":
 		c.draw_circle(head + Vector2(40, -8), 30.0 + pt * 30.0, Color(1, 1, 1, 0.35))
 	if pose == "legs" and pt < 0.25:
-		c.draw_arc(Vector2(240, 0), 30.0 + pt * 320.0, PI, TAU, 18, Color(SHEEN.r, SHEEN.g, SHEEN.b, 1.0 - pt * 4.0), 7.0, true)
+		c.draw_arc(Vector2(240, 0), 30.0 + pt * 320.0, PI, TAU, 18, Color(SHEEN.r, SHEEN.g, SHEEN.b, 1.0 - pt * 4.0), 7.0, FighterArt.AA)

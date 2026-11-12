@@ -182,7 +182,7 @@ class Portal extends Node2D:
 		draw_circle(Vector2.ZERO, 74.0 * open, Color(0.3, 0.9, 0.45, 0.25))
 		for i in 6:
 			var r := (66.0 - float(i) * 10.0) * open
-			draw_arc(Vector2.ZERO, r, _t * (4.0 + float(i)), _t * (4.0 + float(i)) + 4.4, 20, Color(0.4, 1.0, 0.55, 0.9) if i % 2 == 0 else Color(0.7, 0.4, 1.0, 0.9), 5.0, true)
+			draw_arc(Vector2.ZERO, r, _t * (4.0 + float(i)), _t * (4.0 + float(i)) + 4.4, 20, Color(0.4, 1.0, 0.55, 0.9) if i % 2 == 0 else Color(0.7, 0.4, 1.0, 0.9), 5.0, FighterArt.AA)
 		draw_circle(Vector2.ZERO, 26.0 * open, Color(0.02, 0.0, 0.04))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
@@ -213,7 +213,7 @@ class GasBall extends Node2D:
 		draw_circle(Vector2.ZERO, r * 1.8, Color(DECAY.r, DECAY.g, DECAY.b, 0.2))
 		draw_circle(Vector2.ZERO, r, Color(0.08, 0.12, 0.05))
 		for i in 5:                                        # The casing: glass-like shell lines
-			draw_arc(Vector2.ZERO, r, _t * 2.0 + float(i) * 1.2, _t * 2.0 + float(i) * 1.2 + 0.9, 8, Color(0.85, 1.0, 0.8, 0.9), 3.0, true)
+			draw_arc(Vector2.ZERO, r, _t * 2.0 + float(i) * 1.2, _t * 2.0 + float(i) * 1.2 + 0.9, 8, Color(0.85, 1.0, 0.8, 0.9), 3.0, FighterArt.AA)
 		draw_circle(Vector2(sin(_t * 9.0), cos(_t * 7.0)) * r * 0.3, r * 0.45, Color(DECAY.r, DECAY.g, DECAY.b, 0.9))
 
 
@@ -295,9 +295,9 @@ class Rods extends Node2D:
 		for k in count:
 			var x := (float(k) - float(count - 1) * 0.5) * 30.0
 			var l := 30.0 + 110.0 * charge
-			draw_line(Vector2(x, -l * 0.5), Vector2(x, l * 0.5), Color(0.4, 1.0, 0.5, 0.3), 26.0, true)
-			draw_line(Vector2(x, -l * 0.5), Vector2(x, l * 0.5), Color(0.7, 1.0, 0.75), 10.0, true)
-			draw_line(Vector2(x, -l * 0.5), Vector2(x, l * 0.5), Color.WHITE, 3.0, true)
+			draw_line(Vector2(x, -l * 0.5), Vector2(x, l * 0.5), Color(0.4, 1.0, 0.5, 0.3), 26.0, FighterArt.AA)
+			draw_line(Vector2(x, -l * 0.5), Vector2(x, l * 0.5), Color(0.7, 1.0, 0.75), 10.0, FighterArt.AA)
+			draw_line(Vector2(x, -l * 0.5), Vector2(x, l * 0.5), Color.WHITE, 3.0, FighterArt.AA)
 
 
 ## The cutscene: the APHA Architect hovering over the Earth throws the rods; they pierce it.
@@ -403,8 +403,8 @@ class Barrier extends Node2D:
 		var a := fade
 		# Dark inside, glowing dome edge (a half dome over the floor)
 		draw_circle(Vector2.ZERO, radius, Color(0.02, 0.03, 0.04, 0.35 * a))
-		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(0.4, 1.0, 0.55, 0.25 * a), 26.0, true)
-		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(0.7, 1.0, 0.75, 0.9 * a), 5.0, true)
+		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(0.4, 1.0, 0.55, 0.25 * a), 26.0, FighterArt.AA)
+		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(0.7, 1.0, 0.75, 0.9 * a), 5.0, FighterArt.AA)
 		for i in 10:                                      # Hexagon cells on the dome
 			var ang := PI + PI * (float(i) + 0.5) / 10.0
 			draw_arc(Vector2.from_angle(ang) * radius * 0.98, 16.0, 0.0, TAU, 6, Color(0.6, 1.0, 0.7, 0.5 * a), 2.0)
@@ -425,11 +425,11 @@ class Barrier extends Node2D:
 		for f in 4:                                       # Fingers (claw-like)
 			var base := p + dir * 40.0 + n * (55.0 - float(f) * 36.0)
 			var tip := base + dir * 110.0 + n * (10.0 - float(f) * 6.0)
-			draw_line(base, tip, Color(0, 0, 0, a), 30.0, true)
-			draw_line(base, tip, Color(0.12, 0.14, 0.16, a), 22.0, true)
+			draw_line(base, tip, Color(0, 0, 0, a), 30.0, FighterArt.AA)
+			draw_line(base, tip, Color(0.12, 0.14, 0.16, a), 22.0, FighterArt.AA)
 			draw_circle(tip, 10.0, Color(0.4, 1.0, 0.55, a))
 		var th := p - dir * 10.0 + n * 70.0               # Thumb
-		draw_line(th, th + n * 60.0 + dir * 40.0, Color(0.12, 0.14, 0.16, a), 22.0, true)
+		draw_line(th, th + n * 60.0 + dir * 40.0, Color(0.12, 0.14, 0.16, a), 22.0, FighterArt.AA)
 		draw_circle(p, 20.0, Color(0.4, 1.0, 0.55, 0.5 * a))       # Sigil in the palm
 		FighterArt.outline(self, palm, 5.0, Color(0, 0, 0, a))
 

@@ -590,7 +590,7 @@ class TimeStopFx extends CanvasLayer:
 		_painter.draw_rect(Rect2(Vector2.ZERO, size), Color(0.18, 0.05, 0.28, 0.28 * intro))
 		if _t < 0.5:
 			var k := _t / 0.5
-			_painter.draw_arc(size * 0.5, size.x * 0.8 * k, 0.0, TAU, 64, Color(0.85, 0.7, 1.0, 1.0 - k), 14.0, true)
+			_painter.draw_arc(size * 0.5, size.x * 0.8 * k, 0.0, TAU, 64, Color(0.85, 0.7, 1.0, 1.0 - k), 14.0, FighterArt.AA)
 		_painter.draw_rect(Rect2(0, 0, size.x, 26), Color(0, 0, 0, 0.55 * intro))
 		_painter.draw_rect(Rect2(0, size.y - 26, size.x, 26), Color(0, 0, 0, 0.55 * intro))
 		FighterArt.label(_painter, Vector2(size.x * 0.5, 110), "TIME STOPPED  %.1f" % CombatManager.time_stop_left, 30, Color(0.85, 0.7, 1.0))
@@ -613,6 +613,6 @@ class RingFx extends Node2D:
 	func _draw() -> void:
 		var k := clampf(_t / duration, 0.0, 1.0)
 		var zone_r := lerpf(90.0, 18.0, 1.0 - window / duration)
-		draw_arc(Vector2.ZERO, zone_r, 0.0, TAU, 40, Color(1, 1, 1, 0.9), 2.0, true)
-		draw_arc(Vector2.ZERO, lerpf(90.0, 18.0, k), 0.0, TAU, 40, Color(1.0, 0.85, 0.15, 0.95), 5.0, true)
+		draw_arc(Vector2.ZERO, zone_r, 0.0, TAU, 40, Color(1, 1, 1, 0.9), 2.0, FighterArt.AA)
+		draw_arc(Vector2.ZERO, lerpf(90.0, 18.0, k), 0.0, TAU, 40, Color(1.0, 0.85, 0.15, 0.95), 5.0, FighterArt.AA)
 		FighterArt.label(self, Vector2(0, -100), "tap F when ring touches white", 12, Color(1, 1, 1, 0.8))

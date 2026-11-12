@@ -71,7 +71,7 @@ func draw_model_on(c: CanvasItem) -> void:
 	ExtArt.humanoid(c, art_state(), CFG)
 	if pose == "scream":
 		for i in 3:
-			c.draw_arc(Vector2(20, -136), 20.0 + float(i) * 18.0 + pose_t * 120.0, -0.8, 0.8, 10, Color(GLOW.r, GLOW.g, GLOW.b, maxf(0.0, 0.7 - pose_t * 2.0)), 4.0, true)
+			c.draw_arc(Vector2(20, -136), 20.0 + float(i) * 18.0 + pose_t * 120.0, -0.8, 0.8, 10, Color(GLOW.r, GLOW.g, GLOW.b, maxf(0.0, 0.7 - pose_t * 2.0)), 4.0, FighterArt.AA)
 
 
 static func draw_portrait(c: CanvasItem, t: float) -> void:

@@ -160,7 +160,7 @@ func _paint_surface(sz: Vector2) -> void:
 	_painter.draw_line(Vector2(vx - 55, sz.y * 0.36), Vector2(vx + 45, sz.y * 0.36), Color(1.0, 0.65, 0.2), 6.0)
 	for k in 3:
 		var sx := vx - 40.0 + float(k) * 35.0
-		_painter.draw_polyline(PackedVector2Array([Vector2(sx, sz.y * 0.37), Vector2(sx - 20.0 + float(k) * 10.0, sz.y * 0.5), Vector2(sx - 50.0 + float(k) * 30.0, sz.y * 0.65), Vector2(sx - 80.0 + float(k) * 50.0, vb)]), Color(1.0, 0.4, 0.08, 0.85), 4.0, true)
+		_painter.draw_polyline(PackedVector2Array([Vector2(sx, sz.y * 0.37), Vector2(sx - 20.0 + float(k) * 10.0, sz.y * 0.5), Vector2(sx - 50.0 + float(k) * 30.0, sz.y * 0.65), Vector2(sx - 80.0 + float(k) * 50.0, vb)]), Color(1.0, 0.4, 0.08, 0.85), 4.0, FighterArt.AA)
 	# Smoke column
 	for k in 6:
 		_painter.draw_circle(Vector2(vx + float(k) * 18.0 - 10.0, sz.y * 0.3 - float(k) * 45.0), 40.0 + float(k) * 14.0, Color(0.08, 0.03, 0.03, 0.5))
@@ -252,7 +252,7 @@ func _paint_hive(sz: Vector2) -> void:
 		for k in 9:
 			var t := float(k) / 8.0
 			pts.append(Vector2(cx + (t - 0.5) * 240.0, sin(t * PI) * sag))
-		_painter.draw_polyline(pts, Color(0.03, 0.03, 0.04), 4.0, true)
+		_painter.draw_polyline(pts, Color(0.03, 0.03, 0.04), 4.0, FighterArt.AA)
 	# Scrap heaps (silhouettes of plates, pipes, gears)
 	for i in 7:
 		var hx := rng.randf() * sz.x
@@ -361,8 +361,8 @@ func _skeleton(c: Vector2, tilt: float, s: float) -> void:
 	p.draw_colored_polygon(PackedVector2Array([Vector2(-14, 8), Vector2(14, 8), Vector2(8, 22), Vector2(-8, 22)]), bone)
 	for seg in [[Vector2(-18, -62), Vector2(-26, -30), Vector2(-22, 0)], [Vector2(-6, 22), Vector2(-10, 60), Vector2(-6, 96)], [Vector2(6, 22), Vector2(14, 58), Vector2(10, 92)]]:
 		var line := PackedVector2Array(seg)
-		p.draw_polyline(line, dark, 6.0, true)
-		p.draw_polyline(line, bone, 3.5, true)
+		p.draw_polyline(line, dark, 6.0, FighterArt.AA)
+		p.draw_polyline(line, bone, 3.5, FighterArt.AA)
 	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -404,7 +404,7 @@ func _paint_enlightened(sz: Vector2) -> void:
 	for i in 6:
 		var hc := Vector2(rng.randf() * sz.x, rng.randf_range(0.08, 0.4) * sz.y)
 		p.draw_set_transform(hc, 0.0, Vector2(1.0, 0.3))
-		p.draw_arc(Vector2.ZERO, rng.randf_range(20.0, 46.0), 0.0, TAU, 24, Color(1.0, 0.8, 0.3, 0.6), 5.0, true)
+		p.draw_arc(Vector2.ZERO, rng.randf_range(20.0, 46.0), 0.0, TAU, 24, Color(1.0, 0.8, 0.3, 0.6), 5.0, FighterArt.AA)
 	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# The white city: towers with golden domes (back row paler)
 	for layer_i in 2:
@@ -651,7 +651,7 @@ func _paint_golem_hall(sz: Vector2) -> void:
 	p.draw_circle(m, 150.0, Color(0.35, 0.8, 1.0, 0.08))
 	_gear_bg(m, 110.0, Color(0.30, 0.32, 0.36), 18)
 	p.draw_circle(m, 70.0, Color(0.12, 0.13, 0.16))
-	p.draw_polyline(PackedVector2Array([m + Vector2(-40, 50), m + Vector2(0, -55), m + Vector2(40, 50)]), Color(0.35, 0.8, 1.0, 0.8), 6.0, true)
+	p.draw_polyline(PackedVector2Array([m + Vector2(-40, 50), m + Vector2(0, -55), m + Vector2(40, 50)]), Color(0.35, 0.8, 1.0, 0.8), 6.0, FighterArt.AA)
 	p.draw_circle(m + Vector2(0, -55), 8.0, Color(0.35, 0.8, 1.0))
 	p.draw_rect(Rect2(0, sz.y * 0.88, sz.x, 5), Color(0.35, 0.8, 1.0, 0.5))
 

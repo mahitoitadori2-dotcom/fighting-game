@@ -184,6 +184,6 @@ static func _draw_helm(c: CanvasItem, head: Vector2, t: float, dead: bool) -> vo
 		c.draw_line(head + Vector2(0, -2), head + Vector2(14, -2), Color(GLOW.r, GLOW.g, GLOW.b, 0.5), 6.0)
 		c.draw_line(head + Vector2(0, -2), head + Vector2(14, -2), Color.WHITE, 2.5)
 	c.draw_set_transform(head + Vector2(0, -24), 0.0, Vector2(1.0, 0.3))
-	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, Color(GLOW.r, GLOW.g, GLOW.b, 0.35), 8.0, true)
-	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, GOLD_HI, 3.0, true)
+	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, Color(GLOW.r, GLOW.g, GLOW.b, 0.35), 8.0, FighterArt.AA)
+	c.draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 24, GOLD_HI, 3.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

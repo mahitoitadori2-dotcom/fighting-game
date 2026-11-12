@@ -85,7 +85,7 @@ static func _draw_dog(c: CanvasItem, s: Dictionary) -> void:
 		chest.append(body_c + Vector2(22, 3) + Vector2(cos(a) * 10.0, sin(a) * 11.0))
 	c.draw_colored_polygon(chest, WHITE)
 	if enraged:
-		c.draw_arc(body_c, 26.0, -2.6, -0.6, 12, Color(0.8, 0.95, 1.0, 0.7), 2.0, true)
+		c.draw_arc(body_c, 26.0, -2.6, -0.6, 12, Color(0.8, 0.95, 1.0, 0.7), 2.0, FighterArt.AA)
 	FighterArt.outline(c, body, 4.0)
 
 	# --- Near legs ---
@@ -122,8 +122,8 @@ static func _tail(c: CanvasItem, base: Vector2, t: float, pose: String, pt: floa
 		var spin := (pt * (30.0 if pose == "tail" else 12.0))
 		var tip := base + Vector2.from_angle(spin) * 46.0
 		if pose == "tail":
-			c.draw_arc(base + Vector2(30, 0), 92.0, 0.0, TAU, 48, Color(1, 1, 1, 0.45), 10.0, true)
-			c.draw_arc(base + Vector2(30, 0), 92.0, spin, spin + 2.0, 16, Color(0.8, 0.9, 1.0, 0.9), 6.0, true)
+			c.draw_arc(base + Vector2(30, 0), 92.0, 0.0, TAU, 48, Color(1, 1, 1, 0.45), 10.0, FighterArt.AA)
+			c.draw_arc(base + Vector2(30, 0), 92.0, spin, spin + 2.0, 16, Color(0.8, 0.9, 1.0, 0.9), 6.0, FighterArt.AA)
 		FighterArt.limb(c, base, base.lerp(tip, 0.55), 11.0, FUR, FUR_SHADE, FUR_HI)
 		FighterArt.limb(c, base.lerp(tip, 0.55), tip, 10.0, WHITE, WHITE_SHADE, WHITE)
 		return
@@ -161,7 +161,7 @@ static func _head(c: CanvasItem, hc: Vector2, t: float, pose: String, pt: float,
 	c.draw_circle(snout + Vector2(8, -2), 4.2, BLACK)           # Nose
 	c.draw_circle(snout + Vector2(7, -3.2), 1.3, Color(0.6, 0.6, 0.65))
 	if bark_open <= 0.0:
-		c.draw_polyline(PackedVector2Array([snout + Vector2(-2, 5), snout + Vector2(3, 7), snout + Vector2(8, 5)]), BLACK, 2.0, true)
+		c.draw_polyline(PackedVector2Array([snout + Vector2(-2, 5), snout + Vector2(3, 7), snout + Vector2(8, 5)]), BLACK, 2.0, FighterArt.AA)
 	# Tongue out (happy pant) - long and limp when dead
 	if (pose == "idle" or dead) and bark_open <= 0.0:
 		var pant := 2.5 * sin(t * 14.0)
@@ -202,7 +202,7 @@ static func _swirl(c: CanvasItem, p: Vector2, t: float) -> void:
 		var a := float(i) * 0.75 + t * 6.0
 		pts.append(p + Vector2.from_angle(a) * (0.4 * float(i) * 0.4 + 0.3))
 	c.draw_circle(p, 4.5, Color.WHITE)
-	c.draw_polyline(pts, BLACK, 1.5, true)
+	c.draw_polyline(pts, BLACK, 1.5, FighterArt.AA)
 
 
 static func _ear(c: CanvasItem, root: Vector2, t: float, far: bool) -> void:
@@ -220,11 +220,11 @@ static func _spin_disc(c: CanvasItem, t: float, k: float, enraged: bool) -> void
 	# Blurred fur bands
 	for i in 6:
 		var a := rot + TAU * float(i) / 6.0
-		c.draw_arc(center, 24.0, a, a + 0.7, 8, MERLE if i % 2 == 0 else WHITE, 10.0 * k, true)
-		c.draw_arc(center, 12.0, a + 0.4, a + 1.0, 6, FUR_HI, 6.0 * k, true)
+		c.draw_arc(center, 24.0, a, a + 0.7, 8, MERLE if i % 2 == 0 else WHITE, 10.0 * k, FighterArt.AA)
+		c.draw_arc(center, 12.0, a + 0.4, a + 1.0, 6, FUR_HI, 6.0 * k, FighterArt.AA)
 	# Blur rings
-	c.draw_arc(center, 40.0, rot, rot + 4.0, 24, Color(1, 1, 1, 0.5 * k), 5.0, true)
-	c.draw_arc(center, 46.0, -rot, -rot + 3.0, 24, Color(0.75, 0.85, 1.0, 0.35 * k), 4.0, true)
+	c.draw_arc(center, 40.0, rot, rot + 4.0, 24, Color(1, 1, 1, 0.5 * k), 5.0, FighterArt.AA)
+	c.draw_arc(center, 46.0, -rot, -rot + 3.0, 24, Color(0.75, 0.85, 1.0, 0.35 * k), 4.0, FighterArt.AA)
 	if enraged:
 		c.draw_circle(center, 50.0, Color(0.55, 0.8, 1.0, 0.15))
 	# Glimpse of the face (blue + brown eye) whizzing round

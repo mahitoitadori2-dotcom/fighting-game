@@ -227,7 +227,7 @@ static func draw_child(c: CanvasItem, s: Dictionary) -> void:
 			var r := 50.0 + float(i) * 12.0
 			var a0 := t * 18.0 + float(i)
 			c.draw_set_transform(Vector2(0, -60.0 - float(i) * 8.0), 0.0, Vector2(1.0, 0.35))
-			c.draw_arc(Vector2.ZERO, r, a0, a0 + 4.2, 18, Color(SILK.r, SILK.g, SILK.b, 0.65), 4.0, true)
+			c.draw_arc(Vector2.ZERO, r, a0, a0 + 4.2, 18, Color(SILK.r, SILK.g, SILK.b, 0.65), 4.0, FighterArt.AA)
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	EnemyArt.legs(c, s, -40.0, 7.0, 7.0, COAT_SHADE, COAT_SHADE.darkened(0.2), COAT, Color(0.15, 0.1, 0.12), 12.0)
 	var lean := 0.0
@@ -274,15 +274,15 @@ static func draw_child(c: CanvasItem, s: Dictionary) -> void:
 		var d := Vector2.from_angle(ang)
 		var tip := hand + d * 120.0
 		var eye := hand - d * 26.0
-		c.draw_line(eye, tip, EnemyArt.BLACK, 7.0, true)
-		c.draw_line(eye, tip, NEEDLE, 3.5, true)
-		c.draw_line(hand, hand + d * 100.0, Color(1, 1, 1, 0.7), 1.2, true)
+		c.draw_line(eye, tip, EnemyArt.BLACK, 7.0, FighterArt.AA)
+		c.draw_line(eye, tip, NEEDLE, 3.5, FighterArt.AA)
+		c.draw_line(hand, hand + d * 100.0, Color(1, 1, 1, 0.7), 1.2, FighterArt.AA)
 		c.draw_arc(eye, 5.0, 0.0, TAU, 10, NEEDLE, 2.5)
 		var thread := PackedVector2Array()                 # Silk thread from the eye
 		for i in 8:
 			var u := float(i) / 7.0
 			thread.append(eye + Vector2(-u * 60.0, u * 40.0 + sin(u * 6.0 + t * 4.0) * 8.0))
-		c.draw_polyline(thread, Color(SILK.r, SILK.g, SILK.b, 0.8), 1.8, true)
+		c.draw_polyline(thread, Color(SILK.r, SILK.g, SILK.b, 0.8), 1.8, FighterArt.AA)
 	EnemyArt.arm(c, chest + Vector2(6, -14), hand, 6.0, COAT, COAT_SHADE, COAT_HI, PORCELAIN, 4.5)
 	# Head: silver silk braids, porcelain face with button eyes and a stitched smile
 	var head := chest + Vector2(4, -34)
@@ -291,8 +291,8 @@ static func draw_child(c: CanvasItem, s: Dictionary) -> void:
 		for i in 6:
 			var u := float(i) / 5.0
 			braid.append(head + Vector2(-6.0 + sgn * 12.0 - u * 6.0, 4.0 + u * 34.0 + sin(t * 3.0 + u * 3.0) * 2.0))
-		c.draw_polyline(braid, EnemyArt.BLACK, 8.0, true)
-		c.draw_polyline(braid, SILK, 5.0, true)
+		c.draw_polyline(braid, EnemyArt.BLACK, 8.0, FighterArt.AA)
+		c.draw_polyline(braid, SILK, 5.0, FighterArt.AA)
 	FighterArt.ball(c, head, 17.0, PORCELAIN, PORCELAIN_SHADE, Color.WHITE)
 	c.draw_line(head + Vector2(-10, -14), head + Vector2(-2, -2), Color(0.4, 0.38, 0.36), 1.5)   # Crack in the porcelain
 	c.draw_line(head + Vector2(-2, -2), head + Vector2(-6, 6), Color(0.4, 0.38, 0.36), 1.5)

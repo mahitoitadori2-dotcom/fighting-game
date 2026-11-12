@@ -573,10 +573,10 @@ static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 		if armed and pose == "slash" and pt < 0.22:                   # Slash arc
 			var a0 := -2.2 if swing % 2 == 1 else 0.8
 			var a1 := 0.6 if swing % 2 == 1 else -1.0
-			c.draw_arc(near_sh + Vector2(40, 10), 200.0, minf(a0, a1), maxf(a0, a1), 18, Color(1.0, 0.5, 0.4, 0.85 - pt * 3.5), 16.0, true)
+			c.draw_arc(near_sh + Vector2(40, 10), 200.0, minf(a0, a1), maxf(a0, a1), 18, Color(1.0, 0.5, 0.4, 0.85 - pt * 3.5), 16.0, FighterArt.AA)
 
 	if (pose == "bite" or pose == "headbite") and pt < 0.2:
-		c.draw_arc(head + Vector2(70, 10), 30.0 + pt * 200.0, -1.2, 1.2, 12, Color(1, 0.9, 0.6, 0.8 - pt * 4.0), 5.0, true)
+		c.draw_arc(head + Vector2(70, 10), 30.0 + pt * 200.0, -1.2, 1.2, 12, Color(1, 0.9, 0.6, 0.8 - pt * 4.0), 5.0, FighterArt.AA)
 	if tf >= 0.0:                                                     # Light and heat pouring out
 		var k := clampf(tf / 2.2, 0.0, 1.0)
 		c.draw_circle(face, 40.0 + 80.0 * k, Color(1.0, 0.6, 0.2, 0.15 + 0.25 * k))
@@ -663,7 +663,7 @@ static func _blasphemy_blade(c: CanvasItem, hand: Vector2, ang: float, length: f
 		for j in 4:
 			var u := u0 + float(j) * 0.04
 			pts.append(guard + d * L * u + n * (sin(float(j) * 2.0 + float(v)) * 9.0))
-		c.draw_polyline(pts, VEIN, 2.5, true)
+		c.draw_polyline(pts, VEIN, 2.5, FighterArt.AA)
 	# Teeth along the lower edge, an eye in the flesh
 	for k in 6:
 		var u := 0.15 + float(k) * 0.13
@@ -704,8 +704,8 @@ static func _body_tube(c: CanvasItem, pts_in: Array, w0: float, w1: float, t: fl
 
 ## Burning golden laurel crown (worn by the face in the neck, phase 2 only).
 static func _laurel(c: CanvasItem, p: Vector2, w: float, t: float) -> void:
-	c.draw_arc(p + Vector2(0, 10), w * 0.6, PI * 1.05, PI * 1.95, 12, EnemyArt.BLACK, 7.0, true)
-	c.draw_arc(p + Vector2(0, 10), w * 0.6, PI * 1.05, PI * 1.95, 12, GOLD, 4.0, true)
+	c.draw_arc(p + Vector2(0, 10), w * 0.6, PI * 1.05, PI * 1.95, 12, EnemyArt.BLACK, 7.0, FighterArt.AA)
+	c.draw_arc(p + Vector2(0, 10), w * 0.6, PI * 1.05, PI * 1.95, 12, GOLD, 4.0, FighterArt.AA)
 	for i in 7:
 		var a := PI * (1.1 + 0.8 * float(i) / 6.0)
 		var base := p + Vector2(0, 10) + Vector2.from_angle(a) * w * 0.6

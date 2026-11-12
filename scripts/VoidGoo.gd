@@ -96,7 +96,7 @@ func _draw() -> void:
 		cols.append(Color(0.02, 0.0, 0.04, 0.97 * a).lerp(Color(0.34, 0.14, 0.48, 0.95 * a), k))
 	if w > 2.0:
 		draw_polygon(pts, cols)
-	draw_polyline(FighterArt.wobble(pts.slice(1, n + 2), Vector2(0, 0), 1.2), Color(0.6, 0.32, 0.85, a), 3.0, true)
+	draw_polyline(FighterArt.wobble(pts.slice(1, n + 2), Vector2(0, 0), 1.2), Color(0.6, 0.32, 0.85, a), 3.0, FighterArt.AA)
 	for i in 5:
 		var bx := sin(float(i) * 2.3 + _age * 0.7) * w * 0.8
 		var by := -height * (0.25 + 0.55 * fmod(_age * 0.6 + float(i) * 0.37, 1.0))

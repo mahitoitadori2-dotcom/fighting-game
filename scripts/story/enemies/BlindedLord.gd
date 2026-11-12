@@ -325,9 +325,9 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	EnemyArt.arm(c, shoulder, hand, 10.0, ROBE, ROBE_SHADE, ROBE_HI, SKIN, 7.0)
 	_jug(c, hand + Vector2(10, -6), tilt, t, pose == "pour")
 	if pose == "smash":
-		c.draw_arc(Vector2(70, 0), 30.0 + pt * 220.0, PI, TAU, 18, Color(CHEM.r, CHEM.g, CHEM.b, maxf(0.0, 1.0 - pt * 4.0)), 7.0, true)
+		c.draw_arc(Vector2(70, 0), 30.0 + pt * 220.0, PI, TAU, 18, Color(CHEM.r, CHEM.g, CHEM.b, maxf(0.0, 1.0 - pt * 4.0)), 7.0, FighterArt.AA)
 	if pose == "throw" and pt < 0.25:
-		c.draw_arc(chest + Vector2(20, -10), 70.0, -2.2, 0.2, 14, Color(CHEM.r, CHEM.g, CHEM.b, 0.8 - pt * 3.0), 7.0, true)
+		c.draw_arc(chest + Vector2(20, -10), 70.0, -2.2, 0.2, 14, Color(CHEM.r, CHEM.g, CHEM.b, 0.8 - pt * 3.0), 7.0, FighterArt.AA)
 
 
 static func _vial(c: CanvasItem, p: Vector2, tilt: float, t: float) -> void:

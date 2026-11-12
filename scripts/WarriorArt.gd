@@ -82,7 +82,7 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(Vector2(0, -66), 64.0 + 6.0 * p, Color(ROYAL_GLOW.r, ROYAL_GLOW.g, ROYAL_GLOW.b, 0.16 * royal))
 	if s.get("onsl", false):
 		var pulse := 0.5 + 0.5 * sin(t * 40.0)
-		c.draw_arc(Vector2(4, -78), 46.0 + 4.0 * pulse, 0.0, TAU, 40, Color(1.0, 0.55, 0.1, 0.5 + 0.5 * pulse), 6.0, true)
+		c.draw_arc(Vector2(4, -78), 46.0 + 4.0 * pulse, 0.0, TAU, 40, Color(1.0, 0.55, 0.1, 0.5 + 0.5 * pulse), 6.0, FighterArt.AA)
 	for wv in s.get("waves", []):
 		_spike_wave(c, wv)
 	if shadow > 0.0:
@@ -107,8 +107,8 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Torso: void body with drips ---
 	FighterArt.rrect(c, Rect2(-16, -100, 32, 48), VOID, VOID_SHADE, VOID_HI, 9.0, 4.0)
-	c.draw_arc(Vector2(2, -80), 9.0, -2.4 + t * 1.5, -0.4 + t * 1.5, 10, VOID_GLOW, 2.0, true)   # Swirl
-	c.draw_arc(Vector2(2, -80), 4.0, 0.6 - t * 2.0, 2.6 - t * 2.0, 8, VOID_HI, 2.0, true)
+	c.draw_arc(Vector2(2, -80), 9.0, -2.4 + t * 1.5, -0.4 + t * 1.5, 10, VOID_GLOW, 2.0, FighterArt.AA)   # Swirl
+	c.draw_arc(Vector2(2, -80), 4.0, 0.6 - t * 2.0, 2.6 - t * 2.0, 8, VOID_HI, 2.0, FighterArt.AA)
 	for i in 3:
 		var dx := -9.0 + float(i) * 8.0
 		var dl := 5.0 + 4.0 * (0.5 + 0.5 * sin(t * 3.0 + float(i) * 2.1))
@@ -150,8 +150,8 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	if power > 0:                                   # Empowered blade: void glow around it
 		var tip := hand + Vector2(66.0 * float(s.get("sword_scale", 1.0)), 0).rotated(blade_ang)
 		var pulse := 0.6 + 0.4 * sin(t * 8.0)
-		c.draw_line(hand, tip, Color(0.6, 0.3, 1.0, 0.25 * pulse), 18.0 + 6.0 * float(power), true)
-		c.draw_line(hand, tip, Color(0.85, 0.7, 1.0, 0.35 * pulse), 8.0, true)
+		c.draw_line(hand, tip, Color(0.6, 0.3, 1.0, 0.25 * pulse), 18.0 + 6.0 * float(power), FighterArt.AA)
+		c.draw_line(hand, tip, Color(0.85, 0.7, 1.0, 0.35 * pulse), 8.0, FighterArt.AA)
 	_sword(c, hand, blade_ang, float(s.get("sword_scale", 1.0)))
 	_arm(c, shoulder, elbow, hand, false, royal)
 	_shoulder_pad(c, royal)
@@ -177,8 +177,8 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 		var col := Color(0.70, 0.45, 1.0, 0.85 * b)
 		if s.get("perfect", 0.0) > 0.0:
 			col = Color(1, 1, 1, 1)
-		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, true)
-		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, col, 6.0, true)
+		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, FighterArt.AA)
+		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, col, 6.0, FighterArt.AA)
 
 
 # ============================================================
@@ -235,7 +235,7 @@ static func _helmet(c: CanvasItem, t: float) -> void:
 		c.draw_circle(r.get_center(), 1.4, Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, glow))
 	# Nose guard + rim
 	c.draw_rect(Rect2(12.0, -119, 2, 11), SILVER_SHADE)
-	c.draw_arc(hc, 15.0, 0.35, 2.6, 12, SILVER_SHADE, 3.0, true)
+	c.draw_arc(hc, 15.0, 0.35, 2.6, 12, SILVER_SHADE, 3.0, FighterArt.AA)
 
 
 static func _void_face(c: CanvasItem, t: float, charge: float) -> void:
@@ -268,9 +268,9 @@ static func _shoulder_pad(c: CanvasItem, royal: float) -> void:
 	c.draw_circle(Vector2(12, -92), 1.6, SILVER_SHADE)
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	c.draw_polyline(closed, BLACK, 3.5, true)
+	c.draw_polyline(closed, BLACK, 3.5, FighterArt.AA)
 	if royal > 0.0:
-		c.draw_polyline(closed, Color(ROYAL_GLOW.r, ROYAL_GLOW.g, ROYAL_GLOW.b, 0.6 * royal), 1.5, true)
+		c.draw_polyline(closed, Color(ROYAL_GLOW.r, ROYAL_GLOW.g, ROYAL_GLOW.b, 0.6 * royal), 1.5, FighterArt.AA)
 
 
 # ============================================================
@@ -305,24 +305,24 @@ static func _sword_scaled(c: CanvasItem, hand: Vector2, ang: float, sc: float) -
 		blade.append(hand + ((p as Vector2) * k).rotated(ang))
 	var g0 := hand + Vector2(-7, 0).rotated(ang)
 	var g1 := hand + Vector2(11, 0).rotated(ang)
-	c.draw_line(g0, g1, BLACK, 9.0, true)
-	c.draw_line(g0, g1, GRIP, 5.0, true)
+	c.draw_line(g0, g1, BLACK, 9.0, FighterArt.AA)
+	c.draw_line(g0, g1, GRIP, 5.0, FighterArt.AA)
 	c.draw_colored_polygon(blade, BLADE)
 	var edge := PackedVector2Array()
 	for p in [Vector2(14, -3.5), Vector2(25, -2), Vector2(33, -4.8), Vector2(47, -4.2), Vector2(60, -1)]:
 		edge.append(hand + ((p as Vector2) * k).rotated(ang))
-	c.draw_polyline(edge, Color(0.85, 0.7, 1.0), 2.5, true)
+	c.draw_polyline(edge, Color(0.85, 0.7, 1.0), 2.5, FighterArt.AA)
 	var closed := blade.duplicate()
 	closed.append(blade[0])
-	c.draw_polyline(closed, BLACK, 3.5, true)
+	c.draw_polyline(closed, BLACK, 3.5, FighterArt.AA)
 
 
 static func _sword_base(c: CanvasItem, hand: Vector2, ang: float) -> void:
 	# Grip (wrapped, short) - straight into the blade, no guard
 	var g0 := hand + Vector2(-7, 0).rotated(ang)
 	var g1 := hand + Vector2(11, 0).rotated(ang)
-	c.draw_line(g0, g1, BLACK, 9.0, true)
-	c.draw_line(g0, g1, GRIP, 5.0, true)
+	c.draw_line(g0, g1, BLACK, 9.0, FighterArt.AA)
+	c.draw_line(g0, g1, GRIP, 5.0, FighterArt.AA)
 	for i in 3:
 		var p := hand + Vector2(-3.0 + float(i) * 5.0, 0).rotated(ang)
 		var n := Vector2(0, 3).rotated(ang)
@@ -334,18 +334,18 @@ static func _sword_base(c: CanvasItem, hand: Vector2, ang: float) -> void:
 		Vector2(34, 6.5), Vector2(26, 4), Vector2(18, 6), Vector2(10, 5)], hand, ang)
 	c.draw_colored_polygon(lower, BLADE_SHADE)
 	var edge := _xf([Vector2(14, -3.5), Vector2(25, -2), Vector2(33, -4.8), Vector2(47, -4.2), Vector2(60, -1)], hand, ang)
-	c.draw_polyline(edge, BLADE_EDGE, 2.0, true)
+	c.draw_polyline(edge, BLADE_EDGE, 2.0, FighterArt.AA)
 	var nick := _xf([Vector2(30, 1), Vector2(36, -1)], hand, ang)        # Scratches
 	c.draw_line(nick[0], nick[1], BLADE_SHADE, 1.5)
 	var closed := blade.duplicate()
 	closed.append(blade[0])
-	c.draw_polyline(closed, BLACK, 3.5, true)
+	c.draw_polyline(closed, BLACK, 3.5, FighterArt.AA)
 
 
 static func _swing_trail(c: CanvasItem, swing: float) -> void:
 	var a := (swing - 0.6) / 0.4
-	c.draw_arc(Vector2(10, -88), 62.0, -1.6, 0.4, 16, Color(1, 1, 1, 0.5 * a), 10.0, true)
-	c.draw_arc(Vector2(10, -88), 62.0, -1.2, 0.4, 16, Color(0.75, 0.6, 1.0, 0.6 * a), 4.0, true)
+	c.draw_arc(Vector2(10, -88), 62.0, -1.6, 0.4, 16, Color(1, 1, 1, 0.5 * a), 10.0, FighterArt.AA)
+	c.draw_arc(Vector2(10, -88), 62.0, -1.2, 0.4, 16, Color(0.75, 0.6, 1.0, 0.6 * a), 4.0, FighterArt.AA)
 
 
 static func _snap_sparks(c: CanvasItem, hand: Vector2, t: float) -> void:
@@ -366,16 +366,16 @@ static func _tentacle(c: CanvasItem, t: float, from: Vector2, to: Vector2) -> vo
 		var u := float(i) / float(n)
 		var wobble := sin(u * 9.0 - t * 22.0) * 7.0 * sin(u * PI)
 		pts.append(from.lerp(to, u) + perp * wobble)
-	c.draw_polyline(pts, BLACK, 15.0, true)
-	c.draw_polyline(pts, VOID, 9.0, true)
-	c.draw_polyline(pts, VOID_HI, 2.0, true)
+	c.draw_polyline(pts, BLACK, 15.0, FighterArt.AA)
+	c.draw_polyline(pts, VOID, 9.0, FighterArt.AA)
+	c.draw_polyline(pts, VOID_HI, 2.0, FighterArt.AA)
 	# Clinging claw at the tip
 	for k: float in [-1.0, 0.0, 1.0]:
 		var a: float = dir.angle() + k * 0.7
 		var hook := to + Vector2.from_angle(a) * 14.0
 		var curl := hook + Vector2.from_angle(a + 1.6 * signf(k + 0.01)) * 6.0
-		c.draw_polyline(PackedVector2Array([to, hook, curl]), BLACK, 7.0, true)
-		c.draw_polyline(PackedVector2Array([to, hook, curl]), VOID_GLOW, 3.0, true)
+		c.draw_polyline(PackedVector2Array([to, hook, curl]), BLACK, 7.0, FighterArt.AA)
+		c.draw_polyline(PackedVector2Array([to, hook, curl]), VOID_GLOW, 3.0, FighterArt.AA)
 	c.draw_circle(to, 8.0, BLACK)
 	c.draw_circle(to, 5.5, VOID)
 
@@ -399,7 +399,7 @@ static func _beam(c: CanvasItem, t: float, k: float, length: float) -> void:
 	c.draw_colored_polygon(top, Color(BEAM_OUT.r, BEAM_OUT.g, BEAM_OUT.b, 0.95))
 	var closed := top.duplicate()
 	closed.append(top[0])
-	c.draw_polyline(closed, BLACK, 4.0, true)
+	c.draw_polyline(closed, BLACK, 4.0, FighterArt.AA)
 	FighterArt.beam_gradient(c, o, length, hh * 0.8, BEAM_MID, BEAM_CORE)       # Purple -> black gradient
 	c.draw_line(o + Vector2(0, -hh * 0.4), o + Vector2(length, -hh * 0.4), Color(0.8, 0.6, 1.0, 0.8), 2.0)
 	for s in 10:

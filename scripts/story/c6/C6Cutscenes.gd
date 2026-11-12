@@ -129,10 +129,10 @@ static func _end(p: Control, sz: Vector2, k: float, t: float) -> void:
 	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	var sh := ep + Vector2(10, -150)
 	var hand := sh + Vector2(-20, -110)
-	p.draw_line(sh, hand, EnlightenedFx.BLACK, 16.0, true)
-	p.draw_line(sh, hand, Color(0.97, 0.77, 0.24), 10.0, true)
-	p.draw_line(hand, hand + Vector2(-4, -30), EnlightenedFx.BLACK, 7.0, true)              # The pointing finger
-	p.draw_line(hand, hand + Vector2(-4, -30), Color(0.74, 0.46, 0.20), 4.0, true)
+	p.draw_line(sh, hand, EnlightenedFx.BLACK, 16.0, FighterArt.AA)
+	p.draw_line(sh, hand, Color(0.97, 0.77, 0.24), 10.0, FighterArt.AA)
+	p.draw_line(hand, hand + Vector2(-4, -30), EnlightenedFx.BLACK, 7.0, FighterArt.AA)              # The pointing finger
+	p.draw_line(hand, hand + Vector2(-4, -30), Color(0.74, 0.46, 0.20), 4.0, FighterArt.AA)
 	# Your hero, watching
 	var hs := _heroes()
 	p.draw_set_transform(Vector2(sz.x * 0.22, ground), 0.0, Vector2(1.5, 1.5))

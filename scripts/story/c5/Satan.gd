@@ -200,8 +200,8 @@ static func draw_satan(c: CanvasItem, s: Dictionary) -> void:
 			d = Vector2(0.1, -1.0).normalized()
 	var butt := hand - d * 120.0
 	var tip := hand + d * 150.0
-	c.draw_line(butt, tip, EnemyArt.BLACK, 10.0, true)
-	c.draw_line(butt, tip, Color(0.25, 0.22, 0.2), 6.0, true)
+	c.draw_line(butt, tip, EnemyArt.BLACK, 10.0, FighterArt.AA)
+	c.draw_line(butt, tip, Color(0.25, 0.22, 0.2), 6.0, FighterArt.AA)
 	var n := d.orthogonal()
 	for k: float in [-1.0, 0.0, 1.0]:
 		var prong := tip + n * k * 20.0
@@ -231,8 +231,8 @@ static func draw_satan(c: CanvasItem, s: Dictionary) -> void:
 	for sgn: float in [-1.0, 1.0]:
 		var hb := head + Vector2(sgn * 16.0, -16)
 		var curl := PackedVector2Array([hb, hb + Vector2(sgn * 30.0, -30), hb + Vector2(sgn * 34.0, -70), hb + Vector2(sgn * 20.0, -100)])
-		c.draw_polyline(curl, EnemyArt.BLACK, 16.0, true)
-		c.draw_polyline(curl, HORN.lightened(0.15), 10.0, true)
+		c.draw_polyline(curl, EnemyArt.BLACK, 16.0, FighterArt.AA)
+		c.draw_polyline(curl, HORN.lightened(0.15), 10.0, FighterArt.AA)
 	for k in 7:
 		var x := -36.0 + float(k) * 12.0
 		var fh := 26.0 + 14.0 * absf(sin(t * 7.0 + float(k)))

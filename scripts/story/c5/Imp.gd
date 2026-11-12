@@ -107,8 +107,8 @@ static func draw_imp(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_colored_polygon(wing, WING)
 		FighterArt.outline(c, wing, 2.0)
 	var tail := PackedVector2Array([body + Vector2(-6, 12), body + Vector2(-18, 22), body + Vector2(-24, 14 + sin(t * 5.0) * 4.0)])
-	c.draw_polyline(tail, EnemyArt.BLACK, 5.0, true)
-	c.draw_polyline(tail, RED, 2.5, true)
+	c.draw_polyline(tail, EnemyArt.BLACK, 5.0, FighterArt.AA)
+	c.draw_polyline(tail, RED, 2.5, FighterArt.AA)
 	FighterArt.ball(c, body, 16.0, RED, RED.darkened(0.3), RED_HI)
 	for sgn: float in [-1.0, 1.0]:
 		FighterArt.curved_spike(c, body + Vector2(sgn * 7.0, -12), body + Vector2(sgn * 12.0, -28), 3.5, Color(0.2, 0.15, 0.12), Color(0.4, 0.3, 0.25), 0.3, 2.0)

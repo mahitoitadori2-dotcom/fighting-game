@@ -64,6 +64,26 @@ A memory probe visited every screen and Story levels 1-50: the game's own memory
 
 **Status:** not tested on a real iPhone yet. The web engine file itself is about 40 MB. If iPhones still crash, the next step is a slimmed custom web engine (3D and unused parts removed), built by GitHub Actions.
 
+## iPhone 11 optimization pass (2026-11-12)
+
+Measured on PC with FAST graphics (what phones use), FPS without a cap. The big cost on phones is **GPU draw calls** (each one is expensive in Safari's WebGL).
+
+**What the engine batches:** 300 rectangles / plain lines / small triangles = 1 draw call. 300 circles or polygons = 300 calls. 300 SMOOTHED (antialiased) lines = **900** calls.
+
+| Scene | Before | After | Draw calls |
+|---|---|---|---|
+| DemiLand | 28 FPS | 231 FPS | 10 890 -> 1 325 |
+| DemiLand, camp fight | 21 FPS | 147 FPS | 11 622 -> 1 609 |
+| Story fight (2D backdrop) | 121 FPS | 209 FPS | 1 947 -> 1 183 |
+| Boss fight with 3D backdrop | 248 FPS | 475 FPS | 1 450 -> 786 |
+| Main menu (3D) | 424 FPS | 475 FPS | 383 -> 358 |
+
+- **The floor (`ArenaGround.gd`):** a very wide floor (DemiLand, 18 000 px) sent every grain, pebble and crack to the GPU every frame. Its details are now in 1200 px chunks; off-screen chunks are skipped. FAST / POTATO also drop the faint rock grain and pebble highlights.
+- **Smooth lines only on REGULAR / REAL:** every art script now passes `FighterArt.AA` instead of `true` for line smoothing (436 calls in 91 files). FAST / POTATO draw plain lines (1 draw call instead of 3). The thick black outlines look almost the same.
+- **Music at 22 kHz in the game package** (import setting `force/max_rate_hz=22050`): music 20.6 -> 14.3 MB, web package (`index.pck`, kept in the phone's memory) 22.6 -> 16.2 MB.
+- **Still the biggest:** the web engine itself (`index.wasm`, 37.7 MB) - only a custom slimmed engine build would shrink it (3D is now used, so it can't simply be removed). Characters (~100+ draw calls each, made of circles and polygons) are the next cost if phones still lag.
+- **Not tested on a real iPhone.**
+
 ## Open work
 
 Some projectiles are not pooled yet. They are in the [To-do list](Todo.md).

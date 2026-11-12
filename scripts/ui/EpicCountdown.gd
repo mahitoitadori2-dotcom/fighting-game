@@ -116,7 +116,7 @@ func _paint_number(vp: Vector2, c: Vector2, lt: float) -> void:
 	if since >= 0.0 and since < 0.25:
 		var f := 1.0 - since / 0.25
 		_painter.draw_rect(Rect2(Vector2.ZERO, vp), Color(1, 1, 1, 0.28 * f))
-		_painter.draw_arc(c, 120.0 + since * 1400.0, 0.0, TAU, 64, Color(col.r, col.g, col.b, f), 12.0 * f + 2.0, true)
+		_painter.draw_arc(c, 120.0 + since * 1400.0, 0.0, TAU, 64, Color(col.r, col.g, col.b, f), 12.0 * f + 2.0, FighterArt.AA)
 	_big_text(c, txt, 190, zoom, col, alpha)
 
 
@@ -146,7 +146,7 @@ func _paint_go(vp: Vector2, c: Vector2, lt: float) -> void:
 		var st := lt - float(j) * 0.08
 		if st > 0.0 and st < 0.6:
 			var f := 1.0 - st / 0.6
-			_painter.draw_arc(c, 60.0 + st * 1800.0, 0.0, TAU, 72, Color(1, 1, 1, f), 18.0 * f + 2.0, true)
+			_painter.draw_arc(c, 60.0 + st * 1800.0, 0.0, TAU, 72, Color(1, 1, 1, f), 18.0 * f + 2.0, FighterArt.AA)
 	# Sparks
 	for i in 16:
 		var a := TAU * float(i) / 16.0 + 0.3

@@ -174,7 +174,7 @@ static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 	# Speech: raised fist, glowing words
 	if pose == "speech_tele" or pose == "speech":
 		var k := clampf(pt / 1.0, 0.0, 1.0)
-		c.draw_arc(head + Vector2(20, 6), 12.0 + 10.0 * k, -0.7, 0.7, 10, Color(1, 0.95, 0.75, 0.8), 3.0, true)
+		c.draw_arc(head + Vector2(20, 6), 12.0 + 10.0 * k, -0.7, 0.7, 10, Color(1, 0.95, 0.75, 0.8), 3.0, FighterArt.AA)
 
 	# Near arm + axe
 	var shoulder := chest + Vector2(12, -14)
@@ -197,7 +197,7 @@ static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 		_axe(c, hand, axe_angle)
 	EnemyArt.arm(c, shoulder, hand, 11.0, COAT, COAT_SHADE, COAT_HI, SKIN)
 	if pose == "chop":
-		c.draw_arc(chest + Vector2(30, 0), 56.0, -1.6, 0.6, 14, Color(1, 1, 1, maxf(0.0, 0.8 - pt * 4.0)), 6.0, true)
+		c.draw_arc(chest + Vector2(30, 0), 56.0, -1.6, 0.6, 14, Color(1, 1, 1, maxf(0.0, 0.8 - pt * 4.0)), 6.0, FighterArt.AA)
 
 
 static func _axe(c: CanvasItem, hand: Vector2, angle: float) -> void:

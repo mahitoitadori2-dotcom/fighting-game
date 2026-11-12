@@ -125,4 +125,4 @@ static func draw_corpse(c: CanvasItem, s: Dictionary) -> void:
 			hand = chest + Vector2(18, 4)
 	EnemyArt.arm(c, chest + Vector2(14, -18), hand, 11.0, COPPER, COPPER_SHADE, COPPER_HI, COPPER_SHADE, 9.0)
 	if pose == "punch":
-		c.draw_arc(hand + Vector2(10, 0), 22.0, -1.2, 1.2, 10, Color(1, 0.9, 0.7, 0.7), 4.0, true)
+		c.draw_arc(hand + Vector2(10, 0), 22.0, -1.2, 1.2, 10, Color(1, 0.9, 0.7, 0.7), 4.0, FighterArt.AA)

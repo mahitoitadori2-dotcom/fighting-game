@@ -201,13 +201,13 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 	var tip := tail[tail.size() - 1]
 	var tdir := (tip - tail[tail.size() - 2]).normalized()
 	var blade_end := tip + tdir * 90.0
-	c.draw_line(tip, blade_end, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.35), 22.0, true)
-	c.draw_line(tip, blade_end, LIGHT, 10.0, true)
-	c.draw_line(tip, blade_end, Color.WHITE, 4.0, true)
+	c.draw_line(tip, blade_end, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.35), 22.0, FighterArt.AA)
+	c.draw_line(tip, blade_end, LIGHT, 10.0, FighterArt.AA)
+	c.draw_line(tip, blade_end, Color.WHITE, 4.0, FighterArt.AA)
 	if pose == "slash" and pt < 0.25:                      # Light trail of the sweep
-		c.draw_arc(body + Vector2(40, 0), 130.0, -1.6, 0.9, 22, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.8 - pt * 3.0), 14.0, true)
+		c.draw_arc(body + Vector2(40, 0), 130.0, -1.6, 0.9, 22, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.8 - pt * 3.0), 14.0, FighterArt.AA)
 	if pose == "flurry":
-		c.draw_arc(body + Vector2(70, -10), 90.0, -1.2 + sin(t * 34.0), 0.4 + sin(t * 34.0), 12, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.6), 9.0, true)
+		c.draw_arc(body + Vector2(70, -10), 90.0, -1.2 + sin(t * 34.0), 0.4 + sin(t * 34.0), 12, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.6), 9.0, FighterArt.AA)
 
 	# --- Hind legs (thick, clawed) ---
 	for i in 2:
@@ -250,8 +250,8 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 	for k in 3:
 		var a := -0.5 + float(k) * 0.5
 		var ct := claw + Vector2.from_angle(a) * 16.0
-		c.draw_line(claw, ct, EnemyArt.BLACK, 6.0, true)
-		c.draw_line(claw, ct, BLOOD if k == 1 else HORN, 3.0, true)
+		c.draw_line(claw, ct, EnemyArt.BLACK, 6.0, FighterArt.AA)
+		c.draw_line(claw, ct, BLOOD if k == 1 else HORN, 3.0, FighterArt.AA)
 
 	# --- Neck + head ---
 	var head := body + Vector2(78, -60 + sin(t * 2.0) * 3.0)
@@ -279,7 +279,7 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 		var origin := Vector2(head.x + 30.0, BEAM_Y)
 		c.draw_rect(Rect2(origin.x, origin.y - 34.0, BEAM_LEN, 68.0), Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.22 * fade))
 		FighterArt.beam_gradient(c, origin, BEAM_LEN, 20.0 * fade + 1.0, Color(1.0, 0.85, 0.4), Color.WHITE)
-		c.draw_line(head + Vector2(30, 6), origin, LIGHT, 14.0 * fade, true)
+		c.draw_line(head + Vector2(30, 6), origin, LIGHT, 14.0 * fade, FighterArt.AA)
 
 
 static func _head(c: CanvasItem, head: Vector2, pose: String, pt: float, t: float, dead: bool, rage: bool) -> void:
@@ -332,8 +332,8 @@ static func _wing(c: CanvasItem, root: Vector2, flap: float, far: bool, t: float
 	c.draw_circle(root.lerp(tips[2], 0.7) + Vector2(4, 4), 6.0, Color(BLOOD.r, BLOOD.g, BLOOD.b, 0.45))
 	FighterArt.outline(c, pts, 3.5)
 	for tp in tips:                                      # Bone fingers
-		c.draw_line(root, tp, EnemyArt.BLACK, 6.0, true)
-		c.draw_line(root, tp, HORN, 3.0, true)
+		c.draw_line(root, tp, EnemyArt.BLACK, 6.0, FighterArt.AA)
+		c.draw_line(root, tp, HORN, 3.0, FighterArt.AA)
 
 
 ## Blood splatter + a drip that slowly runs down.

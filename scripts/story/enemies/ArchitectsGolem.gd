@@ -193,7 +193,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 		gear.append(mark + Vector2.from_angle(a) * (30.0 if i % 2 == 0 else 24.0))
 	c.draw_colored_polygon(gear, GREEN)
 	c.draw_circle(mark, 18.0, Color(0.12, 0.13, 0.16))
-	c.draw_polyline(PackedVector2Array([mark + Vector2(-10, 12), mark + Vector2(0, -14), mark + Vector2(10, 12)]), rune, 3.0, true)   # Compass
+	c.draw_polyline(PackedVector2Array([mark + Vector2(-10, 12), mark + Vector2(0, -14), mark + Vector2(10, 12)]), rune, 3.0, FighterArt.AA)   # Compass
 	c.draw_circle(mark + Vector2(0, -14), 3.0, rune)
 	# Rune lines carved into the stone
 	for k in 4:
@@ -201,7 +201,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 		if k == 1 or k == 2:
 			continue
 		var pts := PackedVector2Array([Vector2(rx, chest.y - 70), Vector2(rx + 8, chest.y - 40), Vector2(rx, chest.y - 10), Vector2(rx + 8, chest.y + 20), Vector2(rx, chest.y + 50)])
-		c.draw_polyline(pts, Color(rune.r, rune.g, rune.b, pulse), 4.0, true)
+		c.draw_polyline(pts, Color(rune.r, rune.g, rune.b, pulse), 4.0, FighterArt.AA)
 	# Head: a smaller block with one long rune visor
 	var head := chest + Vector2(16, -130)
 	_block(c, Rect2(head.x - 46, head.y - 40, 92, 76), STONE_SHADE)
@@ -242,6 +242,6 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	if pose == "rune" and pt < 0.3:
 		c.draw_circle(fist + Vector2(40, 0), 30.0 + pt * 60.0, Color(rune.r, rune.g, rune.b, 0.7 - pt * 2.0))
 	if pose == "slam" and pt < 0.25:
-		c.draw_arc(Vector2(170, 0), 40.0 + pt * 360.0, PI, TAU, 18, Color(0.85, 0.8, 0.7, 1.0 - pt * 4.0), 8.0, true)
+		c.draw_arc(Vector2(170, 0), 40.0 + pt * 360.0, PI, TAU, 18, Color(0.85, 0.8, 0.7, 1.0 - pt * 4.0), 8.0, FighterArt.AA)
 	if pose == "stomp" and pt < 0.25:
-		c.draw_arc(Vector2(40, 0), 40.0 + pt * 400.0, PI, TAU, 18, Color(rune.r, rune.g, rune.b, 1.0 - pt * 4.0), 8.0, true)
+		c.draw_arc(Vector2(40, 0), 40.0 + pt * 400.0, PI, TAU, 18, Color(rune.r, rune.g, rune.b, 1.0 - pt * 4.0), 8.0, FighterArt.AA)

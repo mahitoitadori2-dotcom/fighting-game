@@ -149,7 +149,7 @@ static func draw_chorus(c: CanvasItem, s: Dictionary) -> void:
 	for k in 3:                                           # Radiation trefoil
 		var a := t * 0.8 + float(k) * TAU / 3.0
 		c.draw_colored_polygon(PackedVector2Array([core, core + Vector2.from_angle(a - 0.4) * 28.0, core + Vector2.from_angle(a + 0.4) * 28.0]), Color(0.1, 0.2, 0.05, 0.7))
-	c.draw_arc(core, 54.0, 0.0, TAU, 32, EnemyArt.BLACK, 6.0, true)
+	c.draw_arc(core, 54.0, 0.0, TAU, 32, EnemyArt.BLACK, 6.0, FighterArt.AA)
 	# Three singing MASKS (the chorus) on a wide neck
 	FighterArt.rrect(c, Rect2(-90, -372, 180, 56), IRON_SHADE, IRON_SHADE.darkened(0.2), IRON, 10.0, 4.0)
 	for k in 3:
@@ -168,7 +168,7 @@ static func draw_chorus(c: CanvasItem, s: Dictionary) -> void:
 		var open := 12.0 if pose.begins_with("sing") or pose.begins_with("scream") else 5.0
 		c.draw_colored_polygon(EnemyArt.ellipse_points(m + Vector2(0, 12), 8.0, open, 10), Color(0.05, 0.08, 0.04))
 		if pose == "scream" or pose == "sing":
-			c.draw_arc(m + Vector2(0, 12), 18.0 + fmod(t * 60.0, 30.0), 0.4, PI - 0.4, 8, Color(RAD.r, RAD.g, RAD.b, 0.6), 3.0, true)
+			c.draw_arc(m + Vector2(0, 12), 18.0 + fmod(t * 60.0, 30.0), 0.4, PI - 0.4, 8, Color(RAD.r, RAD.g, RAD.b, 0.6), 3.0, FighterArt.AA)
 	# Near arm
 	FighterArt.limb(c, Vector2(96, -292), rh, 40.0, IRON, IRON_SHADE, IRON_HI)
 	FighterArt.ball(c, rh, 30.0, IRON, IRON_SHADE, IRON_HI)

@@ -92,6 +92,6 @@ func _draw() -> void:
 		var r := 22.0 + float(i) * 14.0 + _age * 30.0
 		var off := Vector2(-dir * float(i) * 10.0, 0)
 		var a0 := -0.9 if dir > 0.0 else PI - 0.9
-		draw_arc(off, r, a0, a0 + 1.8, 18, Color(0, 0, 0, a), 7.0, true)
-		draw_arc(off, r, a0, a0 + 1.8, 18, Color(1, 1, 1, a), 4.0, true)
-		draw_arc(off, r - 3.0, a0 + 0.2, a0 + 1.6, 14, Color(0.6, 0.85, 1.0, a * 0.7), 2.0, true)
+		draw_arc(off, r, a0, a0 + 1.8, 18, Color(0, 0, 0, a), 7.0, FighterArt.AA)
+		draw_arc(off, r, a0, a0 + 1.8, 18, Color(1, 1, 1, a), 4.0, FighterArt.AA)
+		draw_arc(off, r - 3.0, a0 + 0.2, a0 + 1.6, 14, Color(0.6, 0.85, 1.0, a * 0.7), 2.0, FighterArt.AA)

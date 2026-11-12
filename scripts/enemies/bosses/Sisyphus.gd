@@ -272,8 +272,8 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 	var halo := EnemyArt.ellipse_points(halo_c, 30, 9, 24)
 	halo.append(halo[0])
 	c.draw_circle(halo_c, 34.0, Color(GOLD.r, GOLD.g, GOLD.b, 0.15))
-	c.draw_polyline(halo, EnemyArt.BLACK, 8.0, true)
-	c.draw_polyline(halo, RAGE if rage else Color(1.0, 0.92, 0.5), 5.0, true)
+	c.draw_polyline(halo, EnemyArt.BLACK, 8.0, FighterArt.AA)
+	c.draw_polyline(halo, RAGE if rage else Color(1.0, 0.92, 0.5), 5.0, FighterArt.AA)
 	FighterArt.rrect(c, Rect2(head.x - 18, head.y - 20, 38, 40), STONE, STONE_SHADE, STONE.lightened(0.25), 10.0, 4.0)
 	c.draw_line(head + Vector2(-10, -16), head + Vector2(-4, -6), STONE_SHADE.darkened(0.3), 2.0)
 	if dead:
@@ -311,12 +311,12 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 		for i in 10:
 			var k := float(i) / 9.0
 			pts.append(hand.lerp(Vector2(320, -10), k) + Vector2(0, sin(k * PI) * -30.0))
-		c.draw_polyline(pts, Color(0, 0, 0, a), 10.0, true)
-		c.draw_polyline(pts, Color(CHAIN.r, CHAIN.g, CHAIN.b, a), 6.0, true)
+		c.draw_polyline(pts, Color(0, 0, 0, a), 10.0, FighterArt.AA)
+		c.draw_polyline(pts, Color(CHAIN.r, CHAIN.g, CHAIN.b, a), 6.0, FighterArt.AA)
 	if pose == "punch" and pt < 0.3:
-		c.draw_arc(hand, 30.0 + pt * 200.0, -1.2, 1.2, 14, Color(1, 0.8, 0.3, 1.0 - pt * 3.3), 8.0, true)
+		c.draw_arc(hand, 30.0 + pt * 200.0, -1.2, 1.2, 14, Color(1, 0.8, 0.3, 1.0 - pt * 3.3), 8.0, FighterArt.AA)
 	if pose == "stomp" and pt < 0.35:
-		c.draw_arc(Vector2(0, 0), 40.0 + pt * 500.0, PI, TAU, 24, Color(1.0, 0.6, 0.2, 1.0 - pt / 0.35), 9.0, true)
+		c.draw_arc(Vector2(0, 0), 40.0 + pt * 500.0, PI, TAU, 24, Color(1.0, 0.6, 0.2, 1.0 - pt / 0.35), 9.0, FighterArt.AA)
 
 
 static func _arm(c: CanvasItem, shoulder: Vector2, hand: Vector2, far: bool, t: float) -> void:
@@ -332,8 +332,8 @@ static func _arm(c: CanvasItem, shoulder: Vector2, hand: Vector2, far: bool, t: 
 		var p := elbow.lerp(hand, 0.2 + 0.18 * float(k))
 		var link := EnemyArt.ellipse_points(p + Vector2(0, 2), 9.0, 5.0, 10)
 		link.append(link[0])
-		c.draw_polyline(link, EnemyArt.BLACK, 4.5, true)
-		c.draw_polyline(link, CHAIN, 2.5, true)
+		c.draw_polyline(link, EnemyArt.BLACK, 4.5, FighterArt.AA)
+		c.draw_polyline(link, CHAIN, 2.5, FighterArt.AA)
 	# Dangling chain end
 	var dangle := hand + Vector2(-6, 24 + sin(t * 4.0) * 4.0)
 	c.draw_line(hand, dangle, EnemyArt.BLACK, 5.0)

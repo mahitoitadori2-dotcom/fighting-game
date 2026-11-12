@@ -84,7 +84,7 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 		_tentacles(c, t)
 	if onslaught_flash:                                   # Orange pulse ring while Onslaught is available
 		var pulse := 0.5 + 0.5 * sin(t * 40.0)
-		c.draw_arc(Vector2(4, -78), 46.0 + 4.0 * pulse, 0.0, TAU, 40, Color(1.0, 0.55, 0.1, 0.5 + 0.5 * pulse), 6.0, true)
+		c.draw_arc(Vector2(4, -78), 46.0 + 4.0 * pulse, 0.0, TAU, 40, Color(1.0, 0.55, 0.1, 0.5 + 0.5 * pulse), 6.0, FighterArt.AA)
 
 	# --- Legs (GREEN) - walk cycle / air tuck ---
 	var s := sin(ph) * 13.0
@@ -167,8 +167,8 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 		var col := Color(0.35, 0.85, 1.0, 0.85 * b)
 		if perfect_flash > 0.0:
 			col = Color(1, 1, 1, 1)
-		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, true)
-		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, col, 6.0, true)
+		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, FighterArt.AA)
+		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, col, 6.0, FighterArt.AA)
 
 
 ## GREEN legs, dark gray knee caps + boots.
@@ -218,7 +218,7 @@ static func _drill(c: CanvasItem, t: float, drill_len: float) -> void:
 		var hw1 := 12.0 * (1.0 - (x - 8.0) / length)
 		var hw2 := 12.0 * (1.0 - (x2 - 8.0) / length)
 		c.draw_line(Vector2(x, -hw1), Vector2(x2, hw2), FighterArt.BLACK, 2.5)
-	c.draw_polyline(PackedVector2Array([top, tip, bot]), FighterArt.BLACK, 4.0, true)
+	c.draw_polyline(PackedVector2Array([top, tip, bot]), FighterArt.BLACK, 4.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 

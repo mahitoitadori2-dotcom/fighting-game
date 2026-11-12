@@ -465,7 +465,7 @@ static func draw_chorus_body(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_circle(core + Vector2(-10, -12), 18.0, glow_hi if not dead else IRON_HI)
 	for k in 3:
 		var a0 := t * (1.5 + float(k) * 0.7) * (1.0 if k % 2 == 0 else -1.0)
-		c.draw_arc(core, 52.0 + float(k) * 4.0, a0, a0 + 2.0, 12, BRASS, 4.0, true)
+		c.draw_arc(core, 52.0 + float(k) * 4.0, a0, a0 + 2.0, 12, BRASS, 4.0, FighterArt.AA)
 
 	# Head: gothic arch with three grille mouths (the chorus) and a row of eyes
 	var head := Vector2(0, -420 + hum)
@@ -506,7 +506,7 @@ func _draw_hands() -> void:
 			var sx: float = _slam_x[i]
 			_front.draw_set_transform(Vector2(sx, 0), 0.0, Vector2(1.0, 0.22))
 			_front.draw_circle(Vector2.ZERO, HAND_W * 0.5 * (0.5 + 0.5 * k), Color(0, 0, 0, 0.35 + 0.3 * k))
-			_front.draw_arc(Vector2.ZERO, HAND_W * 0.5 + 6.0, 0.0, TAU, 28, Color(1.0, 0.3, 0.2, 0.5 + 0.4 * sin(anim_time * 24.0)), 6.0, true)
+			_front.draw_arc(Vector2.ZERO, HAND_W * 0.5 + 6.0, 0.0, TAU, 28, Color(1.0, 0.3, 0.2, 0.5 + 0.4 * sin(anim_time * 24.0)), 6.0, FighterArt.AA)
 			_front.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		_draw_hand(_front, p, _t, _resting[i], enraged, i == 0)
 
@@ -539,5 +539,5 @@ static func _draw_hand(c: CanvasItem, p: Vector2, t: float, flat: bool, rage: bo
 	c.draw_line(Vector2(p.x + side * -56.0, p.y - 60.0), thumb, BRASS, 20.0)
 	if flat:                                                                         # Dust ring when it lands
 		c.draw_set_transform(p, 0.0, Vector2(1.0, 0.25))
-		c.draw_arc(Vector2.ZERO, 100.0, 0.0, TAU, 24, Color(0.8, 0.75, 0.7, 0.35), 8.0, true)
+		c.draw_arc(Vector2.ZERO, 100.0, 0.0, TAU, 24, Color(0.8, 0.75, 0.7, 0.35), 8.0, FighterArt.AA)
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

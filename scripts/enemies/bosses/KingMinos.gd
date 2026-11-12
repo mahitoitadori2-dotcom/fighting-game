@@ -267,7 +267,7 @@ static func draw_minos(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(hand, 10.0 + 14.0 * k, Color(GLOW.r, GLOW.g, GLOW.b, 0.35))
 		c.draw_circle(hand, 6.0 + 4.0 * k, Color(1, 1, 1, 0.9))
 	if pose == "slam" and pt < 0.3:
-		c.draw_arc(Vector2(80, 0), 30.0 + pt * 300.0, PI, TAU, 22, Color(GLOW.r, GLOW.g, GLOW.b, 1.0 - pt * 3.3), 8.0, true)
+		c.draw_arc(Vector2(80, 0), 30.0 + pt * 300.0, PI, TAU, 22, Color(GLOW.r, GLOW.g, GLOW.b, 1.0 - pt * 3.3), 8.0, FighterArt.AA)
 	if pose == "kick":
 		for i in 4:
 			var y := -60.0 - float(i) * 30.0
@@ -298,8 +298,8 @@ static func _bone_arm(c: CanvasItem, shoulder: Vector2, hand: Vector2, far: bool
 	for k in 4:
 		var a := dir.angle() + (float(k) - 1.5) * 0.35
 		var tip := hand + Vector2.from_angle(a) * 18.0
-		c.draw_line(hand, tip, EnemyArt.BLACK, 6.0, true)
-		c.draw_line(hand, tip, col, 3.0, true)
+		c.draw_line(hand, tip, EnemyArt.BLACK, 6.0, FighterArt.AA)
+		c.draw_line(hand, tip, col, 3.0, FighterArt.AA)
 	FighterArt.ball(c, hand, 7.0, col, col.darkened(0.3), Color.WHITE)
 	if rage:
 		c.draw_circle(hand, 12.0 + 2.0 * sin(t * 20.0), Color(GLOW.r, GLOW.g, GLOW.b, 0.3))

@@ -261,8 +261,8 @@ func _draw_ui() -> void:
 	var c: Vector2 = _stick["center"]
 	var r: float = _stick["r"]
 	_ui.draw_circle(c, r, Color(0, 0, 0, a * 0.35))
-	_ui.draw_arc(c, r, 0.0, TAU, 40, Color(0, 0, 0, a), 4.0 * s, true)
-	_ui.draw_arc(c, r - 3.0 * s, 0.0, TAU, 40, Color(1, 1, 1, a * 0.6), 2.0 * s, true)
+	_ui.draw_arc(c, r, 0.0, TAU, 40, Color(0, 0, 0, a), 4.0 * s, FighterArt.AA)
+	_ui.draw_arc(c, r - 3.0 * s, 0.0, TAU, 40, Color(1, 1, 1, a * 0.6), 2.0 * s, FighterArt.AA)
 	for d in [Vector2.LEFT, Vector2.RIGHT, Vector2.DOWN, Vector2.UP]:
 		var tip: Vector2 = c + d * (r - 10.0 * s)
 		_ui.draw_line(tip - d * 8.0 * s + d.orthogonal() * 5.0 * s, tip, Color(1, 1, 1, a * 0.7), 2.5 * s)
@@ -292,7 +292,7 @@ func _draw_ui() -> void:
 			var bars := _player.gauge.segments()
 			if bars > 0:
 				var p := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 150.0)
-				_ui.draw_arc(bc, br + 6.0 * s, 0.0, TAU, 32, Color(0.35, 0.8, 1.0, 0.5 + 0.4 * p), 3.0 * s, true)
+				_ui.draw_arc(bc, br + 6.0 * s, 0.0, TAU, 32, Color(0.35, 0.8, 1.0, 0.5 + 0.4 * p), 3.0 * s, FighterArt.AA)
 				_ui.draw_string(font, bc + Vector2(br * 0.55, -br * 0.55), str(bars), HORIZONTAL_ALIGNMENT_LEFT, -1, int(12 * s), Color(1, 1, 1, 0.9))
 		var label: String = b["label"]
 		var fs := int((18.0 if label.length() <= 1 else 12.0) * s * (1.25 if b["id"] == "attack" else 1.0))

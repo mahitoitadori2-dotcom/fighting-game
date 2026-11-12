@@ -105,6 +105,6 @@ func _process(_delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_line(Vector2(-34, 0), Vector2(30, 0), Color(GOLD_GLOW.r, GOLD_GLOW.g, GOLD_GLOW.b, 0.35), 12.0, true)
-	draw_line(Vector2(-34, 0), Vector2(30, 0), Color(0, 0, 0), 6.0, true)
+	draw_line(Vector2(-34, 0), Vector2(30, 0), Color(GOLD_GLOW.r, GOLD_GLOW.g, GOLD_GLOW.b, 0.35), 12.0, FighterArt.AA)
+	draw_line(Vector2(-34, 0), Vector2(30, 0), Color(0, 0, 0), 6.0, FighterArt.AA)
 	FighterArt.beam_gradient(self, Vector2(-32, 0), 60.0, 2.5, GOLD, Color.WHITE)

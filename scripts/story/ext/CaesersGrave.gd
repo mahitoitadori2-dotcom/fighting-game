@@ -198,8 +198,8 @@ static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 		for i in 6:
 			var u := float(i) / 5.0
 			pts.append(base + Vector2((30.0 + float(k) * 10.0) * u * (1.0 if k == 0 else -0.6), -20.0 * u + sin(t * 4.0 + u * 5.0 + float(k)) * 8.0))
-		c.draw_polyline(pts, EnemyArt.BLACK, 10.0, true)
-		c.draw_polyline(pts, SERPENT, 6.0, true)
+		c.draw_polyline(pts, EnemyArt.BLACK, 10.0, FighterArt.AA)
+		c.draw_polyline(pts, SERPENT, 6.0, FighterArt.AA)
 		c.draw_circle(pts[5], 5.0, SERPENT.lightened(0.1))
 		c.draw_circle(pts[5] + Vector2(2, -1), 1.5, Color(1.0, 0.85, 0.2))
 	# Arms: bony, one reaching out (souls / swarm) or raised for the slam
@@ -240,4 +240,4 @@ static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(Vector2(10, -60), Vector2(16, -20), STONE.darkened(0.3), 3.0)
 	FighterArt.outline(c, front, 4.5)
 	if pose == "slam" and pt < 0.25:
-		c.draw_arc(Vector2(60, -10), 120.0, -2.0, -0.2, 16, Color(BONE.r, BONE.g, BONE.b, 0.8 - pt * 3.0), 8.0, true)
+		c.draw_arc(Vector2(60, -10), 120.0, -2.0, -0.2, 16, Color(BONE.r, BONE.g, BONE.b, 0.8 - pt * 3.0), 8.0, FighterArt.AA)

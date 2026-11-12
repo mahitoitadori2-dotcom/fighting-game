@@ -141,8 +141,8 @@ static func draw_crawler(c: CanvasItem, s: Dictionary) -> void:
 	# Cracked golden halo, hanging crooked
 	var hc := head + Vector2(-4, -34)
 	c.draw_set_transform(hc, -0.35 + sin(t * 1.5) * 0.08, Vector2(1.0, 0.32))
-	c.draw_arc(Vector2.ZERO, 24.0, 0.3, TAU - 0.5, 24, Color(HALO.r, HALO.g, HALO.b, 0.3), 9.0, true)
-	c.draw_arc(Vector2.ZERO, 24.0, 0.3, TAU - 0.5, 24, HALO, 4.0, true)
+	c.draw_arc(Vector2.ZERO, 24.0, 0.3, TAU - 0.5, 24, Color(HALO.r, HALO.g, HALO.b, 0.3), 9.0, FighterArt.AA)
+	c.draw_arc(Vector2.ZERO, 24.0, 0.3, TAU - 0.5, 24, HALO, 4.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if pose == "devour" and pt < 0.25:                                                 # CHOMP burst
-		c.draw_arc(head + Vector2(40, 6), 20.0 + pt * 160.0, -1.0, 1.0, 12, Color(1, 1, 1, 0.8 - pt * 3.0), 5.0, true)
+		c.draw_arc(head + Vector2(40, 6), 20.0 + pt * 160.0, -1.0, 1.0, 12, Color(1, 1, 1, 0.8 - pt * 3.0), 5.0, FighterArt.AA)

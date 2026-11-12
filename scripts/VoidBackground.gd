@@ -193,7 +193,7 @@ func _draw_mountain(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: fl
 	var rim := PackedVector2Array()
 	for p in pts:
 		rim.append(base + p)
-	c.draw_polyline(rim, Color(GLOW.r, GLOW.g, GLOW.b, 0.35), 3.0, true)
+	c.draw_polyline(rim, Color(GLOW.r, GLOW.g, GLOW.b, 0.35), 3.0, FighterArt.AA)
 
 
 ## A void tentacle rising out of the ground, swaying, with glowing suckers.
@@ -232,10 +232,10 @@ func _draw_tentacle(c: CanvasItem, base: Vector2, tt: Dictionary, scale_k: float
 	var hl := PackedVector2Array()
 	for i in left.size():
 		hl.append(left[i].lerp(center[i], 0.45))
-	c.draw_polyline(hl, VOID_HI, 3.0 * scale_k, true)
+	c.draw_polyline(hl, VOID_HI, 3.0 * scale_k, FighterArt.AA)
 	var outline := body.duplicate()
 	outline.append(body[0])
-	c.draw_polyline(outline, Color(GLOW.r * 0.4, GLOW.g * 0.4, GLOW.b * 0.4), 3.0, true)
+	c.draw_polyline(outline, Color(GLOW.r * 0.4, GLOW.g * 0.4, GLOW.b * 0.4), 3.0, FighterArt.AA)
 	# Glowing suckers
 	for i in range(2, n - 1, 2):
 		var u := float(i) / float(n)

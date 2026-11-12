@@ -115,7 +115,7 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	var shirt := PackedVector2Array([Vector2(-7, -100), Vector2(10, -100), Vector2(2, -76)])
 	c.draw_colored_polygon(shirt, SHIRT)
 	# Lapels
-	c.draw_polyline(PackedVector2Array([Vector2(-9, -100), Vector2(2, -74), Vector2(12, -100)]), BLACK, 3.0, true)
+	c.draw_polyline(PackedVector2Array([Vector2(-9, -100), Vector2(2, -74), Vector2(12, -100)]), BLACK, 3.0, FighterArt.AA)
 	c.draw_line(Vector2(-12, -96), Vector2(-4, -82), SUIT_HI, 2.0)
 	# Tie
 	var tie := PackedVector2Array([Vector2(-1, -95), Vector2(4, -95), Vector2(6, -76), Vector2(1.5, -70), Vector2(-3, -76)])
@@ -123,7 +123,7 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(PackedVector2Array([Vector2(1.5, -95), Vector2(4, -95), Vector2(6, -76), Vector2(1.5, -70)]), TIE_SHADE)
 	var tc := tie.duplicate()
 	tc.append(tie[0])
-	c.draw_polyline(tc, BLACK, 2.0, true)
+	c.draw_polyline(tc, BLACK, 2.0, FighterArt.AA)
 	c.draw_rect(Rect2(-2, -99, 7, 5), TIE)                       # Knot
 	c.draw_rect(Rect2(-2, -99, 7, 5), BLACK, false, 1.5)
 	# Buttons + pocket square
@@ -157,8 +157,8 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 		var col := Color(1.0, 0.25, 0.25, 0.85 * b)
 		if s.get("perfect", 0.0) > 0.0:
 			col = Color(1, 1, 1, 1)
-		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, true)
-		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, col, 6.0, true)
+		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, FighterArt.AA)
+		c.draw_arc(Vector2(10, -70), 50.0, -1.0, 1.0, 20, col, 6.0, FighterArt.AA)
 
 
 # ============================================================
@@ -171,10 +171,10 @@ static func _head(c: CanvasItem, t: float, tear: int) -> void:
 	var hair := PackedVector2Array([Vector2(-12, -118), Vector2(-6, -128), Vector2(6, -130), Vector2(16, -124),
 		Vector2(10, -125), Vector2(0, -124), Vector2(-8, -118)])
 	c.draw_colored_polygon(hair, SKIN_SHADE)
-	c.draw_polyline(hair, BLACK, 2.0, true)
+	c.draw_polyline(hair, BLACK, 2.0, FighterArt.AA)
 	# Pointed ear
 	c.draw_colored_polygon(PackedVector2Array([Vector2(-10, -114), Vector2(-17, -122), Vector2(-9, -108)]), SKIN)
-	c.draw_polyline(PackedVector2Array([Vector2(-10, -114), Vector2(-17, -122), Vector2(-9, -108)]), BLACK, 2.0, true)
+	c.draw_polyline(PackedVector2Array([Vector2(-10, -114), Vector2(-17, -122), Vector2(-9, -108)]), BLACK, 2.0, FighterArt.AA)
 	# Eyes: narrow, villainous
 	var glint := 0.0 if tear < 3 else 0.5 + 0.5 * sin(t * 8.0)
 	for ex in [8.0, 15.0]:
@@ -185,7 +185,7 @@ static func _head(c: CanvasItem, t: float, tear: int) -> void:
 	c.draw_line(Vector2(4, -121), Vector2(11, -118.5), BLACK, 2.5)
 	c.draw_line(Vector2(19, -121), Vector2(13, -118.5), BLACK, 2.5)
 	# THE SMIRK: one corner pulled up
-	c.draw_polyline(PackedVector2Array([Vector2(6, -105), Vector2(11, -104.5), Vector2(15, -105.5), Vector2(18, -108)]), BLACK, 2.5, true)
+	c.draw_polyline(PackedVector2Array([Vector2(6, -105), Vector2(11, -104.5), Vector2(15, -105.5), Vector2(18, -108)]), BLACK, 2.5, FighterArt.AA)
 	c.draw_line(Vector2(17, -108.5), Vector2(19, -107), BLACK, 1.5)
 
 
@@ -231,7 +231,7 @@ static func _tear_hole(c: CanvasItem, center: Vector2, r: float, seed_i: int) ->
 		c.draw_arc(p, r * 0.3, 0.0, PI, 6, SCALE_LINE, 1.4)
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	c.draw_polyline(closed, BLACK, 1.8, true)
+	c.draw_polyline(closed, BLACK, 1.8, FighterArt.AA)
 
 
 static func _jagged_hem(c: CanvasItem) -> void:
@@ -239,7 +239,7 @@ static func _jagged_hem(c: CanvasItem) -> void:
 	c.draw_rect(Rect2(-16, -56, 32, 6), SCALE)
 	var pts := PackedVector2Array([Vector2(-17, -57), Vector2(-12, -51), Vector2(-7, -56), Vector2(-2, -50),
 		Vector2(4, -56), Vector2(9, -51), Vector2(14, -56), Vector2(17, -52)])
-	c.draw_polyline(pts, BLACK, 2.0, true)
+	c.draw_polyline(pts, BLACK, 2.0, FighterArt.AA)
 
 
 static func _body_spikes(c: CanvasItem, t_left: float, rot: float, reach: float) -> void:
@@ -273,16 +273,16 @@ static func _bat_form(c: CanvasItem, t: float, time_left: float) -> void:
 		c.draw_colored_polygon(wing, SKIN_SHADE)
 		var wc := wing.duplicate()
 		wc.append(wing[0])
-		c.draw_polyline(wc, BLACK, 3.0, true)
+		c.draw_polyline(wc, BLACK, 3.0, FighterArt.AA)
 	c.draw_circle(center, 15.0, BLACK)
 	c.draw_circle(center, 12.5, body)
 	c.draw_circle(center + Vector2(-4, -4), 3.5, SKIN_HI)
 	for ex in [-1.0, 1.0]:
 		var ear := PackedVector2Array([center + Vector2(5 * ex, -9), center + Vector2(9 * ex, -22), center + Vector2(1 * ex, -11)])
 		c.draw_colored_polygon(ear, body)
-		c.draw_polyline(ear, BLACK, 2.0, true)
+		c.draw_polyline(ear, BLACK, 2.0, FighterArt.AA)
 	c.draw_circle(center + Vector2(5, -2), 2.2, Color.WHITE)
 	c.draw_circle(center + Vector2(-2, -2), 2.2, Color.WHITE)
-	c.draw_polyline(PackedVector2Array([center + Vector2(-3, 4), center + Vector2(2, 5), center + Vector2(6, 3)]), BLACK, 2.0, true)
+	c.draw_polyline(PackedVector2Array([center + Vector2(-3, 4), center + Vector2(2, 5), center + Vector2(6, 3)]), BLACK, 2.0, FighterArt.AA)
 	# Still wearing the tie
 	c.draw_colored_polygon(PackedVector2Array([center + Vector2(-2, 9), center + Vector2(3, 9), center + Vector2(1, 18)]), TIE)

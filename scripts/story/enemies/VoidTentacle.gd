@@ -122,11 +122,11 @@ static func draw_tentacle(c: CanvasItem, s: Dictionary) -> void:
 		pts.append(Vector2.ZERO.lerp(mid, u).lerp(mid.lerp(tip, u), u) + Vector2(sin(u * 8.0 + t * 3.0) * 6.0 * u, 0))
 	for i in pts.size() - 1:
 		var w := lerpf(22.0, 6.0, float(i) / 12.0)
-		c.draw_line(pts[i], pts[i + 1], EnemyArt.BLACK, w * 2.0 + 6.0, true)
+		c.draw_line(pts[i], pts[i + 1], EnemyArt.BLACK, w * 2.0 + 6.0, FighterArt.AA)
 	for i in pts.size() - 1:
 		var w := lerpf(22.0, 6.0, float(i) / 12.0)
-		c.draw_line(pts[i], pts[i + 1], FLESH, w * 2.0, true)
-		c.draw_line(pts[i] + Vector2(-w * 0.4, 0), pts[i + 1] + Vector2(-w * 0.4, 0), FLESH_HI, w * 0.5, true)
+		c.draw_line(pts[i], pts[i + 1], FLESH, w * 2.0, FighterArt.AA)
+		c.draw_line(pts[i] + Vector2(-w * 0.4, 0), pts[i + 1] + Vector2(-w * 0.4, 0), FLESH_HI, w * 0.5, FighterArt.AA)
 		if i % 2 == 0:
 			c.draw_circle(pts[i] + Vector2(w * 0.5, 0), w * 0.3, SUCKER)
 	# Broken bones at the base where it burst out

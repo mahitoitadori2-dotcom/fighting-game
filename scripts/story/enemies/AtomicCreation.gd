@@ -138,7 +138,7 @@ static func draw_atomic(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.outline(c, plate, 2.5)
 	for k in 3:
 		var cx := -40.0 + float(k) * 40.0
-		c.draw_polyline(PackedVector2Array([Vector2(cx, -170 + breathe), Vector2(cx + 8, -150 + breathe), Vector2(cx - 4, -130 + breathe)]), glow, 3.0, true)
+		c.draw_polyline(PackedVector2Array([Vector2(cx, -170 + breathe), Vector2(cx + 8, -150 + breathe), Vector2(cx - 4, -130 + breathe)]), glow, 3.0, FighterArt.AA)
 	# THE CORE: nucleus + orbiting electrons
 	var core := Vector2(6, -118 + breathe)
 	c.draw_circle(core, 34.0 + 10.0 * charge, Color(glow.r, glow.g, glow.b, 0.35))
@@ -152,7 +152,7 @@ static func draw_atomic(c: CanvasItem, s: Dictionary) -> void:
 		for i in 25:
 			var a := TAU * float(i) / 24.0
 			ring.append(core + Vector2(cos(a) * 58.0, sin(a) * 18.0).rotated(rot))
-		c.draw_polyline(ring, Color(glow.r, glow.g, glow.b, 0.6), 2.5, true)
+		c.draw_polyline(ring, Color(glow.r, glow.g, glow.b, 0.6), 2.5, FighterArt.AA)
 		var ea := t * (3.0 + float(k)) + float(k)
 		c.draw_circle(core + Vector2(cos(ea) * 58.0, sin(ea) * 18.0).rotated(rot), 5.0, ATOM_HI)
 	# Small head with glowing slits
@@ -178,6 +178,6 @@ static func draw_atomic(c: CanvasItem, s: Dictionary) -> void:
 		var fall := fmod(t * 1.2 + float(k) * 0.33, 1.0)
 		c.draw_circle(Vector2(-40 + float(k) * 40.0, -70 + fall * 64.0), 4.0 * (1.0 - fall), glow)
 	if pose == "slam" and pt < 0.25:
-		c.draw_arc(Vector2(96, 0), 30.0 + pt * 300.0, PI, TAU, 18, Color(glow.r, glow.g, glow.b, 1.0 - pt * 4.0), 6.0, true)
+		c.draw_arc(Vector2(96, 0), 30.0 + pt * 300.0, PI, TAU, 18, Color(glow.r, glow.g, glow.b, 1.0 - pt * 4.0), 6.0, FighterArt.AA)
 	if pose == "burst" and pt < 0.3:
-		c.draw_arc(core, 40.0 + pt * 700.0, 0.0, TAU, 32, Color(glow.r, glow.g, glow.b, 0.8 - pt * 2.6), 8.0, true)
+		c.draw_arc(core, 40.0 + pt * 700.0, 0.0, TAU, 32, Color(glow.r, glow.g, glow.b, 0.8 - pt * 2.6), 8.0, FighterArt.AA)

@@ -214,15 +214,15 @@ static func draw_false_god(c: CanvasItem, s: Dictionary) -> void:
 	for k in 4:
 		FighterArt.curved_spike(c, hand, hand + Vector2(34, -20.0 + float(k) * 14.0), 4.0, Color(1.0, 0.4, 0.08), Color(1.0, 0.9, 0.5), 0.3, 2.0)
 	if pose == "whip":
-		c.draw_arc(Vector2(80, -170), 150.0, -1.0, 0.9, 16, Color(1.0, 0.4, 0.1, 0.7), 10.0, true)
+		c.draw_arc(Vector2(80, -170), 150.0, -1.0, 0.9, 16, Color(1.0, 0.4, 0.1, 0.7), 10.0, FighterArt.AA)
 	# Void face under a crown of burning antlers
 	var head := Vector2(6, -330)
 	for sgn: float in [-1.0, 1.0]:
 		var a0 := head + Vector2(sgn * 14.0, -20.0)
 		var mid := a0 + Vector2(sgn * 30.0, -40.0)
 		var top := mid + Vector2(sgn * 10.0, -50.0)
-		c.draw_polyline(PackedVector2Array([a0, mid, top]), EnemyArt.BLACK, 12.0, true)
-		c.draw_polyline(PackedVector2Array([a0, mid, top]), Color(0.25, 0.08, 0.06), 7.0, true)
+		c.draw_polyline(PackedVector2Array([a0, mid, top]), EnemyArt.BLACK, 12.0, FighterArt.AA)
+		c.draw_polyline(PackedVector2Array([a0, mid, top]), Color(0.25, 0.08, 0.06), 7.0, FighterArt.AA)
 		c.draw_line(mid, mid + Vector2(sgn * 34.0, -10.0), Color(0.25, 0.08, 0.06), 6.0)
 		for tip: Vector2 in [top, mid + Vector2(sgn * 34.0, -10.0)]:
 			var fh := 16.0 + 8.0 * sin(t * 9.0 + sgn)

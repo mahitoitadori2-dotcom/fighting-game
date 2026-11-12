@@ -114,8 +114,8 @@ static func beast(c: CanvasItem, s: Dictionary, cfg: Dictionary) -> void:
 	for i in 8:
 		var u := float(i) / 7.0
 		tail.append(body_c + Vector2(-48 * k - u * 46 * k, -6 * k - u * 30 * k + sin(t * 3.0 + u * 4.0) * 8.0 * k * u))
-	c.draw_polyline(tail, BLACK, 11.0 * k, true)
-	c.draw_polyline(tail, coat, 6.5 * k, true)
+	c.draw_polyline(tail, BLACK, 11.0 * k, FighterArt.AA)
+	c.draw_polyline(tail, coat, 6.5 * k, FighterArt.AA)
 	c.draw_circle(tail[tail.size() - 1], 4.0 * k, stripe)
 	# Legs (far pair darker, then near pair)
 	for far in [true, false]:
@@ -128,8 +128,8 @@ static func beast(c: CanvasItem, s: Dictionary, cfg: Dictionary) -> void:
 			if base == "pounce" and not tele:
 				foot = hip + Vector2((26.0 if front else -26.0) * k, 26 * k)
 			var col := coat.darkened(0.3) if far else coat
-			c.draw_line(hip, foot, BLACK, 15.0 * k, true)
-			c.draw_line(hip, foot, col, 10.0 * k, true)
+			c.draw_line(hip, foot, BLACK, 15.0 * k, FighterArt.AA)
+			c.draw_line(hip, foot, col, 10.0 * k, FighterArt.AA)
 			c.draw_circle(foot, 7.0 * k, BLACK)
 			c.draw_circle(foot, 5.0 * k, col)
 	# Body
@@ -196,8 +196,8 @@ static func treant(c: CanvasItem, s: Dictionary, cfg: Dictionary) -> void:
 	for i in 4:
 		var x0 := (-18.0 + float(i) * 12.0) * h
 		var root := PackedVector2Array([Vector2(x0, -40 * h), Vector2(x0 + (float(i) - 1.5) * 14.0 * h + sin(walk + float(i)) * 6.0 * h, -2), Vector2(x0 + (float(i) - 1.5) * 22.0 * h, 0)])
-		c.draw_polyline(root, BLACK, 12.0 * h, true)
-		c.draw_polyline(root, bark.darkened(0.15), 7.0 * h, true)
+		c.draw_polyline(root, BLACK, 12.0 * h, FighterArt.AA)
+		c.draw_polyline(root, bark.darkened(0.15), 7.0 * h, FighterArt.AA)
 	# Trunk
 	var top := Vector2(sway, -150 * h)
 	var trunk := PackedVector2Array([Vector2(-24 * h, -36 * h), Vector2(26 * h, -36 * h), top + Vector2(18 * h, 0), top + Vector2(-16 * h, 0)])
@@ -232,10 +232,10 @@ static func treant(c: CanvasItem, s: Dictionary, cfg: Dictionary) -> void:
 		var a := arm_a + (float(k) - 1.0) * 0.5 + (0.0 if k == branches - 1 else -0.6 * float(k % 2))
 		var mid := root + Vector2.from_angle(a) * 42.0 * h
 		var tip := mid + Vector2.from_angle(a - 0.5) * 34.0 * h
-		c.draw_line(root, mid, BLACK, 11.0 * h, true)
-		c.draw_line(mid, tip, BLACK, 7.0 * h, true)
-		c.draw_line(root, mid, bark, 7.0 * h, true)
-		c.draw_line(mid, tip, bark, 4.0 * h, true)
-		c.draw_line(mid, mid + Vector2.from_angle(a + 0.9) * 16.0 * h, bark.darkened(0.2), 3.0 * h, true)
+		c.draw_line(root, mid, BLACK, 11.0 * h, FighterArt.AA)
+		c.draw_line(mid, tip, BLACK, 7.0 * h, FighterArt.AA)
+		c.draw_line(root, mid, bark, 7.0 * h, FighterArt.AA)
+		c.draw_line(mid, tip, bark, 4.0 * h, FighterArt.AA)
+		c.draw_line(mid, mid + Vector2.from_angle(a + 0.9) * 16.0 * h, bark.darkened(0.2), 3.0 * h, FighterArt.AA)
 		if glow.a > 0.0 and k % 2 == 0:                       # A few living leaves
 			c.draw_circle(tip, 5.0 * h, Color(glow.r * 0.6, glow.g * 0.8, glow.b * 0.4, 0.9))

@@ -285,7 +285,7 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 			EnemyArt.arm(c, shoulder, hand, 9.0, arm_shade, arm_shade.darkened(0.2), arm, hand_c, 6.0)
 			_sword(c, hand, Vector2.from_angle(ang), pal)
 			if pose == "w_slash":
-				c.draw_arc(chest + Vector2(20, -10), 62.0, -1.4, 0.9, 14, Color(1, 1, 1, 0.45), 4.0, true)
+				c.draw_arc(chest + Vector2(20, -10), 62.0, -1.4, 0.9, 14, Color(1, 1, 1, 0.45), 4.0, FighterArt.AA)
 		"hammer":
 			var hand := chest + Vector2(18, 26)
 			var ang := -1.9
@@ -326,7 +326,7 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 			EnemyArt.arm(c, shoulder, hand, 9.0, arm_shade, arm_shade.darkened(0.2), arm, hand_c, 6.0)
 			_spear(c, hand - d * back, hand + d * 84.0, pal)
 			if pose == "w_sweep":
-				c.draw_arc(Vector2(40, -20), 90.0, -0.3, 0.6, 10, Color(1, 1, 1, 0.4), 4.0, true)
+				c.draw_arc(Vector2(40, -20), 90.0, -0.3, 0.6, 10, Color(1, 1, 1, 0.4), 4.0, FighterArt.AA)
 		"bow":
 			# Quiver on the back + the drawing hand
 			var q := chest + Vector2(-24, -6)
@@ -426,7 +426,7 @@ static func draw_weapon_front(c: CanvasItem, s: Dictionary, chest: Vector2, pal:
 			c.draw_line(Vector2(r.position.x + 6, r.position.y + 8), Vector2(r.position.x + 6, r.end.y - 20), Color(1, 1, 1, 0.35), 3.0)
 			FighterArt.outline(c, tower, 4.0)
 			if s.get("guarding", false):
-				c.draw_arc(sh + Vector2(10, 0), 70.0, -1.1, 1.1, 14, Color(accent.r, accent.g, accent.b, 0.25 + 0.15 * sin(t * 6.0)), 5.0, true)
+				c.draw_arc(sh + Vector2(10, 0), 70.0, -1.1, 1.1, 14, Color(accent.r, accent.g, accent.b, 0.25 + 0.15 * sin(t * 6.0)), 5.0, FighterArt.AA)
 			if pose == "w_bash" or pose == "w_slam":
 				c.draw_line(Vector2(60, -80), Vector2(120, -80), Color(1, 1, 1, 0.5), 3.0)
 
@@ -474,10 +474,10 @@ static func _bow(c: CanvasItem, grip: Vector2, aim: float, drawn: bool, chest: V
 	var top := grip + n * 40.0 - d * 10.0
 	var bot := grip - n * 40.0 - d * 10.0
 	var limb := PackedVector2Array([top, grip + n * 22.0 + d * 6.0, grip + d * 8.0, grip - n * 22.0 + d * 6.0, bot])
-	c.draw_polyline(limb, EnemyArt.BLACK, 8.0, true)
-	c.draw_polyline(limb, pal.get("wood", Color(0.5, 0.35, 0.2)), 4.5, true)
+	c.draw_polyline(limb, EnemyArt.BLACK, 8.0, FighterArt.AA)
+	c.draw_polyline(limb, pal.get("wood", Color(0.5, 0.35, 0.2)), 4.5, FighterArt.AA)
 	var string_mid := grip - d * (36.0 if drawn else 10.0)
-	c.draw_polyline(PackedVector2Array([top, string_mid, bot]), Color(0.95, 0.95, 0.9, 0.9), 1.5, true)
+	c.draw_polyline(PackedVector2Array([top, string_mid, bot]), Color(0.95, 0.95, 0.9, 0.9), 1.5, FighterArt.AA)
 	if drawn:                                              # Nocked arrow
 		var tip := grip + d * 22.0
 		c.draw_line(string_mid, tip, EnemyArt.BLACK, 4.0)

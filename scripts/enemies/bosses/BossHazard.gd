@@ -154,8 +154,8 @@ func _draw_tornado(k: float) -> void:
 		var w := half_w * (0.3 + 0.9 * u)
 		var sway := sin(_age * 10.0 + u * 4.0 + _seed) * 12.0 * u
 		draw_set_transform(Vector2(sway, y), 0.0, Vector2(1.0, 0.25))
-		draw_arc(Vector2.ZERO, w, _age * 9.0, _age * 9.0 + 4.6, 16, Color(col.r, col.g, col.b, 0.7 * fade), 9.0, true)
-		draw_arc(Vector2.ZERO, w, _age * 9.0, _age * 9.0 + 4.6, 16, Color(1, 1, 1, 0.5 * fade), 3.0, true)
+		draw_arc(Vector2.ZERO, w, _age * 9.0, _age * 9.0 + 4.6, 16, Color(col.r, col.g, col.b, 0.7 * fade), 9.0, FighterArt.AA)
+		draw_arc(Vector2.ZERO, w, _age * 9.0, _age * 9.0 + 4.6, 16, Color(1, 1, 1, 0.5 * fade), 3.0, FighterArt.AA)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -184,8 +184,8 @@ func _draw_silk(k: float) -> void:
 	for i in 5:
 		var x := (float(i) - 2.0) * half_w * 0.35
 		var tip := Vector2(x + sin(_seed + float(i)) * 8.0, -height * up * (0.6 + 0.4 * absf(sin(float(i) * 1.7))))
-		draw_line(Vector2(x, 0), tip, Color(0, 0, 0, up), 6.0, true)
-		draw_line(Vector2(x, 0), tip, Color(col.r, col.g, col.b, up), 3.0, true)
+		draw_line(Vector2(x, 0), tip, Color(0, 0, 0, up), 6.0, FighterArt.AA)
+		draw_line(Vector2(x, 0), tip, Color(col.r, col.g, col.b, up), 3.0, FighterArt.AA)
 
 
 func _draw_blast(k: float) -> void:
@@ -209,9 +209,9 @@ func _draw_tendril(k: float) -> void:
 	for i in 9:
 		var u := float(i) / 8.0
 		pts.append(Vector2(sin(u * 6.0 + _seed + k * 10.0) * 14.0 * u, -height * rise * u))
-	draw_polyline(pts, Color(0, 0, 0, a), 30.0, true)
-	draw_polyline(pts, Color(col.r * 0.4, col.g * 0.3, col.b * 0.5, a), 22.0, true)
-	draw_polyline(pts, Color(col.r, col.g, col.b, a * 0.8), 6.0, true)
+	draw_polyline(pts, Color(0, 0, 0, a), 30.0, FighterArt.AA)
+	draw_polyline(pts, Color(col.r * 0.4, col.g * 0.3, col.b * 0.5, a), 22.0, FighterArt.AA)
+	draw_polyline(pts, Color(col.r, col.g, col.b, a * 0.8), 6.0, FighterArt.AA)
 	draw_circle(pts[8], 12.0, Color(0.05, 0.0, 0.08, a))
 
 
@@ -246,7 +246,7 @@ func _draw_warning() -> void:
 	var blink := 0.5 + 0.5 * sin(_age * 28.0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.25))
 	draw_circle(Vector2.ZERO, half_w * (0.4 + 0.6 * w), Color(col.r, col.g, col.b, 0.25 + 0.25 * w))
-	draw_arc(Vector2.ZERO, half_w + 6.0, 0.0, TAU, 28, Color(1.0, 0.3, 0.2, 0.5 + 0.4 * blink), 6.0, true)
+	draw_arc(Vector2.ZERO, half_w + 6.0, 0.0, TAU, 28, Color(1.0, 0.3, 0.2, 0.5 + 0.4 * blink), 6.0, FighterArt.AA)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	match kind:
 		"spear":                                        # Thin light line from the sky
@@ -295,16 +295,16 @@ func _draw_serpent(k: float) -> void:
 	for i in 9:
 		var t := float(i) / 8.0
 		body.append(Vector2(sin(t * 5.0 + _seed) * 14.0 * (1.0 - t), 0).lerp(top, t))
-	draw_polyline(body, Color(col.r, col.g, col.b, a * 0.35), 46.0, true)
-	draw_polyline(body, Color(col.r, col.g, col.b, a * 0.8), 26.0, true)
-	draw_polyline(body, Color(1, 1, 1, a * 0.6), 8.0, true)
+	draw_polyline(body, Color(col.r, col.g, col.b, a * 0.35), 46.0, FighterArt.AA)
+	draw_polyline(body, Color(col.r, col.g, col.b, a * 0.8), 26.0, FighterArt.AA)
+	draw_polyline(body, Color(1, 1, 1, a * 0.6), 8.0, FighterArt.AA)
 	var bite := clampf((k - 0.2) / 0.15, 0.0, 1.0)      # 0 = open jaws, 1 = shut
 	var jaw := 0.9 * (1.0 - bite)
 	var head := top + Vector2(0, -6)
 	for s in [-1.0, 1.0]:
 		var pts := PackedVector2Array([head, head + Vector2.from_angle(-PI * 0.5 + s * jaw) * 46.0 + Vector2(s * 8.0, 0), head + Vector2(s * 18.0, 4.0)])
 		draw_colored_polygon(pts, Color(col.r, col.g, col.b, a))
-		draw_polyline(PackedVector2Array([pts[0], pts[1], pts[2]]), Color(1, 1, 1, a), 2.0, true)
+		draw_polyline(PackedVector2Array([pts[0], pts[1], pts[2]]), Color(1, 1, 1, a), 2.0, FighterArt.AA)
 	draw_circle(head + Vector2(-8, 6), 4.0, Color(1, 1, 1, a))
 	draw_circle(head + Vector2(8, 6), 4.0, Color(1, 1, 1, a))
 
@@ -315,12 +315,12 @@ func _draw_spear(k: float) -> void:
 	var fade := 1.0 - clampf((k - 0.6) / 0.4, 0.0, 1.0)
 	var tip := Vector2(0, y)
 	var tail := tip + Vector2(0, -height)
-	draw_line(tail, tip, Color(col.r, col.g, col.b, 0.35 * fade), 22.0, true)
-	draw_line(tail, tip, Color(col.r, col.g, col.b, fade), 9.0, true)
-	draw_line(tail, tip, Color(1, 1, 1, fade), 3.0, true)
+	draw_line(tail, tip, Color(col.r, col.g, col.b, 0.35 * fade), 22.0, FighterArt.AA)
+	draw_line(tail, tip, Color(col.r, col.g, col.b, fade), 9.0, FighterArt.AA)
+	draw_line(tail, tip, Color(1, 1, 1, fade), 3.0, FighterArt.AA)
 	draw_colored_polygon(PackedVector2Array([tip + Vector2(-14, -40), tip + Vector2(14, -40), tip + Vector2(0, 6)]), Color(1, 1, 0.9, fade))
 	if fall >= 1.0:
-		draw_arc(Vector2.ZERO, 20.0 + k * 120.0, PI, TAU, 20, Color(col.r, col.g, col.b, fade), 5.0, true)
+		draw_arc(Vector2.ZERO, 20.0 + k * 120.0, PI, TAU, 20, Color(col.r, col.g, col.b, fade), 5.0, FighterArt.AA)
 
 
 func _draw_rock(k: float) -> void:
@@ -347,5 +347,5 @@ func _draw_chain(k: float) -> void:
 		var p := Vector2(-half_w + float(i) * half_w * 0.28, -6.0 - absf(sin(float(i) * 1.3 + k * 20.0)) * 10.0 * (1.0 - k))
 		var link := EnemyArt.ellipse_points(p, 9.0, 5.0, 10)
 		link.append(link[0])
-		draw_polyline(link, Color(0, 0, 0, fade), 5.0, true)
-		draw_polyline(link, Color(col.r, col.g, col.b, fade), 3.0, true)
+		draw_polyline(link, Color(0, 0, 0, fade), 5.0, FighterArt.AA)
+		draw_polyline(link, Color(col.r, col.g, col.b, fade), 3.0, FighterArt.AA)

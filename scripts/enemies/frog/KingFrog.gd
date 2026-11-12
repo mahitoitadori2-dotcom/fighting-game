@@ -210,7 +210,7 @@ static func draw_frog(c: CanvasItem, s: Dictionary) -> void:
 		open = 7.0
 	if open > 0.0:
 		c.draw_colored_polygon(PackedVector2Array([Vector2(16, by - 6.0), mouth + Vector2(4, -2), mouth + Vector2(4, open), Vector2(18, by - 2.0 + open * 0.5)]), Color(0.45, 0.08, 0.12))
-	c.draw_polyline(PackedVector2Array([Vector2(14, by - 8.0), Vector2(30, by - 3.0), mouth]), EnemyArt.BLACK, 3.0, true)
+	c.draw_polyline(PackedVector2Array([Vector2(14, by - 8.0), Vector2(30, by - 3.0), mouth]), EnemyArt.BLACK, 3.0, FighterArt.AA)
 	if pose == "tongue":
 		var k := clampf(pt / 0.3, 0.0, 1.0)
 		var reach := TONGUE_REACH * sin(PI * k)

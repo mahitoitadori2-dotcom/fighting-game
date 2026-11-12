@@ -384,15 +384,15 @@ func _draw_needle(a: float) -> void:
 	var d := 1.0 if kind == Kind.ARC else dir
 	var tip := Vector2(34.0 * d, 0)
 	var eye := Vector2(-30.0 * d, 0)
-	draw_line(eye, tip, Color(0, 0, 0, a), 7.0, true)
-	draw_line(eye, tip, Color(0.88, 0.9, 0.95, a), 3.5, true)
+	draw_line(eye, tip, Color(0, 0, 0, a), 7.0, FighterArt.AA)
+	draw_line(eye, tip, Color(0.88, 0.9, 0.95, a), 3.5, FighterArt.AA)
 	draw_colored_polygon(PackedVector2Array([tip, tip + Vector2(-10.0 * d, -4), tip + Vector2(-10.0 * d, 4)]), Color(1, 1, 1, a))
 	draw_arc(eye, 5.0, 0.0, TAU, 10, Color(0.88, 0.9, 0.95, a), 2.0)
 	var thread := PackedVector2Array()                  # The silk thread whipping behind it
 	for i in 8:
 		var u := float(i) / 7.0
 		thread.append(eye + Vector2(-d * u * 70.0, sin(u * 8.0 + _age * 30.0) * 8.0 * u))
-	draw_polyline(thread, Color(tint.r, tint.g, tint.b, 0.8 * a), 2.0, true)
+	draw_polyline(thread, Color(tint.r, tint.g, tint.b, 0.8 * a), 2.0, FighterArt.AA)
 
 
 func _draw_bubble(a: float) -> void:
@@ -447,9 +447,9 @@ func _draw_crescent(a: float) -> void:
 	var d := 1.0 if kind == Kind.ARC else dir
 	var a0 := -1.2 if d > 0.0 else PI - 1.2
 	var r := size.y * 0.5
-	draw_arc(Vector2(-d * 8.0, 0), r, a0, a0 + 2.4, 18, Color(0, 0, 0, a), 12.0, true)
-	draw_arc(Vector2(-d * 8.0, 0), r, a0, a0 + 2.4, 18, Color(tint.r, tint.g, tint.b, a), 7.0, true)
-	draw_arc(Vector2(-d * 8.0, 0), r - 2.0, a0 + 0.3, a0 + 2.1, 14, Color(1, 1, 1, 0.8 * a), 2.0, true)
+	draw_arc(Vector2(-d * 8.0, 0), r, a0, a0 + 2.4, 18, Color(0, 0, 0, a), 12.0, FighterArt.AA)
+	draw_arc(Vector2(-d * 8.0, 0), r, a0, a0 + 2.4, 18, Color(tint.r, tint.g, tint.b, a), 7.0, FighterArt.AA)
+	draw_arc(Vector2(-d * 8.0, 0), r - 2.0, a0 + 0.3, a0 + 2.1, 14, Color(1, 1, 1, 0.8 * a), 2.0, FighterArt.AA)
 
 
 ## Arrow along +x (ARC: the node rotation follows the flight) or along `dir` (LINEAR).
@@ -457,15 +457,15 @@ func _draw_arrow(a: float) -> void:
 	var d := 1.0 if kind == Kind.ARC else dir
 	var tip := Vector2(24.0 * d, 0)
 	var tail := Vector2(-24.0 * d, 0)
-	draw_line(tail, tip, Color(0, 0, 0, a), 5.0, true)
-	draw_line(tail, tip, Color(0.85, 0.78, 0.62, a), 2.5, true)
+	draw_line(tail, tip, Color(0, 0, 0, a), 5.0, FighterArt.AA)
+	draw_line(tail, tip, Color(0.85, 0.78, 0.62, a), 2.5, FighterArt.AA)
 	var head := PackedVector2Array([tip + Vector2(-8.0 * d, -6), tip + Vector2(6.0 * d, 0), tip + Vector2(-8.0 * d, 6)])
 	draw_colored_polygon(head, Color(tint.r, tint.g, tint.b, a))
 	FighterArt.outline(self, head, 2.0, Color(0, 0, 0, a))
 	for s in [-1.0, 1.0]:
-		draw_line(tail + Vector2(2.0 * d, 0), tail + Vector2(-6.0 * d, 7.0 * s), Color(tint.r, tint.g, tint.b, a), 3.0, true)
+		draw_line(tail + Vector2(2.0 * d, 0), tail + Vector2(-6.0 * d, 7.0 * s), Color(tint.r, tint.g, tint.b, a), 3.0, FighterArt.AA)
 	if kind == Kind.LINEAR:
-		draw_line(tail, tail - Vector2(26.0 * d, 0), Color(1, 1, 1, 0.25 * a), 2.0, true)   # Speed streak
+		draw_line(tail, tail - Vector2(26.0 * d, 0), Color(1, 1, 1, 0.25 * a), 2.0, FighterArt.AA)   # Speed streak
 
 
 func _draw_rings(col: Color, a: float) -> void:
@@ -473,8 +473,8 @@ func _draw_rings(col: Color, a: float) -> void:
 		var r := 20.0 + float(i) * 13.0 + _age * 34.0
 		var off := Vector2(-dir * float(i) * 10.0, 0)
 		var a0 := -0.9 if dir > 0.0 else PI - 0.9
-		draw_arc(off, r, a0, a0 + 1.8, 18, Color(0, 0, 0, a), 7.0, true)
-		draw_arc(off, r, a0, a0 + 1.8, 18, Color(col.r, col.g, col.b, a), 4.0, true)
+		draw_arc(off, r, a0, a0 + 1.8, 18, Color(0, 0, 0, a), 7.0, FighterArt.AA)
+		draw_arc(off, r, a0, a0 + 1.8, 18, Color(col.r, col.g, col.b, a), 4.0, FighterArt.AA)
 
 
 func _draw_frost(a: float) -> void:
@@ -498,8 +498,8 @@ func _draw_wind(a: float) -> void:
 		for k in 7:
 			var t := float(k) / 6.0
 			pts.append(Vector2(-dir * len * 0.5 + dir * len * t, y + sin(t * PI * 2.0 + _age * 18.0) * 5.0))
-		draw_polyline(pts, Color(0.75, 0.9, 1.0, 0.5 * a), 7.0, true)
-		draw_polyline(pts, Color(1, 1, 1, a), 3.0, true)
+		draw_polyline(pts, Color(0.75, 0.9, 1.0, 0.5 * a), 7.0, FighterArt.AA)
+		draw_polyline(pts, Color(1, 1, 1, a), 3.0, FighterArt.AA)
 
 
 func _draw_glitter(a: float) -> void:
@@ -516,16 +516,16 @@ func _draw_glitter(a: float) -> void:
 
 
 func _draw_laser() -> void:
-	draw_line(Vector2(-34 * dir, 0), Vector2(30 * dir, 0), Color(1.0, 0.2, 0.15, 0.35), 14.0, true)
-	draw_line(Vector2(-34 * dir, 0), Vector2(30 * dir, 0), Color(0, 0, 0), 7.0, true)
-	draw_line(Vector2(-32 * dir, 0), Vector2(28 * dir, 0), Color(1.0, 0.15, 0.1), 4.0, true)
-	draw_line(Vector2(-28 * dir, 0), Vector2(24 * dir, 0), Color(1.0, 0.85, 0.8), 1.5, true)
+	draw_line(Vector2(-34 * dir, 0), Vector2(30 * dir, 0), Color(1.0, 0.2, 0.15, 0.35), 14.0, FighterArt.AA)
+	draw_line(Vector2(-34 * dir, 0), Vector2(30 * dir, 0), Color(0, 0, 0), 7.0, FighterArt.AA)
+	draw_line(Vector2(-32 * dir, 0), Vector2(28 * dir, 0), Color(1.0, 0.15, 0.1), 4.0, FighterArt.AA)
+	draw_line(Vector2(-28 * dir, 0), Vector2(24 * dir, 0), Color(1.0, 0.85, 0.8), 1.5, FighterArt.AA)
 
 
 func _draw_shock(a: float) -> void:
 	var w := 26.0 + _age * 40.0
-	draw_arc(Vector2(0, 0), w, PI, TAU, 16, Color(0, 0, 0, a), 7.0, true)
-	draw_arc(Vector2(0, 0), w, PI, TAU, 16, Color(tint.r, tint.g, tint.b, a), 4.0, true)
+	draw_arc(Vector2(0, 0), w, PI, TAU, 16, Color(0, 0, 0, a), 7.0, FighterArt.AA)
+	draw_arc(Vector2(0, 0), w, PI, TAU, 16, Color(tint.r, tint.g, tint.b, a), 4.0, FighterArt.AA)
 
 
 func _draw_glob() -> void:
@@ -567,7 +567,7 @@ func _draw_drop() -> void:
 	var sw := radius * (0.45 + 0.55 * maxf(warn_k * 0.7, fall_k))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.25))
 	draw_circle(Vector2.ZERO, sw, Color(0, 0, 0, 0.25 + 0.35 * warn_k))
-	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 32, Color(1.0, 0.25, 0.2, 0.5 + 0.4 * sin(_age * 18.0)), 6.0, true)
+	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 32, Color(1.0, 0.25, 0.2, 0.5 + 0.4 * sin(_age * 18.0)), 6.0, FighterArt.AA)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if _age < delay * 0.55:
 		return                                             # Only the warning at first
@@ -614,7 +614,7 @@ func _draw_rune(a: float) -> void:
 	for i in 3:
 		tri.append(Vector2.from_angle(spin + TAU * float(i) / 3.0) * 20.0)
 	draw_colored_polygon(tri, Color(col.r, col.g, col.b, a))
-	draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 20, Color(1, 1, 1, 0.8 * a), 3.0, true)
+	draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 20, Color(1, 1, 1, 0.8 * a), 3.0, FighterArt.AA)
 	draw_circle(Vector2.ZERO, 6.0, Color(1, 1, 1, a))
 
 
@@ -623,15 +623,15 @@ func _draw_void_bolt(a: float) -> void:
 	for i in 3:
 		draw_circle(Vector2(-dir * (10.0 + float(i) * 9.0), sin(_age * 25.0 + float(i)) * 3.0), 8.0 - float(i) * 2.0, Color(0.25, 0.05, 0.4, 0.8 * a))
 	draw_circle(Vector2.ZERO, 11.0, Color(0.05, 0.0, 0.08, a))
-	draw_arc(Vector2.ZERO, 11.0, 0.0, TAU, 16, Color(0.7, 0.4, 1.0, a), 2.5, true)
+	draw_arc(Vector2.ZERO, 11.0, 0.0, TAU, 16, Color(0.7, 0.4, 1.0, a), 2.5, FighterArt.AA)
 	draw_circle(Vector2(dir * 3.0, -2), 3.0, Color(0.9, 0.8, 1.0, a))
 
 
 func _draw_eye_beam(a: float) -> void:
 	var len := 110.0
-	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.8, 0.8, 1.0, 0.25 * a), 22.0, true)
-	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.95, 0.95, 1.0, 0.9 * a), 8.0, true)
-	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(1, 1, 1, a), 3.0, true)
+	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.8, 0.8, 1.0, 0.25 * a), 22.0, FighterArt.AA)
+	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.95, 0.95, 1.0, 0.9 * a), 8.0, FighterArt.AA)
+	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(1, 1, 1, a), 3.0, FighterArt.AA)
 
 
 func _draw_fireball(a: float) -> void:

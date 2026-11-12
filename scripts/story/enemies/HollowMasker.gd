@@ -120,8 +120,8 @@ static func draw_masker(c: CanvasItem, s: Dictionary) -> void:
 		if pose == "dash":
 			hand = sh + Vector2(70, 10)
 		var elbow := sh.lerp(hand, 0.5) + Vector2(-8, 0)
-		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), EnemyArt.BLACK, 7.0, true)
-		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), SHROUD_HI, 4.0, true)
+		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), EnemyArt.BLACK, 7.0, FighterArt.AA)
+		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), SHROUD_HI, 4.0, FighterArt.AA)
 		for f in 4:
 			c.draw_line(hand, hand + Vector2.from_angle(PI * 0.5 + (float(f) - 1.5) * 0.25) * 14.0, SHROUD_HI, 2.0)
 	# The WHITE MASK
@@ -129,7 +129,7 @@ static func draw_masker(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(mask, MASK)
 	c.draw_colored_polygon(EnemyArt.ellipse_points(head + Vector2(-5, 6), 10.0, 14.0, 14), Color(MASK_SHADE.r, MASK_SHADE.g, MASK_SHADE.b, 0.35))
 	FighterArt.outline(c, mask, 3.0)
-	c.draw_polyline(PackedVector2Array([head + Vector2(6, -24), head + Vector2(2, -12), head + Vector2(8, -4)]), Color(0.3, 0.3, 0.3), 1.5, true)   # Crack
+	c.draw_polyline(PackedVector2Array([head + Vector2(6, -24), head + Vector2(2, -12), head + Vector2(8, -4)]), Color(0.3, 0.3, 0.3), 1.5, FighterArt.AA)   # Crack
 	if dead:
 		EnemyArt.ko_eye(c, head + Vector2(-2, -6), 4.0, t)
 		EnemyArt.ko_eye(c, head + Vector2(10, -6), 4.0, t)
@@ -138,4 +138,4 @@ static func draw_masker(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_colored_polygon(EnemyArt.ellipse_points(head + Vector2(ex, -6), 4.0, 6.0, 10), EnemyArt.BLACK)
 	c.draw_arc(head + Vector2(4, 8), 8.0, 0.3, PI - 0.3, 10, EnemyArt.BLACK, 2.5)     # Frozen smile
 	if pose == "slam" and pt < 0.2:
-		c.draw_arc(Vector2(80, 0), 20.0 + pt * 300.0, PI, TAU, 16, Color(0.9, 0.9, 1.0, 1.0 - pt * 5.0), 5.0, true)
+		c.draw_arc(Vector2(80, 0), 20.0 + pt * 300.0, PI, TAU, 16, Color(0.9, 0.9, 1.0, 1.0 - pt * 5.0), 5.0, FighterArt.AA)

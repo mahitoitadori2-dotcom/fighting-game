@@ -214,8 +214,8 @@ static func draw_father(c: CanvasItem, s: Dictionary) -> void:
 	elif pose == "hammer_tele":
 		aim = Vector2(-0.6, -1).normalized()
 	var top := rh + aim * 120.0
-	c.draw_line(rh, top, EnemyArt.BLACK, 16.0, true)
-	c.draw_line(rh, top, Color(0.35, 0.25, 0.18), 10.0, true)
+	c.draw_line(rh, top, EnemyArt.BLACK, 16.0, FighterArt.AA)
+	c.draw_line(rh, top, Color(0.35, 0.25, 0.18), 10.0, FighterArt.AA)
 	var n := aim.orthogonal()
 	var hd := PackedVector2Array([top + n * 50.0 - aim * 26.0, top + n * 50.0 + aim * 30.0, top - n * 50.0 + aim * 30.0, top - n * 50.0 - aim * 26.0])
 	c.draw_colored_polygon(hd, STEEL_SHADE)
@@ -273,9 +273,9 @@ static func draw_abomination(c: CanvasItem, s: Dictionary) -> void:
 	for i in 7:
 		var u := float(i) / 6.0
 		arm.append(Vector2(50 + lean * 0.5, -170).lerp(hand, u) + Vector2(0, sin(t * 10.0 + u * 5.0) * 8.0 * (1.0 - u)))
-	c.draw_polyline(arm, EnemyArt.BLACK, 24.0, true)
-	c.draw_polyline(arm, STEEL, 16.0, true)
-	c.draw_polyline(arm, Color(MOLTEN.r, MOLTEN.g, MOLTEN.b, 0.6), 4.0, true)
+	c.draw_polyline(arm, EnemyArt.BLACK, 24.0, FighterArt.AA)
+	c.draw_polyline(arm, STEEL, 16.0, FighterArt.AA)
+	c.draw_polyline(arm, Color(MOLTEN.r, MOLTEN.g, MOLTEN.b, 0.6), 4.0, FighterArt.AA)
 	FighterArt.curved_spike(c, hand, hand + (hand - arm[5]).normalized() * 34.0, 10.0, STEEL, Color.WHITE, 0.15)
 	# Face: two molten eyes in the metal and a gaping mouth
 	var face := Vector2(36 + lean * 0.6, -200)

@@ -149,4 +149,4 @@ static func draw_hydra(c: CanvasItem, s: Dictionary) -> void:
 	for k in 3:
 		c.draw_line(hand + Vector2(4, -4 + float(k) * 4.0), hand + Vector2(14, -6 + float(k) * 5.0), EnemyArt.BLACK, 3.0)
 	if pose == "crush":
-		c.draw_arc(Vector2(92, 0), 30.0 + pt * 220.0, PI, TAU, 18, Color(1, 0.8, 0.5, maxf(0.0, 1.0 - pt * 4.0)), 6.0, true)
+		c.draw_arc(Vector2(92, 0), 30.0 + pt * 220.0, PI, TAU, 18, Color(1, 0.8, 0.5, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)

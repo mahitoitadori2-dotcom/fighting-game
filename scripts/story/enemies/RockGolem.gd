@@ -142,7 +142,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, cav, 3.0)
 	FighterArt.outline(c, body, 5.0)
 	# Cracks + amber veins
-	c.draw_polyline(PackedVector2Array([body_c + Vector2(-40, -10), body_c + Vector2(-28, -4), body_c + Vector2(-30, 10)]), AMBER, 2.5, true)
+	c.draw_polyline(PackedVector2Array([body_c + Vector2(-40, -10), body_c + Vector2(-28, -4), body_c + Vector2(-30, 10)]), AMBER, 2.5, FighterArt.AA)
 	# Face: two glowing eye slits under a heavy brow
 	var face := body_c + Vector2(30, -24)
 	if dead:
@@ -164,7 +164,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.limb(c, sh, fist, 20.0, ROCK_SHADE if far else ROCK, ROCK_SHADE, ROCK_HI)
 		FighterArt.ball(c, fist, 15.0, ROCK_SHADE if far else ROCK, ROCK_SHADE, ROCK_HI)
 	if pose == "pound":
-		c.draw_arc(Vector2(64, 0), 30.0 + pt * 200.0, PI, TAU, 18, Color(GEODE_HI.r, GEODE_HI.g, GEODE_HI.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, true)
+		c.draw_arc(Vector2(64, 0), 30.0 + pt * 200.0, PI, TAU, 18, Color(GEODE_HI.r, GEODE_HI.g, GEODE_HI.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)
 
 
 static func _ball(c: CanvasItem, center: Vector2, angle: float) -> void:

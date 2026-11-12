@@ -88,4 +88,4 @@ static func ko_eye(c: CanvasItem, p: Vector2, r: float, t: float) -> void:
 	var pts := PackedVector2Array()
 	for i in 12:
 		pts.append(p + Vector2.from_angle(float(i) * 0.8 + t * 6.0) * (r * 0.08 * float(i)))
-	c.draw_polyline(pts, BLACK, 1.5, true)
+	c.draw_polyline(pts, BLACK, 1.5, FighterArt.AA)

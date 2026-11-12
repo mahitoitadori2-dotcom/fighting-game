@@ -163,7 +163,7 @@ static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_arc(chest + Vector2(-8, -2), 9.0, 0.3, 2.8, 8, SKIN_SHADE, 2.0)
 	c.draw_arc(chest + Vector2(9, -2), 9.0, 0.3, 2.8, 8, SKIN_SHADE, 2.0)
 	# Blue rune tattoo down the near side
-	c.draw_polyline(PackedVector2Array([chest + Vector2(14, -16), chest + Vector2(10, -4), chest + Vector2(16, 6), chest + Vector2(11, 18)]), RUNE, 3.0, true)
+	c.draw_polyline(PackedVector2Array([chest + Vector2(14, -16), chest + Vector2(10, -4), chest + Vector2(16, 6), chest + Vector2(11, 18)]), RUNE, 3.0, FighterArt.AA)
 	c.draw_line(chest + Vector2(8, -2), chest + Vector2(16, -6), RUNE, 2.0)
 	FighterArt.outline(c, torso, 4.0)
 	# Belt
@@ -181,7 +181,7 @@ static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 	# Head: bald, scowl, braided beard
 	var head := chest + Vector2(6, -42)
 	FighterArt.ball(c, head, 15.0, SKIN, SKIN_SHADE, SKIN_HI)
-	c.draw_polyline(PackedVector2Array([head + Vector2(-10, -12), head + Vector2(-4, -2), head + Vector2(-8, 6)]), RUNE, 2.5, true)   # Head rune
+	c.draw_polyline(PackedVector2Array([head + Vector2(-10, -12), head + Vector2(-4, -2), head + Vector2(-8, 6)]), RUNE, 2.5, FighterArt.AA)   # Head rune
 	var beard := PackedVector2Array([head + Vector2(-6, 2), head + Vector2(16, 2), head + Vector2(13, 20), head + Vector2(6, 30), head + Vector2(0, 20)])
 	c.draw_colored_polygon(beard, BEARD)
 	FighterArt.outline(c, beard, 3.0)
@@ -218,9 +218,9 @@ static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 		_axe(c, hand, axe_angle)
 	EnemyArt.arm(c, shoulder, hand, 14.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN, 8.0 if pose == "punch" else 7.0)
 	if pose == "punch":
-		c.draw_arc(hand, 16.0, -1.2, 1.2, 10, Color(1, 1, 1, 0.7), 4.0, true)
+		c.draw_arc(hand, 16.0, -1.2, 1.2, 10, Color(1, 1, 1, 0.7), 4.0, FighterArt.AA)
 	if pose == "slam":
-		c.draw_arc(Vector2(46, -2), 30.0 + pt * 80.0, PI, TAU, 16, Color(ICE.r, ICE.g, ICE.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, true)
+		c.draw_arc(Vector2(46, -2), 30.0 + pt * 80.0, PI, TAU, 16, Color(ICE.r, ICE.g, ICE.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)
 
 
 static func _axe(c: CanvasItem, hand: Vector2, angle: float) -> void:

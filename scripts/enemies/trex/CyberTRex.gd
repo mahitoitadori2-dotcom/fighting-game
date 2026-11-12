@@ -134,7 +134,7 @@ static func draw_rex(c: CanvasItem, s: Dictionary) -> void:
 		tail_a = PI + 0.25 + 0.6 * clampf(pt / 0.4, 0.0, 1.0)
 	elif pose == "tail":
 		tail_a = PI + 0.85 - TAU * clampf(pt / 0.25, 0.0, 1.0)
-		c.draw_arc(body_c, TAIL_RADIUS * 0.9, 0.0, TAU, 40, Color(1, 1, 1, 0.35), 10.0, true)
+		c.draw_arc(body_c, TAIL_RADIUS * 0.9, 0.0, TAU, 40, Color(1, 1, 1, 0.35), 10.0, FighterArt.AA)
 	var tail_base := body_c + Vector2(-34, 6)
 	var tail_mid := tail_base + Vector2.from_angle(tail_a) * 46.0
 	var tail_tip := tail_mid + Vector2.from_angle(tail_a + 0.2) * 44.0

@@ -104,7 +104,7 @@ func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-20, -3), Vector2(-8, -3), Vector2(-5, -20), Vector2(-12, -14)]), Color(1.0, 0.95, 0.65))
 	var closed: PackedVector2Array = tri.duplicate()
 	closed.append(tri[0])
-	draw_polyline(closed, FighterArt.BLACK, 4.0, true)
+	draw_polyline(closed, FighterArt.BLACK, 4.0, FighterArt.AA)
 	# "!" mark
 	draw_line(Vector2(0, -33), Vector2(0, -16), FighterArt.BLACK, 4.0)
 	draw_circle(Vector2(0, -9), 2.8, FighterArt.BLACK)

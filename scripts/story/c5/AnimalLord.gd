@@ -206,8 +206,8 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 		var u := float(i) / 9.0
 		var y := -40.0 - sin(u * PI) * 40.0 * (1.0 - swing_k) + u * 30.0 * swing_k
 		tail.append(body_c + Vector2(-80.0 - u * (110.0 + 60.0 * swing_k), y + 40.0 + sin(t * 3.0 + u * 4.0) * 6.0))
-	c.draw_polyline(tail, EnemyArt.BLACK, 24.0, true)
-	c.draw_polyline(tail, SCALE, 18.0, true)
+	c.draw_polyline(tail, EnemyArt.BLACK, 24.0, FighterArt.AA)
+	c.draw_polyline(tail, SCALE, 18.0, FighterArt.AA)
 	for i in range(1, 9):
 		c.draw_circle(tail[i] + Vector2(0, -6), 3.0, SCALE.lightened(0.2))
 	FighterArt.curved_spike(c, tail[9], tail[9] + Vector2(-10, -36), 8.0, Color(0.2, 0.18, 0.16), Color(0.6, 0.1, 0.1), 0.5, 2.5)
@@ -242,7 +242,7 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	for k in 4:
 		FighterArt.curved_spike(c, paw + Vector2(6, -10.0 + float(k) * 7.0), paw + Vector2(36, -16.0 + float(k) * 12.0), 4.0, CLAW, Color.WHITE, 0.3, 2.0)
 	if pose == "claw":
-		c.draw_arc(paw + Vector2(-20, 0), 90.0, -1.0, 1.0, 12, Color(1, 1, 1, 0.5), 5.0, true)
+		c.draw_arc(paw + Vector2(-20, 0), 90.0, -1.0, 1.0, 12, Color(1, 1, 1, 0.5), 5.0, FighterArt.AA)
 	# Head: lion mane, ram horns, wolf snout
 	var head := body_c + Vector2(100, -40)
 	var bite_open := 0.0
@@ -261,8 +261,8 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 		for i in 9:
 			var a := -PI * 0.5 + float(i) * 0.6
 			curl.append(hb + Vector2(cos(a) * (26.0 - float(i) * 2.0) * -1.0 - 6.0, sin(a) * (26.0 - float(i) * 2.0)))
-		c.draw_polyline(curl, EnemyArt.BLACK, 14.0, true)
-		c.draw_polyline(curl, HORN, 9.0, true)
+		c.draw_polyline(curl, EnemyArt.BLACK, 14.0, FighterArt.AA)
+		c.draw_polyline(curl, HORN, 9.0, FighterArt.AA)
 	var snout := PackedVector2Array([head + Vector2(16, -8), head + Vector2(56, 0), head + Vector2(54, 14 + bite_open * 10.0), head + Vector2(16, 18)])
 	c.draw_colored_polygon(snout, FUR_HI)
 	FighterArt.outline(c, snout, 3.0)

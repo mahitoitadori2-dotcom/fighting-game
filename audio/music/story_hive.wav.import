@@ -14,8 +14,8 @@ dest_files=["res://.godot/imported/story_hive.wav-e6f22a2dd336ef64361af3026f7759
 
 force/8_bit=false
 force/mono=false
-force/max_rate=false
-force/max_rate_hz=44100
+force/max_rate=true
+force/max_rate_hz=22050
 edit/trim=false
 edit/normalize=false
 edit/loop_mode=0

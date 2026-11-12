@@ -465,7 +465,7 @@ func _paint_sewer_fall(sz: Vector2, k: float) -> void:
 				var d := Vector2.from_angle(a) * (40.0 + 220.0 * s)
 				p.draw_circle(Vector2(sz.x * 0.5, water_y) + d * Vector2(1.0, 1.4), 10.0 * (1.0 - s), Color(0.6, 0.9, 0.55, 1.0 - s))
 			p.draw_set_transform(Vector2(sz.x * 0.5, water_y), 0.0, Vector2(1.0, 0.25))
-			p.draw_arc(Vector2.ZERO, 40.0 + 260.0 * s, 0.0, TAU, 32, Color(0.7, 1.0, 0.65, 1.0 - s), 6.0, true)
+			p.draw_arc(Vector2.ZERO, 40.0 + 260.0 * s, 0.0, TAU, 32, Color(0.7, 1.0, 0.65, 1.0 - s), 6.0, FighterArt.AA)
 			p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 

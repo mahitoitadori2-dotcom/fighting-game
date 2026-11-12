@@ -110,7 +110,7 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.rrect(c, Rect2(Vector2(-17, -58) + u, Vector2(34, 8)), GOLD_SHADE, CLOTH_SHADE, GOLD, 3.0, 3.0)
 	var tab := PackedVector2Array([Vector2(-6, -51) + u, Vector2(8, -51) + u, Vector2(6, -32) + u, Vector2(1, -28) + u, Vector2(-4, -32) + u])
 	c.draw_colored_polygon(tab, CLOTH_HI)
-	c.draw_polyline(tab, BLACK, 2.0, true)
+	c.draw_polyline(tab, BLACK, 2.0, FighterArt.AA)
 	c.draw_line(Vector2(1, -50) + u, Vector2(1, -31) + u, GOLD, 2.0)
 	# Pauldron
 	FighterArt.ball(c, Vector2(2, -95) + u, 9.0, GOLD, GOLD_SHADE, GOLD_HI)
@@ -135,8 +135,8 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	if heal > 0.0:
 		var k := 1.0 - heal / 0.8
 		var r: float = float(s.get("heal_r", 240.0)) * (1.0 - pow(1.0 - k, 2.0))
-		c.draw_arc(Vector2(0, -64), r, 0.0, TAU, 48, Color(0, 0, 0, 1.0 - k), 8.0, true)
-		c.draw_arc(Vector2(0, -64), r, 0.0, TAU, 48, Color(LIGHT.r, LIGHT.g, LIGHT.b, 1.0 - k), 5.0, true)
+		c.draw_arc(Vector2(0, -64), r, 0.0, TAU, 48, Color(0, 0, 0, 1.0 - k), 8.0, FighterArt.AA)
+		c.draw_arc(Vector2(0, -64), r, 0.0, TAU, 48, Color(LIGHT.r, LIGHT.g, LIGHT.b, 1.0 - k), 5.0, FighterArt.AA)
 		c.draw_circle(Vector2(0, -64), 60.0, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.25 * (1.0 - k)))
 		for i in 6:
 			var px := sin(float(i) * 2.4) * 36.0
@@ -151,8 +151,8 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 		var bc := Color(1.0, 0.85, 0.35, 0.85 * b)
 		if s.get("perfect", 0.0) > 0.0:
 			bc = Color(1, 1, 1, 1)
-		c.draw_arc(Vector2(10, -70) + u, 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, true)
-		c.draw_arc(Vector2(10, -70) + u, 50.0, -1.0, 1.0, 20, bc, 6.0, true)
+		c.draw_arc(Vector2(10, -70) + u, 50.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, FighterArt.AA)
+		c.draw_arc(Vector2(10, -70) + u, 50.0, -1.0, 1.0, 20, bc, 6.0, FighterArt.AA)
 
 
 # ============================================================
@@ -166,8 +166,8 @@ static func _halo(c: CanvasItem, center: Vector2, t: float) -> void:
 		var r1 := 27.0 if i % 2 == 0 else 23.0
 		c.draw_line(center + Vector2.from_angle(a) * r0, center + Vector2.from_angle(a) * r1, Color(0, 0, 0), 5.0)
 		c.draw_line(center + Vector2.from_angle(a) * r0, center + Vector2.from_angle(a) * r1, LIGHT, 3.0)
-	c.draw_arc(center, 19.0, 0.0, TAU, 32, Color(0, 0, 0), 5.0, true)
-	c.draw_arc(center, 19.0, 0.0, TAU, 32, LIGHT, 2.5, true)
+	c.draw_arc(center, 19.0, 0.0, TAU, 32, Color(0, 0, 0), 5.0, FighterArt.AA)
+	c.draw_arc(center, 19.0, 0.0, TAU, 32, LIGHT, 2.5, FighterArt.AA)
 
 
 static func _head(c: CanvasItem, hc: Vector2, t: float, gor: bool) -> void:
@@ -180,7 +180,7 @@ static func _head(c: CanvasItem, hc: Vector2, t: float, gor: bool) -> void:
 	c.draw_colored_polygon(FighterArt.rrect_points(Rect2(hc + Vector2(9, -10), Vector2(6, 22)), 3.0), IVORY_SHADE)
 	var mc := mask.duplicate()
 	mc.append(mask[0])
-	c.draw_polyline(mc, BLACK, 3.0, true)
+	c.draw_polyline(mc, BLACK, 3.0, FighterArt.AA)
 	# Glowing gold eye slits
 	var glow := 0.7 + 0.3 * sin(t * 4.0)
 	if gor:
@@ -237,7 +237,7 @@ static func _light_beam(c: CanvasItem, o: Vector2, length: float, k: float, t: f
 	c.draw_colored_polygon(top, Color(GOLD.r, GOLD.g, GOLD.b, 0.95))
 	var closed := top.duplicate()
 	closed.append(top[0])
-	c.draw_polyline(closed, BLACK, 4.0, true)
+	c.draw_polyline(closed, BLACK, 4.0, FighterArt.AA)
 	FighterArt.beam_gradient(c, o, length, hh * 0.85, GOLD, Color(1, 1, 0.95))   # Gold -> white gradient
 	for sidx in 12:
 		var px := fmod(float(sidx) * 89.0 + t * 1100.0, length)
@@ -269,7 +269,7 @@ static func draw_helper(c: CanvasItem, t: float, slash_t: float) -> void:
 		c.draw_line(Vector2(-11, y + 3), Vector2(11, y - 2), IVORY_SHADE, 2.5)
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	c.draw_polyline(closed, BLACK, 3.0, true)
+	c.draw_polyline(closed, BLACK, 3.0, FighterArt.AA)
 	# Face holes
 	c.draw_circle(Vector2(3, -30), 2.6, BLACK)
 	c.draw_circle(Vector2(9, -30), 2.6, BLACK)
@@ -279,10 +279,10 @@ static func draw_helper(c: CanvasItem, t: float, slash_t: float) -> void:
 	var ang := -0.9
 	if slash_t > 0.0:
 		ang += (1.0 - slash_t / 0.25) * TAU
-		c.draw_arc(center, 34.0, ang - 1.4, ang, 12, Color(1, 1, 1, 0.7), 5.0, true)
+		c.draw_arc(center, 34.0, ang - 1.4, ang, 12, Color(1, 1, 1, 0.7), 5.0, FighterArt.AA)
 	var hand := Vector2(12, -22)
 	var tip := hand + Vector2.from_angle(ang) * 26.0
-	c.draw_line(hand, tip, BLACK, 6.0, true)
-	c.draw_line(hand, tip, Color(0.86, 0.88, 0.92), 3.0, true)
+	c.draw_line(hand, tip, BLACK, 6.0, FighterArt.AA)
+	c.draw_line(hand, tip, Color(0.86, 0.88, 0.92), 3.0, FighterArt.AA)
 	c.draw_circle(hand, 3.5, BLACK)
 	c.draw_circle(hand, 2.2, GOLD)

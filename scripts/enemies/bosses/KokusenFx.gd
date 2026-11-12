@@ -167,14 +167,14 @@ class Shot extends Node2D:
 		match kind:
 			"cut":
 				draw_set_transform(Vector2.ZERO, ang, Vector2.ONE)
-				draw_arc(Vector2(-8, 0), radius, -1.15, 1.15, 12, Color(CRIMSON.r, CRIMSON.g, CRIMSON.b, 0.55 * a), 9.0, true)
-				draw_arc(Vector2(-8, 0), radius, -1.0, 1.0, 12, Color(1, 1, 1, a), 3.0, true)
+				draw_arc(Vector2(-8, 0), radius, -1.15, 1.15, 12, Color(CRIMSON.r, CRIMSON.g, CRIMSON.b, 0.55 * a), 9.0, FighterArt.AA)
+				draw_arc(Vector2(-8, 0), radius, -1.0, 1.0, 12, Color(1, 1, 1, a), 3.0, FighterArt.AA)
 				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			"flame_slash":
 				draw_set_transform(Vector2.ZERO, ang, Vector2.ONE)
-				draw_arc(Vector2(-10, 0), radius, -1.25, 1.25, 14, Color(FLAME.r, FLAME.g, FLAME.b, 0.35 * a), 22.0, true)
-				draw_arc(Vector2(-10, 0), radius, -1.15, 1.15, 14, Color(FLAME.r, FLAME.g, FLAME.b, a), 10.0, true)
-				draw_arc(Vector2(-10, 0), radius, -0.9, 0.9, 14, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, a), 4.0, true)
+				draw_arc(Vector2(-10, 0), radius, -1.25, 1.25, 14, Color(FLAME.r, FLAME.g, FLAME.b, 0.35 * a), 22.0, FighterArt.AA)
+				draw_arc(Vector2(-10, 0), radius, -1.15, 1.15, 14, Color(FLAME.r, FLAME.g, FLAME.b, a), 10.0, FighterArt.AA)
+				draw_arc(Vector2(-10, 0), radius, -0.9, 0.9, 14, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, a), 4.0, FighterArt.AA)
 				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			"fireball", "ember":
 				var back := -vel.normalized() if vel.length() > 1.0 else Vector2.LEFT
@@ -188,7 +188,7 @@ class Shot extends Node2D:
 				if kind == "fireball":                         # Rolling: dark swirl lines
 					for i in 3:
 						var s0 := _spin + float(i) * TAU / 3.0
-						draw_arc(Vector2.ZERO, radius * 0.6, s0, s0 + 1.2, 8, Color(CRIMSON.r, CRIMSON.g, CRIMSON.b, 0.8 * a), 3.0, true)
+						draw_arc(Vector2.ZERO, radius * 0.6, s0, s0 + 1.2, 8, Color(CRIMSON.r, CRIMSON.g, CRIMSON.b, 0.8 * a), 3.0, FighterArt.AA)
 			"burn":
 				var fade := clampf((life - _t) / 0.5, 0.0, 1.0)
 				for i in 5:
@@ -201,8 +201,8 @@ class Shot extends Node2D:
 			"debris", "meteor":
 				var r := radius
 				var up := -vel.normalized() if vel.length() > 1.0 else Vector2.UP
-				draw_line(Vector2.ZERO, up * r * 4.5, Color(FLAME.r, FLAME.g, FLAME.b, 0.25 * a), r * 1.6, true)   # Burning trail
-				draw_line(Vector2.ZERO, up * r * 3.0, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, 0.4 * a), r * 0.8, true)
+				draw_line(Vector2.ZERO, up * r * 4.5, Color(FLAME.r, FLAME.g, FLAME.b, 0.25 * a), r * 1.6, FighterArt.AA)   # Burning trail
+				draw_line(Vector2.ZERO, up * r * 3.0, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, 0.4 * a), r * 0.8, FighterArt.AA)
 				draw_circle(Vector2.ZERO, r * 1.35, Color(FLAME.r, FLAME.g, FLAME.b, 0.35 * a))
 				var pts := PackedVector2Array()
 				for k in 8:
@@ -217,7 +217,7 @@ class Shot extends Node2D:
 					var p := 0.5 + 0.5 * sin(_t * 30.0)
 					draw_set_transform(Vector2(0, hh), 0.0, Vector2(1.0, 0.25))
 					draw_circle(Vector2.ZERO, radius + 6.0, Color(1.0, 0.2, 0.1, 0.25 + 0.3 * p))
-					draw_arc(Vector2.ZERO, radius + 6.0, 0.0, TAU, 20, Color(1.0, 0.3, 0.1, 0.9), 4.0, true)
+					draw_arc(Vector2.ZERO, radius + 6.0, 0.0, TAU, 20, Color(1.0, 0.3, 0.1, 0.9), 4.0, FighterArt.AA)
 					draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 				else:
 					var k := clampf((_t - delay) / 0.12, 0.0, 1.0) * a
@@ -422,9 +422,9 @@ class FlameRing extends Node2D:
 			return
 		var a := fade
 		draw_circle(Vector2(0, -radius * 0.25), radius, Color(0.6, 0.05, 0.05, 0.10 * a))
-		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(0, 0, 0, 0.7 * a), 22.0, true)
-		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(FLAME.r, FLAME.g, FLAME.b, 0.85 * a), 14.0, true)
-		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, 0.9 * a), 5.0, true)
+		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(0, 0, 0, 0.7 * a), 22.0, FighterArt.AA)
+		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(FLAME.r, FLAME.g, FLAME.b, 0.85 * a), 14.0, FighterArt.AA)
+		draw_arc(Vector2.ZERO, radius, PI, TAU, 64, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, 0.9 * a), 5.0, FighterArt.AA)
 		for i in 36:                                       # Flames licking up along the circle
 			var ang := PI + float(i) / 35.0 * PI
 			var p := Vector2.from_angle(ang) * radius
@@ -456,8 +456,8 @@ class ForceWave extends Node2D:
 			var u := fmod(k + float(i) * 0.25, 1.0)
 			var r := reach * ((1.0 - u) if pull else u)
 			var a := (1.0 - k) * 0.8
-			draw_arc(Vector2.ZERO, maxf(r, 4.0), 0.0, TAU, 40, Color(0.12, 0.0, 0.05, a), 10.0, true)
-			draw_arc(Vector2.ZERO, maxf(r, 4.0), 0.0, TAU, 40, Color(CRIMSON.r, CRIMSON.g, CRIMSON.b, a), 4.0, true)
+			draw_arc(Vector2.ZERO, maxf(r, 4.0), 0.0, TAU, 40, Color(0.12, 0.0, 0.05, a), 10.0, FighterArt.AA)
+			draw_arc(Vector2.ZERO, maxf(r, 4.0), 0.0, TAU, 40, Color(CRIMSON.r, CRIMSON.g, CRIMSON.b, a), 4.0, FighterArt.AA)
 
 
 # ============================================================
@@ -482,6 +482,6 @@ class Marker extends Node2D:
 		var p := 0.5 + 0.5 * sin(_t * 18.0)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.22))
 		draw_circle(Vector2.ZERO, r, Color(1.0, 0.15, 0.1, 0.15 + 0.2 * p))
-		draw_arc(Vector2.ZERO, r, 0.0, TAU, 40, Color(1.0, 0.3, 0.1, 0.9), 6.0, true)
+		draw_arc(Vector2.ZERO, r, 0.0, TAU, 40, Color(1.0, 0.3, 0.1, 0.9), 6.0, FighterArt.AA)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		FighterArt.label(self, Vector2(0, -40), "!", 40, Color(1.0, 0.3, 0.2, 0.6 + 0.4 * p))

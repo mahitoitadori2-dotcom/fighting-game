@@ -242,11 +242,11 @@ static func _tree(c: CanvasItem, o: Vector2, h: float, col: Color, v: int, wmul:
 		var len := h * rng.randf_range(0.18, 0.32) * (1.2 - k * 0.6)
 		var mid := root + Vector2.from_angle(a) * len * 0.6
 		var tip := mid + Vector2.from_angle(a + side * 0.4) * len * 0.5
-		c.draw_line(root, mid, BLACK, w * 0.9 + 3.0, true)
-		c.draw_line(mid, tip, BLACK, w * 0.5 + 2.5, true)
-		c.draw_line(root, mid, col, w * 0.9, true)
-		c.draw_line(mid, tip, col, w * 0.5, true)
-		c.draw_line(mid, mid + Vector2.from_angle(a - side * 0.7) * len * 0.3, col, w * 0.35, true)
+		c.draw_line(root, mid, BLACK, w * 0.9 + 3.0, FighterArt.AA)
+		c.draw_line(mid, tip, BLACK, w * 0.5 + 2.5, FighterArt.AA)
+		c.draw_line(root, mid, col, w * 0.9, FighterArt.AA)
+		c.draw_line(mid, tip, col, w * 0.5, FighterArt.AA)
+		c.draw_line(mid, mid + Vector2.from_angle(a - side * 0.7) * len * 0.3, col, w * 0.35, FighterArt.AA)
 
 
 ## A skull (tiger = with fangs, bigger and longer).

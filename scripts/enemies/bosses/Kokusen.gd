@@ -720,7 +720,7 @@ static func draw_kokusen(c: CanvasItem, s: Dictionary) -> void:
 	if fly:                                                     # Dark energy holding him up
 		for i in 3:
 			var k := fmod(t * 1.5 + float(i) / 3.0, 1.0)
-			c.draw_arc(Vector2(0, 6 + k * 30.0), 30.0 + k * 40.0, PI * 1.1, PI * 1.9, 12, Color(0.75, 0.1, 0.12, 0.5 * (1.0 - k)), 4.0, true)
+			c.draw_arc(Vector2(0, 6 + k * 30.0), 30.0 + k * 40.0, PI * 1.1, PI * 1.9, 12, Color(0.75, 0.1, 0.12, 0.5 * (1.0 - k)), 4.0, FighterArt.AA)
 
 	# --- Hand positions per pose ---
 	var near_sh := Vector2(16, -158)
@@ -837,13 +837,13 @@ static func draw_kokusen(c: CanvasItem, s: Dictionary) -> void:
 		"grab_tele":                                            # Crimson flash where the hand hit the chest
 			c.draw_circle(Vector2(8, -138), 18.0 + 8.0 * sin(t * 30.0), Color(1.0, 0.2, 0.15, 0.45))
 		"cut", "strike":
-			c.draw_arc(Vector2(50, -120), 70.0, -1.4, 0.9, 16, Color(1, 1, 1, maxf(0.0, 0.8 - pt * 3.0)), 6.0, true)
+			c.draw_arc(Vector2(50, -120), 70.0, -1.4, 0.9, 16, Color(1, 1, 1, maxf(0.0, 0.8 - pt * 3.0)), 6.0, FighterArt.AA)
 		"flame_tele", "flame":
 			c.draw_circle(near + Vector2(8, 0), 16.0 + 5.0 * sin(t * 24.0), Color(1.0, 0.45, 0.1, 0.7))
 			c.draw_circle(near + Vector2(8, 0), 8.0, Color(1.0, 0.85, 0.4, 0.9))
 		"force_tele", "force":
 			for i in 3:
-				c.draw_arc(near + Vector2(10, 0), 14.0 + float(i) * 10.0 + 6.0 * sin(t * 20.0), 0.0, TAU, 18, Color(0.75, 0.08, 0.12, 0.7 - float(i) * 0.2), 3.0, true)
+				c.draw_arc(near + Vector2(10, 0), 14.0 + float(i) * 10.0 + 6.0 * sin(t * 20.0), 0.0, TAU, 18, Color(0.75, 0.08, 0.12, 0.7 - float(i) * 0.2), 3.0, FighterArt.AA)
 		"meteor_tele", "meteor":
 			c.draw_circle(Vector2(4, -258), 26.0 + 8.0 * sin(t * 8.0), Color(1.0, 0.45, 0.1, 0.6))
 			c.draw_circle(Vector2(4, -258), 14.0, Color(0.3, 0.24, 0.22))
@@ -869,5 +869,5 @@ static func _sleeve(c: CanvasItem, sh: Vector2, hand: Vector2, far: bool, t: flo
 	for k in 3:                                                 # Claws
 		var a := dir.angle() + (float(k) - 1.0) * 0.45
 		var tip := hand + Vector2.from_angle(a) * (13.0 + sin(t * 3.0 + float(k)) * 1.0)
-		c.draw_line(hand, tip, EnemyArt.BLACK, 5.0, true)
-		c.draw_line(hand, tip, hc.lightened(0.15), 2.5, true)
+		c.draw_line(hand, tip, EnemyArt.BLACK, 5.0, FighterArt.AA)
+		c.draw_line(hand, tip, hc.lightened(0.15), 2.5, FighterArt.AA)

@@ -128,8 +128,8 @@ static func draw_camel(c: CanvasItem, s: Dictionary) -> void:
 			knee = hip + Vector2(26, 26)
 			foot = hip + Vector2(40, 50)
 		var col := FUR_SHADE if far else FUR
-		c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 15.0, true)
-		c.draw_polyline(PackedVector2Array([hip, knee, foot]), col, 9.0, true)
+		c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 15.0, FighterArt.AA)
+		c.draw_polyline(PackedVector2Array([hip, knee, foot]), col, 9.0, FighterArt.AA)
 		c.draw_circle(foot, 7.0, Color(0.35, 0.25, 0.15))
 	# Body + hump
 	var body := EnemyArt.ellipse_points(o + Vector2(-4, -110), 70.0, 32.0, 22)
@@ -147,8 +147,8 @@ static func draw_camel(c: CanvasItem, s: Dictionary) -> void:
 	var hd := o + Vector2(98, -180 + sin(t * 2.0) * 3.0)
 	if gallop:
 		hd = o + Vector2(118, -160)
-	c.draw_line(nb, hd + Vector2(-8, 10), EnemyArt.BLACK, 24.0, true)
-	c.draw_line(nb, hd + Vector2(-8, 10), FUR, 17.0, true)
+	c.draw_line(nb, hd + Vector2(-8, 10), EnemyArt.BLACK, 24.0, FighterArt.AA)
+	c.draw_line(nb, hd + Vector2(-8, 10), FUR, 17.0, FighterArt.AA)
 	var head := PackedVector2Array([hd + Vector2(-14, -10), hd + Vector2(16, -8), hd + Vector2(30, 2), hd + Vector2(26, 12), hd + Vector2(-12, 12)])
 	c.draw_colored_polygon(head, FUR)
 	FighterArt.outline(c, head, 3.5)

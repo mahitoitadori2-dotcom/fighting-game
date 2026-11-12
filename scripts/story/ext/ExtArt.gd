@@ -186,27 +186,27 @@ static func _weapon(c: CanvasItem, kind: String, hand: Vector2, ph: int, pt: flo
 	match kind:
 		"sword":
 			var tip := hand + aim * 52.0
-			c.draw_line(hand, tip, BLACK, 9.0, true)
-			c.draw_line(hand, tip, metal, 5.0, true)
+			c.draw_line(hand, tip, BLACK, 9.0, FighterArt.AA)
+			c.draw_line(hand, tip, metal, 5.0, FighterArt.AA)
 			c.draw_line(hand - aim.orthogonal() * 8.0, hand + aim.orthogonal() * 8.0, BLACK, 5.0)
 			if ph == 2 and pt < 0.2:
-				c.draw_arc(hand, 54.0, -1.2, 0.8, 12, Color(1, 1, 1, 0.7 - pt * 3.0), 6.0, true)
+				c.draw_arc(hand, 54.0, -1.2, 0.8, 12, Color(1, 1, 1, 0.7 - pt * 3.0), 6.0, FighterArt.AA)
 		"spear":
 			var a2 := Vector2(1, -0.15).normalized() if ph == 2 else Vector2(0.2, -1).normalized()
-			c.draw_line(hand - a2 * 30.0, hand + a2 * 70.0, BLACK, 7.0, true)
-			c.draw_line(hand - a2 * 30.0, hand + a2 * 70.0, Color(0.45, 0.3, 0.2), 3.5, true)
+			c.draw_line(hand - a2 * 30.0, hand + a2 * 70.0, BLACK, 7.0, FighterArt.AA)
+			c.draw_line(hand - a2 * 30.0, hand + a2 * 70.0, Color(0.45, 0.3, 0.2), 3.5, FighterArt.AA)
 			c.draw_colored_polygon(PackedVector2Array([hand + a2 * 70.0 + a2.orthogonal() * 6.0, hand + a2 * 92.0, hand + a2 * 70.0 - a2.orthogonal() * 6.0]), metal)
 		"hammer":
 			var top := hand + aim * 44.0
-			c.draw_line(hand, top, BLACK, 8.0, true)
-			c.draw_line(hand, top, Color(0.42, 0.3, 0.2), 4.0, true)
+			c.draw_line(hand, top, BLACK, 8.0, FighterArt.AA)
+			c.draw_line(hand, top, Color(0.42, 0.3, 0.2), 4.0, FighterArt.AA)
 			var hd := PackedVector2Array([top + aim.orthogonal() * 16.0 - aim * 8.0, top + aim.orthogonal() * 16.0 + aim * 10.0, top - aim.orthogonal() * 16.0 + aim * 10.0, top - aim.orthogonal() * 16.0 - aim * 8.0])
 			c.draw_colored_polygon(hd, metal)
 			FighterArt.outline(c, hd, 3.0)
 		"staff":
 			var st := hand + Vector2(4, -60)
-			c.draw_line(hand + Vector2(0, 30), st, BLACK, 7.0, true)
-			c.draw_line(hand + Vector2(0, 30), st, Color(0.25, 0.15, 0.1), 3.5, true)
+			c.draw_line(hand + Vector2(0, 30), st, BLACK, 7.0, FighterArt.AA)
+			c.draw_line(hand + Vector2(0, 30), st, Color(0.25, 0.15, 0.1), 3.5, FighterArt.AA)
 			var orb: Color = cfg.get("magic", Color(1.0, 0.4, 0.1))
 			c.draw_circle(st, 9.0 + (4.0 * sin(t * 10.0) if ph >= 1 else 0.0), Color(orb.r, orb.g, orb.b, 0.4))
 			c.draw_circle(st, 6.0, orb)
@@ -217,7 +217,7 @@ static func _weapon(c: CanvasItem, kind: String, hand: Vector2, ph: int, pt: flo
 		"claw":
 			for k in 3:
 				var a := aim.angle() + (float(k) - 1.0) * 0.4
-				c.draw_line(hand, hand + Vector2.from_angle(a) * 16.0, BLACK, 4.0, true)
+				c.draw_line(hand, hand + Vector2.from_angle(a) * 16.0, BLACK, 4.0, FighterArt.AA)
 
 
 ## 8-legged spider. cfg: body (Color), mark (Color), size (1 = ~70 px wide), eyes (Color),
@@ -241,10 +241,10 @@ static func spider(c: CanvasItem, s: Dictionary, cfg: Dictionary) -> void:
 		var knee := hip + Vector2((-30 + j * 18) * k, -24 * k + sin(walk + j + (PI if far else 0.0)) * 5.0)
 		var foot := Vector2(hip.x + (-40 + j * 26) * k, 0)
 		var col := body.darkened(0.35) if far else body
-		c.draw_line(hip, knee, BLACK, 7.0 * k, true)
-		c.draw_line(knee, foot, BLACK, 6.0 * k, true)
-		c.draw_line(hip, knee, col, 3.5 * k, true)
-		c.draw_line(knee, foot, col, 3.0 * k, true)
+		c.draw_line(hip, knee, BLACK, 7.0 * k, FighterArt.AA)
+		c.draw_line(knee, foot, BLACK, 6.0 * k, FighterArt.AA)
+		c.draw_line(hip, knee, col, 3.5 * k, FighterArt.AA)
+		c.draw_line(knee, foot, col, 3.0 * k, FighterArt.AA)
 	var abd := EnemyArt.ellipse_points(ab, 26 * k, 20 * k, 18)
 	c.draw_colored_polygon(abd, body)
 	if cfg.get("sac", false):

@@ -100,9 +100,9 @@ func _draw() -> void:
 	draw_circle(Vector2(-14, -12) * s, 9.0 * s, HEART_HI)
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	draw_polyline(closed, Color(0, 0, 0), 4.0, true)
+	draw_polyline(closed, Color(0, 0, 0), 4.0, FighterArt.AA)
 	# Veins
-	draw_polyline(PackedVector2Array([Vector2(0, -20) * s, Vector2(6, -2) * s, Vector2(-4, 14) * s, Vector2(2, 30) * s]), RED, 3.0, true)
-	draw_polyline(PackedVector2Array([Vector2(-20, -10) * s, Vector2(-10, 4) * s, Vector2(-16, 18) * s]), RED, 2.0, true)
+	draw_polyline(PackedVector2Array([Vector2(0, -20) * s, Vector2(6, -2) * s, Vector2(-4, 14) * s, Vector2(2, 30) * s]), RED, 3.0, FighterArt.AA)
+	draw_polyline(PackedVector2Array([Vector2(-20, -10) * s, Vector2(-10, 4) * s, Vector2(-16, 18) * s]), RED, 2.0, FighterArt.AA)
 	# Warning ring shows the blast radius
-	draw_arc(Vector2.ZERO, radius * k, 0.0, TAU, 64, Color(1.0, 0.0, 0.0, 0.25 + 0.35 * k), 3.0, true)
+	draw_arc(Vector2.ZERO, radius * k, 0.0, TAU, 64, Color(1.0, 0.0, 0.0, 0.25 + 0.35 * k), 3.0, FighterArt.AA)

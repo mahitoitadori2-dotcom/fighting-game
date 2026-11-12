@@ -56,6 +56,6 @@ static func _stars(c: CanvasItem, t: float) -> void:
 		var pos: Vector2 = STARS[i]
 		var r := 1.2 + 2.2 * tw
 		var col := Color(1.0, 0.95, 1.0, 0.45 + 0.55 * tw)
-		c.draw_line(pos + Vector2(-r * 1.6, 0), pos + Vector2(r * 1.6, 0), col, 1.2, true)
-		c.draw_line(pos + Vector2(0, -r * 1.6), pos + Vector2(0, r * 1.6), col, 1.2, true)
+		c.draw_line(pos + Vector2(-r * 1.6, 0), pos + Vector2(r * 1.6, 0), col, 1.2, FighterArt.AA)
+		c.draw_line(pos + Vector2(0, -r * 1.6), pos + Vector2(0, r * 1.6), col, 1.2, FighterArt.AA)
 		c.draw_circle(pos, r * 0.5, col)

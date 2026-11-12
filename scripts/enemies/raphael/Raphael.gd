@@ -150,8 +150,8 @@ static func draw_angel(c: CanvasItem, s: Dictionary) -> void:
 	var halo := EnemyArt.ellipse_points(halo_c, 16, 5, 20)
 	var halo_closed := halo.duplicate()
 	halo_closed.append(halo[0])
-	c.draw_polyline(halo_closed, EnemyArt.BLACK, 6.0, true)
-	c.draw_polyline(halo_closed, GOLD, 3.5, true)
+	c.draw_polyline(halo_closed, EnemyArt.BLACK, 6.0, FighterArt.AA)
+	c.draw_polyline(halo_closed, GOLD, 3.5, FighterArt.AA)
 	c.draw_circle(halo_c, 20.0, Color(HOLY.r, HOLY.g, HOLY.b, 0.15))
 
 	# Near arm (+ beam)

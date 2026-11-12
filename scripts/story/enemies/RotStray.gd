@@ -110,8 +110,8 @@ static func draw_stray(c: CanvasItem, s: Dictionary) -> void:
 	# Tail (ragged, half bald)
 	var tail_base := Vector2(-34, body_y - 4)
 	var tail := PackedVector2Array([tail_base, tail_base + Vector2(-14, -10 + sin(t * 9.0) * 6.0), tail_base + Vector2(-24, -6 + sin(t * 9.0 + 1.0) * 8.0)])
-	c.draw_polyline(tail, EnemyArt.BLACK, 7.0, true)
-	c.draw_polyline(tail, FUR_SHADE, 4.0, true)
+	c.draw_polyline(tail, EnemyArt.BLACK, 7.0, FighterArt.AA)
+	c.draw_polyline(tail, FUR_SHADE, 4.0, FighterArt.AA)
 
 	# Body: lean barrel with patches of rot and BARE RIBS
 	var body := EnemyArt.ellipse_points(Vector2(-4, body_y - 4), 36.0, 15.0, 20)

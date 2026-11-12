@@ -271,7 +271,7 @@ static func draw_nature(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_circle(hand, 16.0, Color(el.r, el.g, el.b, 0.45))
 	c.draw_circle(hand, 8.0, el.lightened(0.4))
 	if pose == "whip":
-		c.draw_arc(base + Vector2(60, -110), 90.0, -1.2, 0.8, 14, Color(el.r, el.g, el.b, 0.8), 8.0, true)
+		c.draw_arc(base + Vector2(60, -110), 90.0, -1.2, 0.8, 14, Color(el.r, el.g, el.b, 0.8), 8.0, FighterArt.AA)
 	# Head: long elemental hair, a crown of branches
 	var head := base + Vector2(6, -214)
 	for strand in 3:                                           # Long flowing hair (thick strands)
@@ -279,8 +279,8 @@ static func draw_nature(c: CanvasItem, s: Dictionary) -> void:
 		for i in 8:
 			var u := float(i) / 7.0
 			hair.append(head + Vector2(-10.0 - float(strand) * 8.0 - u * 30.0 + sin(t * 2.0 + u * 4.0 + float(strand)) * 8.0, -8.0 + u * 118.0))
-		c.draw_polyline(hair, EnemyArt.BLACK, 16.0, true)
-		c.draw_polyline(hair, el.darkened(0.15), 11.0, true)
+		c.draw_polyline(hair, EnemyArt.BLACK, 16.0, FighterArt.AA)
+		c.draw_polyline(hair, el.darkened(0.15), 11.0, FighterArt.AA)
 	FighterArt.ball(c, head, 18.0, SKIN, SKIN.darkened(0.2), Color.WHITE)
 	for k in 5:                                                # Crown of branches
 		var a := -PI * 0.5 + (float(k) - 2.0) * 0.4

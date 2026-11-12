@@ -133,8 +133,8 @@ func _draw() -> void:
 			_draw_sewer()
 		"burnt", "foundry":
 			for v in _veins:                        # Ember / molten veins
-				draw_polyline(v, Color(1.0, 0.45, 0.1, 0.3), 7.0, true)
-				draw_polyline(v, Color(1.0, 0.6, 0.2), 2.5, true)
+				draw_polyline(v, Color(1.0, 0.45, 0.1, 0.3), 7.0, FighterArt.AA)
+				draw_polyline(v, Color(1.0, 0.6, 0.2), 2.5, FighterArt.AA)
 		"stone", "rune":
 			var yb := 100.0
 			while yb > -height:                     # Masonry courses
@@ -142,30 +142,30 @@ func _draw() -> void:
 				yb -= 70.0
 			if style == "rune":
 				for v in _veins:
-					draw_polyline(v, Color(0.35, 0.8, 1.0, 0.8), 2.5, true)
+					draw_polyline(v, Color(0.35, 0.8, 1.0, 0.8), 2.5, FighterArt.AA)
 		"dark":
 			pass
 		"bone", "web":
 			for v in _veins:                        # Bones stuck in the wall / web strands
 				var col := Color(0.8, 0.8, 0.85, 0.35) if style == "web" else Color(0.32, 0.29, 0.36)
-				draw_polyline(v, col, 2.0 if style == "web" else 6.0, true)
+				draw_polyline(v, col, 2.0 if style == "web" else 6.0, FighterArt.AA)
 		"blasphemy":
 			for v in _veins:                        # Magma veins (brighter than the lava cliffs)
-				draw_polyline(v, Color(1.0, 0.35, 0.05, 0.35), 9.0, true)
-				draw_polyline(v, Color(1.0, 0.55, 0.15), 3.0, true)
+				draw_polyline(v, Color(1.0, 0.35, 0.05, 0.35), 9.0, FighterArt.AA)
+				draw_polyline(v, Color(1.0, 0.55, 0.15), 3.0, FighterArt.AA)
 		_:
 			for v in _veins:                        # Lava veins
-				draw_polyline(v, Color(1.0, 0.45, 0.1, 0.25), 7.0, true)
-				draw_polyline(v, Color(1.0, 0.5, 0.12), 2.5, true)
+				draw_polyline(v, Color(1.0, 0.45, 0.1, 0.25), 7.0, FighterArt.AA)
+				draw_polyline(v, Color(1.0, 0.5, 0.12), 2.5, FighterArt.AA)
 	var edge := PackedVector2Array()
 	for i in range(1, _poly.size() - 1):
 		edge.append(_poly[i])
-	draw_polyline(edge, Color(0, 0, 0), 6.0, true)
+	draw_polyline(edge, Color(0, 0, 0), 6.0, FighterArt.AA)
 	var rim := {"lava": Color(0.35, 0.22, 0.18), "crystal": Color(0.6, 0.4, 0.85), "metal": Color(0.3, 0.9, 0.9), "lab": Color(0.45, 1.0, 0.2),
 		"shaft": Color(0.95, 0.6, 0.15), "marble": Color(0.95, 0.78, 0.35), "sewer": Color(0.45, 0.8, 0.35), "blasphemy": Color(1.0, 0.4, 0.1),
 		"burnt": Color(1.0, 0.5, 0.15), "stone": Color(0.7, 0.68, 0.62), "rune": Color(0.35, 0.8, 1.0), "foundry": Color(1.0, 0.55, 0.15),
 		"dark": Color(0.25, 0.26, 0.3), "bone": Color(0.55, 0.3, 0.9), "web": Color(0.7, 0.7, 0.78)}
-	draw_polyline(edge, rim.get(style, Color(0.35, 0.22, 0.18)), 2.0, true)
+	draw_polyline(edge, rim.get(style, Color(0.35, 0.22, 0.18)), 2.0, FighterArt.AA)
 
 
 ## Colosseum 5 walls: gradient rock in the style's colours, veins / details, a coloured rim.
@@ -181,7 +181,7 @@ func _draw_c5() -> void:
 			draw_line(Vector2(0, yb), Vector2(side * thickness, yb), (st[1] as Color).lerp(st[0], 0.4), 3.0)
 			yb -= 64.0
 	for v in _veins:
-		draw_polyline(v, st[2], float(st[3]), true)
+		draw_polyline(v, st[2], float(st[3]), FighterArt.AA)
 	if style == "thorn" or style == "roots":                 # Thorns / root tips poking out
 		for i in 8:
 			var y := -float(i) * 100.0 - 40.0
@@ -189,8 +189,8 @@ func _draw_c5() -> void:
 	var edge := PackedVector2Array()
 	for i in range(1, _poly.size() - 1):
 		edge.append(_poly[i])
-	draw_polyline(edge, Color(0, 0, 0), 6.0, true)
-	draw_polyline(edge, st[4], 2.0, true)
+	draw_polyline(edge, Color(0, 0, 0), 6.0, FighterArt.AA)
+	draw_polyline(edge, st[4], 2.0, FighterArt.AA)
 
 
 ## Amethyst clusters growing out of the wall (Geode Cavern).
@@ -210,7 +210,7 @@ func _draw_crystals() -> void:
 			draw_colored_polygon(PackedVector2Array([base + n * 0.2, base + n * 0.2 + (tip - base) * 0.8, tip, base]), Color(0.9, 0.78, 1.0))
 			var closed := shard.duplicate()
 			closed.append(shard[0])
-			draw_polyline(closed, Color(0, 0, 0), 2.5, true)
+			draw_polyline(closed, Color(0, 0, 0), 2.5, FighterArt.AA)
 
 
 ## Lab wall: tiled panels + a tall glass tube of bubbling chemicals with valves.
@@ -307,5 +307,5 @@ func _draw_plates() -> void:
 		var pts := PackedVector2Array()
 		for j in 8:
 			pts.append(Vector2(cx + sin(float(j) * 0.9 + float(k)) * 8.0, -height + 40.0 + float(j) * 45.0))
-		draw_polyline(pts, Color(0, 0, 0), 5.0, true)
-		draw_polyline(pts, Color(0.2, 0.2, 0.22), 2.5, true)
+		draw_polyline(pts, Color(0, 0, 0), 5.0, FighterArt.AA)
+		draw_polyline(pts, Color(0.2, 0.2, 0.22), 2.5, FighterArt.AA)

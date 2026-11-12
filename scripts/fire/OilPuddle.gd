@@ -130,7 +130,7 @@ func _draw() -> void:
 	draw_colored_polygon(pts, Color(OIL.r, OIL.g, OIL.b, a))
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	draw_polyline(closed, Color(0, 0, 0, a), 3.0, true)
+	draw_polyline(closed, Color(0, 0, 0, a), 3.0, FighterArt.AA)
 	draw_line(Vector2(-w * 0.5, -3), Vector2(-w * 0.1, -4), Color(OIL_SHINE.r, OIL_SHINE.g, OIL_SHINE.b, a), 2.0)
 	# Pure red fire on top
 	if burning:

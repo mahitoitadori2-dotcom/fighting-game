@@ -165,7 +165,7 @@ func _draw_bat() -> void:
 		draw_colored_polygon(wing, RED_DARK)
 		var wc := wing.duplicate()
 		wc.append(wing[0])
-		draw_polyline(wc, BLACK, 2.5, true)
+		draw_polyline(wc, BLACK, 2.5, FighterArt.AA)
 	draw_circle(Vector2.ZERO, 9.5, BLACK)
 	draw_circle(Vector2.ZERO, 7.5, RED)
 	draw_colored_polygon(PackedVector2Array([Vector2(-6, -5), Vector2(-4, -12), Vector2(-1, -6)]), RED)   # Ears

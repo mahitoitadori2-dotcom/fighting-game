@@ -686,7 +686,7 @@ func _draw_board() -> void:
 		var k := clampf((p.x - r.position.x) / r.size.x, 0.0, 1.0)
 		cols.append((board_cols[0] as Color).lerp(board_cols[1], k))     # C1: wastes -> caves, C2: shaft -> magma
 	c.draw_polygon(inner, cols)
-	c.draw_polyline(_closed(inner), WOOD_DARK, 4.0, true)
+	c.draw_polyline(_closed(inner), WOOD_DARK, 4.0, FighterArt.AA)
 	for i in 4:                                            # Frame corner studs
 		var corner: Vector2 = [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)][i]
 		c.draw_circle(corner, 7.0, GOLD.darkened(0.3))
@@ -759,7 +759,7 @@ func _draw_content() -> void:
 	if _land_t < 0.35:                                     # Landing dust ring
 		var k := _land_t / 0.35
 		c.draw_set_transform(ground + Vector2(0, 12), 0.0, Vector2(1.0, 0.35))
-		c.draw_arc(Vector2.ZERO, 20.0 + 50.0 * k, 0.0, TAU, 24, Color(1, 0.9, 0.7, 1.0 - k), 5.0, true)
+		c.draw_arc(Vector2.ZERO, 20.0 + 50.0 * k, 0.0, TAU, 24, Color(1, 0.9, 0.7, 1.0 - k), 5.0, FighterArt.AA)
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if _celebrate:
 		for i in 14:                                       # Confetti / sparks around the boss space
@@ -811,8 +811,8 @@ func _draw_scenery(r: Rect2) -> void:
 	for i in 12:
 		var k := float(i) / 11.0
 		river.append(r.position + Vector2(k * r.size.x * 0.5, r.size.y * (0.45 + 0.08 * sin(k * 7.0))))
-	c.draw_polyline(river, Color(1.0, 0.45, 0.1, 0.35), 14.0, true)
-	c.draw_polyline(river, Color(1.0, 0.65, 0.2, 0.7), 4.0, true)
+	c.draw_polyline(river, Color(1.0, 0.45, 0.1, 0.35), 14.0, FighterArt.AA)
+	c.draw_polyline(river, Color(1.0, 0.65, 0.2, 0.7), 4.0, FighterArt.AA)
 	# Little mountains + a smoking volcano (wastes)
 	for m in [Vector3(0.05, 0.3, 40.0), Vector3(0.14, 0.26, 55.0), Vector3(0.36, 0.3, 45.0)]:
 		var b := r.position + Vector2(m.x * r.size.x, m.y * r.size.y)
@@ -826,7 +826,7 @@ func _draw_scenery(r: Rect2) -> void:
 	var cm := r.position + Vector2(0.5 * r.size.x, 0.68 * r.size.y)
 	c.draw_set_transform(cm, 0.0, Vector2(1.0, 0.6))
 	c.draw_circle(Vector2.ZERO, 46.0, Color(0.05, 0.02, 0.03))
-	c.draw_arc(Vector2.ZERO, 46.0, PI, TAU, 20, Color(0.35, 0.22, 0.18), 6.0, true)
+	c.draw_arc(Vector2.ZERO, 46.0, PI, TAU, 20, Color(0.35, 0.22, 0.18), 6.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# Crystals + cables in the caves
 	for cr in [Vector2(0.62, 0.8), Vector2(0.7, 0.72), Vector2(0.36, 0.5)]:
@@ -867,8 +867,8 @@ func _draw_scenery_2(r: Rect2) -> void:
 	var tx := r.position.x + r.size.x * 0.74
 	var ty := r.position.y + r.size.y * 0.42
 	c.draw_colored_polygon(PackedVector2Array([Vector2(tx - 80, ty + 60), Vector2(tx - 50, ty - 30), Vector2(tx + 50, ty - 30), Vector2(tx + 80, ty + 60)]), Color(0.18, 0.05, 0.05, 0.9))
-	c.draw_arc(Vector2(tx, ty - 50.0), 36.0, PI * 0.9, PI * 2.6, 20, Color(0.55, 0.08, 0.08), 12.0, true)
-	c.draw_arc(Vector2(tx, ty - 50.0), 36.0, PI * 0.9, PI * 2.6, 20, Color(1.0, 0.45, 0.1, 0.5 + 0.3 * sin(_t * 3.0)), 3.0, true)
+	c.draw_arc(Vector2(tx, ty - 50.0), 36.0, PI * 0.9, PI * 2.6, 20, Color(0.55, 0.08, 0.08), 12.0, FighterArt.AA)
+	c.draw_arc(Vector2(tx, ty - 50.0), 36.0, PI * 0.9, PI * 2.6, 20, Color(1.0, 0.45, 0.1, 0.5 + 0.3 * sin(_t * 3.0)), 3.0, FighterArt.AA)
 	var sun := _teaser_pos(1)                               # Glow of The Sun far away
 	c.draw_circle(sun, 70.0 + 6.0 * sin(_t * 2.0), Color(1.0, 0.8, 0.3, 0.10))
 
@@ -895,7 +895,7 @@ func _draw_scenery_n(r: Rect2) -> void:
 			c.draw_colored_polygon(pts, Color(0.55, 0.6, 0.55, 0.7))
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
-		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, true)
+		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
 	elif _page >= StoryLevels.DEMI_PART:
 		# DemiLand: a dark land of dead trees under a dark sky, a colossal door in the middle
 		var base7 := r.position.y + r.size.y
@@ -1025,9 +1025,9 @@ func _world_space(n: int) -> void:
 		FighterArt.label(c, Vector2(top.get_center().x, top.position.y + 22.0), "DEMILAND", 18, Color(0.85, 0.80, 0.95))
 	else:
 		_lock(top.get_center())
-	c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), GOLD if cleared else Color(0, 0, 0), 3.5, true)
+	c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), GOLD if cleared else Color(0, 0, 0), 3.5, FighterArt.AA)
 	if here:
-		c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), Color(1, 1, 1, 0.5 + 0.5 * sin(_t * 5.0)), 6.0, true)
+		c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), Color(1, 1, 1, 0.5 + 0.5 * sin(_t * 5.0)), 6.0, FighterArt.AA)
 	var badge := r.position + Vector2(6, -2)
 	c.draw_circle(badge, 14.0, Color(0, 0, 0))
 	c.draw_circle(badge, 11.5, GOLD if unlocked else Color(0.5, 0.5, 0.5))
@@ -1057,14 +1057,14 @@ func _space(n: int) -> void:
 		fill = Color(0.25, 0.23, 0.23)
 	c.draw_colored_polygon(top, fill)
 	if here:
-		c.draw_polyline(_closed(top), Color(1, 1, 1, 0.5 + 0.5 * sin(_t * 5.0)), 6.0, true)
+		c.draw_polyline(_closed(top), Color(1, 1, 1, 0.5 + 0.5 * sin(_t * 5.0)), 6.0, FighterArt.AA)
 	if optional and not cleared:                            # Optional: dashed gold border
 		var pts := _closed(top)
 		for i in pts.size() - 1:
 			if i % 2 == 0:
-				c.draw_line(pts[i], pts[i + 1], GOLD, 3.5, true)
+				c.draw_line(pts[i], pts[i + 1], GOLD, 3.5, FighterArt.AA)
 	else:
-		c.draw_polyline(_closed(top), GOLD if cleared else Color(0, 0, 0), 3.5, true)
+		c.draw_polyline(_closed(top), GOLD if cleared else Color(0, 0, 0), 3.5, FighterArt.AA)
 	# Mini enemy figure on the tile
 	var center := rect.get_center() + Vector2(0, -6)
 	if unlocked:
@@ -1089,7 +1089,7 @@ func _space(n: int) -> void:
 		var ck := rect.end + Vector2(-8, -12)
 		c.draw_circle(ck, 12.0, Color(0, 0, 0))
 		c.draw_circle(ck, 9.5, Color(0.3, 0.8, 0.3))
-		c.draw_polyline(PackedVector2Array([ck + Vector2(-5, 0), ck + Vector2(-1, 4), ck + Vector2(5, -4)]), Color.WHITE, 2.5, true)
+		c.draw_polyline(PackedVector2Array([ck + Vector2(-5, 0), ck + Vector2(-1, 4), ck + Vector2(5, -4)]), Color.WHITE, 2.5, FighterArt.AA)
 	# Challenge BADGES earned on this level (Achievements): a row along the tile's bottom edge
 	var got := StoryProgress.badges_of(n)
 	if not got.is_empty():

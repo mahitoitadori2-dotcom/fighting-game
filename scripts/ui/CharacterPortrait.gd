@@ -33,8 +33,8 @@ func _draw() -> void:
 	draw_colored_polygon(hex, Color(0.08, 0.10, 0.15, 0.85))
 	var closed := hex.duplicate()
 	closed.append(hex[0])
-	draw_polyline(closed, Color(0, 0, 0), 9.0, true)
-	draw_polyline(closed, accent, 4.0, true)
+	draw_polyline(closed, Color(0, 0, 0), 9.0, FighterArt.AA)
+	draw_polyline(closed, accent, 4.0, FighterArt.AA)
 
 	# Ground shadow
 	var feet := Vector2(size.x * 0.5, size.y - 16.0)

@@ -148,8 +148,8 @@ static func _figure(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Block shield ---
 	if b > 0.05:
-		c.draw_arc(Vector2(14, -76), 52.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, true)
-		c.draw_arc(Vector2(14, -76), 52.0, -1.0, 1.0, 20, Color(0.4, 1.0, 0.55, 0.85 * b), 6.0, true)
+		c.draw_arc(Vector2(14, -76), 52.0, -1.0, 1.0, 20, Color(0, 0, 0, b), 11.0, FighterArt.AA)
+		c.draw_arc(Vector2(14, -76), 52.0, -1.0, 1.0, 20, Color(0.4, 1.0, 0.55, 0.85 * b), 6.0, FighterArt.AA)
 
 
 ## Long, faint dark-green legs, black knee plates + boots.

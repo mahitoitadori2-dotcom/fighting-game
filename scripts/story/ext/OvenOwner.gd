@@ -82,7 +82,7 @@ func draw_model_on(c: CanvasItem) -> void:
 	if pose == "guard":                                   # The fire shield
 		var a := 0.35 + 0.15 * sin(anim_time * 20.0)
 		c.draw_circle(Vector2(0, -80), 90.0, Color(HOT.r, HOT.g, HOT.b, a * 0.4))
-		c.draw_arc(Vector2(0, -80), 90.0, 0.0, TAU, 28, Color(HOT.r, HOT.g, HOT.b, a + 0.3), 5.0, true)
+		c.draw_arc(Vector2(0, -80), 90.0, 0.0, TAU, 28, Color(HOT.r, HOT.g, HOT.b, a + 0.3), 5.0, FighterArt.AA)
 
 
 static func draw_portrait(c: CanvasItem, t: float) -> void:

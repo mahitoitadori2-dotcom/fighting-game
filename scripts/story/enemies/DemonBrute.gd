@@ -92,8 +92,8 @@ static func draw_brute(c: CanvasItem, s: Dictionary) -> void:
 	var chest := Vector2(0, -94 + crouch + breathe)
 
 	# Tail
-	c.draw_polyline(PackedVector2Array([chest + Vector2(-20, 34), chest + Vector2(-40, 44), chest + Vector2(-50, 30 + sin(t * 3.0) * 6.0)]), EnemyArt.BLACK, 7.0, true)
-	c.draw_polyline(PackedVector2Array([chest + Vector2(-20, 34), chest + Vector2(-40, 44), chest + Vector2(-50, 30 + sin(t * 3.0) * 6.0)]), SKIN_SHADE, 4.0, true)
+	c.draw_polyline(PackedVector2Array([chest + Vector2(-20, 34), chest + Vector2(-40, 44), chest + Vector2(-50, 30 + sin(t * 3.0) * 6.0)]), EnemyArt.BLACK, 7.0, FighterArt.AA)
+	c.draw_polyline(PackedVector2Array([chest + Vector2(-20, 34), chest + Vector2(-40, 44), chest + Vector2(-50, 30 + sin(t * 3.0) * 6.0)]), SKIN_SHADE, 4.0, FighterArt.AA)
 
 	# Far arm
 	EnemyArt.arm(c, chest + Vector2(-18, -12), chest + Vector2(-24, 28), 14.0, SKIN_SHADE, SKIN_SHADE.darkened(0.2), SKIN, SKIN_SHADE, 8.0)
@@ -147,9 +147,9 @@ static func draw_brute(c: CanvasItem, s: Dictionary) -> void:
 	_sword(c, hand, ang, t)
 	EnemyArt.arm(c, shoulder, hand, 15.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN, 8.5)
 	if pose == "swing":
-		c.draw_arc(chest + Vector2(16, 0), 72.0, -1.3, 0.9, 14, Color(1.0, 0.6, 0.2, maxf(0.0, 0.8 - pt * 5.0)), 7.0, true)
+		c.draw_arc(chest + Vector2(16, 0), 72.0, -1.3, 0.9, 14, Color(1.0, 0.6, 0.2, maxf(0.0, 0.8 - pt * 5.0)), 7.0, FighterArt.AA)
 	if pose == "slam":
-		c.draw_arc(Vector2(60, 0), 30.0 + pt * 200.0, PI, TAU, 18, Color(LAVA.r, LAVA.g, LAVA.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, true)
+		c.draw_arc(Vector2(60, 0), 30.0 + pt * 200.0, PI, TAU, 18, Color(LAVA.r, LAVA.g, LAVA.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)
 
 
 static func _sword(c: CanvasItem, hand: Vector2, angle: float, t: float) -> void:
@@ -161,7 +161,7 @@ static func _sword(c: CanvasItem, hand: Vector2, angle: float, t: float) -> void
 	c.draw_colored_polygon(blade, BASALT)
 	FighterArt.outline(c, blade, 3.0)
 	var glow := 0.6 + 0.4 * sin(t * 4.0)
-	c.draw_polyline(PackedVector2Array([guard + d * 6.0, guard + d * 26.0 + n * 3.0, guard + d * 44.0 - n * 2.0, guard + d * 64.0 + n * 1.0]), Color(LAVA.r, LAVA.g, LAVA.b, glow), 2.5, true)
+	c.draw_polyline(PackedVector2Array([guard + d * 6.0, guard + d * 26.0 + n * 3.0, guard + d * 44.0 - n * 2.0, guard + d * 64.0 + n * 1.0]), Color(LAVA.r, LAVA.g, LAVA.b, glow), 2.5, FighterArt.AA)
 	c.draw_line(hand - n * 12.0, hand + n * 12.0, EnemyArt.BLACK, 7.0)
 	c.draw_line(hand - n * 11.0, hand + n * 11.0, Color(0.35, 0.3, 0.3), 4.0)
 	c.draw_line(hand - d * 12.0, hand, EnemyArt.BLACK, 6.0)

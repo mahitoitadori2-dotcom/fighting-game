@@ -130,4 +130,4 @@ static func draw_pained(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(EnemyArt.ellipse_points(head + Vector2(5, 9), 7.0, open, 12), Color(0.12, 0.02, 0.04))
 	if pose == "scream":
 		for i in 3:
-			c.draw_arc(head + Vector2(10, 8), 26.0 + float(i) * 18.0, -0.7, 0.7, 10, Color(0.8, 0.9, 1.0, 0.6 - float(i) * 0.15), 3.0, true)
+			c.draw_arc(head + Vector2(10, 8), 26.0 + float(i) * 18.0, -0.7, 0.7, 10, Color(0.8, 0.9, 1.0, 0.6 - float(i) * 0.15), 3.0, FighterArt.AA)

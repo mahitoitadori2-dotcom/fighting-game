@@ -139,7 +139,7 @@ static func draw_shining(c: CanvasItem, s: Dictionary) -> void:
 	for side in [-1.0, 1.0]:
 		var sh: Vector2 = head + Vector2(side * 12.0, 24)
 		var hand: Vector2 = sh + (Vector2(side * 26.0, -30) if raise else Vector2(side * 18.0, 34))
-		c.draw_line(sh, hand, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.9), 7.0, true)
+		c.draw_line(sh, hand, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.9), 7.0, FighterArt.AA)
 		c.draw_circle(hand, 5.0, GOLD)
 	# Faceless glowing head + halo
 	c.draw_circle(head, 18.0, LIGHT)
@@ -150,6 +150,6 @@ static func draw_shining(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_line(head + Vector2(-8, -2), head + Vector2(-2, 1), GOLD, 3.0)
 		c.draw_line(head + Vector2(8, -2), head + Vector2(2, 1), GOLD, 3.0)
 	c.draw_set_transform(head + Vector2(0, -24), 0.0, Vector2(1.0, 0.3))
-	c.draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 24, Color(GOLD.r, GOLD.g, GOLD.b, 0.5), 9.0, true)
-	c.draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 24, GOLD, 3.0, true)
+	c.draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 24, Color(GOLD.r, GOLD.g, GOLD.b, 0.5), 9.0, FighterArt.AA)
+	c.draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 24, GOLD, 3.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

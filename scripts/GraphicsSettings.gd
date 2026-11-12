@@ -82,6 +82,7 @@ static func apply(tree: SceneTree) -> void:
 	# (2D MSAA and FXAA are not supported by the Compatibility renderer: REAL uses glow instead.)
 	_apply_glow(root)
 	Engine.max_fps = _MAX_FPS[level]
+	FighterArt.AA = level >= REGULAR                 # Smooth lines cost 3x the draw calls (phones: off)
 	var cap: int = _PARTICLES[level]
 	if cap < 0:
 		cap = 110 if (OS.has_feature("web_ios") or OS.has_feature("web_android")) else 200

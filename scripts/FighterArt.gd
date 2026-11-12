@@ -6,6 +6,10 @@ extends RefCounted
 
 const BLACK := Color(0.0, 0.0, 0.0, 1.0)
 const WOBBLE := 0.9              # Outline waviness in px
+## Smooth (antialiased) lines? A smoothed line costs THREE GPU draw calls, a plain one costs one
+## (and plain lines/rects batch together). Every art script passes this instead of `true`.
+## GraphicsSettings: off on FAST / POTATO (phones), on for REGULAR / REAL.
+static var AA := true
 
 
 ## Deterministic "hand-drawn" offset for a point (stable, so lines don't jitter randomly).
@@ -33,7 +37,7 @@ static func outline(c: CanvasItem, pts: PackedVector2Array, width: float = 4.0, 
 	center /= float(pts.size())
 	var w := wobble(pts, center)
 	w.append(w[0])
-	c.draw_polyline(w, col, width, true)
+	c.draw_polyline(w, col, width, FighterArt.AA)
 
 
 static func rrect_points(rect: Rect2, r: float) -> PackedVector2Array:
@@ -84,18 +88,18 @@ static func ball(c: CanvasItem, center: Vector2, r: float, base: Color, shade: C
 ## Thick stick-style limb with round caps, outline, shaded underside and a highlight.
 static func limb(c: CanvasItem, a: Vector2, b: Vector2, w: float, base: Color, shade: Color, hi: Color) -> void:
 	var ow := w + 6.0
-	c.draw_line(a, b, BLACK, ow, true)
+	c.draw_line(a, b, BLACK, ow, FighterArt.AA)
 	c.draw_circle(a, ow * 0.5, BLACK)
 	c.draw_circle(b, ow * 0.5, BLACK)
-	c.draw_line(a, b, shade, w, true)
+	c.draw_line(a, b, shade, w, FighterArt.AA)
 	c.draw_circle(a, w * 0.5, shade)
 	c.draw_circle(b, w * 0.5, shade)
 	var o1 := Vector2(-w * 0.12, -w * 0.12)
-	c.draw_line(a + o1, b + o1, base, w * 0.7, true)
+	c.draw_line(a + o1, b + o1, base, w * 0.7, FighterArt.AA)
 	c.draw_circle(a + o1, w * 0.35, base)
 	c.draw_circle(b + o1, w * 0.35, base)
 	var o2 := Vector2(-w * 0.25, -w * 0.25)
-	c.draw_line(a.lerp(b, 0.15) + o2, a.lerp(b, 0.8) + o2, hi, maxf(w * 0.2, 1.5), true)
+	c.draw_line(a.lerp(b, 0.15) + o2, a.lerp(b, 0.8) + o2, hi, maxf(w * 0.2, 1.5), FighterArt.AA)
 
 
 ## Organic CURVED spike from base to tip (sides bow out, tip leans by `bend`).

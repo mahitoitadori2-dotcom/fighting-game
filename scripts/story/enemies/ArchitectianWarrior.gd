@@ -211,7 +211,7 @@ static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	_gear(c, sh, 8.0, GREEN, t)
 	FighterArt.outline(c, disc, 3.5)
 	if blocking:
-		c.draw_arc(sh + Vector2(10, 0), 34.0, -1.3, 1.3, 12, Color(0.7, 0.9, 1.0, 0.6 + 0.3 * sin(t * 12.0)), 4.0, true)
+		c.draw_arc(sh + Vector2(10, 0), 34.0, -1.3, 1.3, 12, Color(0.7, 0.9, 1.0, 0.6 + 0.3 * sin(t * 12.0)), 4.0, FighterArt.AA)
 
 
 ## White breastplate with green trim and a gear emblem + helmet (white dome, dark visor, green slit).

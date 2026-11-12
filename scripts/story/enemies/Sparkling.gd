@@ -107,7 +107,7 @@ static func draw_sparkling(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(center + Vector2(2, -3), 1.0, Color.WHITE)
 		c.draw_circle(center + Vector2(9, -3), 1.0, Color.WHITE)
 	if pose == "burst" and pt < 0.3:
-		c.draw_arc(center, 20.0 + pt * 260.0, 0.0, TAU, 24, Color(1, 1, 0.7, 1.0 - pt * 3.3), 5.0, true)
+		c.draw_arc(center, 20.0 + pt * 260.0, 0.0, TAU, 24, Color(1, 1, 0.7, 1.0 - pt * 3.3), 5.0, FighterArt.AA)
 	if pose == "dash":
 		for i in 3:
 			c.draw_line(Vector2(-18 - float(i) * 8.0, -24 + float(i) * 6.0), Vector2(-40 - float(i) * 8.0, -24 + float(i) * 6.0), Color(GLOW.r, GLOW.g, GLOW.b, 0.7), 3.0)

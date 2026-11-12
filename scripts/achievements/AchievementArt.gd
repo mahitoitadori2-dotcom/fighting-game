@@ -62,28 +62,28 @@ static func draw(c: CanvasItem, d: Dictionary, r: Rect2, t: float, locked: bool 
 	# Frame: black outline, metal band, thin shine
 	var closed := shape.duplicate()
 	closed.append(shape[0])
-	c.draw_polyline(closed, BLACK, maxf(s * 0.075, 3.0), true)
+	c.draw_polyline(closed, BLACK, maxf(s * 0.075, 3.0), FighterArt.AA)
 	if String(art.get("frame", "")) == "galaxy":
 		for i in closed.size() - 1:                         # Rainbow-nebula frame
 			var hue := fmod(float(i) / float(closed.size()) + t * 0.15, 1.0)
-			c.draw_line(closed[i], closed[i + 1], Color.from_hsv(0.55 + 0.35 * hue, 0.65, 1.0), maxf(s * 0.045, 2.0), true)
+			c.draw_line(closed[i], closed[i + 1], Color.from_hsv(0.55 + 0.35 * hue, 0.65, 1.0), maxf(s * 0.045, 2.0), FighterArt.AA)
 	else:
-		c.draw_polyline(closed, fr[0], maxf(s * 0.045, 2.0), true)
+		c.draw_polyline(closed, fr[0], maxf(s * 0.045, 2.0), FighterArt.AA)
 	var inner := FighterArt.rrect_points(r.grow(-s * 0.06), s * 0.10)
 	inner.append(inner[0])
-	c.draw_polyline(inner, Color(fr[2].r, fr[2].g, fr[2].b, 0.35), maxf(s * 0.012, 1.0), true)
+	c.draw_polyline(inner, Color(fr[2].r, fr[2].g, fr[2].b, 0.35), maxf(s * 0.012, 1.0), FighterArt.AA)
 
 	# Corner emblem
 	if art.has("emblem"):
 		var e := r.end - Vector2(s * 0.17, s * 0.17)
 		c.draw_circle(e, s * 0.145, BLACK)
 		c.draw_circle(e, s * 0.12, fr[1])
-		c.draw_arc(e, s * 0.12, 0.0, TAU, 24, fr[0], maxf(s * 0.02, 1.0), true)
+		c.draw_arc(e, s * 0.12, 0.0, TAU, 24, fr[0], maxf(s * 0.02, 1.0), FighterArt.AA)
 		draw_icon(c, String(art["emblem"]), e, s * 0.085, fr)
 
 	if locked:                                              # Very black + a padlock
 		c.draw_colored_polygon(shape, Color(0.01, 0.01, 0.02, 0.95))
-		c.draw_polyline(closed, Color(0.22, 0.22, 0.26), maxf(s * 0.03, 1.5), true)
+		c.draw_polyline(closed, Color(0.22, 0.22, 0.26), maxf(s * 0.03, 1.5), FighterArt.AA)
 		_padlock(c, center, s * 0.13)
 
 
@@ -120,16 +120,16 @@ static func draw_icon(c: CanvasItem, kind: String, p: Vector2, size: float, fr: 
 			var cup := PackedVector2Array([p + Vector2(-0.75, -0.8) * size, p + Vector2(0.75, -0.8) * size,
 				p + Vector2(0.55, -0.1) * size, p + Vector2(0.15, 0.2) * size, p + Vector2(-0.15, 0.2) * size, p + Vector2(-0.55, -0.1) * size])
 			for sd: float in [-1.0, 1.0]:
-				c.draw_arc(p + Vector2(sd * 0.72, -0.48) * size, size * 0.3, 0.0, TAU, 14, BLACK, w * 1.6, true)
-				c.draw_arc(p + Vector2(sd * 0.72, -0.48) * size, size * 0.3, 0.0, TAU, 14, fr[0], w * 0.8, true)
+				c.draw_arc(p + Vector2(sd * 0.72, -0.48) * size, size * 0.3, 0.0, TAU, 14, BLACK, w * 1.6, FighterArt.AA)
+				c.draw_arc(p + Vector2(sd * 0.72, -0.48) * size, size * 0.3, 0.0, TAU, 14, fr[0], w * 0.8, FighterArt.AA)
 			_poly(c, cup, Color(1.0, 0.82, 0.3), w)
 			_poly(c, _rect(p + Vector2(-0.12, 0.2) * size, Vector2(0.24, 0.4) * size), Color(0.9, 0.7, 0.25), w)
 			_poly(c, _rect(p + Vector2(-0.5, 0.58) * size, Vector2(1.0, 0.28) * size), Color(0.75, 0.55, 0.2), w)
-			c.draw_line(p + Vector2(-0.45, -0.62) * size, p + Vector2(-0.3, -0.25) * size, Color(1, 1, 0.9, 0.9), w, true)
+			c.draw_line(p + Vector2(-0.45, -0.62) * size, p + Vector2(-0.3, -0.25) * size, Color(1, 1, 0.9, 0.9), w, FighterArt.AA)
 		"fist":
 			_poly(c, _rect(p + Vector2(-0.6, -0.45) * size, Vector2(1.2, 0.95) * size), Color(0.95, 0.78, 0.6), w)
 			for i in 3:
-				c.draw_line(p + Vector2(-0.6 + 0.4 * float(i + 1), -0.45) * size, p + Vector2(-0.6 + 0.4 * float(i + 1), -0.1) * size, BLACK, w * 0.7, true)
+				c.draw_line(p + Vector2(-0.6 + 0.4 * float(i + 1), -0.45) * size, p + Vector2(-0.6 + 0.4 * float(i + 1), -0.1) * size, BLACK, w * 0.7, FighterArt.AA)
 			_poly(c, _rect(p + Vector2(-0.75, -0.05) * size, Vector2(0.4, 0.4) * size), Color(0.88, 0.70, 0.52), w)
 			_poly(c, _rect(p + Vector2(-0.35, 0.5) * size, Vector2(0.7, 0.4) * size), Color(0.3, 0.3, 0.36), w)
 		"star":
@@ -141,8 +141,8 @@ static func draw_icon(c: CanvasItem, kind: String, p: Vector2, size: float, fr: 
 			_poly(c, _rect(p + Vector2(-0.09, 0.38) * size, Vector2(0.18, 0.42) * size), Color(0.4, 0.25, 0.15), w)
 		"halo":
 			c.draw_set_transform(p + Vector2(0, -0.35) * size, 0.0, Vector2(1.0, 0.38))
-			c.draw_arc(Vector2.ZERO, size * 0.75, 0.0, TAU, 28, BLACK, w * 2.6, true)
-			c.draw_arc(Vector2.ZERO, size * 0.75, 0.0, TAU, 28, Color(1.0, 0.92, 0.5), w * 1.3, true)
+			c.draw_arc(Vector2.ZERO, size * 0.75, 0.0, TAU, 28, BLACK, w * 2.6, FighterArt.AA)
+			c.draw_arc(Vector2.ZERO, size * 0.75, 0.0, TAU, 28, Color(1.0, 0.92, 0.5), w * 1.3, FighterArt.AA)
 			c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			_poly(c, _star(p + Vector2(0, 0.35) * size, size * 0.5, size * 0.18, 4), Color(1, 1, 0.9), w)
 		"solo":
@@ -169,7 +169,7 @@ static func draw_icon(c: CanvasItem, kind: String, p: Vector2, size: float, fr: 
 		"sun":
 			for i in 10:
 				var a := TAU * float(i) / 10.0
-				c.draw_line(p + Vector2.from_angle(a) * size * 0.55, p + Vector2.from_angle(a) * size * 0.95, Color(1.0, 0.85, 0.3), w * 1.2, true)
+				c.draw_line(p + Vector2.from_angle(a) * size * 0.55, p + Vector2.from_angle(a) * size * 0.95, Color(1.0, 0.85, 0.3), w * 1.2, FighterArt.AA)
 			c.draw_circle(p, size * 0.5 + w, BLACK)
 			c.draw_circle(p, size * 0.5, Color(1.0, 0.9, 0.45))
 		"galaxy":
@@ -182,15 +182,15 @@ static func draw_icon(c: CanvasItem, kind: String, p: Vector2, size: float, fr: 
 		"no_blocks":
 			_poly(c, PackedVector2Array([p + Vector2(-0.65, -0.75) * size, p + Vector2(0.65, -0.75) * size, p + Vector2(0.6, 0.15) * size,
 				p + Vector2(0, 0.85) * size, p + Vector2(-0.6, 0.15) * size]), Color(0.45, 0.7, 1.0), w)
-			c.draw_line(p + Vector2(0, -0.6) * size, p + Vector2(0, 0.6) * size, Color(0.85, 0.95, 1.0), w, true)
+			c.draw_line(p + Vector2(0, -0.6) * size, p + Vector2(0, 0.6) * size, Color(0.85, 0.95, 1.0), w, FighterArt.AA)
 			if slash:
 				_slash(c, p, size, w)
 		"no_healing":
 			_poly(c, PackedVector2Array([p + Vector2(-0.18, -0.85) * size, p + Vector2(0.18, -0.85) * size, p + Vector2(0.18, -0.3) * size,
 				p + Vector2(0.6, 0.25) * size, p + Vector2(0.45, 0.8) * size, p + Vector2(-0.45, 0.8) * size, p + Vector2(-0.6, 0.25) * size,
 				p + Vector2(-0.18, -0.3) * size]), Color(0.35, 0.9, 0.4), w)
-			c.draw_line(p + Vector2(-0.3, 0.35) * size, p + Vector2(0.3, 0.35) * size, Color(1, 1, 1), w, true)
-			c.draw_line(p + Vector2(0, 0.08) * size, p + Vector2(0, 0.62) * size, Color(1, 1, 1), w, true)
+			c.draw_line(p + Vector2(-0.3, 0.35) * size, p + Vector2(0.3, 0.35) * size, Color(1, 1, 1), w, FighterArt.AA)
+			c.draw_line(p + Vector2(0, 0.08) * size, p + Vector2(0, 0.62) * size, Color(1, 1, 1), w, FighterArt.AA)
 			if slash:
 				_slash(c, p, size, w)
 		"no_gauge":
@@ -203,11 +203,11 @@ static func draw_icon(c: CanvasItem, kind: String, p: Vector2, size: float, fr: 
 
 
 static func _slash(c: CanvasItem, p: Vector2, size: float, w: float) -> void:
-	c.draw_arc(p, size * 0.98, 0.0, TAU, 28, BLACK, w * 2.2, true)
-	c.draw_arc(p, size * 0.98, 0.0, TAU, 28, SLASH, w * 1.2, true)
+	c.draw_arc(p, size * 0.98, 0.0, TAU, 28, BLACK, w * 2.2, FighterArt.AA)
+	c.draw_arc(p, size * 0.98, 0.0, TAU, 28, SLASH, w * 1.2, FighterArt.AA)
 	var d := Vector2(0.7, -0.7) * size * 0.98
-	c.draw_line(p - d, p + d, BLACK, w * 2.2, true)
-	c.draw_line(p - d, p + d, SLASH, w * 1.2, true)
+	c.draw_line(p - d, p + d, BLACK, w * 2.2, FighterArt.AA)
+	c.draw_line(p - d, p + d, SLASH, w * 1.2, FighterArt.AA)
 
 
 static func _poly(c: CanvasItem, pts: PackedVector2Array, col: Color, w: float) -> void:
@@ -229,7 +229,7 @@ static func _star(p: Vector2, r1: float, r2: float, n: int) -> PackedVector2Arra
 
 static func _padlock(c: CanvasItem, p: Vector2, s: float) -> void:
 	var dim := Color(0.30, 0.30, 0.36)
-	c.draw_arc(p + Vector2(0, -0.35) * s, s * 0.55, PI, TAU, 16, dim, s * 0.22, true)
+	c.draw_arc(p + Vector2(0, -0.35) * s, s * 0.55, PI, TAU, 16, dim, s * 0.22, FighterArt.AA)
 	c.draw_colored_polygon(_rect(p + Vector2(-0.85, -0.3) * s, Vector2(1.7, 1.3) * s), dim)
 	c.draw_circle(p + Vector2(0, 0.3) * s, s * 0.2, Color(0.05, 0.05, 0.07))
 

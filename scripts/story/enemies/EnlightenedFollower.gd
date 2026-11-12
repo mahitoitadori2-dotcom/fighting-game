@@ -131,6 +131,6 @@ static func draw_follower(c: CanvasItem, s: Dictionary) -> void:
 
 	# Halo
 	c.draw_set_transform(head + Vector2(0, -26), 0.0, Vector2(1.0, 0.3))
-	c.draw_arc(Vector2.ZERO, 16.0, 0.0, TAU, 24, Color(GLOW.r, GLOW.g, GLOW.b, 0.4), 8.0, true)
-	c.draw_arc(Vector2.ZERO, 16.0, 0.0, TAU, 24, GOLD, 3.0, true)
+	c.draw_arc(Vector2.ZERO, 16.0, 0.0, TAU, 24, Color(GLOW.r, GLOW.g, GLOW.b, 0.4), 8.0, FighterArt.AA)
+	c.draw_arc(Vector2.ZERO, 16.0, 0.0, TAU, 24, GOLD, 3.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

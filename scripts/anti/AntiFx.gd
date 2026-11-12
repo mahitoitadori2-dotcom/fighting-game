@@ -161,9 +161,9 @@ class Beam extends Node2D:
 		var k := 1.0 - _t / LEN
 		var h := height * (1.6 if big else 1.0) * (0.4 + 0.6 * k)
 		var end := Vector2(dir * length, 0)
-		draw_line(Vector2.ZERO, end, Color(ORANGE.r, ORANGE.g, ORANGE.b, 0.3 * k), h * 2.2, true)
-		draw_line(Vector2.ZERO, end, Color(ORANGE.r, ORANGE.g, ORANGE.b, 0.9 * k), h, true)
-		draw_line(Vector2.ZERO, end, Color(ORANGE_HI.r, ORANGE_HI.g, ORANGE_HI.b, k), h * 0.35, true)
+		draw_line(Vector2.ZERO, end, Color(ORANGE.r, ORANGE.g, ORANGE.b, 0.3 * k), h * 2.2, FighterArt.AA)
+		draw_line(Vector2.ZERO, end, Color(ORANGE.r, ORANGE.g, ORANGE.b, 0.9 * k), h, FighterArt.AA)
+		draw_line(Vector2.ZERO, end, Color(ORANGE_HI.r, ORANGE_HI.g, ORANGE_HI.b, k), h * 0.35, FighterArt.AA)
 		draw_circle(Vector2.ZERO, h * 0.9, Color(ORANGE_HI.r, ORANGE_HI.g, ORANGE_HI.b, k))
 
 

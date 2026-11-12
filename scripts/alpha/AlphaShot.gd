@@ -108,8 +108,8 @@ func _draw() -> void:
 			for i in 3:
 				var r := 26.0 + float(i) * 14.0
 				var a0 := -0.9 if d > 0.0 else PI - 0.9
-				draw_arc(Vector2(-d * float(i) * 12.0, 0), r, a0 - 0.6, a0 + 1.2, 16, Color(0, 0, 0, a), 8.0, true)
-				draw_arc(Vector2(-d * float(i) * 12.0, 0), r, a0 - 0.6, a0 + 1.2, 16, Color(0.55, 0.85, 1.0, a), 4.0, true)
+				draw_arc(Vector2(-d * float(i) * 12.0, 0), r, a0 - 0.6, a0 + 1.2, 16, Color(0, 0, 0, a), 8.0, FighterArt.AA)
+				draw_arc(Vector2(-d * float(i) * 12.0, 0), r, a0 - 0.6, a0 + 1.2, 16, Color(0.55, 0.85, 1.0, a), 4.0, FighterArt.AA)
 			var pts := PackedVector2Array()                 # Lightning crackling over it
 			for k in 7:
 				pts.append(Vector2(-d * float(k) * 9.0, -50.0 + float(k) * 7.0 + randf_range(-8.0, 8.0)))
@@ -120,13 +120,13 @@ func _draw() -> void:
 				var u := float(i) / 7.0
 				var w := 14.0 + u * 46.0
 				draw_set_transform(Vector2(sin(spin + u * 4.0) * 6.0, 60.0 - u * 120.0), 0.0, Vector2(1.0, 0.28))
-				draw_arc(Vector2.ZERO, w, spin * 2.0, spin * 2.0 + 4.6, 14, Color(0.75, 1.0, 0.85, 0.75 * a), 8.0, true)
-				draw_arc(Vector2.ZERO, w, spin * 2.0, spin * 2.0 + 4.6, 14, Color(1, 1, 1, 0.6 * a), 3.0, true)
+				draw_arc(Vector2.ZERO, w, spin * 2.0, spin * 2.0 + 4.6, 14, Color(0.75, 1.0, 0.85, 0.75 * a), 8.0, FighterArt.AA)
+				draw_arc(Vector2.ZERO, w, spin * 2.0, spin * 2.0 + 4.6, 14, Color(1, 1, 1, 0.6 * a), 3.0, FighterArt.AA)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		"laser":
-			draw_line(Vector2(-d * 50.0, 0), Vector2(d * 30.0, 0), Color(0.4, 1.0, 0.5, 0.35 * a), 16.0, true)
-			draw_line(Vector2(-d * 50.0, 0), Vector2(d * 30.0, 0), Color(0.5, 1.0, 0.6, a), 6.0, true)
-			draw_line(Vector2(-d * 46.0, 0), Vector2(d * 26.0, 0), Color(1, 1, 1, a), 2.0, true)
+			draw_line(Vector2(-d * 50.0, 0), Vector2(d * 30.0, 0), Color(0.4, 1.0, 0.5, 0.35 * a), 16.0, FighterArt.AA)
+			draw_line(Vector2(-d * 50.0, 0), Vector2(d * 30.0, 0), Color(0.5, 1.0, 0.6, a), 6.0, FighterArt.AA)
+			draw_line(Vector2(-d * 46.0, 0), Vector2(d * 26.0, 0), Color(1, 1, 1, a), 2.0, FighterArt.AA)
 		"rock":
 			var pts2 := PackedVector2Array()
 			for k in 7:
@@ -150,7 +150,7 @@ func _draw() -> void:
 				draw_rect(Rect2(p - Vector2(8, 5), Vector2(16, 10)), Color(0.35, 0.33, 0.30, a))
 				draw_rect(Rect2(p - Vector2(8, 5), Vector2(16, 10)), Color(0, 0, 0, a), false, 2.0)
 		"rod":                                              # Falling energy rod
-			draw_line(Vector2(0, -260), Vector2(0, 0), Color(0.4, 1.0, 0.5, 0.25 * a), 40.0, true)
-			draw_line(Vector2(0, -220), Vector2(0, 0), Color(0.6, 1.0, 0.7, a), 16.0, true)
-			draw_line(Vector2(0, -220), Vector2(0, 0), Color(1, 1, 1, a), 6.0, true)
+			draw_line(Vector2(0, -260), Vector2(0, 0), Color(0.4, 1.0, 0.5, 0.25 * a), 40.0, FighterArt.AA)
+			draw_line(Vector2(0, -220), Vector2(0, 0), Color(0.6, 1.0, 0.7, a), 16.0, FighterArt.AA)
+			draw_line(Vector2(0, -220), Vector2(0, 0), Color(1, 1, 1, a), 6.0, FighterArt.AA)
 			draw_colored_polygon(PackedVector2Array([Vector2(-14, -10), Vector2(14, -10), Vector2(0, 30)]), Color(1, 1, 1, a))

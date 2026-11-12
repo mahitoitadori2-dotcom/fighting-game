@@ -464,8 +464,8 @@ static func draw_sun(c: CanvasItem, s: Dictionary) -> void:
 	var head := center + Vector2(4, -110)
 	for sgn: float in [-1.0, 1.0]:
 		var ant := PackedVector2Array([head + Vector2(sgn * 8.0, -18), head + Vector2(sgn * 30.0, -60), head + Vector2(sgn * 50.0, -80)])
-		c.draw_polyline(ant, EnemyArt.BLACK, 5.0, true)
-		c.draw_polyline(ant, GOLD if not consumer else EMBER, 2.5, true)
+		c.draw_polyline(ant, EnemyArt.BLACK, 5.0, FighterArt.AA)
+		c.draw_polyline(ant, GOLD if not consumer else EMBER, 2.5, FighterArt.AA)
 		for j in 5:
 			var p := ant[1].lerp(ant[2], float(j) / 4.0)
 			c.draw_line(p, p + Vector2(sgn * 10.0, -6.0), GOLD if not consumer else ORANGE, 2.0)

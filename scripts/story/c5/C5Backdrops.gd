@@ -142,7 +142,7 @@ static func _silk_loom(p: Control, sz: Vector2) -> void:
 		for k in 9:
 			var u := float(k) / 8.0
 			pts.append(Vector2(x + sin(u * 4.0 + float(i)) * 14.0, u * sz.y * 0.55))
-		p.draw_polyline(pts, Color(0.9, 0.9, 0.97, 0.35), 3.0, true)
+		p.draw_polyline(pts, Color(0.9, 0.9, 0.97, 0.35), 3.0, FighterArt.AA)
 	p.draw_rect(Rect2(0, 0, sz.x, 24), Color(0.2, 0.12, 0.08))
 
 

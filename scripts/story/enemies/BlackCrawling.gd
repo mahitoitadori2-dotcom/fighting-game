@@ -91,8 +91,8 @@ static func draw_crawling(c: CanvasItem, s: Dictionary) -> void:
 		var lift := maxf(0.0, sin(ph + float(i) * 1.7)) * 6.0
 		var knee := hip + Vector2(-6 + k * 6.0, -10 - lift) + Vector2(side * 4.0, 0)
 		var foot := Vector2(hip.x - 10 + k * 10.0 + side * 6.0, -1)
-		c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 4.0, true)
-		c.draw_polyline(PackedVector2Array([hip, knee, foot]), BODY_HI, 2.0, true)
+		c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 4.0, FighterArt.AA)
+		c.draw_polyline(PackedVector2Array([hip, knee, foot]), BODY_HI, 2.0, FighterArt.AA)
 	var body := EnemyArt.ellipse_points(body_c, 22.0, 10.0, 16)
 	c.draw_colored_polygon(body, BODY)
 	c.draw_colored_polygon(EnemyArt.ellipse_points(body_c + Vector2(-4, -4), 14.0, 3.0, 10), BODY_HI)

@@ -209,4 +209,4 @@ static func draw_boss(c: CanvasItem, s: Dictionary) -> void:
 			for k in 4:
 				var base := Vector2(sd * 10.0, -100.0 + lift)
 				var tip := base + Vector2(sd * (70.0 + float(k) * 16.0), -40.0 + float(k) * 22.0 + sin(t * 3.0 + float(k)) * 6.0)
-				c.draw_line(base, tip, Color(1.0, 0.9, 0.5, 0.55 - float(k) * 0.1), 7.0 - float(k), true)
+				c.draw_line(base, tip, Color(1.0, 0.9, 0.5, 0.55 - float(k) * 0.1), 7.0 - float(k), FighterArt.AA)

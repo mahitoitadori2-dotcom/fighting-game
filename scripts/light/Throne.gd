@@ -123,4 +123,4 @@ func _draw() -> void:
 func _outline(pts: PackedVector2Array, w: float) -> void:
 	var c := pts.duplicate()
 	c.append(pts[0])
-	draw_polyline(c, BLACK, w, true)
+	draw_polyline(c, BLACK, w, FighterArt.AA)

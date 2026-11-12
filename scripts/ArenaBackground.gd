@@ -246,7 +246,7 @@ static func _hex(center: Vector2, r: float, rot: float = 0.0) -> PackedVector2Ar
 func _closed(c: CanvasItem, pts: PackedVector2Array, col: Color, w: float) -> void:
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	c.draw_polyline(closed, col, w, true)
+	c.draw_polyline(closed, col, w, FighterArt.AA)
 
 
 func _draw_hex_tower(c: CanvasItem, base: Vector2, tw: Dictionary, h: float) -> void:

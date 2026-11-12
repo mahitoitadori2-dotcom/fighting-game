@@ -61,7 +61,7 @@ func draw_model_on(c: CanvasItem) -> void:
 		s["pose"] = "idle"                                  # The tail does the work
 	ExtArt.humanoid(c, s, CFG)
 	if pose == "tail":
-		c.draw_arc(Vector2(0, -40), 110.0, 0.2, PI - 0.2, 16, Color(1, 1, 1, maxf(0.0, 0.7 - pose_t * 3.0)), 6.0, true)
+		c.draw_arc(Vector2(0, -40), 110.0, 0.2, PI - 0.2, 16, Color(1, 1, 1, maxf(0.0, 0.7 - pose_t * 3.0)), 6.0, FighterArt.AA)
 
 
 static func draw_portrait(c: CanvasItem, t: float) -> void:

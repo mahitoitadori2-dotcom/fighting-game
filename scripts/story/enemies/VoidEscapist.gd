@@ -132,14 +132,14 @@ static func draw_escapist(c: CanvasItem, s: Dictionary) -> void:
 		var r := 26.0 + 5.0 * sin(t * 6.0 + float(i) * 1.9)
 		body.append(body_c + Vector2(cos(a) * r * 1.1, sin(a) * r))
 	c.draw_colored_polygon(body, BODY)
-	c.draw_polyline(body + PackedVector2Array([body[0]]), Color(WISP.r, WISP.g, WISP.b, 0.8), 3.0, true)
+	c.draw_polyline(body + PackedVector2Array([body[0]]), Color(WISP.r, WISP.g, WISP.b, 0.8), 3.0, FighterArt.AA)
 	# Long clawed arms crawling forward
 	var reach := 26.0 if pose == "bite" else 0.0
 	for i in 2:
 		var sh := body_c + Vector2(10, -4 + float(i) * 12.0)
 		var hand := Vector2(36 + reach + float(i) * 6.0 + sin(t * 4.0 + float(i) * 2.0) * 4.0, -6.0 - float(i) * 4.0)
 		var elbow := sh.lerp(hand, 0.5) + Vector2(0, -14)
-		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), BODY, 7.0, true)
+		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), BODY, 7.0, FighterArt.AA)
 		for f in 3:
 			c.draw_line(hand, hand + Vector2.from_angle(-0.4 + float(f) * 0.4) * 9.0, BODY, 2.0)
 	# Hollow white eyes + ghost mouth

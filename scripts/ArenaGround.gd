@@ -38,6 +38,8 @@ extends StaticBody2D
 		ground_theme = v
 		_apply_theme()
 		queue_redraw()
+		for ch in _chunks:                                  # Wide floors: the detail chunks too
+			(ch as CanvasItem).queue_redraw()
 
 ## Underground maps (caves, sewers): solid rock fills everything under the floor instead of a
 ## floating island with a hanging underside (StoryLevels.MAPS "solid").
@@ -240,6 +242,7 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	add_to_group("arena_ground")
+	_build_chunks()
 	collision_layer = CombatManager.WORLD_LAYER
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(width, collision_depth)
@@ -377,6 +380,8 @@ func _regenerate() -> void:
 			_drips.append({"pos": base + Vector2(0, -6), "len": rng.randf_range(18.0, 36.0), "w": rng.randf_range(7.0, 11.0)})
 
 	queue_redraw()
+	for ch in _chunks:
+		(ch as CanvasItem).queue_redraw()
 
 
 func _wavy_band(rng: RandomNumberGenerator, x0: float, x1: float, y: float, h: float) -> PackedVector2Array:
@@ -433,51 +438,20 @@ func _draw() -> void:
 	for p in _poly:
 		cols.append(STONE.lerp(STONE_DEEP, clampf(p.y / depth, 0.0, 1.0) * 0.8))
 	draw_polygon(_poly, cols)
-	for sp in _speckles:
-		var tint := STONE_TOP_HI if sp.z > 0.0 else STONE_DEEP
-		draw_circle(Vector2(sp.x, sp.y), 1.2 + absf(sp.z) * 1.3, Color(tint.r, tint.g, tint.b, 0.22 * absf(sp.z) + 0.08))
 	for s in _strata:
 		draw_colored_polygon(s, STONE_DARK)
 	for s in _deep:
 		draw_colored_polygon(s, STONE_DEEP)
-
-	# Pebbles: outline, fill, tiny highlight
-	for pb in _pebbles:
-		var c := Vector2(pb.x, pb.y)
-		draw_circle(c, pb.z + 2.0, OUTLINE)
-		draw_circle(c, pb.z, PEBBLE_LIGHT if int(pb.x) % 3 == 0 else STONE_DARK)
-		draw_circle(c + Vector2(-pb.z * 0.35, -pb.z * 0.35), pb.z * 0.3, STONE_TOP_HI)
-
-	# Cracks: dark line + light lip below it (Void theme: glowing green)
-	for cr in _cracks:
-		var lip := PackedVector2Array()
-		for q in cr:
-			lip.append(q + Vector2(1.5, 2.0))
-		if ground_theme >= 1:                                   # Void / Hell: glowing cracks
-			draw_polyline(cr, Color(CRACK.r, CRACK.g, CRACK.b, 0.25), CRACK_WIDTH * 3.0, true)
-		else:
-			draw_polyline(lip, Color(STONE_TOP_HI.r, STONE_TOP_HI.g, STONE_TOP_HI.b, 0.45), 1.5, true)
-		draw_polyline(cr, CRACK, CRACK_WIDTH, true)
-
-	# Embedded glowing hexagons
-	for cy in _crystals:
-		var c := Vector2(cy.x, cy.y)
-		draw_circle(c, cy.z * 1.9, Color(CRYSTAL.r, CRYSTAL.g, CRYSTAL.b, 0.18))
-		var hex := _hex(c, cy.z, PI / 6.0)
-		draw_colored_polygon(hex, CRYSTAL)
-		draw_colored_polygon(_hex(c + Vector2(-cy.z * 0.2, -cy.z * 0.2), cy.z * 0.45, PI / 6.0), CRYSTAL_HI)
-		_outline(hex, 3.0)
-
 	# Paved top layer
 	for cp in _cap_polys:
 		draw_colored_polygon(cp, STONE_TOP)
 	var hw := width * 0.5
 	draw_rect(Rect2(-hw + 10, CAP - 7, width - 20, 7), STONE_TOP_SHADE)
 	draw_line(Vector2(-hw + 14, 4), Vector2(hw - 14, 4), STONE_TOP_HI, 4.0)
-	for ch in _chips:
-		draw_colored_polygon(ch, STONE_DARK)
-	for j in _joints:
-		draw_polyline(j, CRACK, 3.0, true)
+	# The small DETAILS (grain, pebbles, cracks, crystals, slab joints): drawn here for a normal
+	# arena, or by CHUNKS for a very wide floor so the ones off screen are skipped (DemiLand).
+	if _chunks.is_empty():
+		_draw_details(self, -INF, INF)
 	draw_line(Vector2(-hw + 6, CAP), Vector2(hw - 6, CAP), OUTLINE if ground_theme >= 1 else CRACK, 4.0)
 	if ground_theme >= 1:      # Thin glowing rim light along the walkable edge
 		draw_line(Vector2(-hw + 14, 2), Vector2(hw - 14, 2), Color(CRACK.r, CRACK.g, CRACK.b, 0.6), 2.0)
@@ -524,6 +498,86 @@ func _draw() -> void:
 			x += 140.0
 
 
+# ============================================================
+# PERFORMANCE: a very wide floor (DemiLand, 18 000 px) used to send EVERY grain, pebble and
+# crack to the GPU every frame (11 000 draw calls, 28 FPS on a PC). Its details now live in
+# 1200 px chunks: Godot skips the chunks that are off screen.
+# ============================================================
+const CHUNK := 1200.0
+const CHUNK_FROM_WIDTH := 3000.0
+var _chunks: Array = []
+
+
+func _build_chunks() -> void:
+	if width < CHUNK_FROM_WIDTH:
+		return
+	var hw := width * 0.5
+	var x := -hw - 40.0
+	while x < hw + 40.0:
+		var ch := Node2D.new()
+		ch.name = "GroundChunk"
+		add_child(ch)
+		var x0 := x
+		var x1 := x + CHUNK
+		ch.draw.connect(func() -> void: _draw_details(ch, x0, x1))
+		_chunks.append(ch)
+		x += CHUNK
+	queue_redraw()
+
+
+## Details between x0 and x1, drawn on canvas c (the floor itself or one of its chunks).
+## FAST / POTATO graphics skip the barely visible rock grain (hundreds of draw calls).
+func _draw_details(c: CanvasItem, x0: float, x1: float) -> void:
+	if Engine.is_editor_hint() or GraphicsSettings.level > GraphicsSettings.FAST:
+		for sp in _speckles:
+			if sp.x < x0 or sp.x >= x1:
+				continue
+			var tint := STONE_TOP_HI if sp.z > 0.0 else STONE_DEEP
+			c.draw_circle(Vector2(sp.x, sp.y), 1.2 + absf(sp.z) * 1.3, Color(tint.r, tint.g, tint.b, 0.22 * absf(sp.z) + 0.08))
+	# Pebbles: outline, fill, tiny highlight
+	for pb in _pebbles:
+		if pb.x < x0 or pb.x >= x1:
+			continue
+		var pc := Vector2(pb.x, pb.y)
+		c.draw_circle(pc, pb.z + 2.0, OUTLINE)
+		c.draw_circle(pc, pb.z, PEBBLE_LIGHT if int(pb.x) % 3 == 0 else STONE_DARK)
+		if Engine.is_editor_hint() or GraphicsSettings.level > GraphicsSettings.FAST:     # Tiny highlight: not on phones
+			c.draw_circle(pc + Vector2(-pb.z * 0.35, -pb.z * 0.35), pb.z * 0.3, STONE_TOP_HI)
+	# Cracks: dark line + light lip below it (Void theme: glowing green)
+	for cr in _cracks:
+		if cr[0].x < x0 or cr[0].x >= x1:
+			continue
+		if ground_theme >= 1:                                   # Void / Hell: glowing cracks
+			c.draw_polyline(cr, Color(CRACK.r, CRACK.g, CRACK.b, 0.25), CRACK_WIDTH * 3.0, FighterArt.AA)
+		else:
+			var lip := PackedVector2Array()
+			for q in cr:
+				lip.append(q + Vector2(1.5, 2.0))
+			c.draw_polyline(lip, Color(STONE_TOP_HI.r, STONE_TOP_HI.g, STONE_TOP_HI.b, 0.45), 1.5, FighterArt.AA)
+		c.draw_polyline(cr, CRACK, CRACK_WIDTH, FighterArt.AA)
+	# Embedded glowing hexagons
+	for cy in _crystals:
+		if cy.x < x0 or cy.x >= x1:
+			continue
+		var hc := Vector2(cy.x, cy.y)
+		c.draw_circle(hc, cy.z * 1.9, Color(CRYSTAL.r, CRYSTAL.g, CRYSTAL.b, 0.18))
+		var hex := _hex(hc, cy.z, PI / 6.0)
+		c.draw_colored_polygon(hex, CRYSTAL)
+		c.draw_colored_polygon(_hex(hc + Vector2(-cy.z * 0.2, -cy.z * 0.2), cy.z * 0.45, PI / 6.0), CRYSTAL_HI)
+		var closed := hex.duplicate()
+		closed.append(hex[0])
+		c.draw_polyline(closed, OUTLINE, 3.0, FighterArt.AA)
+	# Slab joints + chipped corners on the paved top
+	for chp in _chips:
+		if chp[0].x < x0 or chp[0].x >= x1:
+			continue
+		c.draw_colored_polygon(chp, STONE_DARK)
+	for j in _joints:
+		if j[0].x < x0 or j[0].x >= x1:
+			continue
+		c.draw_polyline(j, CRACK, 3.0, FighterArt.AA)
+
+
 ## Solid bedrock under (and beside) the island: same palette, darker the deeper it goes,
 ## with strata lines and embedded stones, so the floor reads as the cave's real ground.
 func _draw_solid_fill() -> void:
@@ -551,7 +605,7 @@ func _draw_solid_fill() -> void:
 		while x <= x1:
 			pts.append(Vector2(x, y + rng.randf_range(-6.0, 6.0)))
 			x += 80.0
-		draw_polyline(pts, Color(STONE_DARK.r, STONE_DARK.g, STONE_DARK.b, 0.8), rng.randf_range(6.0, 14.0), true)
+		draw_polyline(pts, Color(STONE_DARK.r, STONE_DARK.g, STONE_DARK.b, 0.8), rng.randf_range(6.0, 14.0), FighterArt.AA)
 		y += rng.randf_range(60.0, 110.0)
 	# Embedded stones + glowing seams of the theme colour
 	for i in 70:
@@ -565,8 +619,8 @@ func _draw_solid_fill() -> void:
 		for j in 4:
 			p += Vector2(rng.randf_range(-24.0, 24.0), rng.randf_range(14.0, 30.0))
 			line.append(p)
-		draw_polyline(line, Color(CRACK.r, CRACK.g, CRACK.b, 0.25), CRACK_WIDTH * 3.0, true)
-		draw_polyline(line, CRACK, CRACK_WIDTH, true)
+		draw_polyline(line, Color(CRACK.r, CRACK.g, CRACK.b, 0.25), CRACK_WIDTH * 3.0, FighterArt.AA)
+		draw_polyline(line, CRACK, CRACK_WIDTH, FighterArt.AA)
 
 
 ## Elevator platform: yellow/black hazard stripes on the lip + steel cables up the shaft.
@@ -588,4 +642,4 @@ func _draw_elevator_extras() -> void:
 func _outline(pts: PackedVector2Array, w: float) -> void:
 	var closed := pts.duplicate()
 	closed.append(pts[0])
-	draw_polyline(closed, OUTLINE, w, true)
+	draw_polyline(closed, OUTLINE, w, FighterArt.AA)

@@ -227,4 +227,4 @@ static func draw_forge_mother(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, block, 4.0)
 	EnemyArt.arm(c, chest + Vector2(62, -50), hand, 24.0, IRON, IRON_SHADE, IRON_HI, IRON, 24.0)
 	if pose == "slam" and pt < 0.25:
-		c.draw_arc(Vector2(150, 0), 30.0 + pt * 320.0, PI, TAU, 18, Color(fire.r, fire.g, fire.b, 1.0 - pt * 4.0), 7.0, true)
+		c.draw_arc(Vector2(150, 0), 30.0 + pt * 320.0, PI, TAU, 18, Color(fire.r, fire.g, fire.b, 1.0 - pt * 4.0), 7.0, FighterArt.AA)

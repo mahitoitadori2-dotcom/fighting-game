@@ -14,8 +14,8 @@ dest_files=["res://.godot/imported/menu.wav-436ee964155f82a49ed1b51be5d318e1.sam
 
 force/8_bit=false
 force/mono=false
-force/max_rate=false
-force/max_rate_hz=44100
+force/max_rate=true
+force/max_rate_hz=22050
 edit/trim=false
 edit/normalize=false
 edit/loop_mode=0

@@ -145,8 +145,8 @@ static func draw_prime(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, cape, 4.0)
 	# The holy staff in the far hand (behind the body)
 	var top := Vector2(-30, -250) if not casting else Vector2(-6, -276)
-	c.draw_line(Vector2(-24, -40), top, EnemyArt.BLACK, 9.0, true)
-	c.draw_line(Vector2(-24, -40), top, Color(0.95, 0.85, 0.55), 5.0, true)
+	c.draw_line(Vector2(-24, -40), top, EnemyArt.BLACK, 9.0, FighterArt.AA)
+	c.draw_line(Vector2(-24, -40), top, Color(0.95, 0.85, 0.55), 5.0, FighterArt.AA)
 	var glow := 0.5 + 0.5 * sin(t * (12.0 if casting else 3.0))
 	c.draw_circle(top, 22.0 + 8.0 * glow, Color(1.0, 0.85, 0.35, 0.25 + (0.25 if casting else 0.0)))
 	for k in 8:                                                   # Little sun on top
@@ -163,4 +163,4 @@ static func draw_prime(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_colored_polygon(pd, GOLD)
 		FighterArt.outline(c, pd, 3.0)
 	if pose == "slash":                                           # Golden swing trail
-		c.draw_arc(Vector2(30, -120), 90.0, -1.3, 0.7, 16, Color(1.0, 0.85, 0.35, 0.7), 10.0, true)
+		c.draw_arc(Vector2(30, -120), 90.0, -1.3, 0.7, 16, Color(1.0, 0.85, 0.35, 0.7), 10.0, FighterArt.AA)
