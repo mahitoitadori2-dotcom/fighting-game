@@ -40,8 +40,8 @@ var _dash := false
 
 func boss_forms() -> Array:
 	return [
-		{"name": "The Sun", "title": "THE SUN", "hp": 760, "body": Vector2(130, 250), "speed": 200.0},
-		{"name": "The Consumer", "title": "THE CONSUMER", "hp": 860, "body": Vector2(190, 300), "speed": 250.0,
+		{"name": "The Sun", "title": "THE SUN", "hp":100body factor22(130, 250), "speed": 200.0},
+		{"name": "The Consumer", "title": "THE CONSUMER", "hp": 100body: Vector2(190, 300), "speed": 250.0,
 			"banner": "THE ORANGE GLOW SWALLOWS HER WHOLE", "subtitle": "PHASE 2  -  THE CONSUMER",
 			"line": "I WILL EAT THE WORLD... AND YOU FIRST.", "music": "boss_consumer"},
 	]
