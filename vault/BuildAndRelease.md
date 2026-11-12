@@ -34,7 +34,7 @@ Every push to `main` is exported and published to GitHub Pages, whatever it chan
 
 ## Automatic commit and push
 
-- `tools/auto_push.ps1` commits everything `.gitignore` allows and pushes `main`. It first rebases onto newer GitHub commits; on a conflict it stops and keeps the commit locally. It never force-pushes. Files that look like secrets are never committed.
+- `tools/auto_push.ps1` commits everything `.gitignore` allows and pushes `main`. **Since 2026-11-12 it never pushes a game with script errors:** when scripts changed it first compiles every script (`tools/check_scripts.tscn`); if one fails, the commit stays on your PC and the message names the broken file. (A hand edit of `TheSun.gd` with a typo had been pushed and broke Story Mode on the website.) It first rebases onto newer GitHub commits; on a conflict it stops and keeps the commit locally. It never force-pushes. Files that look like secrets are never committed.
 - It runs automatically whenever Claude Code finishes a reply (a Stop hook in the user settings `~/.claude/settings.json`), and on demand with **/push** (an optional commit message can follow).
 - Every push to `main` rebuilds the web game and updates the website (see the table above).
 

@@ -14,8 +14,8 @@ signal done
 const PLATFORMS := 12
 const WALL_SPEED := 210.0
 const WALL_SPEED_MAX := 330.0
-const FALL_DAMAGE := 12
-const FIRE_DAMAGE := 8
+const FALL_DAMAGE := 9                # Nerfed 2026-11-12 (was 12)
+const FIRE_DAMAGE := 6                # Nerfed 2026-11-12 (was 8)
 const COURSE_X := 4200.0                 # The escape course is built far to the right of the arena
 
 var manager: StoryManager

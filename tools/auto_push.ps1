@@ -7,6 +7,8 @@
 # Safety:
 #   - Files that look like secrets (.env, keys, certificates, credentials) are never committed.
 #   - Does nothing while a merge / rebase is in progress or on a detached HEAD.
+#   - Never pushes a game with SCRIPT ERRORS: when scripts changed, Godot compiles the project
+#     first; on a parse / compile error the commit stays local and nothing is pushed.
 #   - Pulls GitHub's newer commits first (rebase). On a conflict it aborts, keeps the commit
 #     locally and reports it instead of forcing anything. Never force-pushes.
 param([string]$Message = "")
@@ -71,6 +73,20 @@ if ($behind -gt 0) {
 	if ($r.code -ne 0) {
 		$null = Run-Git @("rebase", "--abort")
 		Finish "NOT pushed: GitHub has $behind newer commit(s) that conflict with yours. Your work is committed locally; merge origin/$branch by hand, then run /push.$note"
+	}
+}
+# ---- Never push a game that doesn't compile ----
+# If scripts / scenes / project settings changed, compile the project with Godot first. Any parse
+# or compile error = NOT pushed (the website would break). The commit stays local; fix the error
+# and the next push sends it. Skipped when the Godot console exe is not found (GODOT env or default).
+$changed = (Run-Git @("diff", "--name-only", "origin/$branch..HEAD")).out -split "`n" | Where-Object { $_ -match '\.(gd|tscn|tres|godot)$' }
+$godot = if ($env:GODOT) { $env:GODOT } else { "C:/code/Godot_v4.7.2-stable_win64_console.exe" }
+if ($changed.Count -gt 0 -and (Test-Path $godot)) {
+	$null = & $godot --headless --path $repo --import 2>&1                  # Register new / renamed classes first
+	$log = & $godot --headless --path $repo "res://tools/check_scripts.tscn" 2>&1 | ForEach-Object { "$_" }
+	$bad = @($log | Where-Object { $_ -match '^SCRIPT FAIL: (.+)$' } | ForEach-Object { $_ -replace '^SCRIPT FAIL: res://', '' })
+	if ($bad.Count -gt 0) {
+		Finish ("NOT pushed: $($bad.Count) script(s) don't compile, the website would break. Committed locally only - fix and push again: " + (($bad | Select-Object -First 5) -join ", ") + $note)
 	}
 }
 $p = Run-Git @("push", "-q", "origin", $branch)

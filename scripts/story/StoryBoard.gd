@@ -343,6 +343,8 @@ func _visible_x(screen_x: float, margin: float = 140.0) -> bool:
 
 ## The part in the middle of the view.
 func _part_at_view() -> int:
+	if _scroll >= _max_scroll() - 2.0 and _max_scroll() > 0.0:
+		return _parts()                                    # Scrolled to the very end: the LAST part (a short part like DemiLand never reaches the middle)
 	var mid := _scroll + _board_rect().size.x * 0.5
 	var c := 1
 	while c < _parts() and mid >= _gate_x(c + 1):

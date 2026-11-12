@@ -81,9 +81,10 @@ func _paint() -> void:
 			_flask(Vector2(x + 86 + float(i) * 30.0, fy), i < manager.flasks)
 		var fx := x + 92.0 + float(manager.max_flasks) * 30.0
 		var ftxt := "[R]  +%d%% HP" % int(StoryManager.FLASK_HEAL * 100.0)
-		if manager.max_flasks > StoryManager.FLASKS_PER_LEVEL:
-			ftxt += "    DEEP FAITH PAYOFF"
 		FighterArt.label(_painter, Vector2(fx, fy + 4), ftxt, 14, Color(1, 1, 1, 0.7), false)
+		if manager.max_flasks > StoryManager.FLASKS_PER_LEVEL:
+			# Deep Faith tag next to the HP bar (it used to sit under the boss bar and got cut off)
+			FighterArt.label(_painter, Vector2(x + 308.0, y + 40.0), "DEEP FAITH", 12, Color(1.0, 0.85, 0.4, 0.9), false)
 		# Cooldowns
 		var cf := p as ControlledFighter
 		if cf != null:
@@ -142,7 +143,7 @@ func _paint() -> void:
 			_bar(r2, float(m.hp) / maxf(float(m.data.max_hp), 1.0) if alive else 0.0, Color(0.55, 0.95, 0.2) if not m.enraged else Color(1.0, 0.85, 0.15))
 		boss = null                                        # (the single bar below is skipped)
 	if boss != null and is_instance_valid(boss) and not boss.is_dead and manager.boss_bar_visible:
-		var bw := minf(560.0, sz.x - 80.0)
+		var bw := clampf(sz.x - 720.0, 300.0, 560.0)          # Keeps clear of the player panel (left) and the right corner
 		var r := Rect2(cx - bw * 0.5, 86, bw, 20)
 		FighterArt.label(_painter, Vector2(cx, 76), boss.boss_title(), 20, Color(1.0, 0.95, 0.4) if boss.enraged else Color.WHITE)
 		var bk := float(boss.hp) / maxf(float(boss.data.max_hp), 1.0)

@@ -32,6 +32,8 @@ const GLOW := Color(1.0, 0.95, 0.75)
 const ORANGE := Color(1.0, 0.5, 0.1)
 const EMBER := Color(0.75, 0.18, 0.04)
 const HOVER := 46.0
+## NERF (2026-11-12): all her damage x this (every attack goes through dmg(), which applies it).
+const DAMAGE_NERF := 0.7
 
 var finale := false
 var _bomb_hit := 0.0
@@ -40,8 +42,9 @@ var _dash := false
 
 func boss_forms() -> Array:
 	return [
-		{"name": "The Sun", "title": "THE SUN", "hp":100body factor22(130, 250), "speed": 200.0},
-		{"name": "The Consumer", "title": "THE CONSUMER", "hp": 100body: Vector2(190, 300), "speed": 250.0,
+		# NERFED 2026-11-12: HP 760 -> 540 and 860 -> 620 (x1.35 Story boss buff on top)
+		{"name": "The Sun", "title": "THE SUN", "hp": 540, "body": Vector2(130, 250), "speed": 200.0},
+		{"name": "The Consumer", "title": "THE CONSUMER", "hp": 620, "body": Vector2(190, 300), "speed": 250.0,
 			"banner": "THE ORANGE GLOW SWALLOWS HER WHOLE", "subtitle": "PHASE 2  -  THE CONSUMER",
 			"line": "I WILL EAT THE WORLD... AND YOU FIRST.", "music": "boss_consumer"},
 	]
@@ -55,6 +58,7 @@ func setup_boss() -> void:
 	chain_chance = 0.6
 	rage_at = 0.6                                       # The final boss enrages early
 	cooldown_mult = 0.8                                 # ...and attacks more often
+	damage_mult = DAMAGE_NERF                           # NERF: every attack of both forms hits ~30% softer
 	tags = {"beams": ["anti_air", "ranged"], "swords": ["ranged"], "pillars": ["counter", "ranged"], "wing": ["close", "counter"],
 		"orbs": ["ranged", "anti_air"], "radiance": ["counter"], "judgment": ["ranged"], "eclipse": ["escape", "close", "evade"],
 		"halo": ["anti_air", "ranged"], "blind": ["ranged", "anti_air"],
@@ -206,7 +210,7 @@ func _attack(p: EnemyPattern) -> void:
 		"wing":
 			swing(dmg(p), Vector2(440, -280), Vector2(150, -150), Vector2(280, 220), "wing_slash")
 			for k in 2:
-				shoot("crescent", global_position + Vector2(f * 120.0, -70.0 - float(k) * 90.0), f, 620.0, 1.3, Vector2(54, 80), dmg(p) - 3,
+				shoot("crescent", global_position + Vector2(f * 120.0, -70.0 - float(k) * 90.0), f, 620.0, 1.3, Vector2(54, 80), maxi(1, dmg(p) - 3),
 					Vector2(260, -220), ORANGE if form == 2 else GOLD, "wing_wave", true)
 			Effects.shake(self, 6.0)
 			SoundManager.play_sfx("whoosh")
@@ -238,7 +242,7 @@ func _attack(p: EnemyPattern) -> void:
 		"flare":
 			hit_in_radius(global_position + Vector2(0, -140), 280.0, dmg(p), Vector2(480, -360), "solar_flare")
 			for d: float in [-1.0, 1.0]:
-				shoot("shock", Vector2(global_position.x + d * 120.0, floor_y() - 20.0), d, 600.0, 1.1, Vector2(56, 46), dmg(p) - 3, Vector2(260, -340), ORANGE, "flare_wave", true)
+				shoot("shock", Vector2(global_position.x + d * 120.0, floor_y() - 20.0), d, 600.0, 1.1, Vector2(56, 46), maxi(1, dmg(p) - 3), Vector2(260, -340), ORANGE, "flare_wave", true)
 			Effects.explosion(self, global_position + Vector2(0, -140), 260.0, true, true)
 			Effects.shake(self, 16.0)
 			SoundManager.play_sfx("explosion")
