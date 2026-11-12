@@ -144,7 +144,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 ## PHASE 1: the forge titan in coal armor.
 static func draw_father(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("raging", false)
 	var tf: float = s.get("tf", -1.0)
@@ -168,7 +168,7 @@ static func draw_father(c: CanvasItem, s: Dictionary) -> void:
 	# Far arm
 	var lh := Vector2(-110, -130)
 	var rh := Vector2(110, -150)
-	match pose:
+	match pose_v:
 		"hammer_tele":
 			rh = Vector2(40, -400)
 		"hammer":
@@ -187,6 +187,7 @@ static func draw_father(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(torso, COAL_HI)
 	for k in 6:                                          # Coal armor plates
 		var px := -80.0 + float(k % 3) * 60.0
+		@warning_ignore("integer_division")
 		var py := -290.0 + float(k / 3) * 80.0
 		var plate := PackedVector2Array([Vector2(px, py), Vector2(px + 52, py + 4), Vector2(px + 46, py + 70), Vector2(px + 4, py + 66)])
 		c.draw_colored_polygon(plate, COAL)
@@ -209,9 +210,9 @@ static func draw_father(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.limb(c, Vector2(88, -284), rh, 40.0, COAL_HI, COAL, COAL_HI.lightened(0.1))
 	FighterArt.ball(c, rh, 26.0, COAL_HI, COAL, COAL_HI.lightened(0.1))
 	var aim := Vector2(0.4, -1).normalized()
-	if pose == "hammer":
+	if pose_v == "hammer":
 		aim = Vector2(1, 0.3).normalized()
-	elif pose == "hammer_tele":
+	elif pose_v == "hammer_tele":
 		aim = Vector2(-0.6, -1).normalized()
 	var top := rh + aim * 120.0
 	c.draw_line(rh, top, EnemyArt.BLACK, 16.0, FighterArt.AA)
@@ -226,7 +227,7 @@ static func draw_father(c: CanvasItem, s: Dictionary) -> void:
 ## PHASE 2: the Metallic Abomination - a body of liquid metal, spikes, dripping.
 static func draw_abomination(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("raging", false)
 	var wob := sin(t * (12.0 if rage else 6.0))
@@ -236,7 +237,7 @@ static func draw_abomination(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(base, STEEL_SHADE)
 	FighterArt.outline(c, base, 4.0)
 	# Body: a melting mass, wider at the bottom
-	var lean := 22.0 if pose == "lunge" else (-14.0 if pose.ends_with("_tele") else 0.0)
+	var lean := 22.0 if pose_v == "lunge" else (-14.0 if pose_v.ends_with("_tele") else 0.0)
 	var body := PackedVector2Array()
 	for i in 14:
 		var a := PI + float(i) / 13.0 * PI
@@ -260,7 +261,7 @@ static func draw_abomination(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.curved_spike(c, root, tip, 9.0, STEEL_SHADE, STEEL, 0.2)
 	# Lashing metal arm
 	var hand := Vector2(110 + lean, -150 + wob * 10.0)
-	match pose:
+	match pose_v:
 		"lash_tele":
 			hand = Vector2(-40, -260)
 		"lash":

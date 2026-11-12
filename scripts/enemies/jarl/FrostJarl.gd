@@ -127,7 +127,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var has_axe: bool = s.get("axe", true)
@@ -136,7 +136,7 @@ static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 		EnemyArt.aura(c, Vector2(0, -70), 70.0, RUNE, t)
 
 	var breathe := sin(t * 3.0) * 1.5
-	var crouch := 8.0 if pose == "slam_tele" or pose == "punch_tele" else 0.0
+	var crouch := 8.0 if pose_v == "slam_tele" or pose_v == "punch_tele" else 0.0
 
 	# Legs (leather trousers, fur boots)
 	EnemyArt.legs(c, s, -58.0 + crouch, 11.0, 15.0, LEATHER, LEATHER_SHADE, LEATHER.lightened(0.2), FUR_SHADE, 18.0)
@@ -198,7 +198,7 @@ static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 	var shoulder := chest + Vector2(16, -12)
 	var hand := chest + Vector2(30, 22)
 	var axe_angle := -1.2
-	match pose:
+	match pose_v:
 		"throw_tele":
 			hand = chest + Vector2(-22, -30)
 			axe_angle = -2.4
@@ -214,12 +214,12 @@ static func draw_jarl(c: CanvasItem, s: Dictionary) -> void:
 		"slam":
 			hand = Vector2(46, -20)
 			axe_angle = 0.9
-	if has_axe and pose != "punch" and pose != "punch_tele":
+	if has_axe and pose_v != "punch" and pose_v != "punch_tele":
 		_axe(c, hand, axe_angle)
-	EnemyArt.arm(c, shoulder, hand, 14.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN, 8.0 if pose == "punch" else 7.0)
-	if pose == "punch":
+	EnemyArt.arm(c, shoulder, hand, 14.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN, 8.0 if pose_v == "punch" else 7.0)
+	if pose_v == "punch":
 		c.draw_arc(hand, 16.0, -1.2, 1.2, 10, Color(1, 1, 1, 0.7), 4.0, FighterArt.AA)
-	if pose == "slam":
+	if pose_v == "slam":
 		c.draw_arc(Vector2(46, -2), 30.0 + pt * 80.0, PI, TAU, 16, Color(ICE.r, ICE.g, ICE.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)
 
 

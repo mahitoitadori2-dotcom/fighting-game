@@ -202,8 +202,8 @@ func _draw_crystals() -> void:
 		draw_circle(base, 34.0, Color(0.7, 0.4, 1.0, 0.10))
 		for k in 3:
 			var ang := -PI * 0.5 + side * rng.randf_range(0.3, 1.3)
-			var len := rng.randf_range(22.0, 48.0)
-			var tip := base + Vector2.from_angle(ang) * len
+			var seg_len := rng.randf_range(22.0, 48.0)
+			var tip := base + Vector2.from_angle(ang) * seg_len
 			var n := Vector2.from_angle(ang).orthogonal() * rng.randf_range(5.0, 9.0)
 			var shard := PackedVector2Array([base + n, base + n + (tip - base) * 0.8, tip, base - n + (tip - base) * 0.8, base - n])
 			draw_colored_polygon(shard, Color(0.66, 0.38, 0.95))

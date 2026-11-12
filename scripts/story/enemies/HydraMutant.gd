@@ -72,7 +72,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_hydra(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 
@@ -101,7 +101,7 @@ static func draw_hydra(c: CanvasItem, s: Dictionary) -> void:
 	var neck_root := chest + Vector2(22, -30)
 	var head := neck_root + Vector2(40, -40) + Vector2(sin(t * 2.2) * 4.0, cos(t * 1.8) * 3.0)
 	var jaw_open := 0.0
-	match pose:
+	match pose_v:
 		"bite_tele":
 			head = neck_root + Vector2(10, -56)
 			jaw_open = clampf(pt / 0.45, 0.0, 1.0)
@@ -141,12 +141,12 @@ static func draw_hydra(c: CanvasItem, s: Dictionary) -> void:
 
 	# Near arm (claw)
 	var hand := chest + Vector2(38, 42)
-	if pose == "crush_tele":
+	if pose_v == "crush_tele":
 		hand = chest + Vector2(30, -50)
-	elif pose == "crush":
+	elif pose_v == "crush":
 		hand = Vector2(92, -16)
 	EnemyArt.arm(c, chest + Vector2(28, -14), hand, 19.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN, 12.0)
 	for k in 3:
 		c.draw_line(hand + Vector2(4, -4 + float(k) * 4.0), hand + Vector2(14, -6 + float(k) * 5.0), EnemyArt.BLACK, 3.0)
-	if pose == "crush":
+	if pose_v == "crush":
 		c.draw_arc(Vector2(92, 0), 30.0 + pt * 220.0, PI, TAU, 18, Color(1, 0.8, 0.5, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)

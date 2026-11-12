@@ -126,22 +126,22 @@ static var _busy := false
 ## big = the large preview: jumps the queue and is NOT kept after it closes (a big
 ## picture is ~3 MB; keeping one per map would pile up on phones).
 static func make_preview(e: Dictionary, size: Vector2i, big: bool = false) -> TextureRect:
-	var tr := TextureRect.new()
-	tr.custom_minimum_size = Vector2(size)
-	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tex_rect := TextureRect.new()
+	tex_rect.custom_minimum_size = Vector2(size)
+	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var key := _shot_key(e, size)
 	if _shots.has(key):
-		tr.texture = _shots[key]
-		return tr
+		tex_rect.texture = _shots[key]
+		return tex_rect
 	if big:
-		_queue.push_front([tr, e, size, false])
+		_queue.push_front([tex_rect, e, size, false])
 	else:
-		_queue.append([tr, e, size, true])
+		_queue.append([tex_rect, e, size, true])
 	if not _busy:
 		_pump()
-	return tr
+	return tex_rect
 
 
 static func _shot_key(e: Dictionary, size: Vector2i) -> String:
@@ -154,8 +154,8 @@ static func _pump() -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	while not _queue.is_empty():
 		var job: Array = _queue.pop_front()
-		var tr: TextureRect = job[0]
-		if not is_instance_valid(tr):                 # Left the catalogue / closed the preview
+		var tex_rect: TextureRect = job[0]
+		if not is_instance_valid(tex_rect):                 # Left the catalogue / closed the preview
 			continue
 		var key := _shot_key(job[1], job[2])
 		var tex: Texture2D = _shots.get(key)
@@ -163,8 +163,8 @@ static func _pump() -> void:
 			tex = await _render(tree, job[1], job[2])
 			if bool(job[3]):
 				_shots[key] = tex                         # Thumbnails are kept (small)
-		if is_instance_valid(tr):
-			tr.texture = tex
+		if is_instance_valid(tex_rect):
+			tex_rect.texture = tex
 	_busy = false
 
 
@@ -191,6 +191,7 @@ static func _fill(vp: SubViewport, e: Dictionary, size: Vector2i) -> void:
 	var key := String(e.get("map", ""))
 	var theme := 2
 	if key == "":
+		@warning_ignore("incompatible_ternary")
 		var bg: CanvasLayer = VoidBackground.new() if e["id"] == "void" else ArenaBackground.new()
 		vp.add_child(bg)
 		theme = 1 if e["id"] == "void" else 0

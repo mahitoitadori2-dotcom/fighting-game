@@ -108,7 +108,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_escapist(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	if s.get("phased", false):
 		# Under the ground: only a dark ripple and two eyes sliding along the floor
@@ -118,7 +118,7 @@ static func draw_escapist(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(Vector2(6, -6), 2.5, EYE)
 		c.draw_circle(Vector2(16, -6), 2.5, EYE)
 		return
-	var crouch := 10.0 if pose.ends_with("_tele") else 0.0
+	var crouch := 10.0 if pose_v.ends_with("_tele") else 0.0
 	var body_c := Vector2(0, -50 + crouch + sin(t * 3.0) * 3.0)
 	# Wispy tail trailing behind and down into the floor
 	for i in 5:
@@ -134,7 +134,7 @@ static func draw_escapist(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(body, BODY)
 	c.draw_polyline(body + PackedVector2Array([body[0]]), Color(WISP.r, WISP.g, WISP.b, 0.8), 3.0, FighterArt.AA)
 	# Long clawed arms crawling forward
-	var reach := 26.0 if pose == "bite" else 0.0
+	var reach := 26.0 if pose_v == "bite" else 0.0
 	for i in 2:
 		var sh := body_c + Vector2(10, -4 + float(i) * 12.0)
 		var hand := Vector2(36 + reach + float(i) * 6.0 + sin(t * 4.0 + float(i) * 2.0) * 4.0, -6.0 - float(i) * 4.0)
@@ -148,5 +148,5 @@ static func draw_escapist(c: CanvasItem, s: Dictionary) -> void:
 	else:
 		c.draw_colored_polygon(EnemyArt.ellipse_points(body_c + Vector2(6, -8), 4.0, 6.0, 10), EYE)
 		c.draw_colored_polygon(EnemyArt.ellipse_points(body_c + Vector2(18, -8), 4.0, 6.0, 10), EYE)
-	var open := 1.0 if pose == "bite" else 0.3
+	var open := 1.0 if pose_v == "bite" else 0.3
 	c.draw_colored_polygon(EnemyArt.ellipse_points(body_c + Vector2(13, 8), 6.0, 2.0 + 6.0 * open, 12), Color(0.0, 0.0, 0.0))

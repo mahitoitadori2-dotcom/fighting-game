@@ -22,10 +22,10 @@ var _flavor_timer := 4.0
 
 
 ## Standard stat block for a light enemy.
-static func make_data(p_name: String, hp: int, body: Vector2, move_speed: float) -> CharacterData:
+static func make_data(p_name: String, hp_v: int, body: Vector2, move_speed: float) -> CharacterData:
 	var d := CharacterData.new()
 	d.character_name = p_name
-	d.max_hp = hp
+	d.max_hp = hp_v
 	d.body_size = body                  # Simple RectangleShape2D body + hurtbox (Fighter)
 	d.move_speed = move_speed
 	d.acceleration = 2400.0

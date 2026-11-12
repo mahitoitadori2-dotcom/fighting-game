@@ -81,6 +81,7 @@ func _attack(p: EnemyPattern) -> void:
 				var w := spawn_projectile()
 				w.look = "shock"
 				w.tint = GLOW
+				@warning_ignore("integer_division")
 				w.damage = maxi(1, dmg(p) / 2)
 				w.knockback = Vector2(260, -300)
 				w.dir = d
@@ -156,15 +157,15 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_minos(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("enraged", false)
 	var hover := sin(t * 2.0) * 5.0
 	var lean := 0.0
-	if pose == "kick":
+	if pose_v == "kick":
 		lean = 26.0
-	elif pose == "slam":
+	elif pose_v == "slam":
 		lean = 10.0
 
 	# Ghostly glow (blue; enraged = brighter)
@@ -174,7 +175,7 @@ static func draw_minos(c: CanvasItem, s: Dictionary) -> void:
 	var waist := Vector2(lean * 0.4, -112 + hover)
 	var tail := PackedVector2Array()
 	var whip := 0.0
-	if pose == "kick" or pose == "kick_tele":
+	if pose_v == "kick" or pose_v == "kick_tele":
 		whip = 1.0
 	for i in 15:
 		var k := float(i) / 14.0
@@ -191,7 +192,7 @@ static func draw_minos(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Far arm (long skeletal) ---
 	var far_hand := chest + Vector2(-30, 62)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			far_hand = chest + Vector2(-10, -90)
 		"slam":
@@ -246,7 +247,7 @@ static func draw_minos(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Near arm (long skeletal) ---
 	var hand := chest + Vector2(34, 58)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			hand = chest + Vector2(20, -100)
 		"slam":
@@ -262,13 +263,13 @@ static func draw_minos(c: CanvasItem, s: Dictionary) -> void:
 		"combo_tele":
 			hand = chest + Vector2(10, -10)
 	_bone_arm(c, chest + Vector2(18, -18), hand, false, rage, t)
-	if pose in ["summon_tele", "summon", "erupt_tele", "erupt"]:
-		var k := clampf(pt / 0.5, 0.0, 1.0) if pose.ends_with("_tele") else 1.0
+	if pose_v in ["summon_tele", "summon", "erupt_tele", "erupt"]:
+		var k := clampf(pt / 0.5, 0.0, 1.0) if pose_v.ends_with("_tele") else 1.0
 		c.draw_circle(hand, 10.0 + 14.0 * k, Color(GLOW.r, GLOW.g, GLOW.b, 0.35))
 		c.draw_circle(hand, 6.0 + 4.0 * k, Color(1, 1, 1, 0.9))
-	if pose == "slam" and pt < 0.3:
+	if pose_v == "slam" and pt < 0.3:
 		c.draw_arc(Vector2(80, 0), 30.0 + pt * 300.0, PI, TAU, 22, Color(GLOW.r, GLOW.g, GLOW.b, 1.0 - pt * 3.3), 8.0, FighterArt.AA)
-	if pose == "kick":
+	if pose_v == "kick":
 		for i in 4:
 			var y := -60.0 - float(i) * 30.0
 			c.draw_line(Vector2(-60 - float(i) * 20.0, y), Vector2(-140 - float(i) * 20.0, y), Color(GLOW.r, GLOW.g, GLOW.b, 0.6), 4.0)

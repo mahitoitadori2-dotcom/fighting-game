@@ -125,13 +125,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_horrid(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("raging", false)
 	c.draw_circle(Vector2(0, -50), 90.0, Color(VOID.r, VOID.g, VOID.b, 0.10 + (0.08 if rage else 0.0) + 0.04 * sin(t * 3.0)))
 	ExtArt.spider(c, s, {"body": BODY, "mark": MARK, "eyes": EYE, "size": 1.9, "fang": Color(0.85, 0.85, 0.95)})
 	# Extra WHITE EYES all over the head and back (the Massacre's trademark)
-	var lift := -11.0 if pose.ends_with("_tele") else 0.0
+	var lift := -11.0 if pose_v.ends_with("_tele") else 0.0
 	var head := Vector2(19, -46 + lift)
 	if not dead:
 		var g := 0.75 + 0.25 * sin(t * (10.0 if rage else 4.0))
@@ -145,5 +145,5 @@ static func draw_horrid(c: CanvasItem, s: Dictionary) -> void:
 	for k in 3:
 		var b := Vector2(-60 + float(k) * 16.0, -34 + lift)
 		c.draw_line(b, b + Vector2(sin(t * 3.0 + float(k)) * 6.0, 18.0 + float(k) * 4.0), Color(VOID.r, VOID.g, VOID.b, 0.7), 3.0)
-	if pose == "beam_tele":
+	if pose_v == "beam_tele":
 		c.draw_circle(head + Vector2(10, -6), 10.0 + 8.0 * sin(t * 25.0), Color(1, 1, 1, 0.5))

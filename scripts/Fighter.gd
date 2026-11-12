@@ -8,6 +8,7 @@ signal health_changed(current: int, maximum: int)
 signal died
 signal respawned
 signal damaged(amount: int, hit: HitData)
+@warning_ignore("unused_signal")
 signal dealt_damage(amount: int, victim: Fighter)
 signal blocked(hit: HitData, perfect: bool)
 

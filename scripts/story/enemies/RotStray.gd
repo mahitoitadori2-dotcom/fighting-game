@@ -84,12 +84,12 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_stray(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var moving: bool = s.get("moving", false)
 	var ph: float = s.get("walk", 0.0) * 1.6
-	var crouch := 8.0 if pose == "lunge_tele" else 0.0
-	var leap := pose == "lunge"
+	var crouch := 8.0 if pose_v == "lunge_tele" else 0.0
+	var leap := pose_v == "lunge"
 	var body_y := -34.0 + crouch + sin(t * 3.0) * 1.0
 
 	# Legs: 4 thin legs (far ones darker), trot when moving, stretched when leaping
@@ -130,9 +130,9 @@ static func draw_stray(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(neck, FUR)
 	FighterArt.ball(c, head, 13.0, FUR, FUR_SHADE, FUR_HI)
 	var open := 0.0
-	if pose == "lunge" or pose == "bite":
+	if pose_v == "lunge" or pose_v == "bite":
 		open = 1.0
-	elif pose == "lunge_tele" or pose == "bite_tele":
+	elif pose_v == "lunge_tele" or pose_v == "bite_tele":
 		open = 0.4
 	var upper := PackedVector2Array([head + Vector2(4, -6), head + Vector2(30, -2 - open * 6.0), head + Vector2(30, 3 - open * 4.0), head + Vector2(6, 4)])
 	var lower := PackedVector2Array([head + Vector2(4, 5), head + Vector2(26, 6 + open * 9.0), head + Vector2(24, 11 + open * 9.0), head + Vector2(4, 11)])

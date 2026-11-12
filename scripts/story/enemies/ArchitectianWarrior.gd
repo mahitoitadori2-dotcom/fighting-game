@@ -161,7 +161,7 @@ static func draw_portrait_weapon(c: CanvasItem, t: float, w: String) -> void:
 
 static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var blocking: bool = s.get("blocking", false)
 	var w: String = s.get("weapon", "")
@@ -176,7 +176,7 @@ static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	# Hammer arm (behind)
 	var hand := chest + Vector2(-20, 26)
 	var ang := -2.0
-	match pose:
+	match pose_v:
 		"swing_tele":
 			hand = chest + Vector2(-16, -44)
 			ang = -2.6
@@ -201,9 +201,9 @@ static func draw_warrior(c: CanvasItem, s: Dictionary) -> void:
 	_draw_body(c, chest, t, dead)
 	# Shield (front)
 	var sh := chest + Vector2(24, 10)
-	if blocking or pose == "block" or pose == "block_tele":
+	if blocking or pose_v == "block" or pose_v == "block_tele":
 		sh = chest + Vector2(30, -6)
-	elif pose == "formation":
+	elif pose_v == "formation":
 		sh = chest + Vector2(38, 0)
 	var disc := EnemyArt.ellipse_points(sh, 13.0, 30.0, 20)
 	c.draw_colored_polygon(disc, DARK)

@@ -181,13 +181,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_boss(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
-	var form: int = s.get("form", 1)
+	var pose_v: String = s.get("pose", "idle")
+	var form_v: int = s.get("form", 1)
 	var dead: bool = s.get("dead", false)
-	var lift := 0.0 if dead else -18.0 - 8.0 * sin(t * 2.0) - (16.0 if form >= 2 else 0.0)
+	var lift := 0.0 if dead else -18.0 - 8.0 * sin(t * 2.0) - (16.0 if form_v >= 2 else 0.0)
 	var glow := 0.5 + 0.5 * sin(t * 3.0)
 	# Aura + orbiting treasures
-	c.draw_circle(Vector2(0, -70 + lift), 70.0 + 10.0 * glow, Color(1.0, 0.85, 0.35, 0.12 + (0.12 if form >= 2 else 0.0)))
+	c.draw_circle(Vector2(0, -70 + lift), 70.0 + 10.0 * glow, Color(1.0, 0.85, 0.35, 0.12 + (0.12 if form_v >= 2 else 0.0)))
 	if not dead:
 		for k in 4:
 			var a := t * 1.2 + float(k) * TAU / 4.0
@@ -200,11 +200,11 @@ static func draw_boss(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_circle(Vector2.ZERO, 30.0, Color(0, 0, 0, 0.3))
 	c.draw_set_transform(Vector2(0, lift), 0.0, Vector2.ONE)
 	var cast := 0.0
-	if pose.begins_with("cast"):
-		cast = 0.6 if pose.ends_with("_tele") else 1.0
+	if pose_v.begins_with("cast"):
+		cast = 0.6 if pose_v.ends_with("_tele") else 1.0
 	EnlightenedOneArt._draw_figure(c, {"t": t, "floor": dead, "cast": cast})
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	if form >= 2 and not dead:                                         # Ascended: wings of light
+	if form_v >= 2 and not dead:                                         # Ascended: wings of light
 		for sd: float in [-1.0, 1.0]:
 			for k in 4:
 				var base := Vector2(sd * 10.0, -100.0 + lift)

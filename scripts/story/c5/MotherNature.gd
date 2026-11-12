@@ -88,6 +88,7 @@ func flavor_lines() -> Array[String]:
 
 
 func element() -> Color:
+	@warning_ignore("narrowing_conversion")
 	return [FIRE, WATER, EARTH, WIND][clampi(form - 1, 0.0, 3)]
 
 
@@ -218,9 +219,11 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 static func draw_nature(c: CanvasItem, s: Dictionary) -> void:
 	var f: int = s.get("form", 1)
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
+	@warning_ignore("narrowing_conversion")
 	var el: Color = [FIRE, WATER, EARTH, WIND][clampi(f - 1, 0.0, 3)]
+	@warning_ignore("narrowing_conversion")
 	var robe: Color = [Color(0.55, 0.12, 0.06), Color(0.10, 0.28, 0.55), Color(0.30, 0.36, 0.18), Color(0.70, 0.82, 0.78)][clampi(f - 1, 0.0, 3)]
 	var hover := (14.0 + sin(t * 2.0) * 6.0) if f == 4 else 0.0
 	var base := Vector2(0, -hover)
@@ -256,7 +259,7 @@ static func draw_nature(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_circle(pp + Vector2(6, 2), 5.0, MOSS)
 	# Arms (casting)
 	var hand := base + Vector2(40, -120)
-	match pose:
+	match pose_v:
 		"cast", "cast_tele":
 			hand = base + Vector2(70, -170)
 		"raise", "raise_tele":
@@ -270,7 +273,7 @@ static func draw_nature(c: CanvasItem, s: Dictionary) -> void:
 	EnemyArt.arm(c, base + Vector2(14, -176), hand, 9.0, SKIN, SKIN.darkened(0.2), Color.WHITE, SKIN, 7.0)
 	c.draw_circle(hand, 16.0, Color(el.r, el.g, el.b, 0.45))
 	c.draw_circle(hand, 8.0, el.lightened(0.4))
-	if pose == "whip":
+	if pose_v == "whip":
 		c.draw_arc(base + Vector2(60, -110), 90.0, -1.2, 0.8, 14, Color(el.r, el.g, el.b, 0.8), 8.0, FighterArt.AA)
 	# Head: long elemental hair, a crown of branches
 	var head := base + Vector2(6, -214)

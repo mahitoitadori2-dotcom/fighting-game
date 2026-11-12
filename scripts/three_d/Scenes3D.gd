@@ -218,7 +218,7 @@ static func _sewer_fall(st: Stage3D, hero: String) -> void:
 		h.spin = t * 3.0
 		splash.visible = t > 2.6
 		splash.scale = Vector3.ONE * (1.0 + _k(t, 2.6, 3.4) * 4.0) * Vector3(1, 0.2, 1))
-	st.animate(func(t: float) -> void:
+	st.animate(func(_t: float) -> void:
 		st.camera.position = Vector3(0, h.position.y + 6.0, 0.5)
 		st.camera.look_at(h.position, Vector3.FORWARD))
 
@@ -376,7 +376,7 @@ static func _fall_to_earth(st: Stage3D, hero: String) -> void:
 		h.position.y = 20.0 - t * 8.0
 		h.spin = t * 1.5
 		earth.rotation.y = t * 0.05)
-	st.animate(func(t: float) -> void:
+	st.animate(func(_t: float) -> void:
 		st.camera.position = h.position + Vector3(2, 4, 8)
 		st.camera.look_at(h.position + Vector3(0, -4, 0), Vector3.UP))
 

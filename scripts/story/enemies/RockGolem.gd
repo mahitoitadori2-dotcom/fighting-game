@@ -110,13 +110,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 
-	if pose == "roll" or (pose == "roll_tele" and pt > 0.25):
-		var shake := sin(t * 60.0) * 2.0 if pose == "roll_tele" else 0.0
-		_ball(c, Vector2(shake, -55), float(s.get("roll", 0.0)) + (t * 3.0 if pose == "roll_tele" else 0.0))
+	if pose_v == "roll" or (pose_v == "roll_tele" and pt > 0.25):
+		var shake := sin(t * 60.0) * 2.0 if pose_v == "roll_tele" else 0.0
+		_ball(c, Vector2(shake, -55), float(s.get("roll", 0.0)) + (t * 3.0 if pose_v == "roll_tele" else 0.0))
 		return
 
 	var bob := sin(t * 1.6) * 1.5
@@ -136,6 +136,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	var cav := PackedVector2Array([body_c + Vector2(-6, -20), body_c + Vector2(20, -26), body_c + Vector2(32, 0), body_c + Vector2(16, 22), body_c + Vector2(-8, 12)])
 	c.draw_colored_polygon(cav, Color(0.15, 0.05, 0.2))
 	for k in 5:
+		@warning_ignore("integer_division")
 		var cp := body_c + Vector2(4 + float(k % 3) * 9.0, -14 + float(k / 3) * 16.0)
 		var glow := 0.7 + 0.3 * sin(t * 3.0 + float(k))
 		c.draw_colored_polygon(PackedVector2Array([cp + Vector2(-4, 6), cp + Vector2(0, -8), cp + Vector2(4, 6)]), GEODE.lerp(GEODE_HI, glow * 0.4))
@@ -156,14 +157,14 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	for side in [-1.0, 1.0]:
 		var sh := body_c + Vector2(side * 40.0, -10)
 		var fist := sh + Vector2(side * 14.0 + 10.0, 40)
-		if pose == "pound_tele":
+		if pose_v == "pound_tele":
 			fist = body_c + Vector2(side * 16.0 + 10.0, -70)
-		elif pose == "pound":
+		elif pose_v == "pound":
 			fist = Vector2(62 + side * 14.0, -14)
 		var far: bool = side < 0.0
 		FighterArt.limb(c, sh, fist, 20.0, ROCK_SHADE if far else ROCK, ROCK_SHADE, ROCK_HI)
 		FighterArt.ball(c, fist, 15.0, ROCK_SHADE if far else ROCK, ROCK_SHADE, ROCK_HI)
-	if pose == "pound":
+	if pose_v == "pound":
 		c.draw_arc(Vector2(64, 0), 30.0 + pt * 200.0, PI, TAU, 18, Color(GEODE_HI.r, GEODE_HI.g, GEODE_HI.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)
 
 

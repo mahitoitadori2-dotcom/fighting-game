@@ -103,7 +103,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_chorus(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("raging", false)
 	var pulse := 0.6 + 0.4 * sin(t * (9.0 if rage else 4.0))
@@ -117,7 +117,7 @@ static func draw_chorus(c: CanvasItem, s: Dictionary) -> void:
 	# Far arm
 	var lh := Vector2(-120, -120)
 	var rh := Vector2(120, -120)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			lh = Vector2(-40, -380)
 			rh = Vector2(90, -385)
@@ -165,9 +165,9 @@ static func draw_chorus(c: CanvasItem, s: Dictionary) -> void:
 			for ex: float in [-8.0, 8.0]:
 				c.draw_circle(m + Vector2(ex, -8), 4.0, Color(0.05, 0.05, 0.05))
 				c.draw_circle(m + Vector2(ex, -8), 2.0, rad)
-		var open := 12.0 if pose.begins_with("sing") or pose.begins_with("scream") else 5.0
+		var open := 12.0 if pose_v.begins_with("sing") or pose_v.begins_with("scream") else 5.0
 		c.draw_colored_polygon(EnemyArt.ellipse_points(m + Vector2(0, 12), 8.0, open, 10), Color(0.05, 0.08, 0.04))
-		if pose == "scream" or pose == "sing":
+		if pose_v == "scream" or pose_v == "sing":
 			c.draw_arc(m + Vector2(0, 12), 18.0 + fmod(t * 60.0, 30.0), 0.4, PI - 0.4, 8, Color(RAD.r, RAD.g, RAD.b, 0.6), 3.0, FighterArt.AA)
 	# Near arm
 	FighterArt.limb(c, Vector2(96, -292), rh, 40.0, IRON, IRON_SHADE, IRON_HI)

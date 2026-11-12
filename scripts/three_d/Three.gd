@@ -27,18 +27,18 @@ static func scale() -> float:
 # ============================================================
 ## A full-rect 3D view inside `parent` (a Control or CanvasLayer). Returns its Stage3D.
 static func view(parent: Node) -> Stage3D:
-	var box := SubViewportContainer.new()
-	box.name = "View3D"
-	box.stretch = true
-	box.stretch_shrink = 1 if scale() >= 1.0 else 2
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	parent.add_child(box)
+	var box_v := SubViewportContainer.new()
+	box_v.name = "View3D"
+	box_v.stretch = true
+	box_v.stretch_shrink = 1 if scale() >= 1.0 else 2
+	box_v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box_v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	parent.add_child(box_v)
 	var vp := SubViewport.new()
 	vp.own_world_3d = true
 	vp.msaa_3d = Viewport.MSAA_DISABLED
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	box.add_child(vp)
+	box_v.add_child(vp)
 	var st := Stage3D.new()
 	vp.add_child(st)
 	return st
@@ -136,10 +136,10 @@ static func ball(parent: Node3D, r: float, pos: Vector3, col: Color, glow: float
 
 
 ## A capsule lying along x (bodies of beasts / moths).
-static func cap_h(parent: Node3D, r: float, len: float, pos: Vector3, col: Color, glow: float = 0.0) -> MeshInstance3D:
+static func cap_h(parent: Node3D, r: float, seg_len: float, pos: Vector3, col: Color, glow: float = 0.0) -> MeshInstance3D:
 	var m := CapsuleMesh.new()
 	m.radius = r
-	m.height = maxf(len, r * 2.0)
+	m.height = maxf(seg_len, r * 2.0)
 	m.radial_segments = 12
 	m.rings = 4
 	var mi := _mesh(parent, m, pos, col, glow, OUTLINE)

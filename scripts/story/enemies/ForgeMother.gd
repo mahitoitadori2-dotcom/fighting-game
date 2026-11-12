@@ -89,6 +89,7 @@ func _attack(p: EnemyPattern) -> void:
 				s.speed = 540.0
 				s.lifetime = 1.0
 				s.size = Vector2(46, 34)
+				@warning_ignore("integer_division")
 				s.damage = maxi(1, dmg(p) / 2)
 				s.knockback = Vector2(220, -300)
 				s.move = "forge_shock"
@@ -150,7 +151,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_forge_mother(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var hot: bool = s.get("enraged", false)
@@ -194,7 +195,7 @@ static func draw_forge_mother(c: CanvasItem, s: Dictionary) -> void:
 	# Hammer arm + the giant hammer
 	var hand := chest + Vector2(80, 40)
 	var ang := -1.6
-	match pose:
+	match pose_v:
 		"slam_tele":
 			hand = chest + Vector2(20, -110)
 			ang = -2.2
@@ -226,5 +227,5 @@ static func draw_forge_mother(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(hh + n * 44.0 + d * 24.0, hh - n * 44.0 + d * 24.0, Color(fire.r, fire.g, fire.b, 0.7), 4.0)   # Glowing face
 	FighterArt.outline(c, block, 4.0)
 	EnemyArt.arm(c, chest + Vector2(62, -50), hand, 24.0, IRON, IRON_SHADE, IRON_HI, IRON, 24.0)
-	if pose == "slam" and pt < 0.25:
+	if pose_v == "slam" and pt < 0.25:
 		c.draw_arc(Vector2(150, 0), 30.0 + pt * 320.0, PI, TAU, 18, Color(fire.r, fire.g, fire.b, 1.0 - pt * 4.0), 7.0, FighterArt.AA)

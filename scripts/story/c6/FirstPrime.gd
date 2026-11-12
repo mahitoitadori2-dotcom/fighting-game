@@ -136,8 +136,8 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_prime(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
-	var casting := pose.begins_with("cast")
+	var pose_v: String = s.get("pose", "idle")
+	var casting := pose_v.begins_with("cast")
 	# Long white cape with a gold hem (behind)
 	var cape := PackedVector2Array([Vector2(-10, -168), Vector2(10, -168), Vector2(-30, -6), Vector2(-62 - sin(t * 2.5) * 6.0, -12)])
 	c.draw_colored_polygon(cape, Color(0.88, 0.86, 0.80))
@@ -162,5 +162,5 @@ static func draw_prime(c: CanvasItem, s: Dictionary) -> void:
 		var pd := EnemyArt.ellipse_points(Vector2(x, -150), 15.0, 10.0, 12)
 		c.draw_colored_polygon(pd, GOLD)
 		FighterArt.outline(c, pd, 3.0)
-	if pose == "slash":                                           # Golden swing trail
+	if pose_v == "slash":                                           # Golden swing trail
 		c.draw_arc(Vector2(30, -120), 90.0, -1.3, 0.7, 16, Color(1.0, 0.85, 0.35, 0.7), 10.0, FighterArt.AA)

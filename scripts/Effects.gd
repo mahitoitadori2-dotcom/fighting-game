@@ -14,7 +14,7 @@ static func _root(ctx: Node) -> Node:
 	return ctx.get_tree().current_scene
 
 
-static func _spawn(ctx: Node, script: Script, pos: Vector2) -> Node2D:
+static func _spawn(_ctx: Node, script: Script, pos: Vector2) -> Node2D:
 	var n := OptimizationManager.take(script) as Node2D
 	n.position = pos
 	return n
@@ -213,6 +213,7 @@ class AnnounceLayer extends CanvasLayer:
 			fs -= 2
 		l.text = text
 		l.add_theme_font_size_override("font_size", fs)
+		@warning_ignore("integer_division")
 		l.add_theme_constant_override("outline_size", maxi(6, fs / 5))
 		l.add_theme_color_override("font_color", color)
 		var y := vp.y * (0.27 if side == 1 else (0.43 if side == 2 else 0.35))   # You above, opponent below: never overlap

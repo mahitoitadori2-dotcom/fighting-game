@@ -94,9 +94,9 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_grin(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
-	var laughing := pose.begins_with("cackle")
+	var laughing := pose_v.begins_with("cackle")
 	var shake := sin(t * (26.0 if laughing else 6.0)) * (4.0 if laughing else 1.5)
 	var center := Vector2(0, -48 + shake)
 	# Smoke puffs swirling around the mouth (the "cloud")
@@ -111,11 +111,11 @@ static func draw_grin(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(wp, 12.0 - float(i) * 2.5, Color(SMOKE_HI.r, SMOKE_HI.g, SMOKE_HI.b, 0.7 - float(i) * 0.15))
 	# The MOUTH: upper lip curve + lower lip curve, open wider when it bites / laughs / spits
 	var open := 10.0
-	if pose == "gslash_tele" or pose == "spit_tele":
+	if pose_v == "gslash_tele" or pose_v == "spit_tele":
 		open = 26.0
-	elif laughing or pose == "spit":
+	elif laughing or pose_v == "spit":
 		open = 22.0 + absf(shake) * 2.0
-	elif pose == "gslash":
+	elif pose_v == "gslash":
 		open = 2.0                                     # Snap!
 	var w := 62.0
 	var mouth := PackedVector2Array()

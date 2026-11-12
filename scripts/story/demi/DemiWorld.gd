@@ -188,12 +188,12 @@ static func draw_prop(c: CanvasItem, p: Dictionary) -> void:
 		"totem":
 			var tw := 26.0 * s
 			for i in 3:
-				var tr := Rect2(o.x - tw, o.y - (float(i) + 1.0) * 64.0 * s, tw * 2.0, 62.0 * s)
-				c.draw_rect(tr, [Color(0.30, 0.18, 0.12), Color(0.24, 0.14, 0.10), Color(0.34, 0.20, 0.12)][(i + v) % 3])
-				c.draw_rect(tr, BLACK, false, 3.0)
-				c.draw_circle(tr.position + Vector2(tw * 0.6, 20.0 * s), 5.0 * s, Color(0.75, 0.2, 0.1))
-				c.draw_circle(tr.position + Vector2(tw * 1.4, 20.0 * s), 5.0 * s, Color(0.75, 0.2, 0.1))
-				c.draw_line(tr.position + Vector2(tw * 0.5, 44.0 * s), tr.position + Vector2(tw * 1.5, 44.0 * s), BLACK, 4.0)
+				var tex_rect := Rect2(o.x - tw, o.y - (float(i) + 1.0) * 64.0 * s, tw * 2.0, 62.0 * s)
+				c.draw_rect(tex_rect, [Color(0.30, 0.18, 0.12), Color(0.24, 0.14, 0.10), Color(0.34, 0.20, 0.12)][(i + v) % 3])
+				c.draw_rect(tex_rect, BLACK, false, 3.0)
+				c.draw_circle(tex_rect.position + Vector2(tw * 0.6, 20.0 * s), 5.0 * s, Color(0.75, 0.2, 0.1))
+				c.draw_circle(tex_rect.position + Vector2(tw * 1.4, 20.0 * s), 5.0 * s, Color(0.75, 0.2, 0.1))
+				c.draw_line(tex_rect.position + Vector2(tw * 0.5, 44.0 * s), tex_rect.position + Vector2(tw * 1.5, 44.0 * s), BLACK, 4.0)
 			var wing := PackedVector2Array([o + Vector2(-tw - 40, -190) * Vector2(1, s), o + Vector2(tw + 40, -190) * Vector2(1, s), o + Vector2(0, -175) * Vector2(1, s)])
 			c.draw_colored_polygon(wing, Color(0.30, 0.18, 0.12))
 		"campfire":
@@ -239,14 +239,14 @@ static func _tree(c: CanvasItem, o: Vector2, h: float, col: Color, v: int, wmul:
 		var root := o.lerp(top, k)
 		var side := -1.0 if i % 2 == 0 else 1.0
 		var a := -PI * 0.5 + side * rng.randf_range(0.5, 1.1)
-		var len := h * rng.randf_range(0.18, 0.32) * (1.2 - k * 0.6)
-		var mid := root + Vector2.from_angle(a) * len * 0.6
-		var tip := mid + Vector2.from_angle(a + side * 0.4) * len * 0.5
+		var seg_len := h * rng.randf_range(0.18, 0.32) * (1.2 - k * 0.6)
+		var mid := root + Vector2.from_angle(a) * seg_len * 0.6
+		var tip := mid + Vector2.from_angle(a + side * 0.4) * seg_len * 0.5
 		c.draw_line(root, mid, BLACK, w * 0.9 + 3.0, FighterArt.AA)
 		c.draw_line(mid, tip, BLACK, w * 0.5 + 2.5, FighterArt.AA)
 		c.draw_line(root, mid, col, w * 0.9, FighterArt.AA)
 		c.draw_line(mid, tip, col, w * 0.5, FighterArt.AA)
-		c.draw_line(mid, mid + Vector2.from_angle(a - side * 0.7) * len * 0.3, col, w * 0.35, FighterArt.AA)
+		c.draw_line(mid, mid + Vector2.from_angle(a - side * 0.7) * seg_len * 0.3, col, w * 0.35, FighterArt.AA)
 
 
 ## A skull (tiger = with fangs, bigger and longer).

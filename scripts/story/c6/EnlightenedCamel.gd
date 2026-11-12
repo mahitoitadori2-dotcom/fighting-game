@@ -109,11 +109,11 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_camel(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var walk: float = s.get("walk", 0.0)
-	var gallop := pose == "charge"
-	var rear := -0.22 if pose == "trample_tele" else 0.0
+	var gallop := pose_v == "charge"
+	var rear := -0.22 if pose_v == "trample_tele" else 0.0
 	c.draw_set_transform(Vector2(-50, 0), rear, Vector2.ONE)       # Rears up around the back legs
 	var o := Vector2(50, 0)
 	var spd := 2.6 if gallop else 1.0
@@ -158,7 +158,7 @@ static func draw_camel(c: CanvasItem, s: Dictionary) -> void:
 	else:
 		c.draw_circle(hd + Vector2(4, -2), 3.0, EnemyArt.BLACK)
 		c.draw_line(hd + Vector2(0, -6), hd + Vector2(8, -5), EnemyArt.BLACK, 2.0)   # Grumpy brow
-	if pose == "spit" or pose == "spit_tele":
+	if pose_v == "spit" or pose_v == "spit_tele":
 		c.draw_circle(hd + Vector2(30, 6), 5.0, Color(0.85, 0.95, 0.7))
 	# Gold harness + tassels
 	c.draw_line(hd + Vector2(-10, 4), nb + Vector2(10, -6), GOLD, 3.0)
@@ -168,8 +168,8 @@ static func draw_camel(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(tp + Vector2(0, 16), 3.5, GOLD)
 	# The rider (spear warrior), sitting on the hump
 	var rider_pose := "idle"
-	if pose.begins_with("thrust"):
-		rider_pose = pose
+	if pose_v.begins_with("thrust"):
+		rider_pose = pose_v
 	# (local point p is drawn at (-50, 0) + p.rotated(rear); rider's feet sit so his hips are on the hump)
 	c.draw_set_transform(Vector2(-50, 0) + (o + Vector2(-6, -94)).rotated(rear), rear, Vector2(0.72, 0.72))
 	ExtArt.humanoid(c, {"t": t, "pose": rider_pose, "pose_t": s.get("pose_t", 0.0), "dead": dead}, RIDER)

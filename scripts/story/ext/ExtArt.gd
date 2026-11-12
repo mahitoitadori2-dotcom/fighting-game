@@ -259,6 +259,7 @@ static func spider(c: CanvasItem, s: Dictionary, cfg: Dictionary) -> void:
 		EnemyArt.ko_eye(c, ce + Vector2(8 * k, -4 * k), 3.0 * k, t)
 	else:
 		for e in 4:
+			@warning_ignore("integer_division")
 			c.draw_circle(ce + Vector2((4 + float(e % 2) * 7) * k, (-6 + float(e / 2) * 5) * k), 2.2 * k, eyes)
 	var fang: Color = cfg.get("fang", Color(0.9, 0.9, 0.85))
 	var open := 5.0 * k if ph >= 1 else 1.0

@@ -247,6 +247,7 @@ func _plans_explode() -> void:
 	SoundManager.play_sfx("rumble", -4.0)
 	# ...and out of it, in every direction: energy pools, battle flies, metal + energy shards
 	for i in anti.plans_pools:
+		@warning_ignore("integer_division")
 		var gp: Variant = _find_ground(c.x + (-1.0 if i % 2 == 0 else 1.0) * (110.0 + 60.0 * float(i / 2)))
 		if gp != null:
 			_spill_pool(gp as Vector2, anti.pool_width * 0.7)

@@ -218,7 +218,7 @@ func _build(id: String) -> float:
 				"head": "plain", "head_col": stone, "eye": rune, "bulk": 1.8, "limb": 1.9})
 			for side: float in [-1.0, 1.0]:                             # Metal plates
 				Three.box(h4.body, Vector3(0.12, 0.3, 0.3), Vector3(0.3, 0.75, side * 0.2), Color(0.92, 0.94, 0.96) if saint else Color(0.85, 0.9, 0.85))
-			var hexm := Three.cyl(h4.body, 0.17, 0.05, Vector3(0.36, 0.45, 0), Color(0.22, 0.86, 0.28) if not saint else Color(0.18, 0.68, 1.0), 2.5, 0.02, 6)
+			var _hexm := Three.cyl(h4.body, 0.17, 0.05, Vector3(0.36, 0.45, 0), Color(0.22, 0.86, 0.28) if not saint else Color(0.18, 0.68, 1.0), 2.5, 0.02, 6)
 			for k in 5:                                                 # Glowing runes
 				Three.box(h4.body, Vector3(0.02, 0.18, 0.05), Vector3(0.33, 0.15 + float(k) * 0.15, -0.3 + float(k) * 0.15), rune, 3.0, 0.0)
 			for hnd in h4.hands:                                        # Fists as big as a man
@@ -273,11 +273,11 @@ func _build(id: String) -> float:
 				bl.rotation.z = -PI * 0.7
 			return 2.2
 		"animal_lord":
-			var tan := Color(0.72, 0.55, 0.32)
-			var bod := Three.cap_h(self, 0.6, 2.2, Vector3(0, 1.2, 0), tan)                                  # Lion body
+			var tan_v := Color(0.72, 0.55, 0.32)
+			var bod := Three.cap_h(self, 0.6, 2.2, Vector3(0, 1.2, 0), tan_v)                                  # Lion body
 			var mane := Three.ball(self, 0.65, Vector3(1.1, 1.65, 0), Color(0.45, 0.28, 0.12), 0.0, 0.035)
 			mane.scale = Vector3(0.8, 1.0, 1.0)
-			Three.ball(self, 0.42, Vector3(1.5, 1.7, 0), tan, 0.0, 0.03)                                     # Head
+			Three.ball(self, 0.42, Vector3(1.5, 1.7, 0), tan_v, 0.0, 0.03)                                     # Head
 			for z: float in [-0.3, 0.3]:                                 # Ram horns
 				var horn := Three.ring(self, 0.12, 0.2, Vector3(1.45, 2.05, z), Color(0.85, 0.8, 0.68), 0.0, 0.02)
 				horn.rotation.x = PI * 0.5
@@ -285,7 +285,7 @@ func _build(id: String) -> float:
 			for k in 4:                                                 # Legs (bear forearms at the front, with huge claws)
 				var front := k < 2
 				var lz := -0.35 + float(k % 2) * 0.7
-				Three.cyl(self, 0.2 if front else 0.15, 1.1, Vector3(0.7 if front else -0.7, 0.55, lz), Color(0.35, 0.22, 0.14) if front else tan, 0.0, 0.03, 8)
+				Three.cyl(self, 0.2 if front else 0.15, 1.1, Vector3(0.7 if front else -0.7, 0.55, lz), Color(0.35, 0.22, 0.14) if front else tan_v, 0.0, 0.03, 8)
 				if front:
 					for c in 3:
 						var claw := Three.cone(self, 0.05, 0.25, Vector3(0.88, 0.08, lz - 0.1 + float(c) * 0.1), Color(0.92, 0.9, 0.8), 0.0, 0.0, 6)
@@ -300,7 +300,7 @@ func _build(id: String) -> float:
 				wings.append([wpiv, z])
 			for i in 8:                                                 # Crocodile tail + scorpion barb
 				Three.ball(self, 0.22 - float(i) * 0.015, Vector3(-1.2 - float(i) * 0.25, 1.1 + float(i) * 0.12, 0), Color(0.3, 0.45, 0.25), 0.0, 0.025)
-			var barb := Three.cone(self, 0.12, 0.4, Vector3(-3.1, 2.2, 0), Color(0.15, 0.12, 0.1))
+			var _barb := Three.cone(self, 0.12, 0.4, Vector3(-3.1, 2.2, 0), Color(0.15, 0.12, 0.1))
 			_on(func(t: float) -> void:
 				bod.scale = Vector3(1, 1.0 + 0.04 * sin(t * 2.0), 1)
 				for e in wings:
@@ -326,7 +326,7 @@ func _build(id: String) -> float:
 			gear.rotation.x = PI * 0.5
 			_on(func(t: float) -> void: gear.rotation.y = t * 6.0)
 			for k in 8:
-				var tooth := Three.cone(blade2, 0.08, 0.2, Vector3(0.62, -0.9 + float(k) * 0.25, 0), Color(0.75, 0.75, 0.8), 0.0, 0.0)
+				var _tooth := Three.cone(blade2, 0.08, 0.2, Vector3(0.62, -0.9 + float(k) * 0.25, 0), Color(0.75, 0.75, 0.8), 0.0, 0.0)
 			return 2.4
 		"mother_nature":
 			var h7 := _human({"leg": Color(0.25, 0.5, 0.22), "arm": Color(0.72, 0.58, 0.45), "chest": Color(0.3, 0.55, 0.25),

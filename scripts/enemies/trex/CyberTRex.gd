@@ -119,7 +119,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_rex(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 
@@ -130,9 +130,9 @@ static func draw_rex(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Tail (swipes all the way round on Tail Swipe) ---
 	var tail_a := PI + 0.25 + sin(t * 2.0) * 0.08
-	if pose == "tail_tele":
+	if pose_v == "tail_tele":
 		tail_a = PI + 0.25 + 0.6 * clampf(pt / 0.4, 0.0, 1.0)
-	elif pose == "tail":
+	elif pose_v == "tail":
 		tail_a = PI + 0.85 - TAU * clampf(pt / 0.25, 0.0, 1.0)
 		c.draw_arc(body_c, TAIL_RADIUS * 0.9, 0.0, TAU, 40, Color(1, 1, 1, 0.35), 10.0, FighterArt.AA)
 	var tail_base := body_c + Vector2(-34, 6)
@@ -178,16 +178,16 @@ static func draw_rex(c: CanvasItem, s: Dictionary) -> void:
 	# --- Back laser cannon (missile launcher) ---
 	var can_base := body_c + Vector2(-10, -28)
 	var can_a := -2.0
-	if pose == "missiles_tele":
+	if pose_v == "missiles_tele":
 		can_a = -1.6 - 0.1 * sin(pt * 40.0)
-	elif pose == "missiles":
+	elif pose_v == "missiles":
 		can_a = -1.6
 	var can_tip := can_base + Vector2.from_angle(can_a) * 40.0
 	FighterArt.limb(c, can_base, can_tip, 14.0, DARK, EnemyArt.BLACK, METAL_SHADE)
 	c.draw_circle(can_tip, 6.0, EnemyArt.BLACK)
-	if pose == "missiles_tele" or pose == "missiles":
+	if pose_v == "missiles_tele" or pose_v == "missiles":
 		c.draw_circle(can_tip, 4.0 + 3.0 * sin(t * 30.0), RED_GLOW)
-	if pose == "missiles":
+	if pose_v == "missiles":
 		for k in 3:
 			c.draw_circle(can_tip + Vector2.from_angle(can_a) * (10.0 + pt * 200.0 + float(k) * 22.0), 5.0, Color(1.0, 0.6, 0.2, 0.8))
 	FighterArt.rrect(c, Rect2(can_base.x - 10, can_base.y - 6, 20, 12), METAL, METAL_SHADE, METAL_HI, 4.0, 3.0)
@@ -200,9 +200,9 @@ static func draw_rex(c: CanvasItem, s: Dictionary) -> void:
 	var neck := body_c + Vector2(36, -16)
 	var head := body_c + Vector2(62, -38)
 	var open := 0.0
-	if pose == "bite_tele":
+	if pose_v == "bite_tele":
 		open = clampf(pt / 0.35, 0.0, 1.0)
-	elif pose == "bite":
+	elif pose_v == "bite":
 		open = 1.0 - clampf(pt / 0.25, 0.0, 1.0) * 0.8
 	FighterArt.limb(c, neck, head + Vector2(-10, 8), 26.0, METAL, METAL_SHADE, METAL_HI)
 	# Lower jaw

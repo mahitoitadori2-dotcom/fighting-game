@@ -225,7 +225,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var crazed: bool = s.get("enraged", false)
@@ -238,12 +238,12 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	# Legs hidden by the robe: just two pale bony feet
 	EnemyArt.legs(c, s, -40.0, 10.0, 9.0, SKIN_SHADE, SKIN_SHADE.darkened(0.2), SKIN, SKIN_SHADE, 16.0)
 
-	var lean := 14.0 if pose == "charge" else 0.0
+	var lean := 14.0 if pose_v == "charge" else 0.0
 	var chest := Vector2(-4 + lean + sway * 0.3, -124) + twitch
 
 	# Far arm (long, thin) holding a small vial
 	var far_hand := chest + Vector2(-26, 40)
-	if pose == "throw_tele" or pose == "pour_tele":
+	if pose_v == "throw_tele" or pose_v == "pour_tele":
 		far_hand = chest + Vector2(-34, 10)
 	EnemyArt.arm(c, chest + Vector2(-14, -16), far_hand, 9.0, ROBE_SHADE, ROBE_SHADE.darkened(0.2), ROBE, SKIN_SHADE, 6.0)
 	_vial(c, far_hand + Vector2(0, -10), 0.0, t)
@@ -297,7 +297,7 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	var shoulder := chest + Vector2(16, -18)
 	var hand := chest + Vector2(34, 22)
 	var tilt := 0.0
-	match pose:
+	match pose_v:
 		"throw_tele":
 			hand = chest + Vector2(-10, -46)
 			tilt = -1.0
@@ -323,14 +323,14 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 			hand = chest + Vector2(62, 46)                  # ...slammed down in front
 			tilt = 2.4
 	EnemyArt.arm(c, shoulder, hand, 10.0, ROBE, ROBE_SHADE, ROBE_HI, SKIN, 7.0)
-	_jug(c, hand + Vector2(10, -6), tilt, t, pose == "pour")
-	if pose == "smash":
+	_jug(c, hand + Vector2(10, -6), tilt, t, pose_v == "pour")
+	if pose_v == "smash":
 		c.draw_arc(Vector2(70, 0), 30.0 + pt * 220.0, PI, TAU, 18, Color(CHEM.r, CHEM.g, CHEM.b, maxf(0.0, 1.0 - pt * 4.0)), 7.0, FighterArt.AA)
-	if pose == "throw" and pt < 0.25:
+	if pose_v == "throw" and pt < 0.25:
 		c.draw_arc(chest + Vector2(20, -10), 70.0, -2.2, 0.2, 14, Color(CHEM.r, CHEM.g, CHEM.b, 0.8 - pt * 3.0), 7.0, FighterArt.AA)
 
 
-static func _vial(c: CanvasItem, p: Vector2, tilt: float, t: float) -> void:
+static func _vial(c: CanvasItem, p: Vector2, _tilt: float, t: float) -> void:
 	var body := FighterArt.rrect_points(Rect2(p.x - 4, p.y - 6, 8, 12), 3.0)
 	c.draw_colored_polygon(body, GLASS)
 	c.draw_rect(Rect2(p.x - 3, p.y - 1 + sin(t * 4.0), 6, 6), CHEM)

@@ -90,6 +90,7 @@ func _attack(p: EnemyPattern) -> void:
 			var tx := target_x()
 			var n := 7 if enraged else 5
 			for i in n:
+				@warning_ignore("integer_division")
 				var off := float(i - n / 2) * 95.0 + randf_range(-15.0, 15.0)
 				hazard("spear", tx + off, 0.55 + float(i) * 0.09, dmg(p), Vector2(140, -360))
 			SoundManager.play_sfx("holy", -4.0)
@@ -123,6 +124,7 @@ func _on_attack_end(p: EnemyPattern) -> void:
 		# Wind slash flies on from where the dash ended
 		var w := spawn_projectile()
 		w.look = "wind"
+		@warning_ignore("integer_division")
 		w.damage = maxi(1, dmg(p) / 2)
 		w.knockback = Vector2(380, -200)
 		w.dir = float(facing)
@@ -155,15 +157,15 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("enraged", false)
 	var breathe := sin(t * 2.4) * 2.5
 	var lean := 0.0
-	if pose == "dash":
+	if pose_v == "dash":
 		lean = 20.0
-	elif pose == "dash_tele":
+	elif pose_v == "dash_tele":
 		lean = -12.0
 
 	if rage:
@@ -173,7 +175,7 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Wings (behind): torn white membrane on bone fingers ---
 	var flap := sin(t * 3.2) * 0.15
-	match pose:
+	match pose_v:
 		"dash_tele":
 			flap = -0.6
 		"dash":
@@ -185,7 +187,7 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Tail with the LIGHT BLADE ---
 	var swing := 0.0
-	match pose:
+	match pose_v:
 		"slash_tele":
 			swing = -1.0
 		"slash":
@@ -204,9 +206,9 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(tip, blade_end, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.35), 22.0, FighterArt.AA)
 	c.draw_line(tip, blade_end, LIGHT, 10.0, FighterArt.AA)
 	c.draw_line(tip, blade_end, Color.WHITE, 4.0, FighterArt.AA)
-	if pose == "slash" and pt < 0.25:                      # Light trail of the sweep
+	if pose_v == "slash" and pt < 0.25:                      # Light trail of the sweep
 		c.draw_arc(body + Vector2(40, 0), 130.0, -1.6, 0.9, 22, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.8 - pt * 3.0), 14.0, FighterArt.AA)
-	if pose == "flurry":
+	if pose_v == "flurry":
 		c.draw_arc(body + Vector2(70, -10), 90.0, -1.2 + sin(t * 34.0), 0.4 + sin(t * 34.0), 12, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.6), 9.0, FighterArt.AA)
 
 	# --- Hind legs (thick, clawed) ---
@@ -239,7 +241,7 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Front arm (claw) ---
 	var claw := body + Vector2(54, 36)
-	match pose:
+	match pose_v:
 		"flurry":
 			claw = body + Vector2(100 + 26.0 * sin(t * 34.0 + PI), -10 + 20.0 * cos(t * 34.0))
 		"flurry_tele", "slash_tele":
@@ -255,7 +257,7 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Neck + head ---
 	var head := body + Vector2(78, -60 + sin(t * 2.0) * 3.0)
-	match pose:
+	match pose_v:
 		"beam_tele":
 			head = body + Vector2(64, -76)
 		"beam":
@@ -268,13 +270,13 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 		neck.append((body + Vector2(40, -16)).lerp(head + Vector2(-16, 6), k) + Vector2(0, -sin(k * PI) * 14.0))
 	_tube(c, neck, 26.0, 20.0, SCALE_SHADE, SCALE)
 	_blood(c, neck[3], 7.0, t, 4.2)
-	_head(c, head, pose, pt, t, dead, rage)
+	_head(c, head, pose_v, pt, t, dead, rage)
 
 	# Holy beam from the mouth (same line as the hitbox)
-	if pose == "beam_tele":
+	if pose_v == "beam_tele":
 		var k := clampf(pt / 0.55, 0.0, 1.0)
 		c.draw_circle(head + Vector2(30, 6), 6.0 + 12.0 * k, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.8))
-	elif pose == "beam":
+	elif pose_v == "beam":
 		var fade := 1.0 - clampf((pt - 0.35) / 0.1, 0.0, 1.0)
 		var origin := Vector2(head.x + 30.0, BEAM_Y)
 		c.draw_rect(Rect2(origin.x, origin.y - 34.0, BEAM_LEN, 68.0), Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.22 * fade))
@@ -282,9 +284,9 @@ static func draw_dragon(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_line(head + Vector2(30, 6), origin, LIGHT, 14.0 * fade, FighterArt.AA)
 
 
-static func _head(c: CanvasItem, head: Vector2, pose: String, pt: float, t: float, dead: bool, rage: bool) -> void:
+static func _head(c: CanvasItem, head: Vector2, pose_v: String, _pt: float, t: float, dead: bool, rage: bool) -> void:
 	var open := 0.0
-	if pose == "beam_tele" or pose == "beam" or pose == "spears_tele":
+	if pose_v == "beam_tele" or pose_v == "beam" or pose_v == "spears_tele":
 		open = 1.0
 	# Horns
 	c.draw_colored_polygon(PackedVector2Array([head + Vector2(-14, -10), head + Vector2(-6, -14), head + Vector2(-34, -40)]), HORN)
@@ -314,7 +316,7 @@ static func _head(c: CanvasItem, head: Vector2, pose: String, pt: float, t: floa
 		c.draw_line(head + Vector2(0, -12), head + Vector2(16, -9), EnemyArt.BLACK, 2.5)
 
 
-static func _wing(c: CanvasItem, root: Vector2, flap: float, far: bool, t: float) -> void:
+static func _wing(c: CanvasItem, root: Vector2, flap: float, far: bool, _t: float) -> void:
 	var col := WING_SKIN.darkened(0.15) if far else WING_SKIN
 	var tips: Array[Vector2] = []
 	for i in 4:
@@ -337,11 +339,11 @@ static func _wing(c: CanvasItem, root: Vector2, flap: float, far: bool, t: float
 
 
 ## Blood splatter + a drip that slowly runs down.
-static func _blood(c: CanvasItem, p: Vector2, r: float, t: float, phase: float) -> void:
+static func _blood(c: CanvasItem, p: Vector2, r: float, t: float, phase_v: float) -> void:
 	c.draw_circle(p, r, Color(BLOOD.r, BLOOD.g, BLOOD.b, 0.85))
 	c.draw_circle(p + Vector2(r * 0.8, -r * 0.4), r * 0.4, Color(BLOOD.r, BLOOD.g, BLOOD.b, 0.85))
 	c.draw_circle(p + Vector2(-r * 0.7, r * 0.5), r * 0.3, BLOOD_DARK)
-	var drip := fmod(t * 0.6 + phase, 1.0)
+	var drip := fmod(t * 0.6 + phase_v, 1.0)
 	c.draw_line(p, p + Vector2(0, r + 14.0 * drip), BLOOD, 3.0)
 	c.draw_circle(p + Vector2(0, r + 14.0 * drip), 2.5, BLOOD)
 

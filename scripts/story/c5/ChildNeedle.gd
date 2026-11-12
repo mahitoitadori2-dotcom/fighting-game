@@ -218,10 +218,10 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_child(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
-	var spin := pose == "tornado"
+	var spin := pose_v == "tornado"
 	if spin:                                               # Silk tornado around her
 		for i in 6:
 			var r := 50.0 + float(i) * 12.0
@@ -231,7 +231,7 @@ static func draw_child(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	EnemyArt.legs(c, s, -40.0, 7.0, 7.0, COAT_SHADE, COAT_SHADE.darkened(0.2), COAT, Color(0.15, 0.1, 0.12), 12.0)
 	var lean := 0.0
-	if pose in ["thrust", "lunge", "combo"]:
+	if pose_v in ["thrust", "lunge", "combo"]:
 		lean = 10.0
 	var chest := Vector2(lean * 0.5, -74 + sin(t * 4.0) * 1.5)
 	# Long coat with a flared, ragged hem
@@ -251,7 +251,7 @@ static func draw_child(c: CanvasItem, s: Dictionary) -> void:
 	# The NEEDLE (unless it was thrown)
 	var hand := chest + Vector2(18, 6)
 	var ang := -1.25
-	match pose:
+	match pose_v:
 		"thrust_tele", "lunge_tele":
 			hand = chest + Vector2(-12, 0)
 			ang = 0.0

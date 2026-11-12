@@ -82,11 +82,11 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_brute(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var breathe := sin(t * 2.5) * 1.5
-	var crouch := 10.0 if pose == "slam_tele" else 0.0
+	var crouch := 10.0 if pose_v == "slam_tele" else 0.0
 
 	EnemyArt.legs(c, s, -56.0 + crouch, 13.0, 17.0, SKIN, SKIN_SHADE, SKIN_HI, HORN, 18.0)
 	var chest := Vector2(0, -94 + crouch + breathe)
@@ -131,7 +131,7 @@ static func draw_brute(c: CanvasItem, s: Dictionary) -> void:
 	var shoulder := chest + Vector2(18, -12)
 	var hand := chest + Vector2(30, 24)
 	var ang := -0.6
-	match pose:
+	match pose_v:
 		"swing_tele":
 			hand = chest + Vector2(-16, -14)
 			ang = -2.6
@@ -146,9 +146,9 @@ static func draw_brute(c: CanvasItem, s: Dictionary) -> void:
 			ang = 1.2
 	_sword(c, hand, ang, t)
 	EnemyArt.arm(c, shoulder, hand, 15.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN, 8.5)
-	if pose == "swing":
+	if pose_v == "swing":
 		c.draw_arc(chest + Vector2(16, 0), 72.0, -1.3, 0.9, 14, Color(1.0, 0.6, 0.2, maxf(0.0, 0.8 - pt * 5.0)), 7.0, FighterArt.AA)
-	if pose == "slam":
+	if pose_v == "slam":
 		c.draw_arc(Vector2(60, 0), 30.0 + pt * 200.0, PI, TAU, 18, Color(LAVA.r, LAVA.g, LAVA.b, maxf(0.0, 1.0 - pt * 4.0)), 6.0, FighterArt.AA)
 
 

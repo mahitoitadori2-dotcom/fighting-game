@@ -413,7 +413,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var tf: float = s.get("tf", -1.0)
@@ -429,7 +429,7 @@ static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 	# Head position by pose
 	var head := Vector2(96 + sway * 0.5, -196 + sin(t * 2.0) * 5.0)
 	var jaw := 0.15
-	match pose:
+	match pose_v:
 		"breath_tele":
 			head = Vector2(60, -230)
 			jaw = 0.5
@@ -464,9 +464,9 @@ static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 
 	# Tail: sweeps out to both sides on the Tail Swipe
 	var tail_tip := Vector2(-250, -30 + sin(t * 3.0) * 8.0)
-	if pose == "tail_tele":
+	if pose_v == "tail_tele":
 		tail_tip = Vector2(-200, -90)
-	elif pose == "tail":
+	elif pose_v == "tail":
 		var k := clampf(pt / 0.3, 0.0, 1.0)
 		tail_tip = Vector2(-260 + 560.0 * k, -26)
 	_body_tube(c, [Vector2(-90, -40), Vector2(-170, -30), tail_tip], 34.0, 8.0, t)
@@ -497,7 +497,7 @@ static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 	var near_sh := face + Vector2(20, 22)
 	if arms_k > 0.0:
 		var claw := far_sh + Vector2(46, 34) * arms_k
-		if pose == "geysers_tele" or pose == "geysers":
+		if pose_v == "geysers_tele" or pose_v == "geysers":
 			claw = far_sh + Vector2(30, 70) * arms_k                 # Hand pressed into the floor
 		_flesh_arm(c, far_sh, claw, 11.0 * arms_k, true)
 
@@ -543,7 +543,7 @@ static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 			ang = lerpf(PI + 0.5, -1.1, blade_k)                       # Blade still inside, then swung out
 			length = blade_k
 		elif armed:
-			match pose:
+			match pose_v:
 				"slash_tele":
 					hand = near_sh + Vector2(-10, -40)
 					ang = -2.4
@@ -570,12 +570,12 @@ static func draw_caeser(c: CanvasItem, s: Dictionary) -> void:
 		if armed and length > 0.0:
 			_blasphemy_blade(c, hand, ang, length, t)
 		_flesh_arm(c, near_sh, hand, 12.0 * arms_k, false)
-		if armed and pose == "slash" and pt < 0.22:                   # Slash arc
+		if armed and pose_v == "slash" and pt < 0.22:                   # Slash arc
 			var a0 := -2.2 if swing % 2 == 1 else 0.8
 			var a1 := 0.6 if swing % 2 == 1 else -1.0
 			c.draw_arc(near_sh + Vector2(40, 10), 200.0, minf(a0, a1), maxf(a0, a1), 18, Color(1.0, 0.5, 0.4, 0.85 - pt * 3.5), 16.0, FighterArt.AA)
 
-	if (pose == "bite" or pose == "headbite") and pt < 0.2:
+	if (pose_v == "bite" or pose_v == "headbite") and pt < 0.2:
 		c.draw_arc(head + Vector2(70, 10), 30.0 + pt * 200.0, -1.2, 1.2, 12, Color(1, 0.9, 0.6, 0.8 - pt * 4.0), 5.0, FighterArt.AA)
 	if tf >= 0.0:                                                     # Light and heat pouring out
 		var k := clampf(tf / 2.2, 0.0, 1.0)

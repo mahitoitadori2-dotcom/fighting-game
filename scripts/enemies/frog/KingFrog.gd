@@ -135,10 +135,10 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_frog(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
-	var air: bool = not s.get("floor", true) and pose == "hop"
+	var air: bool = not s.get("floor", true) and pose_v == "hop"
 
 	if s.get("enraged", false):
 		EnemyArt.aura(c, Vector2(0, -40), 58.0, Color(1.0, 0.85, 0.2), t)
@@ -158,7 +158,7 @@ static func draw_frog(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.outline(c, pad, 3.5)
 		c.draw_colored_polygon(PackedVector2Array([Vector2(0, -6), Vector2(40, -14), Vector2(48, -4)]), PAD_SHADE)   # Notch
 
-	var crouch := 6.0 if pose == "hop_tele" else 0.0
+	var crouch := 6.0 if pose_v == "hop_tele" else 0.0
 	var by := -38.0 + crouch
 	if air:
 		by = -50.0
@@ -188,9 +188,9 @@ static func draw_frog(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Throat sac (Croak Wave) ---
 	var sac := 0.0
-	if pose == "croak_tele":
+	if pose_v == "croak_tele":
 		sac = clampf(pt / 0.4, 0.0, 1.0) * 16.0
-	elif pose == "croak":
+	elif pose_v == "croak":
 		sac = 16.0 + 3.0 * sin(t * 40.0)
 	if sac > 0.0:
 		var sp := EnemyArt.ellipse_points(Vector2(34, by + 4.0), sac + 4.0, sac, 18)
@@ -204,14 +204,14 @@ static func draw_frog(c: CanvasItem, s: Dictionary) -> void:
 	# --- Mouth + tongue ---
 	var mouth := Vector2(44, by - 4.0)
 	var open := 0.0
-	if pose == "tongue_tele":
+	if pose_v == "tongue_tele":
 		open = clampf(pt / 0.35, 0.0, 1.0) * 6.0
-	elif pose == "tongue" or pose == "croak":
+	elif pose_v == "tongue" or pose_v == "croak":
 		open = 7.0
 	if open > 0.0:
 		c.draw_colored_polygon(PackedVector2Array([Vector2(16, by - 6.0), mouth + Vector2(4, -2), mouth + Vector2(4, open), Vector2(18, by - 2.0 + open * 0.5)]), Color(0.45, 0.08, 0.12))
 	c.draw_polyline(PackedVector2Array([Vector2(14, by - 8.0), Vector2(30, by - 3.0), mouth]), EnemyArt.BLACK, 3.0, FighterArt.AA)
-	if pose == "tongue":
+	if pose_v == "tongue":
 		var k := clampf(pt / 0.3, 0.0, 1.0)
 		var reach := TONGUE_REACH * sin(PI * k)
 		var tip := mouth + Vector2(reach, 2)

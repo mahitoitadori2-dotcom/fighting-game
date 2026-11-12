@@ -259,17 +259,17 @@ func palette_of() -> Dictionary:
 ## Weapon arm + weapon, drawn BEHIND the body.
 static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: Dictionary) -> void:
 	var w: String = s.get("weapon", "")
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var arm: Color = pal.get("arm", Color.WHITE)
 	var arm_shade: Color = pal.get("arm_shade", Color.GRAY)
-	var arm_hi: Color = pal.get("arm_hi", Color.WHITE)
+	var _arm_hi: Color = pal.get("arm_hi", Color.WHITE)
 	var hand_c: Color = pal.get("hand", Color.WHITE)
 	var shoulder := chest + Vector2(-8, -18)
 	match w:
 		"short_sword":
 			var hand := chest + Vector2(22, 22)
 			var ang := -1.2
-			match pose:
+			match pose_v:
 				"w_slash_tele":
 					hand = chest + Vector2(-10, -30)
 					ang = -2.4
@@ -284,12 +284,12 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 					ang = 0.0
 			EnemyArt.arm(c, shoulder, hand, 9.0, arm_shade, arm_shade.darkened(0.2), arm, hand_c, 6.0)
 			_sword(c, hand, Vector2.from_angle(ang), pal)
-			if pose == "w_slash":
+			if pose_v == "w_slash":
 				c.draw_arc(chest + Vector2(20, -10), 62.0, -1.4, 0.9, 14, Color(1, 1, 1, 0.45), 4.0, FighterArt.AA)
 		"hammer":
 			var hand := chest + Vector2(18, 26)
 			var ang := -1.9
-			match pose:
+			match pose_v:
 				"w_smash_tele":
 					hand = chest + Vector2(-14, -40)
 					ang = -2.5
@@ -308,7 +308,7 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 			var hand := chest + Vector2(24, 18)
 			var d := Vector2(0.08, -1.0).normalized()          # Held upright
 			var back := 70.0
-			match pose:
+			match pose_v:
 				"w_thrust_tele":
 					hand = chest + Vector2(-6, 12)
 					d = Vector2.RIGHT
@@ -321,11 +321,11 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 				"w_sweep":
 					hand = chest + Vector2(40, 40)
 					d = Vector2.from_angle(0.35)
-			if not pose.begins_with("w_sweep") and not pose.begins_with("w_thrust"):
+			if not pose_v.begins_with("w_sweep") and not pose_v.begins_with("w_thrust"):
 				back = 92.0                                    # Upright: the butt rests near the feet
 			EnemyArt.arm(c, shoulder, hand, 9.0, arm_shade, arm_shade.darkened(0.2), arm, hand_c, 6.0)
 			_spear(c, hand - d * back, hand + d * 84.0, pal)
-			if pose == "w_sweep":
+			if pose_v == "w_sweep":
 				c.draw_arc(Vector2(40, -20), 90.0, -0.3, 0.6, 10, Color(1, 1, 1, 0.4), 4.0, FighterArt.AA)
 		"bow":
 			# Quiver on the back + the drawing hand
@@ -338,9 +338,9 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 				c.draw_line(top, top + Vector2(2, 14), EnemyArt.BLACK, 3.0)
 				c.draw_colored_polygon(PackedVector2Array([top + Vector2(-4, 0), top + Vector2(0, -8), top + Vector2(4, 0)]), pal.get("accent", Color.WHITE))
 			var pull := chest + Vector2(14, 22)
-			if pose == "w_shoot_tele":
+			if pose_v == "w_shoot_tele":
 				pull = chest + Vector2(2, -6)
-			elif pose == "w_volley_tele":
+			elif pose_v == "w_volley_tele":
 				pull = chest + Vector2(6, -16)
 			EnemyArt.arm(c, shoulder, pull, 8.5, arm_shade, arm_shade.darkened(0.2), arm, hand_c, 6.0)
 		"greatshield":
@@ -350,7 +350,7 @@ static func draw_weapon_back(c: CanvasItem, s: Dictionary, chest: Vector2, pal: 
 ## Shield / bow / kicking leg, drawn IN FRONT of the body.
 static func draw_weapon_front(c: CanvasItem, s: Dictionary, chest: Vector2, pal: Dictionary) -> void:
 	var w: String = s.get("weapon", "")
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var t: float = s.get("t", 0.0)
 	var metal: Color = pal.get("metal", Color(0.8, 0.8, 0.85))
 	var accent: Color = pal.get("accent", Color(1, 0.8, 0.3))
@@ -364,7 +364,7 @@ static func draw_weapon_front(c: CanvasItem, s: Dictionary, chest: Vector2, pal:
 		"short_sword", "spear":
 			# Small round buckler
 			var b := chest + Vector2(22, 12)
-			if pose == "w_lunge" or pose == "w_thrust":
+			if pose_v == "w_lunge" or pose_v == "w_thrust":
 				b = chest + Vector2(14, 16)
 			c.draw_circle(b, 16.0, EnemyArt.BLACK)
 			c.draw_circle(b, 13.0, metal)
@@ -373,7 +373,7 @@ static func draw_weapon_front(c: CanvasItem, s: Dictionary, chest: Vector2, pal:
 		"hammer":
 			# Second hand on the haft
 			var hand := chest + Vector2(22, 24)
-			match pose:
+			match pose_v:
 				"w_smash_tele":
 					hand = chest + Vector2(-8, -30)
 				"w_smash":
@@ -387,26 +387,26 @@ static func draw_weapon_front(c: CanvasItem, s: Dictionary, chest: Vector2, pal:
 			var aim := 0.0
 			var grip := chest + Vector2(30, 18)
 			var drawn := false
-			match pose:
+			match pose_v:
 				"w_shoot_tele", "w_shoot":
 					grip = chest + Vector2(44, -6)
-					drawn = pose == "w_shoot_tele"
+					drawn = pose_v == "w_shoot_tele"
 				"w_volley_tele", "w_volley":
 					grip = chest + Vector2(32, -40)
 					aim = -0.8
-					drawn = pose == "w_volley_tele"
+					drawn = pose_v == "w_volley_tele"
 				"idle":
 					aim = -1.2
 			EnemyArt.arm(c, front_shoulder, grip, 8.5, arm, arm_shade, arm_hi, hand_c, 6.0)
 			_bow(c, grip, aim, drawn, chest, pal)
-			if pose == "w_kick" or pose == "w_kick_tele":
-				var foot := chest + (Vector2(60, 70) if pose == "w_kick" else Vector2(20, 76))
+			if pose_v == "w_kick" or pose_v == "w_kick_tele":
+				var foot := chest + (Vector2(60, 70) if pose_v == "w_kick" else Vector2(20, 76))
 				FighterArt.limb(c, chest + Vector2(4, 40), foot, 10.0, arm, arm_shade, arm_hi)
 				c.draw_circle(foot, 8.0, EnemyArt.BLACK)
 				c.draw_circle(foot, 6.0, dark)
 		"greatshield":
 			var sh := chest + Vector2(28, 14)
-			match pose:
+			match pose_v:
 				"w_bash_tele":
 					sh = chest + Vector2(14, 14)
 				"w_bash":
@@ -427,7 +427,7 @@ static func draw_weapon_front(c: CanvasItem, s: Dictionary, chest: Vector2, pal:
 			FighterArt.outline(c, tower, 4.0)
 			if s.get("guarding", false):
 				c.draw_arc(sh + Vector2(10, 0), 70.0, -1.1, 1.1, 14, Color(accent.r, accent.g, accent.b, 0.25 + 0.15 * sin(t * 6.0)), 5.0, FighterArt.AA)
-			if pose == "w_bash" or pose == "w_slam":
+			if pose_v == "w_bash" or pose_v == "w_slam":
 				c.draw_line(Vector2(60, -80), Vector2(120, -80), Color(1, 1, 1, 0.5), 3.0)
 
 
@@ -468,7 +468,7 @@ static func _spear(c: CanvasItem, butt: Vector2, tip: Vector2, pal: Dictionary) 
 
 
 ## Bow held at `grip`, aimed along `aim` (radians, 0 = straight ahead).
-static func _bow(c: CanvasItem, grip: Vector2, aim: float, drawn: bool, chest: Vector2, pal: Dictionary) -> void:
+static func _bow(c: CanvasItem, grip: Vector2, aim: float, drawn: bool, _chest: Vector2, pal: Dictionary) -> void:
 	var d := Vector2.from_angle(aim)
 	var n := d.orthogonal()
 	var top := grip + n * 40.0 - d * 10.0

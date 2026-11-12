@@ -93,7 +93,7 @@ static func draw_portrait_weapon(c: CanvasItem, t: float, w: String) -> void:
 
 static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var w: String = s.get("weapon", "")
 	var bob := sin(t * 2.0) * 1.5
@@ -113,7 +113,7 @@ static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 	# Spear (behind the body when idle, forward on the thrust)
 	var hand := Vector2(26, -78 + bob)
 	var reach := 0.0
-	match pose:
+	match pose_v:
 		"thrust_tele":
 			hand = Vector2(-6, -82 + bob)
 			reach = -20.0
@@ -121,8 +121,8 @@ static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 			hand = Vector2(54, -80 + bob)
 			reach = 60.0
 	var tip := Vector2(hand.x + 84.0 + reach, hand.y - 2.0)
-	var butt := Vector2(hand.x - 70.0, hand.y + (10.0 if pose == "idle" else 2.0))
-	if pose == "idle" or pose == "bash" or pose == "bash_tele":
+	var butt := Vector2(hand.x - 70.0, hand.y + (10.0 if pose_v == "idle" else 2.0))
+	if pose_v == "idle" or pose_v == "bash" or pose_v == "bash_tele":
 		tip = Vector2(hand.x + 8.0, -200 + bob)                              # Spear held upright
 		butt = Vector2(hand.x - 6.0, -6.0)
 	c.draw_line(butt, tip, EnemyArt.BLACK, 7.0)
@@ -144,16 +144,16 @@ static func draw_guard(c: CanvasItem, s: Dictionary) -> void:
 
 	# Sun shield on the front arm
 	var sh := chest + Vector2(22, 8)
-	if pose == "bash_tele":
+	if pose_v == "bash_tele":
 		sh = chest + Vector2(10, 4)
-	elif pose == "bash":
+	elif pose_v == "bash":
 		sh = chest + Vector2(38, 2)
 	var disc := EnemyArt.ellipse_points(sh, 14.0, 28.0, 20)
 	c.draw_colored_polygon(disc, WHITE)
 	FighterArt.outline(c, disc, 3.5)
 	c.draw_colored_polygon(EnemyArt.ellipse_points(sh, 8.0, 18.0, 16), GOLD)
 	EnemyArt.star(c, sh, 6.0, GOLD_HI, 1.5)
-	if pose == "thrust" or pose == "bash":                                   # Swoosh
+	if pose_v == "thrust" or pose_v == "bash":                                   # Swoosh
 		c.draw_line(Vector2(40, -80), Vector2(110, -80), Color(1, 1, 0.8, 0.5), 3.0)
 
 

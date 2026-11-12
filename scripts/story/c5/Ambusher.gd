@@ -107,9 +107,9 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_ambusher(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
-	var crouch := 10.0 if pose.begins_with("pounce") or pose == "idle" else 0.0
+	var crouch := 10.0 if pose_v.begins_with("pounce") or pose_v == "idle" else 0.0
 	EnemyArt.legs(c, s, -50.0 + crouch, 9.0, 9.0, CLOAK, BLACK, CLOAK_HI, BLACK, 16.0)
 	var chest := Vector2(6, -84 + crouch + sin(t * 3.0) * 1.5)
 	# Ragged cloak (tattered hem flutters)
@@ -121,7 +121,7 @@ static func draw_ambusher(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, cloak, 3.5)
 	# Claw-blades on both hands
 	var reach := 0.0
-	if pose == "slash" or pose == "pounce":
+	if pose_v == "slash" or pose_v == "pounce":
 		reach = 26.0
 	for i in 2:
 		var hand := chest + Vector2(14.0 + reach - float(i) * 22.0, 8.0 - float(i) * 6.0)
@@ -140,5 +140,5 @@ static func draw_ambusher(c: CanvasItem, s: Dictionary) -> void:
 		for ex: float in [2.0, 12.0]:
 			c.draw_circle(head + Vector2(ex, 0), 5.0, Color(EYE.r, EYE.g, EYE.b, 0.3))
 			c.draw_circle(head + Vector2(ex, 0), 2.6, EYE)
-	if pose == "slash":
+	if pose_v == "slash":
 		c.draw_arc(chest + Vector2(30, 0), 54.0, -1.2, 1.0, 12, Color(1, 1, 1, 0.5), 3.0, FighterArt.AA)

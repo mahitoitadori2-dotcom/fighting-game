@@ -75,7 +75,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_follower(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var float_y := sin(t * 2.2) * 2.5
@@ -97,7 +97,7 @@ static func draw_follower(c: CanvasItem, s: Dictionary) -> void:
 	# Hands: praying, raised for the wave, thrust for the palm
 	var l_hand := head + Vector2(10, 46)
 	var r_hand := head + Vector2(16, 44)
-	match pose:
+	match pose_v:
 		"halo_tele":
 			l_hand = head + Vector2(-6, -16)
 			r_hand = head + Vector2(14, -18)
@@ -110,9 +110,9 @@ static func draw_follower(c: CanvasItem, s: Dictionary) -> void:
 			r_hand = head + Vector2(42, 42)
 	EnemyArt.arm(c, head + Vector2(-8, 24), l_hand, 7.0, ROBE_SHADE, ROBE_SHADE.darkened(0.2), ROBE, Color(0.95, 0.85, 0.7), 5.0)
 	EnemyArt.arm(c, head + Vector2(10, 24), r_hand, 7.0, ROBE, ROBE_SHADE, ROBE_HI, Color(0.95, 0.85, 0.7), 5.0)
-	if pose == "halo_tele":                                                            # Light gathering overhead
+	if pose_v == "halo_tele":                                                            # Light gathering overhead
 		c.draw_circle(head + Vector2(4, -26), 10.0 + pt * 18.0, Color(GLOW.r, GLOW.g, GLOW.b, 0.5))
-	if pose == "palm" and pt < 0.2:
+	if pose_v == "palm" and pt < 0.2:
 		c.draw_circle(r_hand + Vector2(10, 0), 16.0, Color(1, 1, 0.8, 0.7))
 
 	# Hood + blank golden mask

@@ -87,16 +87,16 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_angel(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var hover := sin(t * 2.4) * 2.0
 
 	# Holy glow (stronger while healing)
 	var glow := 0.0
-	if pose == "heal_tele":
+	if pose_v == "heal_tele":
 		glow = clampf(pt / 0.8, 0.0, 1.0)
-	elif pose == "heal":
+	elif pose_v == "heal":
 		glow = 1.0
 	EnemyArt.aura(c, Vector2(0, -80), 62.0 + 30.0 * glow, HOLY, t * (1.0 + glow * 2.0))
 	if glow > 0.0:
@@ -108,9 +108,9 @@ static func draw_angel(c: CanvasItem, s: Dictionary) -> void:
 
 	# Wings (behind). Gust = big flap forward
 	var flap := sin(t * 3.0) * 0.12
-	if pose == "gust_tele":
+	if pose_v == "gust_tele":
 		flap = -0.5 * clampf(pt / 0.35, 0.0, 1.0)
-	elif pose == "gust":
+	elif pose_v == "gust":
 		flap = 0.7
 	_wing(c, chest + Vector2(-10, -8), flap, true)
 	_wing(c, chest + Vector2(-4, -6), flap + 0.12, false)
@@ -157,16 +157,16 @@ static func draw_angel(c: CanvasItem, s: Dictionary) -> void:
 	# Near arm (+ beam)
 	var shoulder := chest + Vector2(14, -12)
 	var hand := chest + Vector2(22, 28)
-	if pose == "beam_tele":
+	if pose_v == "beam_tele":
 		hand = chest + Vector2(30, -6)
 		c.draw_circle(hand + Vector2(8, 0), 6.0 + 6.0 * clampf(pt / 0.35, 0.0, 1.0), Color(HOLY.r, HOLY.g, HOLY.b, 0.8))
-	elif pose == "beam":
+	elif pose_v == "beam":
 		hand = chest + Vector2(34, -4)
 		var fade := 1.0 - clampf((pt - 0.2) / 0.12, 0.0, 1.0)
 		var origin := Vector2(hand.x + 6.0, -92.0)              # Same height as the beam hitbox
 		c.draw_rect(Rect2(origin.x, origin.y - 18.0, BEAM_LEN, 36.0), Color(HOLY.r, HOLY.g, HOLY.b, 0.25 * fade))
 		FighterArt.beam_gradient(c, origin, BEAM_LEN, 11.0 * fade + 1.0, GOLD, Color.WHITE)
-	elif pose == "heal_tele" or pose == "heal":
+	elif pose_v == "heal_tele" or pose_v == "heal":
 		hand = chest + Vector2(16, -40)
 	EnemyArt.arm(c, shoulder, hand, 11.0, ARMOR, ARMOR_SHADE, Color.WHITE, SKIN)
 
@@ -176,9 +176,9 @@ static func _wing(c: CanvasItem, root: Vector2, flap: float, far: bool) -> void:
 	var pts := PackedVector2Array([root])
 	for i in 6:
 		var a := -2.6 + flap + float(i) * 0.22
-		var len := 70.0 - float(i) * 6.0
-		pts.append(root + Vector2.from_angle(a) * len + Vector2(-6, 0))
-		pts.append(root + Vector2.from_angle(a + 0.11) * (len - 14.0))
+		var seg_len := 70.0 - float(i) * 6.0
+		pts.append(root + Vector2.from_angle(a) * seg_len + Vector2(-6, 0))
+		pts.append(root + Vector2.from_angle(a + 0.11) * (seg_len - 14.0))
 	c.draw_colored_polygon(pts, base)
 	FighterArt.outline(c, pts, 3.5)
 	for i in 4:                                          # Feather lines

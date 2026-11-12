@@ -120,12 +120,12 @@ static func _tail(c: CanvasItem, base: Vector2, t: float, pose: String, pt: floa
 	if pose == "tail" or pose == "tail_tele":
 		# Tail Whip: tail whirls all the way around, white motion ring
 		var spin := (pt * (30.0 if pose == "tail" else 12.0))
-		var tip := base + Vector2.from_angle(spin) * 46.0
+		var whip_tip := base + Vector2.from_angle(spin) * 46.0
 		if pose == "tail":
 			c.draw_arc(base + Vector2(30, 0), 92.0, 0.0, TAU, 48, Color(1, 1, 1, 0.45), 10.0, FighterArt.AA)
 			c.draw_arc(base + Vector2(30, 0), 92.0, spin, spin + 2.0, 16, Color(0.8, 0.9, 1.0, 0.9), 6.0, FighterArt.AA)
-		FighterArt.limb(c, base, base.lerp(tip, 0.55), 11.0, FUR, FUR_SHADE, FUR_HI)
-		FighterArt.limb(c, base.lerp(tip, 0.55), tip, 10.0, WHITE, WHITE_SHADE, WHITE)
+		FighterArt.limb(c, base, base.lerp(whip_tip, 0.55), 11.0, FUR, FUR_SHADE, FUR_HI)
+		FighterArt.limb(c, base.lerp(whip_tip, 0.55), whip_tip, 10.0, WHITE, WHITE_SHADE, WHITE)
 		return
 	var wag := sin(t * (26.0 if enraged else 18.0)) * 0.45
 	var mid := base + Vector2.from_angle(-2.4 + wag) * 18.0

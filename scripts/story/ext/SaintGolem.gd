@@ -118,7 +118,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("raging", false)
 	var glow := 0.65 + 0.35 * sin(t * (8.0 if rage else 3.0))
@@ -135,7 +135,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	# Arms by pose
 	var lh := Vector2(-96, -110)
 	var rh := Vector2(96, -110)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			lh = Vector2(-50, -330)
 			rh = Vector2(60, -335)
@@ -189,9 +189,9 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.rrect(c, Rect2(Vector2(76, -244).lerp(rh, 0.45) - Vector2(26, 18), Vector2(52, 36)), METAL, METAL_SHADE, Color.WHITE, 8.0, 3.5)
 	FighterArt.ball(c, rh, 32.0, METAL, METAL_SHADE, Color.WHITE)
 	c.draw_circle(rh, 8.0, rune)
-	if pose.begins_with("cast") or pose.begins_with("power"):
+	if pose_v.begins_with("cast") or pose_v.begins_with("power"):
 		c.draw_circle(rh, 20.0 + 6.0 * sin(t * 20.0), Color(RUNE.r, RUNE.g, RUNE.b, 0.4))
-	if s.get("shield", false) or pose == "shield_tele":
+	if s.get("shield", false) or pose_v == "shield_tele":
 		for k in 8:                                         # Ring of runes around it
 			var a := t * 1.5 + float(k) * TAU / 8.0
 			var p := Vector2(0, -170) + Vector2(cos(a) * 150.0, sin(a) * 180.0)

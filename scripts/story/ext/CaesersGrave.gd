@@ -163,7 +163,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("raging", false)
@@ -178,9 +178,9 @@ static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, back, 4.5)
 	# --- The rotten body, propped up inside ---
 	var lean := 0.0
-	if pose == "slam_tele":
+	if pose_v == "slam_tele":
 		lean = -10.0
-	elif pose == "slam":
+	elif pose_v == "slam":
 		lean = 12.0
 	var chest := Vector2(lean * 0.5, -118)
 	var torso := PackedVector2Array([chest + Vector2(-34, -40), chest + Vector2(30, -40), chest + Vector2(26, 50), chest + Vector2(-28, 50)])
@@ -204,7 +204,7 @@ static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(pts[5] + Vector2(2, -1), 1.5, Color(1.0, 0.85, 0.2))
 	# Arms: bony, one reaching out (souls / swarm) or raised for the slam
 	var hand := chest + Vector2(56, 10)
-	match pose:
+	match pose_v:
 		"souls_tele", "souls", "swarm_tele", "swarm":
 			hand = chest + Vector2(64, -50 + sin(t * 10.0) * 6.0)
 		"slam_tele":
@@ -229,7 +229,7 @@ static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 		for ex: float in [-2.0, 12.0]:
 			c.draw_circle(head + Vector2(ex, -2), 5.5, Color(0.05, 0.02, 0.02))
 			c.draw_circle(head + Vector2(ex, -2), 2.6, Color(SOUL.r, SOUL.g, SOUL.b, glow))
-	var jaw := 6.0 if pose.begins_with("souls") or pose.begins_with("swarm") else 2.0
+	var jaw := 6.0 if pose_v.begins_with("souls") or pose_v.begins_with("swarm") else 2.0
 	c.draw_rect(Rect2(head.x - 4, head.y + 10, 16, 4 + jaw), Color(0.08, 0.04, 0.04))
 	for k in 4:
 		c.draw_rect(Rect2(head.x - 3 + float(k) * 4.0, head.y + 10, 2.5, 3), BONE)
@@ -239,5 +239,5 @@ static func draw_grave(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(Vector2(-60, -30), Vector2(60, -30), GOLD.darkened(0.3), 3.0)      # Old inscription band
 	c.draw_line(Vector2(10, -60), Vector2(16, -20), STONE.darkened(0.3), 3.0)
 	FighterArt.outline(c, front, 4.5)
-	if pose == "slam" and pt < 0.25:
+	if pose_v == "slam" and pt < 0.25:
 		c.draw_arc(Vector2(60, -10), 120.0, -2.0, -0.2, 16, Color(BONE.r, BONE.g, BONE.b, 0.8 - pt * 3.0), 8.0, FighterArt.AA)

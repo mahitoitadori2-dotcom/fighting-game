@@ -287,6 +287,7 @@ func _attack(p: EnemyPattern) -> void:
 			var r := StoryManager.wall_right_x - 70.0
 			var n := int((r - l) / 120.0)
 			var gap1 := randi() % n
+			@warning_ignore("integer_division")
 			var gap2 := (gap1 + n / 2 + randi() % 3) % n
 			for k in n:
 				if k == gap1 or k == gap2:
@@ -407,7 +408,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 static func draw_sun(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
 	var f: int = s.get("form", 1)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var bomb: float = s.get("bomb", 0.0)
 	var consumer := f >= 2
@@ -423,15 +424,15 @@ static func draw_sun(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_line(center + Vector2.from_angle(a) * 120.0, center + Vector2.from_angle(a) * (210.0 + 20.0 * sin(t * 3.0 + float(i))), Color(GLOW.r, GLOW.g * (0.6 if consumer else 1.0), GLOW.b * (0.3 if consumer else 1.0), 0.25), 4.0)
 	# Four huge wings (moth): upper pair + lower pair, with eye-spots
 	var flap := sin(t * (5.0 if consumer else 2.4)) * 0.12
-	if pose == "wing":
+	if pose_v == "wing":
 		flap = 0.35
 	for side: float in [-1.0, 1.0]:
 		for k in 2:
 			var upper := k == 0
 			var ang := (-0.9 if upper else 0.35) + flap * side * (1.0 if upper else -1.0)
-			var len := 190.0 if upper else 140.0
+			var seg_len := 190.0 if upper else 140.0
 			var root := center + Vector2(side * 10.0, -10.0 if upper else 20.0)
-			var tip := root + Vector2(side * cos(ang), sin(ang)) * len
+			var tip := root + Vector2(side * cos(ang), sin(ang)) * seg_len
 			var mid := root.lerp(tip, 0.55)
 			var nrm := (tip - root).orthogonal().normalized() * (70.0 if upper else 55.0)
 			var wing := PackedVector2Array([root, mid + nrm, tip + nrm * 0.3, tip, tip - nrm * 0.5, mid - nrm * 0.7])
@@ -456,7 +457,7 @@ static func draw_sun(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_line(center + Vector2(-40, -20.0 + float(i) * 26.0), center + Vector2(40, -14.0 + float(i) * 26.0), Color(0.85, 0.82, 0.7, 0.6) if not consumer else EMBER, 3.0)
 	FighterArt.outline(c, body, 4.0)
 	if consumer:                                               # The MAW in its chest
-		var open := 26.0 + (20.0 if pose == "consume" else 0.0) + sin(t * 4.0) * 4.0
+		var open := 26.0 + (20.0 if pose_v == "consume" else 0.0) + sin(t * 4.0) * 4.0
 		var maw := EnemyArt.ellipse_points(center + Vector2(10, 40), 40.0, open, 18)
 		c.draw_colored_polygon(maw, Color(0.15, 0.0, 0.0))
 		for i in 8:

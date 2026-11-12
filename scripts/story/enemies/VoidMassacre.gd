@@ -136,6 +136,7 @@ func _attack(p: EnemyPattern) -> void:
 		"legs":
 			var hx := global_position.x + facing * 170.0
 			hit_in_radius(Vector2(hx, global_position.y - 50.0), 130.0, dmg(p), Vector2(420, -380), "massacre_legs")
+			@warning_ignore("integer_division")
 			BossHazard.spawn(self, "tendril", Vector2(hx + facing * 120.0, global_position.y), 0.25, maxi(1, dmg(p) / 2), Vector2(220, -400))
 			Effects.shake(self, 14.0)
 			SoundManager.play_sfx("slam")
@@ -343,13 +344,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_massacre(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var frenzy: bool = s.get("enraged", false)
 	var ph: float = s.get("walk", 0.0) * 1.5 + (t * 6.0 if s.get("climbing", false) else 0.0)
 	var rear := 0.0
-	if pose == "legs_tele":
+	if pose_v == "legs_tele":
 		rear = clampf(pt / 0.55, 0.0, 1.0)
 	var head := Vector2(70, -96 - rear * 40.0)
 	var abdomen := Vector2(-80, -110)
@@ -362,8 +363,8 @@ static func draw_massacre(c: CanvasItem, s: Dictionary) -> void:
 			var foot_x := lerpf(250.0, -250.0, u) + (12.0 if far else -12.0)
 			var step := sin(ph + float(i) * 0.9 + (PI if far else 0.0))
 			var foot := Vector2(foot_x + step * 14.0, -2.0 - maxf(0.0, step) * 10.0)
-			if (pose == "legs_tele" or pose == "legs") and i < 2:   # Front legs rear up / slam
-				foot = Vector2(220 + float(i) * 20.0, -220.0) if pose == "legs_tele" else Vector2(240 + float(i) * 30.0, -4)
+			if (pose_v == "legs_tele" or pose_v == "legs") and i < 2:   # Front legs rear up / slam
+				foot = Vector2(220 + float(i) * 20.0, -220.0) if pose_v == "legs_tele" else Vector2(240 + float(i) * 30.0, -4)
 			var knee := Vector2((hip.x + foot.x) * 0.5, -210.0 - absf(u - 0.5) * 30.0 + (10.0 if far else 0.0))
 			var col := LEG.darkened(0.4) if far else LEG
 			c.draw_polyline(PackedVector2Array([hip, knee, foot]), EnemyArt.BLACK, 12.0 if far else 14.0, FighterArt.AA)
@@ -385,7 +386,7 @@ static func draw_massacre(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(EnemyArt.ellipse_points(head + Vector2(-8, -20), 46.0, 16.0, 16), Color(BODY_HI.r, BODY_HI.g, BODY_HI.b, 0.6))
 	FighterArt.outline(c, hd, 5.0)
 	# Mandibles
-	var open := 1.0 if pose == "goo" or pose == "charge" else 0.3
+	var open := 1.0 if pose_v == "goo" or pose_v == "charge" else 0.3
 	for side in [-1.0, 1.0]:
 		var mb: Vector2 = head + Vector2(56, 22 + side * 8.0)
 		FighterArt.curved_spike(c, mb, mb + Vector2(34, side * (10.0 + 14.0 * open)), 7.0, BODY_HI, BODY, 0.4 * side)
@@ -407,7 +408,7 @@ static func draw_massacre(c: CanvasItem, s: Dictionary) -> void:
 				c.draw_circle(ep, er, EYE)
 				c.draw_circle(ep + Vector2(er * 0.3, -er * 0.3), er * 0.3, Color(0.75, 0.7, 0.9))
 			n += 1
-	if pose == "beam_tele":
+	if pose_v == "beam_tele":
 		c.draw_circle(head + Vector2(40, -8), 30.0 + pt * 30.0, Color(1, 1, 1, 0.35))
-	if pose == "legs" and pt < 0.25:
+	if pose_v == "legs" and pt < 0.25:
 		c.draw_arc(Vector2(240, 0), 30.0 + pt * 320.0, PI, TAU, 18, Color(SHEEN.r, SHEEN.g, SHEEN.b, 1.0 - pt * 4.0), 7.0, FighterArt.AA)

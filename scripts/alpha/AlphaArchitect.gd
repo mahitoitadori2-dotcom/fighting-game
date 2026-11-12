@@ -354,6 +354,7 @@ func _barrage() -> void:
 	if flying:
 		_begin_cast(0.5, "barrage")
 		for k in ad.laser_count:
+			@warning_ignore("integer_division")
 			var y := -40.0 - float(k % 3) * 40.0 + float(k / 3) * 6.0
 			var start := global_position + Vector2(facing * (30.0 - float(k % 3) * 30.0), y)
 			_shot("laser", start, Vector2(facing * 1150.0, (float(k % 3) - 1.0) * 60.0), ad.laser_damage, 22.0, 1.0, Vector2(280, -120), false)

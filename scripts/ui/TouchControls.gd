@@ -236,13 +236,13 @@ func _release_all() -> void:
 # UPDATE + DRAW
 # ============================================================
 func _process(_delta: float) -> void:
-	var show := CombatManager.fight_active
+	var show_v := CombatManager.fight_active
 	if not is_equal_approx(_ui_size, MatchSettings.touch_ui_scale) and _stick["finger"] == -999:
 		_release_all()
 		_layout()                                 # Touch UI Size changed
-	if _ui.visible and not show:
+	if _ui.visible and not show_v:
 		_release_all()                            # Intro / winner screen: let go of everything
-	_ui.visible = show
+	_ui.visible = show_v
 	if _player == null or not is_instance_valid(_player):
 		for n in get_tree().get_nodes_in_group("fighters"):
 			var cf := n as ControlledFighter

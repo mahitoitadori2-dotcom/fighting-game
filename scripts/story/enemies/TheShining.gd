@@ -118,7 +118,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_shining(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var angry: bool = s.get("angry", false)
 	var pulse := 0.5 + 0.5 * sin(t * (6.0 if angry else 2.0))
@@ -135,7 +135,7 @@ static func draw_shining(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_colored_polygon(robe, Color(LIGHT.r, LIGHT.g, LIGHT.b, 0.85))
 	c.draw_line(head + Vector2(0, 16), Vector2(0, -20), Color(GOLD.r, GOLD.g, GOLD.b, 0.8), 3.0)
 	# Arms of light (raised when casting)
-	var raise := pose.begins_with("blast") or pose.begins_with("beam")
+	var raise := pose_v.begins_with("blast") or pose_v.begins_with("beam")
 	for side in [-1.0, 1.0]:
 		var sh: Vector2 = head + Vector2(side * 12.0, 24)
 		var hand: Vector2 = sh + (Vector2(side * 26.0, -30) if raise else Vector2(side * 18.0, 34))

@@ -134,12 +134,12 @@ static func curved_spike(c: CanvasItem, base: Vector2, tip: Vector2, half_w: flo
 ## Beam with a GRADIENT: edge colour at the rims -> core colour in the middle.
 static func beam_gradient(c: CanvasItem, origin: Vector2, length: float, half_h: float, edge: Color, core: Color) -> void:
 	var tl := origin + Vector2(0, -half_h)
-	var tr := origin + Vector2(length, -half_h)
+	var tex_rect := origin + Vector2(length, -half_h)
 	var ml := origin
 	var mr := origin + Vector2(length, 0)
 	var bl := origin + Vector2(0, half_h)
 	var br := origin + Vector2(length, half_h)
-	c.draw_polygon(PackedVector2Array([tl, tr, mr, ml]), PackedColorArray([edge, edge, core, core]))
+	c.draw_polygon(PackedVector2Array([tl, tex_rect, mr, ml]), PackedColorArray([edge, edge, core, core]))
 	c.draw_polygon(PackedVector2Array([ml, mr, br, bl]), PackedColorArray([core, core, edge, edge]))
 
 

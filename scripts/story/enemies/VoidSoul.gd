@@ -87,7 +87,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_soul(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var center := Vector2(0, -36)
 	c.draw_circle(center, 36.0, Color(FLAME_HI.r, FLAME_HI.g, FLAME_HI.b, 0.15))
@@ -114,7 +114,7 @@ static func draw_soul(c: CanvasItem, s: Dictionary) -> void:
 	else:
 		c.draw_circle(face + Vector2(-2, -3), 2.2, EnemyArt.BLACK)
 		c.draw_circle(face + Vector2(5, -3), 2.2, EnemyArt.BLACK)
-	var open := 4.0 if pose == "bolt" or pose == "burst" else 2.0
+	var open := 4.0 if pose_v == "bolt" or pose_v == "burst" else 2.0
 	c.draw_colored_polygon(EnemyArt.ellipse_points(face + Vector2(1, 5), 2.5, open, 8), EnemyArt.BLACK)
-	if pose == "bolt_tele":
+	if pose_v == "bolt_tele":
 		c.draw_circle(center + Vector2(26, 0), 8.0, Color(0.7, 0.4, 1.0, 0.8))

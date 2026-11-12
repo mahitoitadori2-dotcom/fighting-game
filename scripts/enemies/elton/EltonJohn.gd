@@ -119,23 +119,23 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_elton(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
-	var dashing := pose == "dash"
+	var dashing := pose_v == "dash"
 
 	if s.get("enraged", false):
 		EnemyArt.aura(c, Vector2(0, -64), 60.0, STAR_PINK, t)
 
 	# Grand piano on stage (Character Select card, and while he plays the Piano Drop)
-	if s.get("piano", false) or pose == "piano_tele" or pose == "piano":
+	if s.get("piano", false) or pose_v == "piano_tele" or pose_v == "piano":
 		_piano(c, Vector2(-52, 0))
 
 	var lean := 10.0 if dashing else 0.0
-	var bob := absf(sin(t * 5.0)) * 2.0 if pose == "idle" else 0.0
+	var bob := absf(sin(t * 5.0)) * 2.0 if pose_v == "idle" else 0.0
 
 	# Rocket boot flames
-	if pose == "dash_tele" or dashing:
+	if pose_v == "dash_tele" or dashing:
 		var k := 1.0 if dashing else clampf(pt / 0.4, 0.2, 1.0)
 		for fx in [-8.0, 10.0]:
 			var fl := (18.0 + 8.0 * sin(t * 50.0 + fx)) * k
@@ -190,7 +190,7 @@ static func draw_elton(c: CanvasItem, s: Dictionary) -> void:
 	# Near arm
 	var shoulder := chest + Vector2(14, -12)
 	var hand := chest + Vector2(24, 26)
-	match pose:
+	match pose_v:
 		"piano_tele", "piano":
 			hand = chest + Vector2(18, -44)                     # Points to the sky
 		"glitter_tele":
@@ -200,7 +200,7 @@ static func draw_elton(c: CanvasItem, s: Dictionary) -> void:
 		"dash", "dash_tele":
 			hand = chest + Vector2(34, -24)                     # Rocket Man pose
 	EnemyArt.arm(c, shoulder, hand, 11.0, SUIT, SUIT_SHADE, SUIT_HI, SKIN)
-	if pose == "glitter_tele":
+	if pose_v == "glitter_tele":
 		for i in 5:
 			c.draw_circle(hand + Vector2.from_angle(t * 8.0 + float(i) * 1.25) * 10.0, 2.5, Color.from_hsv(float(i) / 5.0, 0.5, 1.0))
 

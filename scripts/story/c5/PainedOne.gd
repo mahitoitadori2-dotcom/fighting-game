@@ -85,7 +85,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_pained(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var heave := sin(t * 1.6) * 3.0
 	EnemyArt.legs(c, s, -46.0, 18.0, 15.0, SKIN, SKIN_SHADE, SKIN_HI, SKIN_SHADE, 22.0)
@@ -104,7 +104,7 @@ static func draw_pained(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(chest + Vector2(20, -10), chest + Vector2(30, -18), CHAIN, 4.0)
 	# Arms: the front fist goes up for the smash
 	var hand := chest + Vector2(46, 42)
-	match pose:
+	match pose_v:
 		"fist_tele":
 			hand = chest + Vector2(20, -70)
 		"fist":
@@ -126,8 +126,8 @@ static func draw_pained(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_line(head + Vector2(ex - 4, -6), head + Vector2(ex + 4, -2), EnemyArt.BLACK, 2.5)     # Squeezed shut
 			var drop := fmod(t * 0.8 + ex * 0.1, 1.0)
 			c.draw_circle(head + Vector2(ex, 2.0 + drop * 20.0), 2.5, TEAR)
-	var open := 10.0 if pose.begins_with("scream") else 4.0
+	var open := 10.0 if pose_v.begins_with("scream") else 4.0
 	c.draw_colored_polygon(EnemyArt.ellipse_points(head + Vector2(5, 9), 7.0, open, 12), Color(0.12, 0.02, 0.04))
-	if pose == "scream":
+	if pose_v == "scream":
 		for i in 3:
 			c.draw_arc(head + Vector2(10, 8), 26.0 + float(i) * 18.0, -0.7, 0.7, 10, Color(0.8, 0.9, 1.0, 0.6 - float(i) * 0.15), 3.0, FighterArt.AA)

@@ -164,14 +164,14 @@ static func _block(c: CanvasItem, r: Rect2, col: Color) -> void:
 
 static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var hot: bool = s.get("enraged", false)
 	var rune := RUNE_HOT if hot else RUNE
 	var pulse := 0.6 + 0.4 * sin(t * (6.0 if hot else 2.5))
 	var stomp := 0.0
-	if pose == "stomp_tele":
+	if pose_v == "stomp_tele":
 		stomp = clampf(pt / 0.65, 0.0, 1.0)
 	# Legs: stacked blocks (front leg lifts for the stomp)
 	_block(c, Rect2(-70, -110, 56, 110), STONE_SHADE)
@@ -213,7 +213,7 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 	# Arms: segments + HUGE fists
 	var far_fist := chest + Vector2(-130, 60)
 	var fist := chest + Vector2(130, 70)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			far_fist = chest + Vector2(-20, -170)
 			fist = chest + Vector2(60, -180)
@@ -239,9 +239,9 @@ static func draw_golem(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.ball(c, elbow, 22.0, PLATE, Color(0.7, 0.74, 0.8), Color.WHITE)
 		_block(c, Rect2(fp.x - 40, fp.y - 40, 80, 80), col)
 		c.draw_line(fp + Vector2(-26, 0), fp + Vector2(26, 0), Color(rune.r, rune.g, rune.b, pulse), 3.0)
-	if pose == "rune" and pt < 0.3:
+	if pose_v == "rune" and pt < 0.3:
 		c.draw_circle(fist + Vector2(40, 0), 30.0 + pt * 60.0, Color(rune.r, rune.g, rune.b, 0.7 - pt * 2.0))
-	if pose == "slam" and pt < 0.25:
+	if pose_v == "slam" and pt < 0.25:
 		c.draw_arc(Vector2(170, 0), 40.0 + pt * 360.0, PI, TAU, 18, Color(0.85, 0.8, 0.7, 1.0 - pt * 4.0), 8.0, FighterArt.AA)
-	if pose == "stomp" and pt < 0.25:
+	if pose_v == "stomp" and pt < 0.25:
 		c.draw_arc(Vector2(40, 0), 40.0 + pt * 400.0, PI, TAU, 18, Color(rune.r, rune.g, rune.b, 1.0 - pt * 4.0), 8.0, FighterArt.AA)

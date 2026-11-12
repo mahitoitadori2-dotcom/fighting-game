@@ -417,8 +417,8 @@ static func draw_chorus_body(c: CanvasItem, s: Dictionary) -> void:
 	for i in 2:
 		var side := -1.0 if i == 0 else 1.0
 		var shoulder := Vector2(side * 170.0, -330.0 + hum)
-		var hp: Vector2 = hands[i]
-		var hand := Vector2(hp.x * fdir, hp.y - 40.0)               # Canvas is mirrored by facing
+		var hp_v: Vector2 = hands[i]
+		var hand := Vector2(hp_v.x * fdir, hp_v.y - 40.0)               # Canvas is mirrored by facing
 		var elbow := shoulder.lerp(hand, 0.5) + Vector2(side * 70.0, -60.0)
 		for seg in [[shoulder, elbow], [elbow, hand]]:
 			var a: Vector2 = seg[0]

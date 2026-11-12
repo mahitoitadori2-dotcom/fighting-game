@@ -110,7 +110,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 
@@ -154,7 +154,7 @@ static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(head + Vector2(7, -3), 1.5, Color(0.3, 0.22, 0.12))
 		c.draw_line(head + Vector2(2, -8), head + Vector2(10, -7), BEARD, 2.5)
 	c.draw_line(head + Vector2(10, -2), head + Vector2(12, 4), SKIN_SHADE, 2.0)            # Nose
-	var talking := pose == "speech_tele" and fmod(pt * 8.0, 1.0) < 0.5
+	var talking := pose_v == "speech_tele" and fmod(pt * 8.0, 1.0) < 0.5
 	if talking:
 		c.draw_circle(head + Vector2(6, 9), 3.0, Color(0.3, 0.05, 0.05))
 	else:
@@ -172,7 +172,7 @@ static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.outline(c, brim, 3.0)
 
 	# Speech: raised fist, glowing words
-	if pose == "speech_tele" or pose == "speech":
+	if pose_v == "speech_tele" or pose_v == "speech":
 		var k := clampf(pt / 1.0, 0.0, 1.0)
 		c.draw_arc(head + Vector2(20, 6), 12.0 + 10.0 * k, -0.7, 0.7, 10, Color(1, 0.95, 0.75, 0.8), 3.0, FighterArt.AA)
 
@@ -180,7 +180,7 @@ static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 	var shoulder := chest + Vector2(12, -14)
 	var hand := chest + Vector2(22, 28)
 	var axe_angle := -1.3
-	match pose:
+	match pose_v:
 		"chop_tele":
 			hand = chest + Vector2(-4, -58)
 			axe_angle = -2.3
@@ -193,10 +193,10 @@ static func draw_lincoln(c: CanvasItem, s: Dictionary) -> void:
 			hand = chest + Vector2(40, -22)
 		"speech_tele", "speech":
 			hand = chest + Vector2(18, -52)
-	if pose != "hat_tele" and pose != "hat":
+	if pose_v != "hat_tele" and pose_v != "hat":
 		_axe(c, hand, axe_angle)
 	EnemyArt.arm(c, shoulder, hand, 11.0, COAT, COAT_SHADE, COAT_HI, SKIN)
-	if pose == "chop":
+	if pose_v == "chop":
 		c.draw_arc(chest + Vector2(30, 0), 56.0, -1.6, 0.6, 14, Color(1, 1, 1, maxf(0.0, 0.8 - pt * 4.0)), 6.0, FighterArt.AA)
 
 

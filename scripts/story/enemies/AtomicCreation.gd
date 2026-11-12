@@ -77,6 +77,7 @@ func _attack(p: EnemyPattern) -> void:
 				s.speed = 480.0
 				s.lifetime = 0.9
 				s.size = Vector2(44, 34)
+				@warning_ignore("integer_division")
 				s.damage = maxi(1, dmg(p) / 2)
 				s.knockback = Vector2(200, -260)
 				s.move = "atomic_shock"
@@ -112,12 +113,12 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_atomic(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var crit: bool = s.get("enraged", false)
 	var glow := CRIT if crit else ATOM
-	var charge := clampf(pt / 1.3, 0.0, 1.0) if pose == "boom_tele" else 0.0
+	var charge := clampf(pt / 1.3, 0.0, 1.0) if pose_v == "boom_tele" else 0.0
 	var breathe := sin(t * 2.4) * 3.0
 	# Radiation aura
 	var pulse := 0.5 + 0.5 * sin(t * (10.0 if crit else 5.0))
@@ -164,7 +165,7 @@ static func draw_atomic(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_line(head + Vector2(0, -3), head + Vector2(16, -4), glow, 4.0)
 	# Arms: huge fists
 	var fist := Vector2(80, -80 + breathe)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			fist = Vector2(40, -230)
 		"slam":
@@ -177,7 +178,7 @@ static func draw_atomic(c: CanvasItem, s: Dictionary) -> void:
 	for k in 3:
 		var fall := fmod(t * 1.2 + float(k) * 0.33, 1.0)
 		c.draw_circle(Vector2(-40 + float(k) * 40.0, -70 + fall * 64.0), 4.0 * (1.0 - fall), glow)
-	if pose == "slam" and pt < 0.25:
+	if pose_v == "slam" and pt < 0.25:
 		c.draw_arc(Vector2(96, 0), 30.0 + pt * 300.0, PI, TAU, 18, Color(glow.r, glow.g, glow.b, 1.0 - pt * 4.0), 6.0, FighterArt.AA)
-	if pose == "burst" and pt < 0.3:
+	if pose_v == "burst" and pt < 0.3:
 		c.draw_arc(core, 40.0 + pt * 700.0, 0.0, TAU, 32, Color(glow.r, glow.g, glow.b, 0.8 - pt * 2.6), 8.0, FighterArt.AA)

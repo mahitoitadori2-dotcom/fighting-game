@@ -172,11 +172,11 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_satan(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
-	var raging: bool = s.get("raging", false)
+	var raging_v: bool = s.get("raging", false)
 	# Wings folded like a cloak (spread when summoning / raging)
-	var spread := 1.0 + (0.6 if pose.begins_with("summon") or raging else 0.0)
+	var spread := 1.0 + (0.6 if pose_v.begins_with("summon") or raging_v else 0.0)
 	for sgn: float in [-1.0, 1.0]:
 		var base := Vector2(sgn * 20.0 - 10.0, -230)
 		var wing := PackedVector2Array([base, base + Vector2(sgn * 80.0 * spread - 40.0, -90), base + Vector2(sgn * 60.0 * spread - 30.0, -30),
@@ -188,7 +188,7 @@ static func draw_satan(c: CanvasItem, s: Dictionary) -> void:
 	# The burning trident (behind)
 	var hand := chest + Vector2(40, 40)
 	var d := Vector2(0.15, -1.0).normalized()
-	match pose:
+	match pose_v:
 		"thrust_tele":
 			hand = chest + Vector2(-20, 20)
 			d = Vector2.RIGHT
@@ -221,10 +221,10 @@ static func draw_satan(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_line(chest + Vector2(-30.0 + float(k) * 30.0, -30), chest + Vector2(-26.0 + float(k) * 26.0, 40), Color(1.0, 0.5, 0.1, 0.5), 3.0)
 	FighterArt.ball(c, chest + Vector2(-56, -60), 20.0, RED, RED_SHADE, RED_HI)
 	var front_hand := chest + Vector2(60, 40)
-	if pose == "breath" or pose.begins_with("summon"):
+	if pose_v == "breath" or pose_v.begins_with("summon"):
 		front_hand = chest + Vector2(90, -40)
 	EnemyArt.arm(c, chest + Vector2(52, -54), front_hand, 22.0, RED, RED_SHADE, RED_HI, RED_SHADE, 15.0)
-	if pose.begins_with("summon"):
+	if pose_v.begins_with("summon"):
 		c.draw_circle(front_hand, 30.0, Color(1.0, 0.4, 0.1, 0.5))
 	# Head: goat horns, a crown of fire, a wicked grin
 	var head := chest + Vector2(10, -104)
@@ -244,7 +244,7 @@ static func draw_satan(c: CanvasItem, s: Dictionary) -> void:
 	else:
 		for ex: float in [2.0, 20.0]:
 			c.draw_colored_polygon(PackedVector2Array([head + Vector2(ex - 7, -8), head + Vector2(ex + 7, -10), head + Vector2(ex + 4, -2)]), GOLD)
-	var open := 10.0 if pose == "breath" else 2.0
+	var open := 10.0 if pose_v == "breath" else 2.0
 	c.draw_colored_polygon(PackedVector2Array([head + Vector2(-4, 10), head + Vector2(26, 6), head + Vector2(22, 10 + open), head + Vector2(0, 14 + open)]), Color(0.1, 0.0, 0.0))
-	if pose == "breath":
+	if pose_v == "breath":
 		c.draw_circle(head + Vector2(34, 12), 18.0, Color(1.0, 0.6, 0.15, 0.7))

@@ -98,12 +98,12 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_tentacle(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	# Where the tip points
 	var tip := Vector2(30 + sin(t * 1.7) * 18.0, -190 + cos(t * 2.1) * 10.0)
-	match pose:
+	match pose_v:
 		"whip_tele", "grab_tele":
 			tip = Vector2(-40, -200)
 		"whip":

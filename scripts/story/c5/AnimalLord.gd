@@ -182,13 +182,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var breathe := sin(t * 2.0) * 2.0
 	var body_c := Vector2(-10, -96 + breathe)
 	# Ragged bat wings (spread wide for the gust / feathers)
-	var spread := 1.0 + (0.6 if pose.begins_with("gust") or pose.begins_with("feathers") else 0.0) + sin(t * 3.0) * 0.08
+	var spread := 1.0 + (0.6 if pose_v.begins_with("gust") or pose_v.begins_with("feathers") else 0.0) + sin(t * 3.0) * 0.08
 	for k in 2:
 		var base := body_c + Vector2(-10.0 + float(k) * 16.0, -40.0)
 		var wing := PackedVector2Array([base, base + Vector2(-90, -90) * spread, base + Vector2(-60, -40) * spread, base + Vector2(-120, -30) * spread,
@@ -199,7 +199,7 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 		FighterArt.outline(c, wing, 3.0)
 	# Crocodile tail with a scorpion barb
 	var swing_k := 0.0
-	if pose == "tail":
+	if pose_v == "tail":
 		swing_k = 1.0
 	var tail := PackedVector2Array()
 	for i in 10:
@@ -231,7 +231,7 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_line(m + Vector2(-5, -2), m + Vector2(5, 2), STITCH, 2.0)
 	# Bear forearm + claws (front)
 	var paw := body_c + Vector2(90, 90)
-	match pose:
+	match pose_v:
 		"claw_tele":
 			paw = body_c + Vector2(60, -60)
 		"claw":
@@ -241,15 +241,15 @@ static func draw_lord(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.limb(c, body_c + Vector2(60, 10), paw, 26.0, BEAR, BEAR.darkened(0.3), BEAR_HI)
 	for k in 4:
 		FighterArt.curved_spike(c, paw + Vector2(6, -10.0 + float(k) * 7.0), paw + Vector2(36, -16.0 + float(k) * 12.0), 4.0, CLAW, Color.WHITE, 0.3, 2.0)
-	if pose == "claw":
+	if pose_v == "claw":
 		c.draw_arc(paw + Vector2(-20, 0), 90.0, -1.0, 1.0, 12, Color(1, 1, 1, 0.5), 5.0, FighterArt.AA)
 	# Head: lion mane, ram horns, wolf snout
 	var head := body_c + Vector2(100, -40)
 	var bite_open := 0.0
-	if pose == "bite":
+	if pose_v == "bite":
 		head += Vector2(40, 10)
 		bite_open = 1.0
-	elif pose == "charge":
+	elif pose_v == "charge":
 		head += Vector2(20, 24)
 	for i in 14:
 		var a := TAU * float(i) / 14.0

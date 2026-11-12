@@ -85,11 +85,11 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_corpse(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var slump := sin(t * 1.2) * 2.0
 	EnemyArt.legs(c, s, -60.0, 11.0, 12.0, COPPER, COPPER_SHADE, COPPER_HI, COPPER_SHADE.darkened(0.3), 20.0)
-	var chest := Vector2(2 + (10.0 if pose == "ram" else 0.0), -96 + slump)
+	var chest := Vector2(2 + (10.0 if pose_v == "ram" else 0.0), -96 + slump)
 	# Far arm (dangling)
 	EnemyArt.arm(c, chest + Vector2(-14, -18), chest + Vector2(-20, 34), 10.0, COPPER_SHADE, COPPER_SHADE.darkened(0.2), COPPER, SKIN_SHADE, 7.0)
 	# Breastplate with patina streaks and dents
@@ -116,7 +116,7 @@ static func draw_corpse(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_line(head + Vector2(2, 9), head + Vector2(12, 8), SKIN_SHADE.darkened(0.4), 2.0)
 	# Punching arm
 	var hand := chest + Vector2(24, 26)
-	match pose:
+	match pose_v:
 		"punch_tele":
 			hand = chest + Vector2(-16, -10)
 		"punch":
@@ -124,5 +124,5 @@ static func draw_corpse(c: CanvasItem, s: Dictionary) -> void:
 		"ram", "ram_tele":
 			hand = chest + Vector2(18, 4)
 	EnemyArt.arm(c, chest + Vector2(14, -18), hand, 11.0, COPPER, COPPER_SHADE, COPPER_HI, COPPER_SHADE, 9.0)
-	if pose == "punch":
+	if pose_v == "punch":
 		c.draw_arc(hand + Vector2(10, 0), 22.0, -1.2, 1.2, 10, Color(1, 0.9, 0.7, 0.7), 4.0, FighterArt.AA)

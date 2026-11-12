@@ -88,18 +88,18 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_masker(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var sway := sin(t * 1.3) * 4.0
-	var lean := 0.0
+	var _lean := 0.0
 	var head := Vector2(10 + sway, -196)
-	match pose:
+	match pose_v:
 		"slam_tele":
 			head = Vector2(-10, -226)
 		"slam":
 			head = Vector2(70, -60)
-			lean = 1.0
+			_lean = 1.0
 		"dash_tele":
 			head = Vector2(-6, -180)
 		"dash":
@@ -117,7 +117,7 @@ static func draw_masker(c: CanvasItem, s: Dictionary) -> void:
 	for i in 2:
 		var sh := neck + Vector2(-4.0 + float(i) * 10.0, 12)
 		var hand := Vector2(sh.x + 10.0 + sin(t * 1.6 + float(i)) * 5.0, -58.0)
-		if pose == "dash":
+		if pose_v == "dash":
 			hand = sh + Vector2(70, 10)
 		var elbow := sh.lerp(hand, 0.5) + Vector2(-8, 0)
 		c.draw_polyline(PackedVector2Array([sh, elbow, hand]), EnemyArt.BLACK, 7.0, FighterArt.AA)
@@ -137,5 +137,5 @@ static func draw_masker(c: CanvasItem, s: Dictionary) -> void:
 		for ex in [-3.0, 10.0]:
 			c.draw_colored_polygon(EnemyArt.ellipse_points(head + Vector2(ex, -6), 4.0, 6.0, 10), EnemyArt.BLACK)
 	c.draw_arc(head + Vector2(4, 8), 8.0, 0.3, PI - 0.3, 10, EnemyArt.BLACK, 2.5)     # Frozen smile
-	if pose == "slam" and pt < 0.2:
+	if pose_v == "slam" and pt < 0.2:
 		c.draw_arc(Vector2(80, 0), 20.0 + pt * 300.0, PI, TAU, 16, Color(0.9, 0.9, 1.0, 1.0 - pt * 5.0), 5.0, FighterArt.AA)

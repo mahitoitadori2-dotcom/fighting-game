@@ -262,7 +262,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_brother(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var tw: bool = s.get("twin", false)
 	var armor := WHITE if tw else BLACK
@@ -282,7 +282,7 @@ static func draw_brother(c: CanvasItem, s: Dictionary) -> void:
 	# Curved blade
 	var hand := chest + Vector2(26, 12)
 	var ang := -1.0
-	match pose:
+	match pose_v:
 		"cross", "pincer":
 			hand = chest + Vector2(40, -6)
 			ang = 0.1
@@ -322,7 +322,7 @@ static func draw_brother(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_line(head + Vector2(6, -1), head + Vector2(6, -1) + Vector2.from_angle(a) * 11.0, SUN, 2.5)
 		c.draw_circle(head + Vector2(6, -1), 4.0, SUN)
 	c.draw_line(head + Vector2(-2, -17), head + Vector2(-14, -30), trim, 4.0)          # Crest
-	if pose == "cross" or pose == "pincer":
+	if pose_v == "cross" or pose_v == "pincer":
 		c.draw_line(Vector2(-60, -80), Vector2(-150, -80), Color(glow.r, glow.g, glow.b, 0.5), 4.0)
 
 

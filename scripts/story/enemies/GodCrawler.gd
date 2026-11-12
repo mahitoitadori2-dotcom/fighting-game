@@ -75,13 +75,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_crawler(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var ph: float = s.get("walk", 0.0) * 1.2
 	var moving: bool = s.get("moving", false)
 	var rear := 0.0                                         # Head lifted while winding up the bite
-	if pose == "devour_tele":
+	if pose_v == "devour_tele":
 		rear = clampf(pt / 0.75, 0.0, 1.0)
 	var breath := sin(t * 2.0) * 2.0
 
@@ -92,7 +92,7 @@ static func draw_crawler(c: CanvasItem, s: Dictionary) -> void:
 		var shoulder := Vector2(-34 + k * 30.0, -44)
 		var reach := sin(ph + k * 2.1 + (PI if far else 0.0)) * (14.0 if moving else 3.0)
 		var hand := Vector2(shoulder.x + 18.0 + reach, -3.0)
-		if pose == "claw" and i == 5:
+		if pose_v == "claw" and i == 5:
 			hand = Vector2(96, -30)                         # Swipe
 		var elbow := Vector2((shoulder.x + hand.x) * 0.5 + 6.0, -62.0 + absf(reach) * 0.5)
 		var col := SKIN_SHADE if far else SKIN
@@ -116,11 +116,11 @@ static func draw_crawler(c: CanvasItem, s: Dictionary) -> void:
 	var head := Vector2(44, -52 - rear * 30.0 + breath)
 	FighterArt.ball(c, head, 24.0, SKIN, SKIN_SHADE, SKIN_HI)
 	var open := 0.15
-	if pose == "devour_tele":
+	if pose_v == "devour_tele":
 		open = 0.3 + 0.7 * rear
-	elif pose == "devour":
+	elif pose_v == "devour":
 		open = maxf(0.0, 1.0 - pt * 6.0)                    # Snaps shut
-	elif pose == "claw_tele":
+	elif pose_v == "claw_tele":
 		open = 0.35
 	var maw := EnemyArt.ellipse_points(head + Vector2(10, 6), 16.0, 4.0 + 16.0 * open, 16)
 	c.draw_colored_polygon(maw, MAW)
@@ -144,5 +144,5 @@ static func draw_crawler(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_arc(Vector2.ZERO, 24.0, 0.3, TAU - 0.5, 24, Color(HALO.r, HALO.g, HALO.b, 0.3), 9.0, FighterArt.AA)
 	c.draw_arc(Vector2.ZERO, 24.0, 0.3, TAU - 0.5, 24, HALO, 4.0, FighterArt.AA)
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	if pose == "devour" and pt < 0.25:                                                 # CHOMP burst
+	if pose_v == "devour" and pt < 0.25:                                                 # CHOMP burst
 		c.draw_arc(head + Vector2(40, 6), 20.0 + pt * 160.0, -1.0, 1.0, 12, Color(1, 1, 1, 0.8 - pt * 3.0), 5.0, FighterArt.AA)

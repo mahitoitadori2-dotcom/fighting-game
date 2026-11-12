@@ -420,7 +420,7 @@ static func _spike_wave(c: CanvasItem, wv: Dictionary) -> void:
 	for i in n:
 		var a: float = wv["rot"] + TAU * float(i) / float(n)
 		var d := Vector2.from_angle(a)
-		var p := Vector2(-d.y, d.x)
+		var _p := Vector2(-d.y, d.x)
 		var base := center + d * 14.0
 		var tip := center + d * (14.0 + (r - 14.0) * grow)
 		if (tip - base).length() > 3.0:

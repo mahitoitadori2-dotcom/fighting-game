@@ -250,7 +250,7 @@ static func _body_spikes(c: CanvasItem, t_left: float, rot: float, reach: float)
 	for i in 14:
 		var a := rot + TAU * float(i) / 14.0
 		var d := Vector2.from_angle(a)
-		var p := Vector2(-d.y, d.x)
+		var _p := Vector2(-d.y, d.x)
 		var base := center + d * 16.0
 		var tip := center + d * (16.0 + (reach - 16.0) * grow)
 		if (tip - base).length() > 3.0:

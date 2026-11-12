@@ -30,6 +30,7 @@ var _grind_t := 0.0
 var _grinds := 0
 var _swings := 0
 var _stomps := 0
+@warning_ignore("unused_private_class_variable")
 var _air := false
 
 
@@ -232,7 +233,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_executor(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var fog: bool = s.get("fog", false)
@@ -245,7 +246,7 @@ static func draw_executor(c: CanvasItem, s: Dictionary) -> void:
 	# The grinding blade (behind the body)
 	var hand := chest + Vector2(30, 40)
 	var ang := -1.9
-	match pose:
+	match pose_v:
 		"swing_tele", "overhead_tele":
 			hand = chest + Vector2(-30, -60)
 			ang = -2.5
@@ -268,7 +269,7 @@ static func draw_executor(c: CanvasItem, s: Dictionary) -> void:
 	var blade := PackedVector2Array([base + n * 18.0, tip + n * 26.0, tip + d * 20.0, tip - n * 22.0, base - n * 16.0])
 	c.draw_colored_polygon(blade, STEEL)
 	FighterArt.outline(c, blade, 3.5)
-	var spin := t * (30.0 if pose == "grind" or pose == "sweep" else 6.0)
+	var spin := t * (30.0 if pose_v == "grind" or pose_v == "sweep" else 6.0)
 	for k in 12:                                              # Spinning saw teeth along the edge
 		var u := float(k) / 11.0
 		var edge := base.lerp(tip, u) + n * (18.0 + u * 8.0)

@@ -181,14 +181,14 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_false_god(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	# Burning hem under a vast crimson cloak
 	for i in 9:
 		var x := -90.0 + float(i) * 22.0
 		var fh := 30.0 + 20.0 * absf(sin(t * 6.0 + float(i) * 1.3))
 		c.draw_colored_polygon(PackedVector2Array([Vector2(x - 14, 0), Vector2(x, -fh), Vector2(x + 14, 0)]), Color(1.0, 0.45, 0.1, 0.85))
-	var spread := 1.0 + (0.35 if pose.begins_with("cast") or pose.begins_with("raise") else 0.0)
+	var spread := 1.0 + (0.35 if pose_v.begins_with("cast") or pose_v.begins_with("raise") else 0.0)
 	var cloak := PackedVector2Array([Vector2(-20, -300), Vector2(26, -300), Vector2(110 * spread, -150), Vector2(96 * spread, -6), Vector2(40, -20),
 		Vector2(0, -4), Vector2(-40, -20), Vector2(-96 * spread, -6), Vector2(-110 * spread, -150)])
 	var cols := PackedColorArray()
@@ -201,7 +201,7 @@ static func draw_false_god(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, cloak, 5.0)
 	# Long thin arms with flame claws
 	var hand := Vector2(100, -170)
-	match pose:
+	match pose_v:
 		"whip":
 			hand = Vector2(170, -140)
 		"cast", "cast_tele":
@@ -213,7 +213,7 @@ static func draw_false_god(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.limb(c, Vector2(16, -270), hand, 10.0, Color(0.12, 0.08, 0.08), Color(0.05, 0.03, 0.03), Color(0.25, 0.15, 0.12))
 	for k in 4:
 		FighterArt.curved_spike(c, hand, hand + Vector2(34, -20.0 + float(k) * 14.0), 4.0, Color(1.0, 0.4, 0.08), Color(1.0, 0.9, 0.5), 0.3, 2.0)
-	if pose == "whip":
+	if pose_v == "whip":
 		c.draw_arc(Vector2(80, -170), 150.0, -1.0, 0.9, 16, Color(1.0, 0.4, 0.1, 0.7), 10.0, FighterArt.AA)
 	# Void face under a crown of burning antlers
 	var head := Vector2(6, -330)

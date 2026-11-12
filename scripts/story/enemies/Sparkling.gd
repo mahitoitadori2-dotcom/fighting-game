@@ -76,11 +76,11 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_sparkling(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var hop := absf(sin(t * 9.0)) * 4.0
-	var charge := clampf(pt / 0.6, 0.0, 1.0) if pose == "burst_tele" else 0.0
+	var charge := clampf(pt / 0.6, 0.0, 1.0) if pose_v == "burst_tele" else 0.0
 	var center := Vector2(0, -20 - hop)
 	var r := 13.0 + charge * 4.0
 	# Sparking legs
@@ -106,8 +106,8 @@ static func draw_sparkling(c: CanvasItem, s: Dictionary) -> void:
 		c.draw_circle(center + Vector2(8, -2), 3.0, EnemyArt.BLACK)
 		c.draw_circle(center + Vector2(2, -3), 1.0, Color.WHITE)
 		c.draw_circle(center + Vector2(9, -3), 1.0, Color.WHITE)
-	if pose == "burst" and pt < 0.3:
+	if pose_v == "burst" and pt < 0.3:
 		c.draw_arc(center, 20.0 + pt * 260.0, 0.0, TAU, 24, Color(1, 1, 0.7, 1.0 - pt * 3.3), 5.0, FighterArt.AA)
-	if pose == "dash":
+	if pose_v == "dash":
 		for i in 3:
 			c.draw_line(Vector2(-18 - float(i) * 8.0, -24 + float(i) * 6.0), Vector2(-40 - float(i) * 8.0, -24 + float(i) * 6.0), Color(GLOW.r, GLOW.g, GLOW.b, 0.7), 3.0)

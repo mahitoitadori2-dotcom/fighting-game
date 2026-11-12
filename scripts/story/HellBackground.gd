@@ -209,12 +209,12 @@ func _paint_cave(sz: Vector2) -> void:
 	_painter.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 6), Color(1.0, 0.4, 0.08, 0.5))
 
 
-func _shard(p: Vector2, ang: float, len: float, w: float, col: Color, hi: Color) -> void:
+func _shard(p: Vector2, ang: float, seg_len: float, w: float, col: Color, hi: Color) -> void:
 	var d := Vector2.from_angle(ang)
 	var n := d.orthogonal() * w
-	var pts := PackedVector2Array([p + n, p + n + d * len * 0.8, p + d * len, p - n + d * len * 0.8, p - n])
+	var pts := PackedVector2Array([p + n, p + n + d * seg_len * 0.8, p + d * seg_len, p - n + d * seg_len * 0.8, p - n])
 	_painter.draw_colored_polygon(pts, col)
-	_painter.draw_colored_polygon(PackedVector2Array([p + n * 0.15, p + n * 0.15 + d * len * 0.8, p + d * len, p]), hi)
+	_painter.draw_colored_polygon(PackedVector2Array([p + n * 0.15, p + n * 0.15 + d * seg_len * 0.8, p + d * seg_len, p]), hi)
 
 
 func _paint_geode(sz: Vector2) -> void:

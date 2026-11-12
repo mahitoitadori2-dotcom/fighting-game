@@ -310,6 +310,7 @@ func _underground_flame(p: EnemyPattern) -> void:
 		var n := 14 if enraged else 11
 		for i in n:
 			var d := aim.rotated(randf_range(-0.45, 0.45))
+			@warning_ignore("integer_division")
 			var s := KokusenFx.shot(self, "ember", _hand_pos(), d * randf_range(620.0, 820.0), maxi(1, dmg(p) / 2), 16.0, 1.8, false)
 			s.knockback = Vector2(200, -160)
 			s.floor_y = _ground_y() - 12.0
@@ -706,12 +707,12 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_kokusen(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("enraged", false)
 	var fly: bool = s.get("flying", false)
-	var wide: bool = s.get("eyes_wide", false) or pose == "closed" or pose == "closed_tele"
+	var wide: bool = s.get("eyes_wide", false) or pose_v == "closed" or pose_v == "closed_tele"
 	var sway := sin(t * 1.8) * 3.0
 	var flow := sin(t * (5.0 if fly else 2.6))
 
@@ -727,7 +728,7 @@ static func draw_kokusen(c: CanvasItem, s: Dictionary) -> void:
 	var far_sh := Vector2(-18, -156)
 	var near := Vector2(36, -96 + sway)
 	var far := Vector2(-34, -100 + sway)
-	match pose:
+	match pose_v:
 		"strike_tele":
 			near = Vector2(-14, -150)
 		"strike":
@@ -817,7 +818,7 @@ static func draw_kokusen(c: CanvasItem, s: Dictionary) -> void:
 			c.draw_circle(ep, r, Color(EYE.r, EYE.g, EYE.b, glow))
 			c.draw_circle(ep, r * 0.35, Color.WHITE)
 	# Wide grin full of teeth
-	var mouth_open := 6.0 if pose in ["closed", "meteor", "grab", "strike"] else 3.0
+	var mouth_open := 6.0 if pose_v in ["closed", "meteor", "grab", "strike"] else 3.0
 	var mouth := PackedVector2Array()
 	for i in 7:
 		var u := float(i) / 6.0
@@ -833,7 +834,7 @@ static func draw_kokusen(c: CanvasItem, s: Dictionary) -> void:
 
 	# --- Near sleeve (in front) + move effects ---
 	_sleeve(c, near_sh, near, false, t)
-	match pose:
+	match pose_v:
 		"grab_tele":                                            # Crimson flash where the hand hit the chest
 			c.draw_circle(Vector2(8, -138), 18.0 + 8.0 * sin(t * 30.0), Color(1.0, 0.2, 0.15, 0.45))
 		"cut", "strike":

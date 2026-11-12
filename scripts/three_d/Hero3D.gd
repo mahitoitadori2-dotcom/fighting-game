@@ -54,10 +54,10 @@ func face(dir: Vector3) -> void:
 # ============================================================
 # BUILD
 # ============================================================
-func cap(parent: Node3D, r: float, len: float, pos: Vector3, col: Color, glow: float = 0.0) -> MeshInstance3D:
+func cap(parent: Node3D, r: float, seg_len: float, pos: Vector3, col: Color, glow: float = 0.0) -> MeshInstance3D:
 	var m := CapsuleMesh.new()
 	m.radius = r
-	m.height = maxf(len, r * 2.0)
+	m.height = maxf(seg_len, r * 2.0)
 	m.radial_segments = 10
 	m.rings = 3
 	var mi := MeshInstance3D.new()
@@ -76,12 +76,12 @@ func _pivot(parent: Node3D, pos: Vector3) -> Node3D:
 
 
 ## A leg / arm: pivot at the joint, upper part, lower pivot + lower part + foot / hand.
-func _limb(parent: Node3D, at: Vector3, len: float, r: float, upper: Color, lower: Color, end_col: Color, end_r: float) -> Array:
+func _limb(parent: Node3D, at: Vector3, seg_len: float, r: float, upper: Color, lower: Color, end_col: Color, end_r: float) -> Array:
 	var top := _pivot(parent, at)
-	cap(top, r, len * 0.55, Vector3(0, -len * 0.25, 0), upper)
-	var mid := _pivot(top, Vector3(0, -len * 0.5, 0))
-	cap(mid, r * 0.9, len * 0.55, Vector3(0, -len * 0.25, 0), lower)
-	Three.ball(mid, end_r, Vector3(0.03, -len * 0.5, 0), end_col, 0.0, 0.025)
+	cap(top, r, seg_len * 0.55, Vector3(0, -seg_len * 0.25, 0), upper)
+	var mid := _pivot(top, Vector3(0, -seg_len * 0.5, 0))
+	cap(mid, r * 0.9, seg_len * 0.55, Vector3(0, -seg_len * 0.25, 0), lower)
+	Three.ball(mid, end_r, Vector3(0.03, -seg_len * 0.5, 0), end_col, 0.0, 0.025)
 	return [top, mid]
 
 

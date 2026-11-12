@@ -101,7 +101,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 ## A person lying on its belly, head up, pulling itself forward with the arms.
 static func draw_victim(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var crawl := sin(float(s.get("walk", 0.0)) * 1.5 + t * 1.5)
 	# Dragging legs
@@ -115,8 +115,8 @@ static func draw_victim(c: CanvasItem, s: Dictionary) -> void:
 	# Reaching arms
 	var reach := Vector2(48 + crawl * 10.0, -4)
 	var far_r := Vector2(40 - crawl * 10.0, -6)
-	if pose.begins_with("grab") or pose.begins_with("claw"):
-		reach = Vector2(64, -24) if pose.ends_with("_tele") else Vector2(70, -10)
+	if pose_v.begins_with("grab") or pose_v.begins_with("claw"):
+		reach = Vector2(64, -24) if pose_v.ends_with("_tele") else Vector2(70, -10)
 	EnemyArt.arm(c, Vector2(16, -22), far_r, 7.0, SKIN_SHADE, SKIN_SHADE.darkened(0.2), SKIN, SKIN_SHADE, 5.0)
 	var head := Vector2(24, -30)
 	FighterArt.ball(c, head, 11.0, SKIN, SKIN_SHADE, SKIN.lightened(0.2))

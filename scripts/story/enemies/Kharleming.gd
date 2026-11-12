@@ -174,12 +174,12 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_bot(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var moving: bool = s.get("moving", false)
 	var skitter := t * (26.0 if moving else 6.0)
 	var body_c := Vector2(0, -18 + (absf(sin(skitter)) * 1.5 if moving else 0.0))
-	if pose == "pounce_tele":
+	if pose_v == "pounce_tele":
 		body_c.y += 5.0
 
 	# Six thin jointed legs (3 per side), alternating gait

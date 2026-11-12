@@ -493,11 +493,11 @@ func _draw_frost(a: float) -> void:
 func _draw_wind(a: float) -> void:
 	for i in 4:
 		var y := -42.0 + float(i) * 28.0
-		var len := 46.0 + 10.0 * sin(_age * 20.0 + float(i) * 1.3)
+		var seg_len := 46.0 + 10.0 * sin(_age * 20.0 + float(i) * 1.3)
 		var pts := PackedVector2Array()
 		for k in 7:
 			var t := float(k) / 6.0
-			pts.append(Vector2(-dir * len * 0.5 + dir * len * t, y + sin(t * PI * 2.0 + _age * 18.0) * 5.0))
+			pts.append(Vector2(-dir * seg_len * 0.5 + dir * seg_len * t, y + sin(t * PI * 2.0 + _age * 18.0) * 5.0))
 		draw_polyline(pts, Color(0.75, 0.9, 1.0, 0.5 * a), 7.0, FighterArt.AA)
 		draw_polyline(pts, Color(1, 1, 1, a), 3.0, FighterArt.AA)
 
@@ -628,10 +628,10 @@ func _draw_void_bolt(a: float) -> void:
 
 
 func _draw_eye_beam(a: float) -> void:
-	var len := 110.0
-	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.8, 0.8, 1.0, 0.25 * a), 22.0, FighterArt.AA)
-	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(0.95, 0.95, 1.0, 0.9 * a), 8.0, FighterArt.AA)
-	draw_line(Vector2(-dir * len, 0), Vector2(dir * 20.0, 0), Color(1, 1, 1, a), 3.0, FighterArt.AA)
+	var seg_len := 110.0
+	draw_line(Vector2(-dir * seg_len, 0), Vector2(dir * 20.0, 0), Color(0.8, 0.8, 1.0, 0.25 * a), 22.0, FighterArt.AA)
+	draw_line(Vector2(-dir * seg_len, 0), Vector2(dir * 20.0, 0), Color(0.95, 0.95, 1.0, 0.9 * a), 8.0, FighterArt.AA)
+	draw_line(Vector2(-dir * seg_len, 0), Vector2(dir * 20.0, 0), Color(1, 1, 1, a), 3.0, FighterArt.AA)
 
 
 func _draw_fireball(a: float) -> void:

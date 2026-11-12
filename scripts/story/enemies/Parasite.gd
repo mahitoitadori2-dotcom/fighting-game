@@ -82,12 +82,12 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_parasite(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var crawl := sin(float(s.get("walk", 0.0)) * 2.0) * 3.0
-	var coil := clampf(pt / 0.45, 0.0, 1.0) if pose == "lunge_tele" else 0.0
-	var stretch := 1.25 if pose == "lunge" else 1.0 - 0.25 * coil
+	var coil := clampf(pt / 0.45, 0.0, 1.0) if pose_v == "lunge_tele" else 0.0
+	var stretch := 1.25 if pose_v == "lunge" else 1.0 - 0.25 * coil
 
 	# Segmented body: 5 blobs from tail to head (front raises when coiling)
 	var segs: Array[Vector2] = []
@@ -106,9 +106,9 @@ static func draw_parasite(c: CanvasItem, s: Dictionary) -> void:
 	var head := segs[4] + Vector2(6, 0)
 	FighterArt.ball(c, head, 15.0, FLESH, FLESH_SHADE, FLESH_HI)
 	var open := 0.0
-	if pose == "lunge" or pose == "nip":
+	if pose_v == "lunge" or pose_v == "nip":
 		open = 1.0
-	elif pose == "lunge_tele" or pose == "nip_tele":
+	elif pose_v == "lunge_tele" or pose_v == "nip_tele":
 		open = 0.5
 	var maw_c := head + Vector2(9, 2)
 	c.draw_circle(maw_c, 6.0 + 4.0 * open, EnemyArt.BLACK)
@@ -124,6 +124,6 @@ static func draw_parasite(c: CanvasItem, s: Dictionary) -> void:
 		else:
 			c.draw_circle(head + e, 3.0, EnemyArt.BLACK)
 			c.draw_circle(head + e, 2.0, EYE)
-	if pose == "lunge":                                         # Speed streaks
+	if pose_v == "lunge":                                         # Speed streaks
 		for i in 3:
 			c.draw_line(Vector2(-40 - float(i) * 6.0, -24 + float(i) * 8.0), Vector2(-62 - float(i) * 6.0, -24 + float(i) * 8.0), Color(1, 1, 1, 0.6), 3.0)

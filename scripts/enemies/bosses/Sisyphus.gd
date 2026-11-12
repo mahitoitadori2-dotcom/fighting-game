@@ -180,13 +180,13 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var pt: float = s.get("pose_t", 0.0)
 	var dead: bool = s.get("dead", false)
 	var rage: bool = s.get("enraged", false)
 	var breathe := sin(t * 2.2) * 2.0
 	var lean := 0.0
-	match pose:
+	match pose_v:
 		"punch":
 			lean = 22.0
 		"punch_tele":
@@ -205,18 +205,18 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 		EnemyArt.aura(c, Vector2(0, -110), 85.0, GOLD, t)
 
 	# Floating boulder on his back
-	if s.get("boulder", true) and pose != "throw":
+	if s.get("boulder", true) and pose_v != "throw":
 		var bp := Vector2(-46 + lean * 0.3, -205 + sin(t * 1.6) * 6.0)
-		if pose == "throw_tele":
+		if pose_v == "throw_tele":
 			bp = Vector2(-10, -265)
 		draw_boulder(c, bp, 44.0, t * 0.3)
 
 	# Legs: thick stone legs with gold greaves
 	var legs_s := s.duplicate()
-	if pose == "stomp_tele":
+	if pose_v == "stomp_tele":
 		legs_s["moving"] = false
 	EnemyArt.legs(c, legs_s, -66.0, 18.0, 22.0, STONE, STONE_SHADE, STONE.lightened(0.2), GOLD, 26.0)
-	if pose == "stomp_tele":                               # One leg raised high
+	if pose_v == "stomp_tele":                               # One leg raised high
 		var k := clampf(pt / 0.55, 0.0, 1.0)
 		FighterArt.limb(c, Vector2(18, -66), Vector2(30, -66 - 40.0 * k), 22.0, STONE, STONE_SHADE, STONE.lightened(0.2))
 
@@ -225,7 +225,7 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 
 	# Far arm (huge fist, chains)
 	var far_hand := chest + Vector2(-46, 50)
-	match pose:
+	match pose_v:
 		"throw_tele":
 			far_hand = chest + Vector2(-30, -80)
 		"throw":
@@ -289,7 +289,7 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 
 	# Near arm (huge fist, chains)
 	var hand := chest + Vector2(46, 46)
-	match pose:
+	match pose_v:
 		"punch_tele":
 			hand = chest + Vector2(-20, -10)
 		"punch":
@@ -305,7 +305,7 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 		"stomp", "stomp_tele":
 			hand = chest + Vector2(56, 20)
 	_arm(c, chest + Vector2(36, -24), hand, false, t)
-	if pose == "chain" and pt < 0.35:                       # Chain whip down the floor
+	if pose_v == "chain" and pt < 0.35:                       # Chain whip down the floor
 		var a := 1.0 - pt / 0.35
 		var pts := PackedVector2Array()
 		for i in 10:
@@ -313,9 +313,9 @@ static func draw_sisyphus(c: CanvasItem, s: Dictionary) -> void:
 			pts.append(hand.lerp(Vector2(320, -10), k) + Vector2(0, sin(k * PI) * -30.0))
 		c.draw_polyline(pts, Color(0, 0, 0, a), 10.0, FighterArt.AA)
 		c.draw_polyline(pts, Color(CHAIN.r, CHAIN.g, CHAIN.b, a), 6.0, FighterArt.AA)
-	if pose == "punch" and pt < 0.3:
+	if pose_v == "punch" and pt < 0.3:
 		c.draw_arc(hand, 30.0 + pt * 200.0, -1.2, 1.2, 14, Color(1, 0.8, 0.3, 1.0 - pt * 3.3), 8.0, FighterArt.AA)
-	if pose == "stomp" and pt < 0.35:
+	if pose_v == "stomp" and pt < 0.35:
 		c.draw_arc(Vector2(0, 0), 40.0 + pt * 500.0, PI, TAU, 24, Color(1.0, 0.6, 0.2, 1.0 - pt / 0.35), 9.0, FighterArt.AA)
 
 

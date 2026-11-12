@@ -79,7 +79,7 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 
 static func draw_crawling(c: CanvasItem, s: Dictionary) -> void:
 	var t: float = s.get("t", 0.0)
-	var pose: String = s.get("pose", "idle")
+	var pose_v: String = s.get("pose", "idle")
 	var dead: bool = s.get("dead", false)
 	var ph: float = s.get("walk", 0.0) * 2.5
 	var body_c := Vector2(0, -14 + sin(t * 8.0))
@@ -99,7 +99,7 @@ static func draw_crawling(c: CanvasItem, s: Dictionary) -> void:
 	FighterArt.outline(c, body, 2.5)
 	var head := body_c + Vector2(22, -2)
 	FighterArt.ball(c, head, 9.0, BODY, EnemyArt.BLACK, BODY_HI)
-	var open := 1.0 if pose == "bite" or pose == "pounce" else (0.4 if pose.ends_with("_tele") else 0.1)
+	var open := 1.0 if pose_v == "bite" or pose_v == "pounce" else (0.4 if pose_v.ends_with("_tele") else 0.1)
 	c.draw_colored_polygon(PackedVector2Array([head + Vector2(4, 0), head + Vector2(14, -2 - open * 5.0), head + Vector2(14, 2 + open * 5.0)]), Color(0.3, 0.0, 0.05))
 	for k in 3:
 		c.draw_line(head + Vector2(7 + float(k) * 3.0, -1 - open * 3.0), head + Vector2(7 + float(k) * 3.0, 1 - open * 1.0), Color.WHITE, 1.5)
