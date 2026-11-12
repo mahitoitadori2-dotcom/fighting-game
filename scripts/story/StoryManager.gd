@@ -203,6 +203,8 @@ func _apply_map(map: Dictionary) -> void:
 		wall_left_x = wl.inner_x()
 		wall_right_x = wr.inner_x()
 		player_spawn.x = clampf(player_spawn.x, wall_left_x + 120.0, wall_right_x - 120.0)
+	# IMPORTANT maps (boss arenas): a 3D background behind the 2D fight (Backdrop3D)
+	Backdrop3D.apply(get_parent(), String(map.get("bg", "")), center_x)
 
 
 func _spawn_player() -> void:

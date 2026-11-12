@@ -32,6 +32,7 @@ Play Colosseum 5 yourself (especially the finale escape and The Sun) and tune th
 - [Audio](Audio.md): the sound manager and how to replace the placeholder sounds.
 - [Performance](Performance.md): pooling, particle limits, the 4-level Graphics setting and test results.
 - [Build and release](BuildAndRelease.md): GitHub Actions, the website, releases and local builds.
+- [3D](ThreeD.md): 3D cutscenes (3D heroes + all bosses), 3D backgrounds on the boss maps, 3D menus. Fights stay 2D.
 - [Project layout](ProjectLayout.md): where the files are.
 - [Roadmap](Roadmap.md): the large future plans.
 - [To-do list](Todo.md): small open tasks.

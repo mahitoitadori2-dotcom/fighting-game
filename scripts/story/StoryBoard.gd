@@ -543,6 +543,14 @@ func _on_play() -> void:
 		scene.hero_art = art
 		add_child(scene)
 		await scene.finished
+	elif Three.enabled():
+		# 3D LEVEL INTRO: walk in / fly over / fall in / gate opens / boss reveal (Scenes3D.intro_for)
+		var intro := StoryCutscene.new()
+		intro.kind = Scenes3D.intro_for(_pawn_space)
+		intro.level = _pawn_space
+		intro.hero_art = art
+		add_child(intro)
+		await intro.finished
 	else:
 		var fall := CaveFall.new()
 		fall.hero_art = art
@@ -607,11 +615,19 @@ func _play_ext(n: int) -> void:
 		return
 	_busy = true
 	StoryProgress.current_level = n
-	var fall := CaveFall.new()
-	fall.hero_art = StoryLevels.hero_art(StoryLevels.hero_of(n))
-	fall.caption = "%s:  %s" % [StoryLevels.ext_code(n), StoryLevels.get_level(n)["title"]]
-	add_child(fall)
-	await fall.finished
+	if Three.enabled():
+		var intro := StoryCutscene.new()
+		intro.kind = Scenes3D.intro_for(n)
+		intro.level = n
+		intro.hero_art = StoryLevels.hero_art(StoryLevels.hero_of(n))
+		add_child(intro)
+		await intro.finished
+	else:
+		var fall := CaveFall.new()
+		fall.hero_art = StoryLevels.hero_art(StoryLevels.hero_of(n))
+		fall.caption = "%s:  %s" % [StoryLevels.ext_code(n), StoryLevels.get_level(n)["title"]]
+		add_child(fall)
+		await fall.finished
 	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
 
 

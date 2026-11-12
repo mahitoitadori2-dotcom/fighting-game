@@ -59,9 +59,20 @@ func _ready() -> void:
 	_painter = Painter.new()
 	_painter.bg = self
 	add_child(_painter)
+	# MENUS (parent is a Control screen): the 3D floating-arena background instead (Menu3D)
+	if get_parent() is Control and Three.enabled():
+		var screen := String(get_parent().name)
+		Menu3D.build(self, dim, screen == "MainMenu" or screen == "PreFight")
+		_painter.visible = false
+		_menu_3d = true
+
+
+var _menu_3d := false
 
 
 func _process(delta: float) -> void:
+	if _menu_3d:
+		return                                   # The 3D view animates itself
 	_t += delta
 	if GraphicsSettings.bg_should_redraw():
 		_painter.queue_redraw()

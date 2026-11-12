@@ -20,6 +20,8 @@ func _ready() -> void:
 	if ground != null:
 		ground.ground_theme = int(m.get("ground", 2))
 		ground.solid = false
+	# IMPORTANT maps (boss arenas) get their 3D background in Versus too
+	Backdrop3D.apply.call_deferred(get_parent(), String(m.get("bg", "")), ground.position.x if ground != null else 576.0)
 	if bool(m.get("fog", false)) and ground != null:
 		var fog := StoryFog.new()
 		fog.half_width = ground.width * 0.5

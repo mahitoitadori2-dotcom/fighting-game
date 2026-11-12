@@ -15,7 +15,8 @@ signal finished
 
 const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0, "throne_wake": 6.0, "cave_roll": 5.0, "void_fall": 3.6,
 	"c5_intro": 6.5, "mountain_climb": 8.0, "reach_peak": 6.0, "fall_to_earth": 11.0,
-	"enl_chase": 7.5, "enl_end": 10.0}
+	"enl_chase": 7.5, "enl_end": 10.0,
+	"intro_walk": 4.2, "intro_fly": 4.4, "intro_fall": 3.8, "intro_gate": 4.6, "intro_boss": 4.8}
 const MUSIC := {"elevator": "story_ascent", "sewer_fall": "story_sewers", "corpse_climb": "story_ascent",
 	"throne_wake": "story_throne", "cave_roll": "story_darkcave", "void_fall": "story_void",
 	"c5_intro": "story_ascent", "mountain_climb": "story_cave", "reach_peak": "story_altar", "fall_to_earth": "menu",
@@ -42,6 +43,10 @@ const CAPTIONS := {
 
 var kind := "elevator"
 var hero_art: Script = WarriorArt              # static draw_portrait(c, t)
+## Level shown by the "intro_*" kinds (3D level-start cutscenes); 0 = StoryProgress.current_level.
+var level := 0
+
+var _stage: Stage3D = null                     # 3D version of this cutscene (Scenes3D), when 3D is on
 
 var _painter: Control
 var _t := 0.0
@@ -60,7 +65,14 @@ func _ready() -> void:
 	_painter.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_painter)
 	_painter.draw.connect(_paint)
+	if level <= 0:
+		level = StoryProgress.current_level
+	_build_3d()
 	var m := String(MUSIC.get(kind, ""))
+	if kind.begins_with("intro_"):
+		m = String(StoryLevels.map_of(level).get("music", ""))
+		if m == "none":
+			m = ""
 	if m != "":
 		SoundManager.play_music(m)
 	match kind:
@@ -109,6 +121,8 @@ func _process(delta: float) -> void:
 	_last_t = _t
 	_t += delta
 	_painter.queue_redraw()
+	if _stage != null:
+		_stage.update(_t * float(DURATION.get(kind, _len)) / _len)     # Story time drives the 3D scene
 	# One-shot sounds along the way
 	match kind:
 		"sewer_fall":
@@ -148,6 +162,51 @@ func _finish() -> void:
 func _paint() -> void:
 	var sz := _painter.size
 	var k := _t * float(DURATION.get(kind, _len)) / _len          # Story time (tests run it faster)
+	if _stage == null:                                            # 2D version (3D off / POTATO)
+		_paint_2d(sz, k)
+	# Captions
+	for cap in _captions():
+		var a := clampf((k - float(cap[0])) / 0.4, 0.0, 1.0) * (1.0 - clampf((k - float(cap[1]) + 0.4) / 0.4, 0.0, 1.0))
+		if a <= 0.0:
+			continue
+		FighterArt.label(_painter, Vector2(sz.x * 0.5, sz.y * 0.16), String(cap[2]), 44, Color(1.0, 0.85, 0.5, a))
+		if String(cap[3]) != "":
+			FighterArt.label(_painter, Vector2(sz.x * 0.5, sz.y * 0.16 + 40.0), String(cap[3]), 22, Color(1, 1, 1, 0.85 * a))
+	if _t > 0.8 and not StoryManager.autoplay:
+		FighterArt.label(_painter, Vector2(sz.x - 120.0, sz.y - 18.0), "any key = skip", 13, Color(1, 1, 1, 0.35))
+	# Fade in / out
+	var total := float(DURATION.get(kind, _len))
+	var fade := maxf(1.0 - clampf(k / 0.4, 0.0, 1.0), clampf((k - (total - 0.6)) / 0.6, 0.0, 1.0))
+	if fade > 0.0:
+		_painter.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, fade))
+
+
+## The 3D version (Scenes3D) under the caption painter, when 3D is on.
+func _build_3d() -> void:
+	if not Three.enabled() or not Scenes3D.has(kind):
+		return
+	var h := StoryLevels.hero_of(level)
+	_stage = Three.view(self)
+	_stage.auto = false
+	move_child(get_node("View3D"), 0)                             # Under the captions / fades
+	Scenes3D.build(_stage, kind, {"hero": h, "other": "architect" if h == "warrior" else "warrior", "level": level})
+	_stage.update(0.0)
+
+
+## Captions: the table above, or (level intros) the level's number, title and intro line.
+func _captions() -> Array:
+	if kind.begins_with("intro_"):
+		var lv := StoryLevels.get_level(level)
+		var total := float(DURATION.get(kind, 4.0))
+		var head := "%s  -  %s" % [StoryLevels.part_name(StoryLevels.colosseum_of(level)), StoryLevels.level_label(level)]
+		if StoryLevels.is_ext(level):
+			head = StoryLevels.level_label(level)
+		return [[0.3, total * 0.5, head, String(lv.get("title", ""))], [total * 0.5, total - 0.3, String(lv.get("title", "")), String(lv.get("intro", ""))]]
+	return CAPTIONS.get(kind, [])
+
+
+## The original 2D painting (used when 3D is off).
+func _paint_2d(sz: Vector2, k: float) -> void:
 	match kind:
 		"sewer_fall":
 			_paint_sewer_fall(sz, k)
@@ -163,23 +222,11 @@ func _paint() -> void:
 			C5Cutscenes.paint(_painter, kind, sz, k, _t)
 		"enl_chase", "enl_end":
 			C6Cutscenes.paint(_painter, kind, sz, k, _t)
+		"intro_walk", "intro_fly", "intro_fall", "intro_gate", "intro_boss":
+			_vgrad(Rect2(Vector2.ZERO, sz), Color(0.05, 0.04, 0.06), Color(0.2, 0.12, 0.08))   # (2D: just a backdrop)
+			_hero(Vector2(sz.x * 0.5, sz.y * 0.8), 1.8)
 		_:
 			_paint_elevator(sz, k)
-	# Captions
-	for cap in CAPTIONS.get(kind, []):
-		var a := clampf((k - float(cap[0])) / 0.4, 0.0, 1.0) * (1.0 - clampf((k - float(cap[1]) + 0.4) / 0.4, 0.0, 1.0))
-		if a <= 0.0:
-			continue
-		FighterArt.label(_painter, Vector2(sz.x * 0.5, sz.y * 0.16), String(cap[2]), 44, Color(1.0, 0.85, 0.5, a))
-		if String(cap[3]) != "":
-			FighterArt.label(_painter, Vector2(sz.x * 0.5, sz.y * 0.16 + 40.0), String(cap[3]), 22, Color(1, 1, 1, 0.85 * a))
-	if _t > 0.8 and not StoryManager.autoplay:
-		FighterArt.label(_painter, Vector2(sz.x - 120.0, sz.y - 18.0), "any key = skip", 13, Color(1, 1, 1, 0.35))
-	# Fade in / out
-	var total := float(DURATION.get(kind, _len))
-	var fade := maxf(1.0 - clampf(k / 0.4, 0.0, 1.0), clampf((k - (total - 0.6)) / 0.6, 0.0, 1.0))
-	if fade > 0.0:
-		_painter.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, fade))
 
 
 func _hero(p: Vector2, scale_v: float, rot: float = 0.0) -> void:

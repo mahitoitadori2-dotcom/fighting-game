@@ -40,6 +40,8 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - The CPU partner: does it keep up, help enough, not get in the way (`Companion.gd`). Since 2026-11-10 it is a HARD CPU with a G Gauge and 1 flask: check it isn't too strong now. Only tested by CPU-vs-CPU runs (it used ultimates 5 times in 30 s as the Warrior).
   - The nerfed Devilish Grin and Pained One (coin flip TAILS): still a threat, or too easy now?
   - The Executor's memory fog (reversed controls, 3.5 s): fun or too annoying?
+- [ ] **3D on phones / web:** play a few Story levels on an iPhone and in the web build: 3D cutscenes, 3D menus and the 3D boss-map backgrounds cost more. Check FPS and memory (no reload / crash). Fast renders 3D at half resolution, Potato turns 3D off. See [3D](ThreeD.md).
+- [ ] **Look at the 3D boss models yourself** and say which ones need to look more like their 2D art (`scripts/three_d/Boss3D.gd`).
 - [ ] **Play The Enlightened Chase (51-62) yourself.** Check: the bombards are dodgeable, Counselor healing isn't annoying, Camel Charge is fair, the First Prime (300 HP) and the Enlightened One (180 + 210 HP, falling objects, phase 2 lasers / light balls) after the nerf. Numbers in `scripts/story/c6/`.
 - [ ] **Play the Achievement update yourself:** unlock a few in Versus and Story and check the pop-up, the grid, the badges on the board and the Colosseum 5 SOLO button. Only the CPU and scripted tests have run it so far. Is the Multiversal achievement (all of C5 solo, x4 challenges) too hard? Tuning is in `Achievements.gd`.
 - [ ] **Blasphemy Caeser after the nerf** (210 + 260 HP, sword +45%): too easy now?
