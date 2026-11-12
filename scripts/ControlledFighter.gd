@@ -27,6 +27,21 @@ var walk_phase := 0.0
 var block_amt := 0.0
 var perfect_flash := 0.0
 
+# SOULS RULES (open world only, SoulsRules.active): stamina + dodge roll instead of block
+var stamina := SoulsRules.MAX_STAMINA
+var exhausted := false
+var _stamina_wait := 0.0
+var roll_timer := 0.0                 # > 0 while rolling / backstepping
+var roll_total := 1.0
+var roll_dir := 1
+var roll_is_backstep := false
+var _roll_recover := 0.0
+var _roll_iframes := 0.0
+var dodges := 0                       # Attacks dodged through with i-frames (this level)
+var rolls := 0                        # Rolls + backsteps done (this level)
+var last_dodged_from: Fighter = null
+var last_dodge_time := -10.0
+
 
 # ===== SETUP =====
 func _ready() -> void:
@@ -86,8 +101,21 @@ func _physics_process(delta: float) -> void:
 		_handle_debug_input()
 	if stun_timer > 0.0 and not _is_free() and not _super_armor():
 		_interrupt()
-	_handle_block()
-	_handle_actions()
+	if SoulsRules.active:
+		_souls_tick(delta)
+		if roll_timer > 0.0:                  # Mid-roll: nothing else, the roll owns the body
+			_roll_update(delta)
+			move_and_slide()
+			check_fall_death()
+			_update_visuals(delta)
+			_roll_visuals()
+			return
+		_handle_roll()
+		if _souls_can_act():
+			_handle_actions()
+	else:
+		_handle_block()
+		_handle_actions()
 	_handle_state(delta)
 	_handle_movement(delta)
 	move_and_slide()
@@ -123,6 +151,111 @@ func _handle_block() -> void:
 	is_blocking = can and ctl.pressed("block")
 	if is_blocking:
 		used["blocks"] = true                      # Achievements: "no blocking" challenges
+
+
+# ===== SOULS RULES: STAMINA + DODGE ROLL (open world only) =====
+func _souls_tick(delta: float) -> void:
+	is_blocking = false
+	block_amt = 0.0
+	_roll_iframes = maxf(_roll_iframes - delta, 0.0)
+	_roll_recover = maxf(_roll_recover - delta, 0.0)
+	if _stamina_wait > 0.0:
+		_stamina_wait -= delta
+	elif stamina < SoulsRules.MAX_STAMINA:
+		stamina = minf(stamina + SoulsRules.REGEN * delta, SoulsRules.MAX_STAMINA)
+	if exhausted and stamina >= SoulsRules.EXHAUSTED_UNTIL:
+		exhausted = false
+
+
+## Spends stamina (Souls rules only). False = not enough (exhausted): the action must not happen.
+## Like in Souls games, any stamina left lets you act; the cost may take you to 0.
+func spend_stamina(cost: float) -> bool:
+	if not SoulsRules.active:
+		return true
+	if exhausted or stamina <= 0.0:
+		return false
+	stamina = maxf(stamina - cost, 0.0)
+	_stamina_wait = SoulsRules.REGEN_DELAY
+	if stamina <= 0.0:
+		exhausted = true
+		_stamina_wait = SoulsRules.EXHAUSTED_DELAY
+	return true
+
+
+## Invincible right now (roll i-frames). CombatManager lets attacks pass through.
+func has_iframes() -> bool:
+	return SoulsRules.active and _roll_iframes > 0.0
+
+
+## Attack / move presses this frame only go through when there is stamina for them.
+func _souls_can_act() -> bool:
+	if _roll_recover > 0.0:
+		return false
+	var wants_attack := ctl.just_pressed("attack")
+	var wants_move := false
+	for i in move_ids.size():
+		if ctl.just_pressed("move%d" % (i + 1)) or ctl.just_pressed("ultimate"):
+			wants_move = true
+	if not wants_attack and not wants_move:
+		return true
+	if not _is_free():
+		return true                           # Mid-action presses (combo follow-ups) are free
+	if exhausted or stamina <= 0.0:
+		Effects.popup(self, global_position + Vector2(0, -150), "NO STAMINA", Color(0.9, 0.85, 0.3), 18)
+		return false
+	spend_stamina(SoulsRules.MOVE_COST if wants_move else SoulsRules.ATTACK_COST)
+	return true
+
+
+func _handle_roll() -> void:
+	if not ctl.just_pressed("block"):
+		return
+	if not _is_free() or stun_timer > 0.0 or not is_on_floor() or _roll_recover > 0.0:
+		return
+	var dir := ctl.axis()
+	var back := absf(dir) < 0.3
+	if not spend_stamina(SoulsRules.BACKSTEP_COST if back else SoulsRules.ROLL_COST):
+		Effects.popup(self, global_position + Vector2(0, -150), "NO STAMINA", Color(0.9, 0.85, 0.3), 18)
+		return
+	rolls += 1
+	roll_is_backstep = back
+	if back:
+		roll_dir = -facing                    # Backstep: hop away, still facing the enemy
+		roll_total = SoulsRules.BACKSTEP_TIME
+		_roll_iframes = SoulsRules.BACKSTEP_IFRAMES
+	else:
+		roll_dir = 1 if dir > 0.0 else -1
+		facing = roll_dir
+		roll_total = SoulsRules.ROLL_TIME
+		_roll_iframes = SoulsRules.ROLL_IFRAMES
+	roll_timer = roll_total
+	SoundManager.play_sfx("jump", -8.0)
+
+
+func _roll_update(delta: float) -> void:
+	roll_timer -= delta
+	var k := 1.0 - roll_timer / roll_total               # 0 -> 1 over the roll
+	var spd := SoulsRules.BACKSTEP_SPEED if roll_is_backstep else SoulsRules.ROLL_SPEED
+	velocity.x = float(roll_dir) * spd * (1.0 - k * k * 0.7)   # Fast start, slows at the end
+	if not is_on_floor():
+		velocity.y += data.gravity * delta
+	if roll_timer <= 0.0:
+		roll_timer = 0.0
+		_roll_recover = SoulsRules.ROLL_RECOVERY
+		velocity.x *= 0.35
+		visuals.rotation = 0.0
+		visuals.position = Vector2.ZERO
+		visuals.modulate.a = 1.0
+
+
+## The body tucks and spins (roll) or leans back (backstep), around the middle of the body.
+func _roll_visuals() -> void:
+	var k := 1.0 - roll_timer / roll_total
+	var rot := float(roll_dir) * TAU * k if not roll_is_backstep else float(-roll_dir) * 0.35 * sin(k * PI)
+	var pivot := Vector2(0, -55)
+	visuals.rotation = rot
+	visuals.position = pivot - pivot.rotated(rot)
+	visuals.modulate.a = 0.55 if _roll_iframes > 0.0 else 1.0     # See-through = invincible
 
 
 func _on_blocked_base(_hit: HitData, perfect: bool) -> void:
@@ -211,7 +344,7 @@ func _handle_movement(delta: float) -> void:
 
 	# --- Jump ---
 	var can_jump := not stunned and not locked and not is_blocking
-	if can_jump and _jump_buffer_timer > 0.0 and _coyote_timer > 0.0:
+	if can_jump and _jump_buffer_timer > 0.0 and _coyote_timer > 0.0 and spend_stamina(SoulsRules.JUMP_COST):
 		velocity.y = -data.jump_force * _jump_multiplier()
 		SoundManager.play_sfx("jump", -4.0)
 		_jump_buffer_timer = 0.0
@@ -255,6 +388,11 @@ func _on_death() -> void:
 	onslaught.melee_count = 0
 	is_blocking = false
 	block_amt = 0.0
+	roll_timer = 0.0
+	_roll_iframes = 0.0
+	visuals.rotation = 0.0
+	visuals.position = Vector2.ZERO
+	visuals.modulate.a = 1.0
 	_on_death_extra()
 
 
@@ -263,6 +401,8 @@ func _on_respawn() -> void:
 	_jump_buffer_timer = 0.0
 	for k in cooldowns:
 		cooldowns[k] = 0.0
+	stamina = SoulsRules.MAX_STAMINA
+	exhausted = false
 	_on_respawn_extra()
 
 

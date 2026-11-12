@@ -120,6 +120,15 @@ static func apply_hit(hit: HitData, victim: Fighter) -> String:
 	var attacker: Fighter = hit.source
 	if attacker != null and is_instance_valid(attacker) and are_allies(attacker, victim):
 		return "ignored"                         # Never hurt your own team (helpers, future team modes)
+	# --- SOULS RULES (open world): a dodge roll's i-frames let the attack pass straight through ---
+	if victim is ControlledFighter and (victim as ControlledFighter).has_iframes():
+		var cf := victim as ControlledFighter
+		if hit.source != cf.last_dodged_from or Fighter.now() - cf.last_dodge_time > 0.3:
+			cf.dodges += 1                           # One count per attack, not per frame
+			Effects.popup(cf, cf.global_position + Vector2(0, -150), "DODGED", Color(0.75, 0.9, 1.0), 20)
+		cf.last_dodged_from = hit.source
+		cf.last_dodge_time = Fighter.now()
+		return "ignored"
 
 	# --- BLOCK: only works against attacks from the side the victim FACES ---
 	if hit.blockable and victim.can_block_now():

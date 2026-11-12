@@ -55,11 +55,22 @@ func _paint() -> void:
 		FighterArt.label(_painter, Vector2(x, y + 12), "%s   %d / %d" % [who, p.hp, p.data.max_hp], 18, Color.WHITE, false)
 		var col := Color(0.15, 0.85, 0.25) if k > 0.5 else (Color(1.0, 0.7, 0.1) if k > 0.25 else Color(0.9, 0.15, 0.15))
 		_bar(Rect2(x, y + 24, 300, 22), k, col)
+		# STAMINA (Souls rules, open world only): green bar, dark yellow + "EXHAUSTED" when empty
+		var gy := 50.0
+		if SoulsRules.active and p is ControlledFighter:
+			var cp := p as ControlledFighter
+			var sr := Rect2(x, y + 49, 240, 8)
+			_painter.draw_rect(sr, Color(0, 0, 0))
+			var sk := cp.stamina / SoulsRules.MAX_STAMINA
+			_painter.draw_rect(Rect2(sr.position + Vector2(1, 1), Vector2((sr.size.x - 2) * sk, sr.size.y - 2)), Color(0.75, 0.65, 0.15) if cp.exhausted else Color(0.3, 0.85, 0.35))
+			if cp.exhausted:
+				FighterArt.label(_painter, Vector2(x + 248, y + 57), "EXHAUSTED", 12, Color(1.0, 0.85, 0.3), false)
+			gy = 61.0
 		# G Gauge
 		if p.gauge != null:
 			var v := p.gauge.value / p.gauge.segment_size
 			for i in 3:
-				var seg := Rect2(x + float(i) * 100.0, y + 50, 96, 9)
+				var seg := Rect2(x + float(i) * 100.0, y + gy, 96, 9)
 				_painter.draw_rect(seg, Color(0, 0, 0))
 				var fill := Color(0.1, 0.65, 1.0) if v >= float(i + 1) else (Color(0.1, 0.35, 0.65) if v > float(i) else Color(0.12, 0.18, 0.25))
 				_painter.draw_rect(seg.grow(-1.5), fill)

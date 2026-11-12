@@ -32,7 +32,7 @@ The level select is a board game. The area names and tile colours come from each
 
 **Blasphemy Caeser nerf (2026-11-11):** the user found him too tanky (~840 HP in total after the Story boss buff). HP 280 + 340 -> **210 + 260** (~635 in total with the buff); Blade Slash 7 -> 6, Ground Slam 10 -> 8, Lava Wave 9 -> 8 (slightly longer cooldowns). The Warrior's growing sword in this fight now adds +45% damage per level (was +30%). Not played by a human yet.
 
-**DEEP FAITH PAYOFF (added 2026-11-11):** only ACTIVE after you beat **Mother Nature** (level 47; `DEEP_FAITH_AFTER`), then in every Story level (replays too). Beating her shows "DEEP FAITH PAYOFF UNLOCKED!" and unlocks the "Deep Faith" achievement. A small Story-only buff for the Warrior and the Architect (you or the C5 partner, not the Anti Architect): +20% max HP, +1 flask (3 per level, partner 2), move cooldowns 15% shorter. Numbers: `DEEP_FAITH_*` in `StoryManager.gd`. The HUD shows "DEEP FAITH PAYOFF" next to the flasks. Checked by a test run (Warrior 120 HP, 3 flasks); not played by a human.
+**DEEP FAITH PAYOFF (added 2026-11-11):** ONLY AFTER **Mother Nature**: she (level 47; `DEEP_FAITH_AFTER`) must be beaten, and it only works in the main Story levels AFTER her (48+: The Sun, The Enlightened Chase, the coming open world). Not in levels 1-47 (replays) and not in the Boss Extensions (changed 2026-11-12, `deep_faith_in()`). Beating her shows "DEEP FAITH PAYOFF UNLOCKED!" and unlocks the "Deep Faith" achievement. A small Story-only buff for the Warrior and the Architect (you or the C5 partner, not the Anti Architect): +20% max HP, +1 flask (3 per level, partner 2), move cooldowns 15% shorter. Numbers: `DEEP_FAITH_*` in `StoryManager.gd`. The HUD shows "DEEP FAITH PAYOFF" next to the flasks. Checked by a test run (Warrior 120 HP, 3 flasks); not played by a human.
 
 **ANTI ARCHITECT toggle (added 2026-11-11):** the board's "HERO: STORY HEROES / ANTI ARCHITECT" button in the top-left corner (saved). The first version sat in the bottom row and was pushed off-screen on C5 / extension pages (fixed the same day). When ON, every main Story level is played **solo** as the Anti Architect, Colosseum 5 included (no CPU partner and no hero choice). The Boss Extensions menu has him as a third hero next to Warrior and Architect. Tested only by the CPU (level 35 solo and extension BC2 were cleared); not tested by a human.
 
@@ -221,3 +221,14 @@ Code: levels / maps in `StoryLevels.gd` (`EXTENSIONS`, `EXT_LEVELS`, internal le
 - Headless check: all 50 levels load; all 8 bosses and 4 new enemies spawn and fire every attack in every form (Mother Nature 4 forms, The Sun 2 forms) with no errors.
 - Screenshots with a CPU player + CPU partner: the board page, every arena (road and boss), coin-flip enemies, the partner fighting and its HUD line, the Executor enraged with the confusion status, Mother Nature, The False God's cathedral, The Sun, The Consumer and the solar bomb pick-up.
 - **Not tested yet:** no Colosseum 5 boss was beaten by a CPU or a human. The escape platforms were built but never jumped across by a player. The hero select screen, the voice lines, the new music and the cutscenes were not watched / heard. Difficulty is untuned.
+
+## Souls rules (open world, prepared 2026-11-12)
+
+The next Story part will be an open world (Elden Ring-like). Its **mechanics are ready, but there are no open-world levels yet.** A level turns them on with `"open_world": true` in `StoryLevels.gd`; everywhere else (Versus, all current Story levels) nothing changes and you still block. Code: `scripts/souls/SoulsRules.gd` (all numbers), `ControlledFighter.gd`.
+
+- **Dodge roll replaces block:** the block button (F / RB / LT, touch button shows ROLL) rolls toward the direction you hold, with **i-frames** (invincible for 0.30 s: attacks pass through, "DODGED"). No direction = a short **backstep** (0.14 s i-frames). The hero spins and turns see-through while invincible.
+- **Stamina** (green bar under your HP): roll 26, backstep 16, attack 12, move / ultimate 20, jump 7 (max 100). Refills at 42/s after a 0.55 s pause. At 0 you are **EXHAUSTED** (bar turns yellow): no rolls / attacks until it is back to 25.
+- **Flasks** (R) are the Estus, unchanged.
+- The CPU heroes roll through enemy attacks instead of blocking (for tests and the partner).
+- **Tested** with the rules forced on in level 48 (CPU Architect): stamina drains / refills, 3 rolls dodged 3 attacks, no errors. Not played by a human. Forcing them on for a test: `SoulsRules.test_force = true`.
+- **Ideas for later** (not built): Sites of Grace (checkpoints / respawn points), dropped souls you can pick back up after dying, poise, a lock-on, heavy (charged) attacks.

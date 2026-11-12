@@ -221,8 +221,29 @@ func enemy_rushing() -> bool:
 	return enemy.velocity.x * -dir > 180.0
 
 
+## SOULS RULES (open world): no blocking - roll THROUGH an attack that is about to land
+## (a story enemy's wind-up almost done, or a fighter mid-swing), if there is stamina for it.
+func _try_roll(max_range: float) -> bool:
+	var cf := f as ControlledFighter
+	if cf == null or enemy == null or cf.exhausted or cf.stamina < SoulsRules.ROLL_COST or cf.roll_timer > 0.0:
+		return false
+	var be := enemy as BaseEnemy
+	var incoming := enemy_attacking()
+	if be != null and be.is_telegraphing() and be.state_len - be.state_time < 0.25:
+		incoming = true
+	if not incoming or dist > max_range + 90.0 or not chance(block_chance):
+		return false
+	_move_dir = signf(enemy.global_position.x - f.global_position.x)   # Roll through them
+	if _move_dir == 0.0:
+		_move_dir = float(f.facing)
+	press("block")
+	return true
+
+
 ## Standard "block if they swing at me" check. Returns true if it decided to block.
 func try_block(max_range: float = 170.0) -> bool:
+	if SoulsRules.active:
+		return _try_roll(max_range)
 	if enemy_attacking() and dist < max_range and facing_enemy and chance(block_chance):
 		block_for(rng.randf_range(0.3, 0.5))
 		return true

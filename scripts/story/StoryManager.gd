@@ -22,7 +22,9 @@ const FLASK_HEAL := 0.5
 const PARTNER_FLASKS := 1                    # Colosseum 5 CPU partner (refilled with yours)
 ## DEEP FAITH PAYOFF (Story only): a small buff for the WARRIOR and the ARCHITECT (not the Anti
 ## Architect) - as you or as the Colosseum 5 partner. More HP, +1 flask, shorter move cooldowns.
-## ONLY once MOTHER NATURE (level DEEP_FAITH_AFTER) is beaten; from then on in every level.
+## ONLY AFTER MOTHER NATURE: she (level DEEP_FAITH_AFTER) must be beaten, and it only works in the
+## main Story levels AFTER her (48+: Colosseum 5's end, The Enlightened Chase, the open world...).
+## Never in earlier levels (replays) or the Boss Extensions.
 const DEEP_FAITH_AFTER := 47
 const DEEP_FAITH_HP_MULT := 1.2
 const DEEP_FAITH_EXTRA_FLASKS := 1
@@ -108,6 +110,7 @@ func _ready() -> void:
 	else:
 		level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
 	level = StoryLevels.get_level(level_number)
+	SoulsRules.active = bool(level.get("open_world", false)) or SoulsRules.test_force   # Open world: roll + stamina
 	if bool(level.get("void_mod", false)):
 		# Skipping the optional Shining level counts as leaving it alive
 		shining_choice = StoryProgress.shining_choice if StoryProgress.shining_choice != "" else "spared"
@@ -144,6 +147,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	active = false
+	SoulsRules.active = false
 	has_walls = false
 	max_attackers = MAX_ATTACKERS
 	Companion.leader = null
@@ -297,10 +301,15 @@ static func deep_faith_unlocked() -> bool:
 	return StoryProgress.level_cleared(DEEP_FAITH_AFTER)
 
 
+## Deep Faith Payoff works in THIS level: Mother Nature beaten AND a main Story level after her.
+static func deep_faith_in(n: int) -> bool:
+	return deep_faith_unlocked() and n > DEEP_FAITH_AFTER and not StoryLevels.is_ext(n)
+
+
 ## DEEP FAITH PAYOFF: Warrior / Architect only (own data copy, Versus unchanged).
 ## More max HP (starts full) and every move cooldown shorter. Returns true if it applied.
 func _deep_faith(f: Fighter) -> bool:
-	if not deep_faith_unlocked() or f == null or f.data == null or f is AntiArchitect:
+	if not deep_faith_in(level_number) or f == null or f.data == null or f is AntiArchitect:
 		return false
 	if not (f.data is WarriorData or f.data is ArchitectData):
 		return false

@@ -83,7 +83,7 @@ func _layout() -> void:
 	_buttons.clear()
 	_add_button("attack", "punch", "ATK", a, 40.0 * s)
 	_add_button("jump", "jump", "JUMP", a + Vector2.from_angle(deg_to_rad(180.0)) * inner, 27.0 * s)
-	_add_button("block", "block", "BLK", a + Vector2.from_angle(deg_to_rad(216.0)) * inner, 25.0 * s)
+	_add_button("block", "block", "ROLL" if SoulsRules.active else "BLK", a + Vector2.from_angle(deg_to_rad(216.0)) * inner, 25.0 * s)
 	_add_button("ult", "ultimate", "G", a + Vector2.from_angle(deg_to_rad(254.0)) * inner, 27.0 * s)
 	_add_button("m1", "move_rocket", "1", a + Vector2.from_angle(deg_to_rad(268.0)) * outer, 25.0 * s)
 	_add_button("m2", "move_hnct", "2", a + Vector2.from_angle(deg_to_rad(245.0)) * outer, 25.0 * s)
