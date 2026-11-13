@@ -312,10 +312,14 @@ function chord(name) {                                   // "Dm" -> {root, tones
 const tone = (c, i) => c.tones[i % c.tones.length] + 12 * Math.floor(i / c.tones.length);
 
 // Turns a piece into notes: [{inst, key, vel, at (beats), dur (beats)}] + its length in beats.
+// A string pad becomes a real STRING SECTION voiced by range (double basses, celli, violas,
+// violins: the solo recordings layered with the string ensemble).
+const STRING_PADS = { strings: 'strings', slowstrings: 'slowstrings', tremolo: 'tremolo' };
+
 function build(p) {
   const chords = p.chords.trim().split(/\s+/).map(chord);
   const bars = chords.length, M = p.meter, E = [];
-  const add = (inst, key, vel, at, dur) => E.push({ inst, key, vel, at, dur });
+  const add = (inst, key, vel, at, dur, g = 1) => E.push({ inst, key, vel, at, dur, g });
   for (const q of p.parts) {
     const oct = 12 * (q.oct || 0), vel = q.vel || 90;
     const from = q.from || 0, to = q.to === undefined ? bars : q.to;
@@ -323,7 +327,10 @@ function build(p) {
       let t = q.bar * M + (q.shift || 0);
       for (const tok of q.notes.trim().split(/\s+/)) {
         const [n, d] = tok.split(':'); const dd = d === undefined ? 1 : +d;
-        if (n !== 'r') add(q.inst, midi(n) + oct, vel, t, dd);
+        if (n !== 'r') {
+          add(q.inst, midi(n) + oct, vel, t, dd);
+          for (const [di, dsh, dg] of (q.dbl || [])) add(di, midi(n) + oct + 12 * dsh, vel - 10, t, dd, dg);   // Doublings
+        }
         t += dd;
       }
       continue;
@@ -331,6 +338,17 @@ function build(p) {
     for (let bar = from; bar < to; bar++) {
       const c = chords[bar], b0 = bar * M;
       if (q.every && (bar - from) % q.every) continue;
+      if (q.t === 'pad' && STRING_PADS[q.inst]) {
+        const ens = STRING_PADS[q.inst], tn = [...c.tones].sort((a, b) => a - b);
+        add('contrabass', tn[0] - 12 + oct, vel - 6, b0, M, 0.55);
+        add('cello', tn[0] + oct, vel, b0, M, 0.45);
+        add(ens, tn[0] + oct, vel, b0, M, 0.3);
+        add('viola', tn[1] + 12 + oct, vel - 4, b0, M, 0.4);
+        add('violin', tn[tn.length - 1] + 12 + oct, vel, b0, M, 0.4);
+        add(ens, tn[0] + 24 + oct, vel, b0, M, 0.32);
+        add(ens, tn[1] + 24 + oct, vel - 6, b0, M, 0.25);
+        continue;
+      }
       if (q.t === 'pad') for (const k of c.tones) add(q.inst, k + 12 + oct, vel, b0, M);
       if (q.t === 'bass') for (const [bt, d] of q.pat) add(q.inst, c.root - 12 + oct, vel + (bt === 0 ? 8 : 0), b0 + bt, d);
       if (q.t === 'arp') for (const [bt, i, d] of q.pat) add(q.inst, tone(c, i) + oct, vel, b0 + bt, d);
@@ -340,5 +358,71 @@ function build(p) {
   }
   return { notes: E, beats: bars * M };
 }
+
+// ==========================================================================================
+// FULL-ORCHESTRA REVAMP (2026-11-13): every piece gets more of the orchestra. Melodies stay the
+// same; `dbl` adds instruments that double a melody part (by its instrument): [instrument,
+// octave shift, gain]. "voice" = a SOLO VOCALIST (low = male, high = female). `parts` = new lines.
+// Instruments without a real recording: crumhorn (= bagpipe chanter, also a capped buzzing reed),
+// euphonium (= trombone + horn blend), E-flat / bass clarinet (= the clarinet high / low).
+// ==========================================================================================
+const MORE = {
+  menu: { dbl: { cello: [['clarinet', 1, 0.3]], violin: [['flute', 0, 0.3], ['voice', 0, 0.3]], horn: [['euphonium', -1, 0.4], ['trumpet', 0, 0.22]] },
+    parts: [{ t: 'arp', inst: 'piano', from: 8, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 4, 1]], oct: 1, vel: 46 },
+      { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.25, 2.5, 2.75], vel: 64 }] },
+  fight: { dbl: { violin: [['piccolo', 1, 0.2], ['xylophone', 1, 0.22]], horn: [['clarinet', 0, 0.3], ['euphonium', -1, 0.35]], trombone: [['tuba', -1, 0.3]] },
+    parts: [{ t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [0.5, 1.5, 2.5, 3.5], vel: 44 }] },
+  boss_caeser: { dbl: { choir: [['voice', -1, 0.45]], trombone: [['euphonium', 0, 0.4]], horn: [['trumpet', 0, 0.28], ['englishhorn', 0, 0.22]] },
+    parts: [{ t: 'pad', inst: 'organ', from: 8, to: 16, oct: -1, vel: 58 },
+      { t: 'ost', inst: 'bassoon', from: 0, to: 16, rel: [0, 0, 1, 0, 0, 0, -5, -4], step: 0.5, oct: -1, vel: 66 }] },
+  boss_needle: { dbl: { violin: [['xylophone', 1, 0.28]], flute: [['piccolo', 0, 0.22]] },
+    parts: [{ t: 'arp', inst: 'clarinet', from: 8, to: 16, pat: [[0, 0, 3], [3, 2, 3]], oct: 1, vel: 58 }] },
+  boss_sun: { dbl: { horn: [['voice', 1, 0.4], ['flute', 1, 0.22]], trumpet: [['piccolo', 1, 0.18], ['euphonium', -1, 0.35]], violin: [['oboe', 0, 0.28]] },
+    parts: [{ t: 'hit', inst: 'glock', key: 88, from: 0, to: 16, beats: [0, 1.5], vel: 52, dur: 1 }] },
+  boss_consumer: { dbl: { choir: [['voice', -1, 0.45]], trombone: [['euphonium', 0, 0.45]], trumpet: [['clarinet', 0, 0.25]], violin: [['xylophone', 0, 0.22]] },
+    parts: [{ t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [2, 2.25, 2.5, 2.75], every: 4, vel: 70 }] },
+  boss_satan: { dbl: { trombone: [['euphonium', 0, 0.5]], choir: [['voice', -1, 0.5]], horn: [['bassoon', 0, 0.35]] } },
+  boss_nature: { dbl: { violin: [['clarinet', 0, 0.3]], flute: [['voice', 0, 0.45]] },
+    parts: [{ t: 'arp', inst: 'guitar', from: 8, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1]], vel: 50 }] },
+  story_cave: { dbl: { flute: [['clarinet', -1, 0.3]], violin: [['oboe', 0, 0.25]] },
+    parts: [{ t: 'arp', inst: 'marimba', from: 8, to: 16, pat: [[0, 0, 1], [3, 2, 1]], oct: 1, vel: 48 }] },
+  story_void: { dbl: { cello: [['clarinet', 0, 0.3], ['voice', 1, 0.28]] } },
+  story_chase: { dbl: { violin: [['piccolo', 1, 0.2], ['crumhorn', 0, 0.28]], horn: [['euphonium', -1, 0.4], ['trumpet', 0, 0.3]] },
+    parts: [{ t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 4], vel: 58 }] },
+  story_demiland: { dbl: { cello: [['clarinet', 1, 0.25], ['crumhorn', 1, 0.18]], violin: [['flute', 0, 0.25]], horn: [['euphonium', -1, 0.35], ['voice', -1, 0.35]] },
+    parts: [{ t: 'arp', inst: 'guitar', from: 8, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1]], vel: 46 }] },
+  story_demiland_night: { dbl: { piano: [['voice', 0, 0.25]] } },
+  boss_tribe: { dbl: { choir: [['voice', -1, 0.5]], trombone: [['euphonium', 0, 0.4]], horn: [['crumhorn', 0, 0.3], ['trumpet', 0, 0.22]], trumpet: [['piccolo', 0, 0.18]] },
+    parts: [{ t: 'ost', inst: 'marimba', from: 0, to: 16, rel: [0, 7, 12, 7], step: 1, oct: 1, vel: 58 },
+      { t: 'hit', inst: 'castanets', key: 60, from: 8, to: 16, beats: [0.5, 1.5, 2.5, 3.5], vel: 70 }] },
+  boss_tiger: { dbl: { violin: [['piccolo', 1, 0.2], ['xylophone', 1, 0.22]], horn: [['euphonium', -1, 0.4]], trombone: [['tuba', -1, 0.3]] },
+    parts: [{ t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [2, 5], vel: 58 }] },
+  boss_treelord: { dbl: { oboe: [['englishhorn', -1, 0.35]], cello: [['clarinet', 0, 0.3]], horn: [['euphonium', -1, 0.4], ['trumpet', 0, 0.22]], choir: [['voice', 0, 0.45]] },
+    parts: [{ t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 4, 1]], oct: 1, vel: 52 }] },
+};
+for (const [k, m] of Object.entries(MORE)) {
+  const p = PIECES[k];
+  if (!p) continue;
+  for (const q of p.parts) if (q.t === 'mel' && m.dbl && m.dbl[q.inst] && !q.dbl) q.dbl = m.dbl[q.inst];
+  if (m.parts) p.parts.push(...m.parts);
+}
+
+// ---------------- THE MINOR ARCHITECTIUM: a merchant's jig ----------------
+// The workshop town's market: D major 6/8 (eighth = beat). The tune the town's fiddlers and
+// merchants play - folk fiddle, mandolin, nylon guitar (oom-pah), crumhorns, tambourine, castanets.
+PIECES.story_architectium = { bpm: 300, meter: 6, rev: 0.28,
+  chords: 'D D G D D G A D  G D D A G A D D',
+  parts: [
+    { t: 'bass', inst: 'guitar', from: 0, to: 16, pat: [[0, 1], [3, 1]], oct: 1, vel: 70 },
+    { t: 'arp', inst: 'guitar', from: 0, to: 16, pat: [[1, 1, 1], [2, 2, 1], [4, 1, 1], [5, 2, 1]], oct: 1, vel: 56 },
+    { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 2], [3, 2]], vel: 80 },
+    { t: 'mel', inst: 'fiddle', bar: 0, vel: 104, dbl: [['mandolin', 0, 0.4]],
+      notes: 'A4:1 D5:1 F#5:1 A5:2 F#5:1 G5:1 F#5:1 E5:1 D5:2 B4:1 A4:1 B4:1 D5:1 G5:2 B4:1 A4:2 F#4:1 D4:3 A4:1 D5:1 F#5:1 A5:2 F#5:1 G5:1 B5:1 A5:1 G5:1 F#5:1 E5:1 F#5:1 A5:1 F#5:1 E5:1 C#5:1 E5:1 D5:3 D5:3' },
+    { t: 'mel', inst: 'crumhorn', bar: 8, vel: 96, dbl: [['mandolin', 0, 0.4], ['fiddle', -1, 0.45]],
+      notes: 'B4:1 D5:1 G5:1 B5:2 G5:1 A5:1 G5:1 F#5:1 E5:2 D5:1 F#5:1 A5:1 D6:1 A5:2 F#5:1 E5:3 A4:3 B4:1 D5:1 G5:1 B5:2 D6:1 C#6:1 A5:1 E5:1 C#5:2 E5:1 D5:1 F#5:1 A5:1 F#5:1 E5:1 C#5:1 D5:6' },
+    { t: 'hit', inst: 'drums', key: 54, from: 0, to: 16, beats: [0, 3], vel: 72 },            // Tambourine
+    { t: 'hit', inst: 'castanets', key: 60, from: 8, to: 16, beats: [2, 5], vel: 66 },
+    { t: 'hit', inst: 'drums', key: 35, from: 0, to: 16, beats: [0], vel: 70 },
+  ] };
 
 module.exports = { PIECES, build };

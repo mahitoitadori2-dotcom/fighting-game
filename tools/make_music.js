@@ -169,6 +169,10 @@ function renderVoice(sf, out, v, key, vel, startSec, durSec, gainMul) {
 // One NOTE on a GM instrument (bank 0 program, or drums bank 128)
 const voiceCache = new Map();
 function note(sf, out, inst, key, vel, at, dur, gain = 1) {
+  if (inst.layers) {                                           // A blended "instrument" (euphonium)
+    for (const [name, sh, g] of inst.layers) note(sf, out, I[name], key + sh, vel, at, dur, gain * g);
+    return;
+  }
   key = Math.max(0, Math.min(127, Math.round(key)));
   vel = Math.max(1, Math.min(127, Math.round(vel)));
   const ck = inst.bank + ':' + inst.prog + ':' + key + ':' + (vel >> 4);
@@ -221,63 +225,92 @@ const I = {
   horn: { bank: 0, prog: 60, gain: 0.75 }, brass: { bank: 0, prog: 61, gain: 0.5 }, oboe: { bank: 0, prog: 68, gain: 0.6 },
   bassoon: { bank: 0, prog: 70, gain: 0.7 }, flute: { bank: 0, prog: 73, gain: 0.6 }, taiko: { bank: 0, prog: 116, gain: 0.9 },
   drums: { bank: 128, prog: 48, gain: 0.8 },                  // Orchestra kit
+  // ----- The full orchestra (2026-11-13 revamp) -----
+  piccolo: { bank: 0, prog: 72, gain: 0.45 }, clarinet: { bank: 0, prog: 71, gain: 0.6 },        // (E-flat / bass clarinet = clarinet high / low)
+  englishhorn: { bank: 0, prog: 69, gain: 0.6 },
+  crumhorn: { bank: 0, prog: 109, gain: 0.28 },               // No crumhorn recording: the bagpipe chanter (also a capped, buzzing reed)
+  fiddle: { bank: 0, prog: 110, gain: 0.85 },                 // Folk fiddle (the "merchant" violin)
+  mandolin: { bank: 16, prog: 25, gain: 0.7 }, xylophone: { bank: 0, prog: 13, gain: 0.55 },
+  glock: { bank: 0, prog: 9, gain: 0.45 }, marimba: { bank: 0, prog: 12, gain: 0.6 },
+  castanets: { bank: 8, prog: 115, gain: 0.6 },
+  voice: { bank: 0, prog: 53, gain: 0.75 },                   // SOLO VOICE (a real "ooh" vocal): low = male, high = female
+  // No euphonium recording: a trombone + French horn blend in the euphonium's tenor range
+  euphonium: { layers: [['trombone', 0, 0.75], ['horn', 0, 0.5]] },
 };
 // Percussion keys in the (orchestra) drum kit
-const BD = 35, SNARE = 38, CRASH = 57, CHINA = 59, TRI = 81;   // Orchestra kit: 35 bass drum, 38 snare, 57/59 concert cymbals
+const BD = 35, SNARE = 38, CRASH = 57, CHINA = 59, TRI = 81, TAMB = 54;   // Orchestra kit: 35 bass drum, 38 snare, 57/59 concert cymbals
+
+// A STRING SECTION playing a chord (tones = the chord, around octave 3): double basses on the
+// root, celli on the root (solo cello + ensemble), violas on the middle, violins on top (solo
+// violin + ensemble, an octave higher). mode: "slow" | "fast" | "trem".
+const STRING_PADS = { strings: 'fast', slowstrings: 'slow', tremolo: 'trem' };
+function sectionPad(sf, buf, tones, at, dur, vel, mode) {
+  const ens = mode === 'trem' ? I.tremolo : (mode === 'fast' ? I.strings : I.slowstrings);
+  const t = [...tones].sort((a, b) => a - b);
+  note(sf, buf, I.contrabass, t[0] - 12, vel - 6, at, dur, 0.55);
+  note(sf, buf, I.cello, t[0], vel, at, dur, 0.45);
+  note(sf, buf, ens, t[0], vel, at, dur, 0.3);
+  note(sf, buf, I.viola, t[1] + 12, vel - 4, at, dur, 0.4);
+  note(sf, buf, I.violin, t[t.length - 1] + 12, vel, at, dur, 0.4);
+  note(sf, buf, ens, t[0] + 24, vel, at, dur, 0.32);
+  note(sf, buf, ens, t[1] + 24, vel - 6, at, dur, 0.25);
+}
 
 // ============================================================
 // STYLES: how each track is arranged
 //   pad: chord instruments, bass: bass instruments, lead: [first pass, second pass],
 //   oct: lead octave shift, perc: "orch" | "soft" | "taiko" | "none", rev: reverb wet
 // ============================================================
-const BOSS = { pad: ['strings', 'choir'], bass: ['cello', 'contrabass'], lead: ['horn', 'trombone'], perc: 'orch', rev: 0.34 };
-const AREA = { pad: ['slowstrings'], bass: ['cello'], lead: ['piano', 'violin'], perc: 'soft', rev: 0.36 };
+// dbl: [instrument, octave shift, gain, pass (-1 both / 0 / 1)] doubling the melody
+// voice: [octave shift, gain] = a SOLO VOICE sings the long notes of the 2nd pass (low = male, high = female)
+const BOSS = { pad: ['strings', 'choir'], bass: ['cello', 'contrabass'], lead: ['horn', 'trombone'], perc: 'orch', rev: 0.34,
+  dbl: [['bassoon', -1, 0.35, 0], ['trumpet', 0, 0.3, 1]] };
+const AREA = { pad: ['slowstrings'], bass: ['cello'], lead: ['piano', 'violin'], perc: 'soft', rev: 0.36, dbl: [['flute', 1, 0.3, 1]] };
 const STYLES = {
   // ----- menus / Versus -----
-  menu:  { ...AREA, lead: ['piano', 'violin'], pad: ['slowstrings', 'oohs'] },
-  fight: { ...BOSS, lead: ['violin', 'trumpet'], pad: ['strings'], bass: ['cello', 'contrabass'], perc: 'orch' },
-  boss:  { ...BOSS, lead: ['trombone', 'horn'] },
+  menu:  { ...AREA, lead: ['piano', 'violin'], pad: ['slowstrings', 'oohs'], dbl: [['clarinet', 0, 0.35, 0], ['flute', 1, 0.3, 1]], voice: [1, 0.35] },
+  fight: { ...BOSS, lead: ['violin', 'trumpet'], pad: ['strings'], bass: ['cello', 'contrabass'], dbl: [['piccolo', 1, 0.25, 1], ['clarinet', 0, 0.3, 0]] },
+  boss:  { ...BOSS, lead: ['trombone', 'horn'], dbl: [['euphonium', -1, 0.45, -1]] },
   // ----- Fights-mode bosses -----
-  boss_minos: { ...BOSS, lead: ['horn', 'violin'], pad: ['strings', 'choir', 'organ'] },
-  boss_sisyphus: { ...BOSS, lead: ['trombone', 'cello'], bass: ['contrabass', 'tuba'] },
-  boss_geyron: { ...BOSS, lead: ['trumpet', 'horn'], perc: 'orch' },
-  boss_titan: { ...BOSS, lead: ['trombone', 'tuba'] },
+  boss_minos: { ...BOSS, lead: ['horn', 'violin'], pad: ['strings', 'choir', 'organ'], voice: [-1, 0.35] },
+  boss_sisyphus: { ...BOSS, lead: ['trombone', 'cello'], bass: ['contrabass', 'tuba'], dbl: [['euphonium', 0, 0.45, -1], ['bassoon', -1, 0.3, -1]] },
+  boss_geyron: { ...BOSS, lead: ['trumpet', 'horn'], dbl: [['piccolo', 1, 0.2, -1], ['xylophone', 1, 0.3, 1]] },
+  boss_titan: { ...BOSS, lead: ['trombone', 'tuba'], dbl: [['euphonium', 0, 0.5, -1]] },
   // ----- Story areas (Hollow Knight-like) -----
-  story_surface: { ...AREA, lead: ['guitar', 'violin'] },
-  story_cave: { ...AREA, lead: ['harp', 'cello'], oct: -12 },
-  story_geode: { ...AREA, lead: ['celesta', 'harp'], pad: ['slowstrings', 'oohs'] },
-  story_hive: { ...AREA, lead: ['pizz', 'bassoon'], pad: ['strings'], bass: ['pizz', 'contrabass'], perc: 'soft' },
-  story_ascent: { ...AREA, lead: ['violin', 'horn'], pad: ['slowstrings', 'choir'] },
-  story_enlightened: { ...AREA, lead: ['harp', 'flute'], pad: ['choir', 'slowstrings'], perc: 'bells' },
-  story_sewers: { ...AREA, lead: ['piano', 'cello'], oct: -12, pad: ['slowstrings'] },
-  story_throne: { ...AREA, lead: ['organ', 'violin'], pad: ['strings', 'choir'], perc: 'orch' },
-  story_architectium: { ...AREA, lead: ['harpsichord', 'oboe'], pad: ['strings'], perc: 'soft' },
-  story_workshop: { ...AREA, lead: ['trombone', 'cello'], pad: ['strings'], bass: ['contrabass', 'tuba'], perc: 'orch' },
-  story_darkcave: { ...AREA, lead: ['piano', 'guitar'], oct: -12 },
-  story_void: { ...AREA, lead: ['oohs', 'cello'], pad: ['slowstrings', 'choir'] },
-  story_altar: { ...AREA, lead: ['harp', 'violin'], pad: ['choir', 'slowstrings'], perc: 'bells' },
-  story_chase: { ...BOSS, lead: ['violin', 'trombone'], pad: ['strings'], perc: 'taiko' },
+  story_surface: { ...AREA, lead: ['guitar', 'violin'], dbl: [['clarinet', 0, 0.3, 1]] },
+  story_cave: { ...AREA, lead: ['harp', 'cello'], oct: -12, dbl: [['clarinet', 0, 0.3, 1]] },
+  story_geode: { ...AREA, lead: ['celesta', 'harp'], pad: ['slowstrings', 'oohs'], dbl: [['glock', 1, 0.25, -1], ['flute', 1, 0.3, 1]], voice: [1, 0.3] },
+  story_hive: { ...AREA, lead: ['pizz', 'bassoon'], pad: ['strings'], bass: ['pizz', 'contrabass'], perc: 'soft', dbl: [['marimba', 1, 0.35, -1], ['clarinet', 0, 0.3, 1]] },
+  story_ascent: { ...AREA, lead: ['violin', 'horn'], pad: ['slowstrings', 'choir'], dbl: [['oboe', 0, 0.3, 0], ['euphonium', -1, 0.35, 1]], voice: [0, 0.3] },
+  story_enlightened: { ...AREA, lead: ['harp', 'flute'], pad: ['choir', 'slowstrings'], perc: 'bells', dbl: [['glock', 1, 0.25, -1], ['oboe', 0, 0.25, 1]], voice: [1, 0.4] },
+  story_sewers: { ...AREA, lead: ['piano', 'cello'], oct: -12, pad: ['slowstrings'], dbl: [['clarinet', -1, 0.35, -1]] },
+  story_throne: { ...AREA, lead: ['organ', 'violin'], pad: ['strings', 'choir'], perc: 'orch', dbl: [['englishhorn', 0, 0.3, 1]], voice: [0, 0.35] },
+  story_architectium: { ...AREA, lead: ['mandolin', 'fiddle'], pad: ['strings'], perc: 'soft', dbl: [['crumhorn', 0, 0.35, -1], ['guitar', -1, 0.4, -1]] },
+  story_workshop: { ...AREA, lead: ['trombone', 'cello'], pad: ['strings'], bass: ['contrabass', 'tuba'], perc: 'orch', dbl: [['euphonium', 0, 0.4, -1], ['xylophone', 1, 0.25, 0]] },
+  story_darkcave: { ...AREA, lead: ['piano', 'guitar'], oct: -12, dbl: [['clarinet', -1, 0.3, 1]] },
+  story_void: { ...AREA, lead: ['oohs', 'cello'], pad: ['slowstrings', 'choir'], dbl: [['englishhorn', 0, 0.3, 1]], voice: [1, 0.35] },
+  story_altar: { ...AREA, lead: ['harp', 'violin'], pad: ['choir', 'slowstrings'], perc: 'bells', dbl: [['flute', 1, 0.3, -1]], voice: [1, 0.45] },
+  story_chase: { ...BOSS, lead: ['violin', 'trombone'], pad: ['strings'], perc: 'taiko', dbl: [['piccolo', 1, 0.22, -1], ['crumhorn', 0, 0.3, 0]] },
   // ----- Story bosses (Dark Souls III / Elden Ring) -----
-  boss_architect: { ...BOSS, lead: ['trombone', 'horn'], pad: ['strings', 'choir', 'organ'] },
-  boss_caeser: { ...BOSS, lead: ['horn', 'trombone'], pad: ['strings', 'choir'], bass: ['contrabass', 'tuba'] },
-  boss_golem: { ...BOSS, lead: ['trombone', 'horn'], pad: ['strings', 'organ'] },
-  boss_needle: { ...BOSS, lead: ['violin', 'violin'], pad: ['strings'], bass: ['pizz', 'cello'], perc: 'bells' },   // A child's violin duel
-  boss_massacre: { ...BOSS, lead: ['violin', 'horn'], pad: ['tremolo', 'choir'] },
-  boss_brothers: { ...BOSS, lead: ['violin', 'cello'], pad: ['organ', 'strings'], perc: 'bells' },
-  boss_animal: { ...BOSS, lead: ['horn', 'trombone'], pad: ['strings'], bass: ['contrabass', 'tuba'], perc: 'taiko' },
-  boss_executor: { ...BOSS, lead: ['trombone', 'tuba'], pad: ['organ', 'choir'], bass: ['contrabass', 'tuba'] },
-  boss_nature: { ...BOSS, lead: ['flute', 'violin'], pad: ['choir', 'slowstrings'], bass: ['cello', 'harp'] },
-  boss_falsegod: { ...BOSS, lead: ['violin', 'trumpet'], pad: ['organ', 'choir'], perc: 'orch' },
-  boss_satan: { ...BOSS, lead: ['trombone', 'horn'], pad: ['choir', 'organ'], bass: ['contrabass', 'tuba'] },
-  boss_sun: { ...BOSS, lead: ['horn', 'violin'], pad: ['choir', 'strings'], bass: ['cello', 'harp'], perc: 'bells' },
-  boss_consumer: { ...BOSS, lead: ['trumpet', 'trombone'], pad: ['tremolo', 'choir', 'organ'], perc: 'orch' },
-  boss_grave: { ...BOSS, lead: ['cello', 'organ'], pad: ['organ', 'oohs'] },
-  boss_saint_golem: { ...BOSS, lead: ['horn', 'trumpet'], pad: ['organ', 'choir'] },
-  boss_horrids: { ...BOSS, lead: ['violin', 'viola'], pad: ['tremolo'] },
-  boss_reactor: { ...BOSS, lead: ['trombone', 'oohs'], pad: ['choir', 'tremolo'] },
-  boss_forge_father: { ...BOSS, lead: ['trombone', 'horn'], bass: ['contrabass', 'tuba'], perc: 'orch' },
+  boss_architect: { ...BOSS, lead: ['trombone', 'horn'], pad: ['strings', 'choir', 'organ'], dbl: [['euphonium', 0, 0.4, -1]], voice: [-1, 0.4] },
+  boss_caeser: { ...BOSS, lead: ['horn', 'trombone'], pad: ['strings', 'choir'], bass: ['contrabass', 'tuba'], voice: [-1, 0.45] },
+  boss_golem: { ...BOSS, lead: ['trombone', 'horn'], pad: ['strings', 'organ'], dbl: [['euphonium', 0, 0.45, -1], ['tuba', -1, 0.3, 1]] },
+  boss_needle: { ...BOSS, lead: ['violin', 'fiddle'], pad: ['strings'], bass: ['pizz', 'cello'], perc: 'bells', dbl: [['xylophone', 1, 0.3, -1], ['piccolo', 1, 0.2, 1]] },
+  boss_massacre: { ...BOSS, lead: ['violin', 'horn'], pad: ['tremolo', 'choir'], dbl: [['clarinet', -1, 0.35, -1]], voice: [0, 0.4] },
+  boss_brothers: { ...BOSS, lead: ['violin', 'cello'], pad: ['organ', 'strings'], perc: 'bells', dbl: [['oboe', 0, 0.3, 0], ['bassoon', -1, 0.35, 1]] },
+  boss_animal: { ...BOSS, lead: ['horn', 'trombone'], pad: ['strings'], bass: ['contrabass', 'tuba'], perc: 'taiko', dbl: [['marimba', 1, 0.3, -1], ['crumhorn', 0, 0.3, 1]] },
+  boss_executor: { ...BOSS, lead: ['trombone', 'tuba'], pad: ['organ', 'choir'], bass: ['contrabass', 'tuba'], dbl: [['euphonium', 0, 0.45, -1]], voice: [-1, 0.45] },
+  boss_nature: { ...BOSS, lead: ['flute', 'violin'], pad: ['choir', 'slowstrings'], bass: ['cello', 'harp'], dbl: [['clarinet', 0, 0.3, 0], ['oboe', 0, 0.3, 1]], voice: [1, 0.45] },
+  boss_falsegod: { ...BOSS, lead: ['violin', 'trumpet'], pad: ['organ', 'choir'], dbl: [['englishhorn', 0, 0.3, 0], ['xylophone', 1, 0.25, -1]] },
+  boss_satan: { ...BOSS, lead: ['trombone', 'horn'], pad: ['choir', 'organ'], bass: ['contrabass', 'tuba'], dbl: [['euphonium', 0, 0.4, -1]], voice: [-1, 0.5] },
+  boss_sun: { ...BOSS, lead: ['horn', 'violin'], pad: ['choir', 'strings'], bass: ['cello', 'harp'], perc: 'bells', dbl: [['flute', 1, 0.3, -1]], voice: [1, 0.5] },
+  boss_consumer: { ...BOSS, lead: ['trumpet', 'trombone'], pad: ['tremolo', 'choir', 'organ'], dbl: [['euphonium', -1, 0.4, -1]], voice: [0, 0.45] },
+  boss_grave: { ...BOSS, lead: ['cello', 'organ'], pad: ['organ', 'oohs'], dbl: [['clarinet', -1, 0.35, -1]], voice: [-1, 0.45] },
+  boss_saint_golem: { ...BOSS, lead: ['horn', 'trumpet'], pad: ['organ', 'choir'], dbl: [['euphonium', -1, 0.4, -1]], voice: [1, 0.4] },
+  boss_horrids: { ...BOSS, lead: ['violin', 'viola'], pad: ['tremolo'], dbl: [['englishhorn', 0, 0.3, -1]] },
+  boss_reactor: { ...BOSS, lead: ['trombone', 'oohs'], pad: ['choir', 'tremolo'], dbl: [['euphonium', 0, 0.4, 0], ['xylophone', 1, 0.25, -1]] },
+  boss_forge_father: { ...BOSS, lead: ['trombone', 'horn'], bass: ['contrabass', 'tuba'], dbl: [['euphonium', 0, 0.45, -1], ['xylophone', 1, 0.25, 1]] },
 };
-
 // ============================================================
 // COMPOSITIONS: read the note data of every track from make_placeholder_audio.js
 // ============================================================
@@ -324,6 +357,10 @@ function render(sf, name, score) {
       for (let bar = 0; bar < bars; bar++) {
         const ch = chords[bar % chords.length];
         for (const inst of st.pad) {
+          if (STRING_PADS[inst]) {                               // A real string SECTION, voiced by range
+            sectionPad(sf, buf, ch, t0 + bar * barLen + human(), barLen * 1.02, 70 + 10 * (bar % 2), STRING_PADS[inst]);
+            continue;
+          }
           const sh = inst === 'choir' || inst === 'oohs' ? 0 : (inst === 'organ' ? -12 : 0);
           for (const n of ch) note(sf, buf, I[inst], n + 12 + sh, 70 + 10 * (bar % 2), t0 + bar * barLen + human(), barLen * 1.02, 0.55);
         }
@@ -354,9 +391,17 @@ function render(sf, name, score) {
       const ln = lead[s % lead.length];
       if (!ln) continue;
       let d = 1; while (d < 6 && !lead[(s + d) % lead.length] && (s + d) % lead.length !== 0) d++;
-      const plucked = ['piano', 'harp', 'guitar', 'harpsichord', 'celesta', 'pizz'].includes(lead_i);
+      const plucked = ['piano', 'harp', 'guitar', 'harpsichord', 'celesta', 'pizz', 'mandolin', 'xylophone', 'marimba', 'glock'].includes(lead_i);
       note(sf, buf, I[lead_i], ln + oct, 88 + (s % 8 === 0 ? 14 : 0) + Math.round(rnd() * 8), t0 + s * step + human(), step * d * (plucked ? 1.6 : 1.0), 1.0);
       if (lp === 1 && st.pad.includes('choir') && s % 4 === 0) note(sf, buf, I.choir, ln + oct, 60, t0 + s * step, step * d, 0.3);   // Choir doubles the 2nd pass
+      // DOUBLINGS (woodwinds / brass colour the melody): [instrument, octave shift, gain, pass (-1 = both)]
+      for (const [di, dsh, dg, dp] of (st.dbl || [])) {
+        if (dp === undefined || dp < 0 || dp === lp)
+          note(sf, buf, I[di], ln + oct + 12 * dsh, 76, t0 + s * step + human(), step * d, dg);
+      }
+      // SOLO VOICE on the long notes of the 2nd pass: [octave shift, gain] (low = male, high = female)
+      if (st.voice && lp === 1 && d >= 2)
+        note(sf, buf, I.voice, ln + oct + 12 * st.voice[0], 80, t0 + s * step, step * d * 1.1, st.voice[1]);
     }
     // --- Percussion ---
     percussion(sf, buf, t0, st.perc, drums, step, Math.round(loopLen / step), bars, barLen, lp);
@@ -392,9 +437,11 @@ function percussion(sf, buf, t0, kind, drums, step, steps, bars, barLen, lp) {
     if (d === 't') note(sf, buf, I.timpani, 43, 96, at, 0.8, 0.9);
     if (d === 'k') note(sf, buf, I.drums, BD, 95, at, 0.6, 0.7);
     if (d === 's') note(sf, buf, I.drums, SNARE, 78, at, 0.4, 0.55);
-    if (d === 'c') note(sf, buf, I.pizz, 55, 90, at, 0.3, 0.6);
-    if (d === 'b') note(sf, buf, I.bells, 76, 80, at, 2.5, 0.6);
-    if (s % 32 === 0) note(sf, buf, I.drums, CRASH, lp === 1 ? 100 : 82, at, 3.0, 0.5);
+    if (d === 'c') { note(sf, buf, I.pizz, 55, 90, at, 0.3, 0.6); note(sf, buf, I.xylophone, 79, 80, at, 0.3, 0.5); }   // Metal clank: pizz + xylophone
+    if (d === 'b') { note(sf, buf, I.bells, 76, 80, at, 2.5, 0.6); note(sf, buf, I.glock, 88, 60, at, 1.0, 0.35); }
+    if (s % 32 === 31) for (let r = 0; r < 4; r++) note(sf, buf, I.drums, SNARE, 60 + r * 10, at + r * step / 4, 0.1, 0.35);   // Snare roll into the crash
+    if (s % 32 === 0) { note(sf, buf, I.drums, CRASH, lp === 1 ? 100 : 82, at, 3.0, 0.5); note(sf, buf, I.drums, BD, 100, at, 1.0, 0.6); }
+    if (lp === 1 && s % 8 === 4) note(sf, buf, I.drums, TRI, 50, at, 0.6, 0.3);              // Triangle shimmer on the 2nd pass
   }
 }
 
@@ -409,6 +456,7 @@ function ritual(sf, buf, t0, bpm, bars, chords, chant, lp) {
     note(sf, buf, I.bells, 60 + (bar % 2) * 3, 70, at + beat * 2.5, 2.5, 0.5);   // Small gong answers
     for (const n of chords[bar % chords.length]) { note(sf, buf, I.choir, n + 12, 78, at, barLen * 1.02, 0.5); note(sf, buf, I.slowstrings, n, 60, at, barLen * 1.02, 0.4); }
     note(sf, buf, I.contrabass, 38, 80, at, barLen, 0.8);
+    note(sf, buf, I.euphonium, 50, 70, at, barLen, 0.35);                  // Euphonium drone under the chant
     note(sf, buf, I.organ, 26, 60, at, barLen, 0.5);
   }
   const steps = bars * 8;
@@ -416,7 +464,7 @@ function ritual(sf, buf, t0, bpm, bars, chords, chant, lp) {
     const at = t0 + s * step;
     if (s % 8 === 0 || s % 8 === 3 || s % 8 === 6) note(sf, buf, I.taiko, 43, s % 8 === 0 ? 118 : 90, at, 0.8, 0.9);
     const c = chant[s % chant.length];
-    if (c) { let d = 1; while (d < 4 && !chant[(s + d) % chant.length]) d++; note(sf, buf, lp === 0 ? I.oohs : I.choir, c, 90, at, step * d, 0.9); if (lp === 1) note(sf, buf, I.cello, c - 12, 80, at, step * d, 0.6); }
+    if (c) { let d = 1; while (d < 4 && !chant[(s + d) % chant.length]) d++; note(sf, buf, lp === 0 ? I.oohs : I.choir, c, 90, at, step * d, 0.9); if (lp === 1) note(sf, buf, I.cello, c - 12, 80, at, step * d, 0.6); note(sf, buf, I.voice, c - 12, 84, at, step * d, 0.45); }   // + a MALE solo voice
   }
 }
 
@@ -438,6 +486,9 @@ function chaos(sf, buf, t0, bpm, bars) {
     const run = [74, 75, 77, 79, 80, 79, 77, 75, 74, 71, 72, 74, 75, 77, 78, 80][s % 16] + k;
     if (s % 2 === 0) note(sf, buf, I.violin, run, 95, at, step * 1.9, 0.9);
     if (s % 3 === 0) note(sf, buf, I.harpsichord, 86 - (s % 7) + k, 85, at, step, 0.6);
+    if (s % 2 === 0) note(sf, buf, I.piccolo, [74, 75, 77, 79, 80, 79, 77, 75][(s / 2) % 8] + 12 + k, 80, at, step * 1.9, 0.18);   // Piccolo over the violins
+    if (s % 4 === 1) note(sf, buf, I.xylophone, 79 + (s % 5) + k, 85, at, step, 0.3);
+    if (s % 16 === 8) note(sf, buf, I.crumhorn, 62 + k, 95, at, step * 4, 0.35);                  // A mad crumhorn blast
     if (s % 4 === 0) note(sf, buf, I.timpani, 38 + (s % 8 === 0 ? 0 : 5), 110, at, 0.6, 0.9);
     if (s % 16 === 6 || s % 16 === 11 || s % 16 === 14) note(sf, buf, I.taiko, 45, 100, at, 0.5, 0.8);
     if (s % 4 === 2) note(sf, buf, I.drums, SNARE, 85, at, 0.3, 0.5);
@@ -478,6 +529,10 @@ if (process.argv.includes('--check')) {                // List which recording e
     const v = voicesFor(sf, i.bank, i.prog, key, 100);
     console.log(k.padEnd(12), (p ? p.name : 'MISSING').padEnd(24), 'voices ' + v.length, v.map((x) => x.s.name).slice(0, 2).join(', '));
   }
+  for (const [b, pr] of [[0, 85], [0, 53], [0, 54], [0, 52], [0, 109], [0, 110], [16, 25], [0, 13], [0, 71], [0, 72], [20, 49], [40, 49], [50, 49], [8, 115]]) {
+    const lo = voicesFor(sf, b, pr, 48, 100).map((x) => x.s.name), hi = voicesFor(sf, b, pr, 76, 100).map((x) => x.s.name);
+    console.log(`  preset ${b}:${pr}  low: ${lo.slice(0, 2).join(', ')}   high: ${hi.slice(0, 2).join(', ')}`);
+  }
   for (let key = 27; key <= 82; key++) {
     const v = voicesFor(sf, 128, I.drums.prog, key, 100);
     if (v.length) console.log('  kit key ' + key + ': ' + v.map((x) => x.s.name).slice(0, 2).join(', '));
@@ -497,7 +552,7 @@ function renderPiece(p) {
   for (let copy = 0; copy < 2; copy++) {
     for (const n of notes) {
       const at = copy * L + n.at * spb + (DRUMS.has(n.inst) ? 0 : (rnd() - 0.5) * 0.014);
-      note(sf, buf, I[n.inst], n.key, n.vel + Math.round((rnd() - 0.5) * 8), Math.max(0, at), n.dur * spb, 1.0);
+      note(sf, buf, I[n.inst], n.key, n.vel + Math.round((rnd() - 0.5) * 8), Math.max(0, at), n.dur * spb, n.g || 1.0);
     }
   }
   const wet = reverb(buf, 0.88, 0.3, p.rev || 0.34, 0.85);
