@@ -20,8 +20,7 @@ signal boss_defeated
 const FLASKS_PER_LEVEL := 2
 const FLASK_HEAL := 0.5
 const PARTNER_FLASKS := 1                    # Colosseum 5 CPU partner (refilled with yours)
-## DEEP FAITH PAYOFF (Story only): a small buff for the WARRIOR and the ARCHITECT (not the Anti
-## Architect) - as you or as the Colosseum 5 partner. More HP, +1 flask, shorter move cooldowns.
+## DEEP FAITH PAYOFF (Story only): a small buff for the WARRIOR and the ARCHITECT - as you or as the Colosseum 5 partner. More HP, +1 flask, shorter move cooldowns.
 ## ONLY AFTER MOTHER NATURE: she (level DEEP_FAITH_AFTER) must be beaten, and it only works in the
 ## main Story levels AFTER her (48+: Colosseum 5's end, The Enlightened Chase, the open world...).
 ## Never in earlier levels (replays) or the Boss Extensions.
@@ -216,9 +215,6 @@ func _spawn_player() -> void:
 	if hero == "architect":
 		player = Player.new()                    # The Mighty Architect: own moves, look, animations
 		player.name = "P1_Architect"
-	elif hero == "anti":
-		player = AntiArchitect.new()             # The Anti Architect (solo, never duo)
-		player.name = "P1_AntiArchitect"
 	else:
 		player = Warrior.new()
 		player.name = "P1_Warrior"
@@ -233,8 +229,6 @@ func _spawn_player() -> void:
 		match hero:
 			"architect":
 				player.ctl = ArchitectAI.new()
-			"anti":
-				player.ctl = AntiArchitectAI.new()
 			_:
 				player.ctl = WarriorAI.new()
 	else:
@@ -244,7 +238,7 @@ func _spawn_player() -> void:
 	if _deep_faith(player):
 		max_flasks = FLASKS_PER_LEVEL + DEEP_FAITH_EXTRA_FLASKS
 		flasks = max_flasks
-	if hero == "architect" or hero == "anti":
+	if hero == "architect":
 		# Story only (own data copy, Versus unchanged): the punch box reaches head to toes,
 		# like the Warrior's sword, so it also hits short enemies (Black Crawlings...).
 		player.data.punch_offset = Vector2(44, -58)
@@ -294,6 +288,7 @@ func _spawn_partner() -> void:
 func _story_buff(f: Fighter) -> void:
 	if f != null and f.data != null and f.data.has_method("apply_story_buff"):
 		f.data.call("apply_story_buff")
+	StoryBuff.apply(f)                              # + the small HIDDEN buff every Story character gets
 
 
 ## Deep Faith Payoff is earned by beating Mother Nature.
@@ -309,7 +304,7 @@ static func deep_faith_in(n: int) -> bool:
 ## DEEP FAITH PAYOFF: Warrior / Architect only (own data copy, Versus unchanged).
 ## More max HP (starts full) and every move cooldown shorter. Returns true if it applied.
 func _deep_faith(f: Fighter) -> bool:
-	if not deep_faith_in(level_number) or f == null or f.data == null or f is AntiArchitect:
+	if not deep_faith_in(level_number) or f == null or f.data == null:
 		return false
 	if not (f.data is WarriorData or f.data is ArchitectData):
 		return false

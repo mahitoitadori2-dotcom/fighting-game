@@ -151,9 +151,11 @@ static func apply_hit(hit: HitData, victim: Fighter) -> String:
 	var dmg := float(hit.damage)
 	if attacker != null and is_instance_valid(attacker):
 		dmg *= attacker.outgoing_damage_mult           # Weakened attacker (Godly Touch debuff); 1.0 normally
+		dmg *= attacker.story_power                    # Hidden Story buff (StoryBuff); 1.0 outside Story
 	if victim.goo_timer > 0.0:
 		dmg *= 1.0 + victim.goo_def_down
 	dmg *= victim.damage_taken_mult
+	dmg *= victim.story_defense                        # Hidden Story buff (StoryBuff); 1.0 outside Story
 	# Weakness (Enlightened One: explosion / void x1.25). The fractional extra damage is
 	# carried over so small hits (1-dmg goo ticks) still add up to exactly +25%.
 	var weak := float(victim.data.damage_kind_taken.get(hit.get_kind(), 1.0))
@@ -264,6 +266,7 @@ static func register_inputs() -> void:
 		InputMap.action_add_event("punch", ev)
 	register_alt_keys()
 	register_controller()
+	KeyBindings.apply_saved()                          # The player's own keys (Settings > CONTROLS)
 
 
 ## Alternate keyboard layout, added on top of WASD + mouse (nothing removed):

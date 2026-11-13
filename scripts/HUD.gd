@@ -112,14 +112,7 @@ func _build_hud() -> void:
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	# Bottom hint: keyboard / controller (hidden with touch controls so the corners stay clear)
-	var hint_text := "Esc = Main Menu   F1 = hitboxes"
-	if not Input.get_connected_joypads().is_empty():
-		hint_text = "Stick move  A jump  X attack  RB/LT block  Y/B/LB moves  RT ultimate  Start menu"
-	var hint := _make_label(Vector2(-330, -30), Vector2(660, 24), hint_text, 13)
-	hint.set_anchors_preset(Control.PRESET_CENTER_BOTTOM, true)
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.modulate = Color(1, 1, 1, 0.6)
-	hint.visible = not MatchSettings.touch_enabled()
+	# (No control hints any more: the keys are in Settings > CONTROLS.)
 
 	# BOSS BAR (only when the opponent is a PvE enemy)
 	_boss_root = Control.new()

@@ -6,7 +6,7 @@ extends CanvasLayer
 ## Not duo mode: you fight alone with the hero you pick (duo is only Colosseum 5).
 ## Mouse / touch: click. Keyboard / controller: arrows + Enter (button focus), Esc closes.
 
-const HEROES := ["warrior", "architect", "anti"]
+const HEROES := ["warrior", "architect"]
 
 signal chosen(level: int)
 signal closed

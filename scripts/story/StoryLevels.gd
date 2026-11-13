@@ -631,8 +631,6 @@ static func count() -> int:
 ## Playable character of a level: "warrior" (Colosseums 1-3) or "architect" (Colosseum 4).
 static func hero_of(n: int) -> String:
 	var h := String(get_level(n).get("hero", PLAYER_CHARACTER))
-	if h != "ext" and StoryProgress.anti_story:
-		return "anti"                                      # Anti Architect run: solo, every level
 	if h == "choice" or h == "chase":                  # Colosseum 5 / The Enlightened Chase: your pick
 		return StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
 	if h == "demi":                                    # DemiLand: the one who did NOT chase him
@@ -648,8 +646,6 @@ static func hero_art(h: String) -> Script:
 	match h:
 		"architect":
 			return ArchitectArt
-		"anti":
-			return AntiArchitectArt
 	return WarriorArt
 
 
@@ -657,18 +653,15 @@ static func hero_name(h: String) -> String:
 	match h:
 		"architect":
 			return "ARCHITECT"
-		"anti":
-			return "ANTI ARCHITECT"
 	return "WARRIOR"
 
 
-## Does level n have a CPU partner? (Colosseum 5 - never in SOLO mode or on an Anti
-## Architect run: he goes alone)
+## Does level n have a CPU partner? (Colosseum 5 - never in SOLO mode)
 static func has_partner(n: int) -> bool:
-	return bool(get_level(n).get("partner", false)) and hero_of(n) != "anti" and not StoryProgress.c5_solo
+	return bool(get_level(n).get("partner", false)) and not StoryProgress.c5_solo
 
 
-## A Colosseum 5 duo level played WITHOUT the partner (Solo mode / Anti Architect).
+## A Colosseum 5 duo level played WITHOUT the partner (Solo mode).
 static func is_solo(n: int) -> bool:
 	return bool(get_level(n).get("partner", false)) and not has_partner(n)
 

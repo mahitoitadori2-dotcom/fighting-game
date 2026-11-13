@@ -67,19 +67,4 @@ func _init() -> void:
 	gauge_enabled = true
 	ai_move_ranges = {"workflies": Vector2(120, 700), "laser": Vector2(150, 900), "overcharge": Vector2(0, 140)}
 
-
-## STORY MODE buff (Story only, own data copy - Versus keeps the numbers above). Like the
-## Warrior / Architect Story buffs: harder hits, shorter cooldowns. Overrides the Architect's.
-func apply_story_buff() -> void:
-	punch_damage = 5                     # (3)
-	onslaught_melee_damage = 10          # (7)
-	workfly_damage = 4                   # (3)
-	workfly_cooldown = 2.0               # (2.6)
-	laser_damage = 13                    # (9)
-	laser_cooldown = 4.0                 # (5.5)
-	overcharge_damage = 15               # (11)
-	overcharge_cooldown = 5.0            # (7.0)
-	battlefly_damage = 6                 # (4)
-	pool_tick_damage = 3                 # (2)
-	plans_damage = 24                    # (16)
-	plans_shard_damage = 4               # (3)
+## (No Story Mode buff: the Anti Architect is a VERSUS-only character.)

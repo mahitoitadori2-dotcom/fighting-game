@@ -47,7 +47,6 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 - [ ] **Play the Achievement update yourself:** unlock a few in Versus and Story and check the pop-up, the grid, the badges on the board and the Colosseum 5 SOLO button. Only the CPU and scripted tests have run it so far. Is the Multiversal achievement (all of C5 solo, x4 challenges) too hard? Tuning is in `Achievements.gd`.
 - [ ] **Blasphemy Caeser after the nerf** (210 + 260 HP, sword +45%): too easy now?
 - [ ] Play Story with **Deep Faith Payoff** (Warrior / Architect: +20% HP, 3 flasks, -15% cooldowns, stacks on the older Story buff): is Story now too easy? Tune `DEEP_FAITH_*` in `StoryManager.gd`.
-- [ ] **Play the Anti Architect yourself** (Versus + Story toggle). Colosseum 5 is built for a duo, so solo Anti may be too hard there; tune `apply_story_buff` in `AntiArchitectData.gd`. Check the Overcharge self-damage feels fair.
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).
 
 ## Website
@@ -56,7 +55,7 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 
 ## Game
 
-- [ ] More playable fighters in Story Mode (Warrior, Architect and now the Anti Architect).
+- [ ] More playable fighters in Story Mode (Warrior and Architect; the Anti Architect stays Versus-only).
 - [ ] Add the Story enemies to the Enemy Test list in Versus.
 - [ ] Real sprite or texture art, to replace the art that the code draws.
 - [ ] Record real voice lines for Minos and Sisyphus (`audio/voice/`).

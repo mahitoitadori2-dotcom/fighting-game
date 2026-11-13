@@ -221,9 +221,6 @@ func _build_match_section(rows: VBoxContainer) -> void:
 	rows.add_child(_section_title("MATCH"))
 	rows.add_child(_stepper("lives", "Lives (per player)", _change_lives))
 	rows.add_child(_stepper("enemy_lives", "Enemy Lives (PvE bosses)", _change_enemy_lives))
-	var later := UiStyle.label("Timer / Rounds: coming soon", 14, UiStyle.TEXT_DIM, 4)
-	later.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	rows.add_child(later)
 
 
 ## GRAPHICS: Potato / Fast / Regular / Real (GraphicsSettings, saved to user://graphics.cfg).
@@ -239,7 +236,7 @@ func _build_graphics_section(rows: VBoxContainer) -> void:
 	rows.add_child(_graphics_desc)
 	# FPS counter (was in Sandbox; now a normal setting, works in Versus AND Story)
 	var fps_row := HBoxContainer.new()
-	var fl := UiStyle.label("FPS Counter  (in a fight: F4 = +50 test projectiles)", 20, UiStyle.TEXT, 6)
+	var fl := UiStyle.label("FPS Counter", 20, UiStyle.TEXT, 6)
 	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	fl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	fl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -257,12 +254,69 @@ func _change_graphics(step: int) -> void:
 
 func _build_controls_section(rows: VBoxContainer) -> void:
 	rows.add_child(_section_title("CONTROLS"))
+	# KEYBOARD: click a key, then press the new key (or a mouse button). Esc cancels. Saved.
+	for a in KeyBindings.ACTIONS:
+		rows.add_child(_key_row(String(a[0]), String(a[1])))
+	var reset := UiStyle.make_button("RESET KEYS", Vector2(220, 44), 16)
+	reset.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	reset.pressed.connect(func() -> void:
+		KeyBindings.reset_all()
+		_refresh_keys()
+		SoundManager.play_sfx("spawn"))
+	rows.add_child(reset)
 	rows.add_child(_stepper("touch", "Touch Controls (mobile)", _change_touch))
 	rows.add_child(_touch_scale_row())
-	var pad := UiStyle.label("Controller: Stick move  A jump  X attack  RB/LT block  Y / B / LB = moves 1 / 2 / 3  RT ultimate  Start menu", 14, UiStyle.TEXT_DIM, 4)
-	pad.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	pad.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	rows.add_child(pad)
+
+
+## KEY REBINDING rows (KeyBindings.gd).
+var _key_buttons := {}                 # action -> Button
+var _waiting_action := ""              # Action waiting for a new key ("" = none)
+
+
+func _key_row(action: String, text: String) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var l := UiStyle.label(text, 18, UiStyle.TEXT, 6)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(l)
+	var b := UiStyle.make_button(KeyBindings.key_name(KeyBindings.current(action)), Vector2(200, 40), 16)
+	b.pressed.connect(func() -> void: _start_rebind(action))
+	row.add_child(b)
+	_key_buttons[action] = b
+	return row
+
+
+func _start_rebind(action: String) -> void:
+	_refresh_keys()
+	_waiting_action = action
+	(_key_buttons[action] as Button).text = "PRESS A KEY..."
+
+
+func _refresh_keys() -> void:
+	for action in _key_buttons:
+		(_key_buttons[action] as Button).text = KeyBindings.key_name(KeyBindings.current(action))
+
+
+func _input(event: InputEvent) -> void:
+	if _waiting_action == "":
+		return
+	var key := event as InputEventKey
+	var mouse := event as InputEventMouseButton
+	if key != null and key.pressed and not key.echo:
+		get_viewport().set_input_as_handled()
+		if key.keycode != KEY_ESCAPE:                   # Esc = cancel
+			KeyBindings.rebind(_waiting_action, key)
+			SoundManager.play_sfx("spawn")
+		_waiting_action = ""
+		_refresh_keys()
+	elif mouse != null and mouse.pressed and mouse.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+		# The click that STARTED the rebind already happened; this is a new click = the new binding
+		get_viewport().set_input_as_handled()
+		KeyBindings.rebind(_waiting_action, mouse)
+		SoundManager.play_sfx("spawn")
+		_waiting_action = ""
+		_refresh_keys()
 
 
 ## AUDIO: Music / SFX volume sliders + Mute (saved by SoundManager to user://audio.cfg).

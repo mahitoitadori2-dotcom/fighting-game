@@ -34,7 +34,9 @@ The level select is a board game. The area names and tile colours come from each
 
 **DEEP FAITH PAYOFF (added 2026-11-11):** ONLY AFTER **Mother Nature**: she (level 47; `DEEP_FAITH_AFTER`) must be beaten, and it only works in the main Story levels AFTER her (48+: The Sun, The Enlightened Chase, the coming open world). Not in levels 1-47 (replays) and not in the Boss Extensions (changed 2026-11-12, `deep_faith_in()`). Beating her shows "DEEP FAITH PAYOFF UNLOCKED!" and unlocks the "Deep Faith" achievement. A small Story-only buff for the Warrior and the Architect (you or the C5 partner, not the Anti Architect): +20% max HP, +1 flask (3 per level, partner 2), move cooldowns 15% shorter. Numbers: `DEEP_FAITH_*` in `StoryManager.gd`. The HUD shows "DEEP FAITH PAYOFF" next to the flasks. Checked by a test run (Warrior 120 HP, 3 flasks); not played by a human.
 
-**ANTI ARCHITECT toggle (added 2026-11-11):** the board's "HERO: STORY HEROES / ANTI ARCHITECT" button in the top-left corner (saved). The first version sat in the bottom row and was pushed off-screen on C5 / extension pages (fixed the same day). When ON, every main Story level is played **solo** as the Anti Architect, Colosseum 5 included (no CPU partner and no hero choice). The Boss Extensions menu has him as a third hero next to Warrior and Architect. Tested only by the CPU (level 35 solo and extension BC2 were cleared); not tested by a human.
+**No Anti Architect in Story Mode (since 2026-11-13):** the Anti Architect is a VERSUS-only character. His Story toggle, extension hero button, Story buff, pawn, cutscene version and the two Story achievements are removed (old saves with the toggle on just play the normal heroes again). Story Mode is the Warrior and the Architect only.
+
+**Hidden Story buff (since 2026-11-13, `scripts/story/StoryBuff.gd`):** every character you play in Story Mode (and the Colosseum 5 partner) silently gets +10% max HP, +10% damage dealt, -10% damage taken, +5% walk speed, 8% shorter move cooldowns and a 15% faster G Gauge. Never shown in the game, never in Versus. Stacks with the per-hero Story buffs and Deep Faith Payoff.
 
 **Old saves** (from when every Colosseum had 6 levels) move to the matching level of the new layout the first time they load.
 
@@ -169,7 +171,7 @@ Cutscenes: `c5_intro`, `mountain_climb`, `reach_peak`, `fall_to_earth` (painted 
 Its own story part after Colosseum 5 (the UI always says "THE ENLIGHTENED CHASE", never "Colosseum 6"). Beating The Sun opens it (old saves too). Code: `scripts/story/c6/`.
 
 - **Intro cutscene** ("enl_chase"): the Enlightened One runs away across the dunes, your hero runs after him, the other hero lies injured ("GO...! CATCH HIM!").
-- **Solo** with the hero you picked (Colosseum 5 pick, PLAY AS button on the board; Anti Architect toggle works too). Deep Faith Payoff applies.
+- **Solo** with the hero you picked (Colosseum 5 pick, PLAY AS button on the board). Deep Faith Payoff applies.
 - **Bombard:** at the start AND end of every level except the last, the Enlightened One flies over the arena throwing explosive barrels and holy hand grenades (`EnlightenedFx.Thrower`, 5 dmg each). You can move and must dodge.
 - **Enemies:** Enlightened Guards (all 5 weapon types), **Enlightened Counselor** (holy bolt, light pillar under you, HEALS his allies 10 HP: kill him first), **Enlightened Camel Rider** (camel + spear warrior: Camel Charge 9, Spear Thrust 7, Camel Spit 4, Trample 8 with shockwaves).
 - **Mini-boss, Level 56: The Enlightened First Prime** (warrior mage, Gong Sanctum, no pre-fight): Holy Blade, Golden Arc / Triple Arc (golden crescents), Holy Smite pillars, Staff Nova, Blink Strike, enraged Gong of Judgment. 300 HP (x1.35 Story boss buff).

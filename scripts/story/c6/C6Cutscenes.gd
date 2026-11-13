@@ -17,7 +17,7 @@ static func paint(p: Control, kind: String, sz: Vector2, k: float, t: float) -> 
 			_end(p, sz, k, t)
 
 
-## Your hero ("warrior" / "architect" / "anti") and the other, injured one.
+## Your hero ("warrior" / "architect") and the other, injured one.
 static func _heroes() -> Array:
 	var h := StoryLevels.hero_of(StoryProgress.current_level)
 	var other := "architect" if h == "warrior" else "warrior"
@@ -30,10 +30,6 @@ static func _run(p: Control, hero: String, pos: Vector2, s: float, t: float, ph:
 	match hero:
 		"warrior":
 			WarriorArt._draw_figure(p, {"t": t, "ph": ph, "floor": true})
-		"anti":
-			ArchitectArt.set_palette(ArchitectArt.ANTI_PALETTE)
-			ArchitectArt._draw_figure(p, t, ph, true, 0.0, 0.0, 0.0, 0.0, false, false)
-			ArchitectArt.set_palette(ArchitectArt.NORMAL_PALETTE)
 		_:
 			ArchitectArt._draw_figure(p, t, ph, true, 0.0, 0.0, 0.0, 0.0, false, false)
 	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

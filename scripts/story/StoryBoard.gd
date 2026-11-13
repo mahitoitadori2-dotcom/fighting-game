@@ -106,7 +106,6 @@ var _celebrate := false
 var _play: Button
 var _switch: Button
 var _ext_btn: Button
-var _anti_btn: Button
 var _solo_btn: Button
 ## Badge colours on the tiles (AchievementArt.draw_icon draws the icon).
 const BADGE_COLORS := {"no_powers": Color(0.95, 0.75, 0.15), "no_blocks": Color(0.30, 0.55, 1.0),
@@ -211,16 +210,6 @@ func _build_ui() -> void:
 	_solo_btn.pressed.connect(_toggle_solo)
 	_solo_btn.visible = false
 	row.add_child(_solo_btn)
-	# Anti Architect run: play every Story level SOLO as the Anti Architect (saved toggle).
-	# Own spot in the top-left corner, left of the title (the bottom row is full on C5 / extension pages).
-	_anti_btn = UiStyle.make_button("HERO: STORY HEROES", Vector2(220, 40), 14)
-	_anti_btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_anti_btn.offset_left = 12
-	_anti_btn.offset_right = 232
-	_anti_btn.offset_top = 12
-	_anti_btn.offset_bottom = 52
-	_anti_btn.pressed.connect(_toggle_anti)
-	add_child(_anti_btn)
 	# Boss extensions of this page (BC, AG, VM, AC, FM)
 	_ext_btn = UiStyle.make_button("BOSS EXTENSIONS", Vector2(230, 56), 17)
 	_ext_btn.pressed.connect(func() -> void: _open_extensions(""))
@@ -234,13 +223,11 @@ func _build_ui() -> void:
 func _refresh_ui() -> void:
 	var lv := StoryLevels.get_level(_pawn_space)
 	# Colosseum 5 ("choice") and The Enlightened Chase ("chase"): you can switch your hero
-	var choice := String(lv.get("hero", "")) in ["choice", "chase"] and not _celebrate and not StoryProgress.anti_story
+	var choice := String(lv.get("hero", "")) in ["choice", "chase"] and not _celebrate
 	_switch.visible = choice
 	_solo_btn.visible = choice and bool(lv.get("partner", false))       # SOLO only matters with a partner
 	_solo_btn.text = "SOLO: %s" % ("ON" if StoryProgress.c5_solo else "OFF")
 	_solo_btn.modulate = Color(0.85, 0.6, 1.0) if StoryProgress.c5_solo else Color(1, 1, 1)
-	_anti_btn.text = "HERO: ANTI ARCHITECT" if StoryProgress.anti_story else "HERO: STORY HEROES"
-	_anti_btn.modulate = Color(1.0, 0.65, 0.3) if StoryProgress.anti_story else Color(1, 1, 1)
 	_ext_btn.visible = not StoryLevels.exts_on_page(_page).is_empty()
 	if choice:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
@@ -258,9 +245,7 @@ func _refresh_ui() -> void:
 		_info.add_theme_color_override("font_color", UiStyle.TEXT)
 		var boss := String(lv.get("boss", "")) != ""
 		var hero_name := "You play as the ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "architect" else "Warrior only"
-		if StoryProgress.anti_story:
-			hero_name = "You play as the ANTI ARCHITECT (solo)"
-		elif StoryLevels.is_solo(_pawn_space):
+		if StoryLevels.is_solo(_pawn_space):
 			hero_name = "YOU: %s  -  SOLO (no partner)" % StoryLevels.hero_of(_pawn_space).to_upper()
 		elif bool(lv.get("partner", false)):
 			var h := StoryLevels.hero_of(_pawn_space)
@@ -277,9 +262,9 @@ func _refresh_ui() -> void:
 		if StoryLevels.is_optional(_pawn_space):
 			tag = "  (OPTIONAL - skip it with Right)"
 		var nf := StoryManager.FLASKS_PER_LEVEL
-		if StoryLevels.hero_of(_pawn_space) != "anti" and StoryManager.deep_faith_in(_pawn_space):
+		if StoryManager.deep_faith_in(_pawn_space):
 			nf += StoryManager.DEEP_FAITH_EXTRA_FLASKS          # Deep Faith Payoff (Warrior / Architect, after Mother Nature)
-		_info.text = "Level %d: %s%s    |    %s    |    R = Flask (%d per level)" % [_pawn_space, lv["title"], tag, hero_name, nf]
+		_info.text = "Level %d: %s%s    |    %s    |    %d Flasks" % [_pawn_space, lv["title"], tag, hero_name, nf]
 		_play.text = "PLAY LEVEL %d" % _pawn_space
 
 
@@ -543,7 +528,7 @@ func _on_play() -> void:
 	_busy = true
 	StoryProgress.current_level = _pawn_space
 	# Colosseum 5: pick your hero the first time (later: the SWITCH / PLAY AS button on the board)
-	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) in ["choice", "chase"] and StoryProgress.c5_hero == "" and not StoryProgress.anti_story:
+	if String(StoryLevels.get_level(_pawn_space).get("hero", "")) in ["choice", "chase"] and StoryProgress.c5_hero == "":
 		var pick := HeroSelect.new()
 		add_child(pick)
 		await pick.chosen
@@ -592,18 +577,6 @@ func _toggle_solo() -> void:
 	StoryProgress.set_c5_solo(not StoryProgress.c5_solo)
 	SoundManager.play_sfx("spawn")
 	_refresh_ui()
-
-
-## Anti Architect run on / off (saved). On: every main Story level is played solo as him.
-func _toggle_anti() -> void:
-	if _busy or _hop_t >= 0.0:
-		return
-	StoryProgress.set_anti_story(not StoryProgress.anti_story)
-	SoundManager.play_sfx("spawn")
-	_refresh_ui()
-	queue_redraw()
-	if _board != null:
-		_board.queue_redraw()
 
 
 ## BOSS EXTENSIONS menu for this page (focus = an extension key to highlight, or "").
@@ -700,8 +673,6 @@ func _draw_board() -> void:
 		_draw_scenery_n(r)
 	else:
 		_draw_scenery(r)
-	# Drag hint along the bottom edge of the frame
-	FighterArt.label(c, Vector2(r.get_center().x, r.end.y + 12.0), "<  DRAG THE MAP  >      (the whole story is one map: every part is next to the other)", 12, Color(1.0, 0.9, 0.7, 0.75))
 
 
 ## Board gradient: the colours of the part in view, blending into the next part near its gate.
@@ -1170,9 +1141,6 @@ func _pawn(p: Vector2) -> void:
 	var arch := who == "architect"
 	var pc := Color(0.95, 0.96, 0.98) if arch else StoryBoard.PAWN
 	var ps := Color(0.22, 0.86, 0.28) if arch else StoryBoard.PAWN_SHADE
-	if who == "anti":                            # Anti Architect: the negative - black pawn, orange trim
-		pc = Color(0.12, 0.12, 0.14)
-		ps = Color(1.0, 0.45, 0.05)
 	# Base disc
 	var base := EnemyArt.ellipse_points(base_c, 24, 9, 18)
 	c.draw_colored_polygon(base, ps)

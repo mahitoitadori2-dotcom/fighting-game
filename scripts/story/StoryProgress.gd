@@ -28,9 +28,6 @@ static var c5_hero := ""
 ## used for extension levels ("warrior" / "architect").
 static var ext_done := {}
 static var ext_hero := ""
-## ANTI ARCHITECT run: true = every main Story level is played SOLO as the Anti Architect
-## (Colosseum 5 too, with no CPU partner). Toggled on the Story board.
-static var anti_story := false
 ## Colosseum 5 SOLO mode: no CPU partner (toggled on the board). Achievements + the SOLO badge.
 static var c5_solo := false
 ## CHALLENGE BADGES per level: "level" -> ["no_powers", "no_blocks", "no_healing", "no_gauge",
@@ -53,7 +50,8 @@ static func load_progress() -> void:
 	c5_hero = String(cfg.get_value("story", "c5_hero", ""))
 	ext_done = cfg.get_value("story", "ext_done", {})
 	ext_hero = String(cfg.get_value("story", "ext_hero", ""))
-	anti_story = bool(cfg.get_value("story", "anti_story", false))
+	if not ext_hero in ["", "warrior", "architect"]:
+		ext_hero = ""                                  # Story Mode is Warrior / Architect only
 	c5_solo = bool(cfg.get_value("story", "c5_solo", false))
 	badges = cfg.get_value("story", "badges", {})
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
@@ -76,7 +74,6 @@ static func save_progress() -> void:
 	cfg.set_value("story", "c5_hero", c5_hero)
 	cfg.set_value("story", "ext_done", ext_done)
 	cfg.set_value("story", "ext_hero", ext_hero)
-	cfg.set_value("story", "anti_story", anti_story)
 	cfg.set_value("story", "c5_solo", c5_solo)
 	cfg.set_value("story", "badges", badges)
 	cfg.save(SAVE_PATH)
@@ -120,11 +117,6 @@ static func badge_count() -> int:
 			if not String(k).begins_with("solo_"):
 				n += 1
 	return n
-
-
-static func set_anti_story(on: bool) -> void:
-	anti_story = on
-	save_progress()
 
 
 # ============================================================
@@ -204,7 +196,6 @@ static func reset() -> void:
 	c5_hero = ""
 	ext_done = {}
 	ext_hero = ""
-	anti_story = false
 	c5_solo = false
 	badges = {}
 	save_progress()

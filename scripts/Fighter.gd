@@ -26,6 +26,8 @@ var knockback_scale := 1.0            # < 1 = knockback resistance
 var grab_immune := false              # Giant bosses: grabs still damage them but never move them
 var damage_taken_mult := 1.0          # < 1 = damage reduction (Warrior's Royal Destiny)
 var outgoing_damage_mult := 1.0       # < 1 = this fighter's hits are weaker (APHA Architect: Godly Touch "Weakened")
+var story_power := 1.0                # Hidden Story buff (StoryBuff.gd): damage dealt x this. Never reset.
+var story_defense := 1.0              # Hidden Story buff (StoryBuff.gd): damage taken x this. Never reset.
 var grab_hold_distance := 70.0
 var slot := 0                         # 1 = you, 2 = opponent (set by ArenaManager)
 var respawn_enabled := true           # MatchManager turns this off when lives run out

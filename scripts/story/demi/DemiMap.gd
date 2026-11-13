@@ -118,7 +118,7 @@ func _draw_map() -> void:
 		FighterArt.label(c, pa + Vector2(0, -16), "YOU", 12, Color.WHITE)
 	# Carried artifacts + time of day (bottom)
 	var by := r.end.y + 46.0
-	FighterArt.label(c, Vector2(sz.x * 0.5, by), ("NIGHT" if manager.is_night() else "DAY") + "      M / TAB = close", 16, Color(0.8, 0.8, 0.85))
+	FighterArt.label(c, Vector2(sz.x * 0.5, by), ("NIGHT" if manager.is_night() else "DAY"), 16, Color(0.8, 0.8, 0.85))
 	var carried: Array = manager.carried
 	for i in carried.size():
 		DemiWorld.draw_artifact(c, String(carried[i]), Vector2(sz.x * 0.5 - 40.0 * float(carried.size() - 1) * 0.5 + 40.0 * float(i), by + 40.0), 0.7, _t)

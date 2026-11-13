@@ -158,10 +158,6 @@ func _paint() -> void:
 			var mx := r.position.x + r.size.x * mark
 			_painter.draw_line(Vector2(mx, r.position.y), Vector2(mx, r.end.y), Color(0, 0, 0, 0.8), 2.0)
 
-	# ---------------- Hint ----------------
-	if not MatchSettings.touch_enabled():
-		FighterArt.label(_painter, Vector2(cx, sz.y - 18), "R = Flask    1/2/3 = moves    G = ultimate    Esc = Main Menu", 13, Color(1, 1, 1, 0.55))
-
 
 func _flask(p: Vector2, full: bool) -> void:
 	var body := EnemyArt.ellipse_points(p + Vector2(0, 4), 9, 9, 14)

@@ -18,6 +18,9 @@ extends RefCounted
 ## is earned (or add the check to _check_meta()). The menu and the toast pick it up.
 
 const SAVE_PATH := "user://achievements.cfg"
+## Characters with NO achievements at all (no trophies, not needed for Roster Breaker / Monster
+## Hunter). Playing AS the Alpha Architect in Versus earns nothing.
+const NO_ACHIEVEMENTS := ["apha", "kokusen"]
 const ULTIMATE := "multiversal"
 
 ## Story challenges (= badges). "solo" is the extra Colosseum 5 badge.
@@ -108,6 +111,8 @@ static func _build() -> void:
 		{"big": "no_gauge", "frame": "silver", "bg": Color(0.10, 0.30, 0.42)})
 	for e in CharacterRoster.playable():
 		var id := String(e["id"])
+		if NO_ACHIEVEMENTS.has(id):
+			continue
 		var acc: Color = e.get("accent", Color.WHITE)
 		_add("vs_beat_" + id, "%s Trophy" % e["short"], "Defeat %s in a Versus fight." % e["name"], "versus",
 			{"script": e["art"], "frame": "gold", "emblem": "trophy", "bg": acc.darkened(0.6)})
@@ -117,6 +122,8 @@ static func _build() -> void:
 			{"script": e["art"], "frame": "bronze", "emblem": "star", "bg": acc.darkened(0.45)})
 	for e in CharacterRoster.enemies():
 		var id := String(e["id"])
+		if NO_ACHIEVEMENTS.has(id):
+			continue
 		var acc: Color = e.get("accent", Color.WHITE)
 		var boss := bool(e.get("boss", false))
 		_add("vs_beat_" + id, "%s Trophy" % e["short"], "Defeat %s%s in a Versus fight." % [e["name"], " (Fights-mode BOSS)" if boss else ""], "versus",
@@ -203,10 +210,6 @@ static func _build() -> void:
 		{"big": "badge", "frame": "silver", "bg": Color(0.22, 0.24, 0.30)})
 	_add("badge_100", "Badge Hoarder", "Earn 100 Story challenge badges.", "challenge",
 		{"big": "badge", "frame": "gold", "bg": Color(0.35, 0.26, 0.05)})
-	_add("anti_level", "The Negative", "Clear a Story level as the Anti Architect.", "story",
-		{"hero": "anti", "frame": "bronze", "emblem": "star", "bg": Color(0.35, 0.16, 0.04)})
-	_add("anti_sun", "Eclipse of the Anti", "Beat The Sun as the Anti Architect.", "story",
-		{"hero": "anti", "frame": "gold", "emblem": "sun", "bg": Color(0.45, 0.22, 0.02)})
 
 	# ---------------- THE ULTIMATE ONE ----------------
 	_add(ULTIMATE, "Multi-Multi-Multiversal Level Of Power",
@@ -308,6 +311,8 @@ static func galaxy_for(f: Fighter) -> bool:
 static func on_versus_win(mine_id: String, opp_id: String, used: Dictionary) -> void:
 	if MatchSettings.sandbox or ArenaManager.p1_cpu or opp_id == "" or opp_id == CharacterRoster.DUMMY_ID:
 		return
+	if NO_ACHIEVEMENTS.has(mine_id):
+		return                                          # Playing AS the Alpha Architect: no achievements
 	unlock("vs_first")
 	if not used.get("powers", false):
 		unlock("vs_no_powers")
@@ -321,13 +326,13 @@ static func on_versus_win(mine_id: String, opp_id: String, used: Dictionary) -> 
 	unlock("vs_as_" + mine_id)
 	var all_chars := true
 	for e in CharacterRoster.playable():
-		if not is_unlocked("vs_beat_" + String(e["id"])):
+		if not NO_ACHIEVEMENTS.has(String(e["id"])) and not is_unlocked("vs_beat_" + String(e["id"])):
 			all_chars = false
 	if all_chars:
 		unlock("vs_all_chars")
 	var all_enemies := true
 	for e in CharacterRoster.enemies():
-		if not is_unlocked("vs_beat_" + String(e["id"])):
+		if not NO_ACHIEVEMENTS.has(String(e["id"])) and not is_unlocked("vs_beat_" + String(e["id"])):
 			all_enemies = false
 	if all_enemies:
 		unlock("vs_all_enemies")
@@ -369,10 +374,6 @@ static func on_story_clear(n: int, player: Fighter, solo: bool, hero: String) ->
 			unlock("shining_killed")
 		elif StoryProgress.shining_choice == "spared":
 			unlock("shining_spared")
-	if hero == "anti":
-		unlock("anti_level")
-		if n == C5_LAST:
-			unlock("anti_sun")
 	if n == StoryManager.DEEP_FAITH_AFTER:
 		unlock("deep_faith")                            # Deep Faith Payoff is now active
 	if n == StoryLevels.last_of(StoryLevels.CHASE_PART) and (hero == "warrior" or hero == "architect"):

@@ -45,6 +45,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	load_settings()
 	apply(get_tree())
+	CombatManager.register_inputs()                 # All controls (+ the player's saved keys) from the very start
 
 
 static func load_settings() -> void:
