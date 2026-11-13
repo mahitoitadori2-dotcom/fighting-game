@@ -167,3 +167,15 @@ On the touch controls, the move buttons sit in a row ordered **1, 2, 3 from righ
 | Attack | Left mouse button | Space |
 
 The alternate keys are added in `CombatManager.register_alt_keys()`. Block (F), the moves (1, 2, 3) and the ultimate (G) have no alternate keys.
+
+## Story enemies + bosses in Versus (added 2026-11-13)
+
+33 Story opponents can be fought in Versus (Character Select > ENEMY TEST), each **only once you have met it in a Story level** (saved per save file; old saves count every enemy of the levels already cleared; RESET story locks them again). List + numbers: `STORY_ENEMIES` / `STORY_BOSSES` in `scripts/enemies/EnemyManager.gd`.
+
+- **14 stronger enemies:** Hydra, Rock Golem, Atomic Creation, Hollow Masker, Pained One, Devilish Grin, Ambusher, Camel Rider, Saint Warrior, Oven Owner, Tribe Brute, Pelt Cultist, Husk, Humane Serpent. Versus HP = 1.6x their Story HP (at least 70).
+- **19 bosses** with their own Story boss music: Blinded Lord, Forge Mother, Architect's Golem, Needle, the Brothers, Animal Lord, Executor, Mother Nature, False God, Satan, First Prime, Enlightened One, Caeser's Grave, Saint Golem, Forge Father, Radioactive Chorus, Tribe Master, Last Tiger, Tree Lord.
+- **Scaled for a 1-v-1 against a normal Versus hero:** fought WITH the CPU partner in Story (Colosseum 5) = HP x0.70, damage x0.85; fought with DEEP FAITH = HP x0.85, damage x0.88 more (False God + Satan get both: ~60% HP, 75% damage). Multi-form bosses: every form scaled.
+- Left out (need Story-only parts): The Sun (finale), Blasphemy Caeser (transform cutscene), Architect Chorus (elevator), Void Massacre (climbs cave walls), Void Horrids (3-boss group), The Shining (altar).
+- Boss attacks now use the arena's real edges (`StoryManager.arena_left/right()`: cave walls in Story, island edges in Versus).
+- Each gets Versus trophies (Trophy + Bare Hands); Monster Hunter now needs them too.
+- **Not tested in actual Versus fights** (a test of all 33 was started and stopped on request). Compiles; the unlock list checked on a real save.
