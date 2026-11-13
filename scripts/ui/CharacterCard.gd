@@ -164,10 +164,10 @@ func _gui_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				_press_ms = Time.get_ticks_msec()
-				_press_pos = event.position
+				_press_pos = event.global_position               # Screen position: stays right even if the list moves
 			elif _press_ms >= 0:
 				var held: int = Time.get_ticks_msec() - _press_ms
-				var moved: bool = event.position.distance_to(_press_pos) > 14.0
+				var moved: bool = event.global_position.distance_to(_press_pos) > 14.0
 				_press_ms = -1
 				_set_hold_hint(false)
 				if not moved:
@@ -179,7 +179,7 @@ func _gui_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			chosen_opponent.emit(character_id)
 			accept_event()
-	elif event is InputEventMouseMotion and _press_ms >= 0 and event.position.distance_to(_press_pos) > 14.0:
+	elif event is InputEventMouseMotion and _press_ms >= 0 and event.global_position.distance_to(_press_pos) > 14.0:
 		_press_ms = -1                              # It's a scroll drag, not a pick
 		_set_hold_hint(false)
 	elif event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y:

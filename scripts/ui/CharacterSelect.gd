@@ -81,7 +81,10 @@ func _build() -> void:
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.follow_focus = true                       # Controller: list scrolls to the focused card
+	# NOT follow_focus: a mouse click also focuses the card, and the list jumped to it on the
+	# PRESS - the card slid away under the cursor and the click didn't pick it. Now the list
+	# only scrolls to the focused card for keyboard / controller (_on_card_focus).
+	_scroll.follow_focus = false
 	col.add_child(_scroll)
 
 	var sections := VBoxContainer.new()
@@ -130,6 +133,7 @@ func _populate() -> void:
 		card.setup(entry)
 		card.chosen.connect(_on_pick_you)
 		card.chosen_opponent.connect(_on_pick_opponent)
+		card.focus_entered.connect(_on_card_focus.bind(card))
 		_grid.add_child(card)
 		_cards.append(card)
 	for entry in CharacterRoster.enemies():
@@ -137,6 +141,7 @@ func _populate() -> void:
 		card.setup(entry)
 		card.chosen.connect(_on_pick_opponent)          # Left OR right click: enemies are always the opponent
 		card.chosen_opponent.connect(_on_pick_opponent)
+		card.focus_entered.connect(_on_card_focus.bind(card))
 		_enemy_grid.add_child(card)
 		_cards.append(card)
 		_enemy_cards.append(card)
@@ -178,6 +183,23 @@ func _refresh_selection() -> void:
 		(_enemy_buttons[id] as Button).set_pressed_no_signal(id == CharacterRoster.opponent_id)
 	_you_label.text = "YOU: %s" % CharacterRoster.selected()["short"]
 	_opp_label.text = "OPPONENT: %s" % CharacterRoster.opponent()["short"]
+
+
+## Last input came from a mouse / finger (true) or a keyboard / controller (false).
+var _pointer := false
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		_pointer = true
+	elif event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		_pointer = false
+
+
+## Keyboard / controller moved to a card: scroll it into view. A click never scrolls the list.
+func _on_card_focus(card: Control) -> void:
+	if not _pointer:
+		_scroll.ensure_control_visible(card)
 
 
 func _unhandled_input(event: InputEvent) -> void:
