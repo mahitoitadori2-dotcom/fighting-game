@@ -13,7 +13,7 @@ Universal Beatdown is a free 2D platform fighter, made in Godot 4.7.
 
 | | |
 |---|---|
-| **Version** | v0.2.0 (latest GitHub Release) |
+| **Version** | v0.3.0 (latest GitHub Release, 2026-11-13) |
 | **Play online** | https://mahitoitadori2-dotcom.github.io/fighting-game/ |
 | **Downloads** | Windows, macOS, Linux and Web zips on the [Releases page](https://github.com/mahitoitadori2-dotcom/fighting-game/releases) |
 | **Builds** | Automatic. Every push builds all platforms. A push to `main` updates the website. A `v*` tag makes a release. |
@@ -23,7 +23,7 @@ Universal Beatdown is a free 2D platform fighter, made in Godot 4.7.
 
 ## Next step
 
-Play Colosseum 5, the Enlightened Chase and DemiLand yourself and tune the bosses. Listen to the new music, sound effects and voice blips. Test the web game on an iPhone for 5+ minutes (no crash, sound works, silent in the background). Tag a new release: v0.2.0 does not have the work after 2026-11-08. See [Handoff](Handoff.md) and the [To-do list](Todo.md).
+Play Colosseum 5, the Enlightened Chase and DemiLand yourself and tune the bosses. Listen to the new music, sound effects and voice blips. Test the web game on an iPhone for 5+ minutes (no crash, sound works, silent in the background). See [Handoff](Handoff.md) and the [To-do list](Todo.md).
 
 ## Details
 

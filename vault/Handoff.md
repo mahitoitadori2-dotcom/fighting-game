@@ -4,7 +4,7 @@ validity: current
 type: handoff
 updated: 2026-11-13
 branch: main
-last_commit: 2fe5a91 Enlightened Chase dialogue from the real lore
+last_commit: 88f8428 Merge pull request #7 (handoff skill)
 ---
 
 # Handoff
@@ -13,7 +13,7 @@ Back to [Summary](SUMMARY.md).
 
 ## Current state
 
-The game has Versus (6 fighters, 33 unlockable Story opponents) and Story Mode levels 1-63: 5 Colosseums, the Boss Extensions, the Enlightened Chase and DemiLand. The music is orchestral, 24 of 36 sound effects are real recordings, and Story has typed dialogue with voice blips. CI passes on `main` and the website shows the latest `main`. The last release is v0.2.0 (2026-11-08), so the downloads are old. This session fixed `SUMMARY.md` and added the `handoff` skill and this file.
+The game has Versus (6 fighters, 33 unlockable Story opponents) and Story Mode levels 1-63: 5 Colosseums, the Boss Extensions, the Enlightened Chase and DemiLand. The music is orchestral, 24 of 36 sound effects are real recordings, and Story has typed dialogue with voice blips. CI passes on `main` and the website shows the latest `main`. Release v0.3.0 (2026-11-13, tag on `88f8428`) has the Windows, macOS, Linux and Web zips. This session fixed `SUMMARY.md`, added the `handoff` skill and this file, and made the v0.3.0 release.
 
 ## Work in progress
 
@@ -21,10 +21,9 @@ None.
 
 ## Plan
 
-1. Tag a new release (`v0.3.0`), so the download zips get the work after 2026-11-08. See [Build and release](BuildAndRelease.md).
-2. The user plays Colosseum 5, the Enlightened Chase and DemiLand. Tune the bosses from that feedback.
-3. The user listens to the music, sound effects and voice blips. Change the tracks and volumes from that feedback.
-4. Test the web game on a real iPhone for 5+ minutes.
+1. The user plays Colosseum 5, the Enlightened Chase and DemiLand. Tune the bosses from that feedback.
+2. The user listens to the music, sound effects and voice blips. Change the tracks and volumes from that feedback.
+3. Test the web game on a real iPhone for 5+ minutes.
 
 ## Problems to fix
 
@@ -51,7 +50,7 @@ The open items are in the [To-do list](Todo.md).
 
 ## How to resume
 
-- First action: ask the user whether to tag `v0.3.0` now, or to wait for the play tests.
+- First action: ask the user for the results of the play tests and the audio check.
 - Useful commands: `node tools/serve.js web 8060` (local web build), `tools/export_all.sh /path/to/godot` (all exports).
-- Check first: `git status`. If HEAD is not `last_commit`, read `git log 2fe5a91..HEAD` before anything else.
+- Check first: `git status`. If HEAD is not `last_commit`, read `git log 88f8428..HEAD` before anything else.
 - At the end of a session, run the `handoff` skill (`/handoff`).
