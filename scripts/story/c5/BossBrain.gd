@@ -111,4 +111,4 @@ func _cornered() -> bool:
 	if not StoryManager.has_walls:
 		return false
 	var x := e.global_position.x
-	return x < StoryManager.wall_left_x + 160.0 or x > StoryManager.wall_right_x - 160.0
+	return x < StoryManager.arena_left() + 160.0 or x > StoryManager.arena_right() - 160.0

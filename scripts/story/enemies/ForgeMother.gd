@@ -108,7 +108,7 @@ func _attack(p: EnemyPattern) -> void:
 				var off := (float(k) - float(n - 1) * 0.5) * 160.0 + randf_range(-30.0, 30.0)
 				var x := clamp_to_ground(tx + off)
 				if StoryManager.has_walls:
-					x = clampf(x, StoryManager.wall_left_x + 60.0, StoryManager.wall_right_x - 60.0)
+					x = clampf(x, StoryManager.arena_left() + 60.0, StoryManager.arena_right() - 60.0)
 				BossHazard.spawn(self, "blast", Vector2(x, global_position.y), 0.8 + 0.12 * float(k), dmg(p), Vector2(260, -480))
 			SoundManager.play_sfx("rumble", -3.0)
 		"scrap":

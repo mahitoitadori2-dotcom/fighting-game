@@ -102,6 +102,6 @@ func blink_to(x: float) -> void:
 	Effects.void_burst(self, global_position + Vector2(0, -50), 50.0)
 	global_position.x = clamp_to_ground(x, 60.0)
 	if StoryManager.has_walls:
-		global_position.x = clampf(global_position.x, StoryManager.wall_left_x + 50.0, StoryManager.wall_right_x - 50.0)
+		global_position.x = clampf(global_position.x, StoryManager.arena_left() + 50.0, StoryManager.arena_right() - 50.0)
 	Effects.void_burst(self, global_position + Vector2(0, -50), 50.0)
 	SoundManager.play_sfx("whoosh", -6.0)

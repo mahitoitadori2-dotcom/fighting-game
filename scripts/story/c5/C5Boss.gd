@@ -226,13 +226,13 @@ func _arena_floor() -> float:
 
 func clamp_arena(x: float, margin: float = 60.0) -> float:
 	if StoryManager.has_walls:
-		return clampf(x, StoryManager.wall_left_x + margin, StoryManager.wall_right_x - margin)
+		return clampf(x, StoryManager.arena_left() + margin, StoryManager.arena_right() - margin)
 	return clamp_to_ground(x, margin)
 
 
 func arena_center() -> float:
 	if StoryManager.has_walls:
-		return (StoryManager.wall_left_x + StoryManager.wall_right_x) * 0.5
+		return (StoryManager.arena_left() + StoryManager.arena_right()) * 0.5
 	var g := get_tree().get_first_node_in_group("arena_ground") as ArenaGround
 	return g.global_position.x if g != null else global_position.x
 

@@ -384,7 +384,7 @@ func _lava_wave(d: float, damage: int) -> void:
 
 func _clamp_arena(x: float) -> float:
 	if StoryManager.has_walls:
-		return clampf(x, StoryManager.wall_left_x + 60.0, StoryManager.wall_right_x - 60.0)
+		return clampf(x, StoryManager.arena_left() + 60.0, StoryManager.arena_right() - 60.0)
 	return clamp_to_ground(x)
 
 

@@ -82,7 +82,7 @@ func _attack(p: EnemyPattern) -> void:
 			SoundManager.play_sfx("dash")
 			SoundManager.play_sfx("flame", -3.0)
 		"sweep":
-			var from := StoryManager.wall_left_x + 120.0 if global_position.x > arena_center() else StoryManager.wall_right_x - 120.0
+			var from := StoryManager.arena_left() + 120.0 if global_position.x > arena_center() else StoryManager.arena_right() - 120.0
 			var dir := 1.0 if from < arena_center() else -1.0
 			for k in 9:
 				hazard("hellfire", from + dir * float(k) * 160.0, 0.5 + 0.13 * float(k), dmg(p))

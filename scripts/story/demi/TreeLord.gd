@@ -99,8 +99,8 @@ func _attack(p: EnemyPattern) -> void:
 				summon("sapling", Vector2(clamp_arena(global_position.x + float(k * 2 - 1) * 220.0), floor_y() - 60.0))
 			SoundManager.play_sfx("spawn")
 		"thorns":
-			var l := StoryManager.wall_left_x + 80.0
-			var r := StoryManager.wall_right_x - 80.0
+			var l := StoryManager.arena_left() + 80.0
+			var r := StoryManager.arena_right() - 80.0
 			for k in 9:
 				hazard("spear", lerpf(l, r, float(k) / 8.0), 0.6 + (0.45 if k % 2 == 1 else 0.0), dmg(p), Vector2(200, -460))
 			Effects.shake(self, 14.0)

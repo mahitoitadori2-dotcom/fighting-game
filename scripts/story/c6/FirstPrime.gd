@@ -99,7 +99,7 @@ func _attack(p: EnemyPattern) -> void:
 			SoundManager.play_sfx("holy")
 			for d: float in [-1.0, 1.0]:
 				shoot("shock", Vector2(global_position.x + d * 70.0, floor_y() - 20.0), d, 560.0, 1.3, Vector2(54, 48), dmg(p), Vector2(240, -340), GOLD, "gong_wave", true)
-			var from := StoryManager.wall_left_x + 120.0 if global_position.x > arena_center() else StoryManager.wall_right_x - 120.0
+			var from := StoryManager.arena_left() + 120.0 if global_position.x > arena_center() else StoryManager.arena_right() - 120.0
 			var dir := 1.0 if from < arena_center() else -1.0
 			for k in 7:
 				hazard("pillar", from + dir * float(k) * 190.0, 0.8 + 0.15 * float(k), dmg(p), Vector2(200, -460))

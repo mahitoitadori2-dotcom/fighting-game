@@ -56,6 +56,8 @@ var walk_phase := 0.0
 func _ready() -> void:
 	data = _make_data()
 	enemy_name = data.character_name
+	if StoryManager.active:                           # Met in Story Mode -> it may now appear in Versus
+		StoryProgress.mark_seen(String(get_script().get_global_name()))
 	speed = data.move_speed
 	patterns = build_patterns()
 	super._ready()

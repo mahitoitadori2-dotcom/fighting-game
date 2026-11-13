@@ -6,7 +6,7 @@ extends SimpleEnemy
 ##
 ##   Bite     2 dmg, 1 s   - quick nip up close
 ##   Pounce   4 dmg, 3.5 s - leaps at you (from the floor OR from a wall)
-## Climbing uses StoryManager.wall_left_x / wall_right_x (Story arenas have cave walls).
+## Climbing uses StoryManager.arena_left() / wall_right_x (Story arenas have cave walls).
 
 const CLIMB_SPEED := 230.0
 const CLIMB_HEIGHT_MIN := 150.0
@@ -64,8 +64,8 @@ func can_climb() -> bool:
 
 ## Nearest wall's inner face x and its side (-1 left / 1 right).
 func nearest_wall() -> Vector2:
-	var l := StoryManager.wall_left_x
-	var r := StoryManager.wall_right_x
+	var l := StoryManager.arena_left()
+	var r := StoryManager.arena_right()
 	if absf(global_position.x - l) < absf(global_position.x - r):
 		return Vector2(l, -1.0)
 	return Vector2(r, 1.0)

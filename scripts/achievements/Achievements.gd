@@ -120,13 +120,13 @@ static func _build() -> void:
 			{"script": e["art"], "frame": "silver", "emblem": "fist", "bg": acc.darkened(0.75)})
 		_add("vs_as_" + id, "%s Main" % e["short"], "Win a Versus fight playing as %s." % e["name"], "versus",
 			{"script": e["art"], "frame": "bronze", "emblem": "star", "bg": acc.darkened(0.45)})
-	for e in CharacterRoster.enemies():
+	for e in EnemyManager.entries():                     # ALL enemies (Story ones too, before they are met)
 		var id := String(e["id"])
 		if NO_ACHIEVEMENTS.has(id):
 			continue
 		var acc: Color = e.get("accent", Color.WHITE)
 		var boss := bool(e.get("boss", false))
-		_add("vs_beat_" + id, "%s Trophy" % e["short"], "Defeat %s%s in a Versus fight." % [e["name"], " (Fights-mode BOSS)" if boss else ""], "versus",
+		_add("vs_beat_" + id, "%s Trophy" % e["short"], "Defeat %s%s in a Versus fight." % [e["name"], (" (Story boss)" if e.get("story", false) else " (Fights-mode BOSS)") if boss else ""], "versus",
 			{"script": e["art"], "frame": "red" if boss else "gold", "emblem": "trophy", "bg": acc.darkened(0.6)})
 		_add("vs_pure_" + id, "%s: Bare Hands" % e["short"], "Defeat %s without using Powers, Blocking or the G Gauge." % e["name"], "versus",
 			{"script": e["art"], "frame": "silver", "emblem": "fist", "bg": acc.darkened(0.75)})
@@ -331,7 +331,7 @@ static func on_versus_win(mine_id: String, opp_id: String, used: Dictionary) -> 
 	if all_chars:
 		unlock("vs_all_chars")
 	var all_enemies := true
-	for e in CharacterRoster.enemies():
+	for e in EnemyManager.entries():
 		if not NO_ACHIEVEMENTS.has(String(e["id"])) and not is_unlocked("vs_beat_" + String(e["id"])):
 			all_enemies = false
 	if all_enemies:

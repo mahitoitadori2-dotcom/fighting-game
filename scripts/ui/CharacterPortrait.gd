@@ -6,6 +6,9 @@ extends Control
 var art: Script
 var accent := Color(0.35, 0.8, 1.0)
 var art_scale := 1.6
+## Height of the art in its own units (0 = from the art's PORTRAIT_H constant, else 135). The
+## roster gives the big Story bosses theirs so they fit the card.
+var portrait_h := 0.0
 
 var _t := 0.0
 
@@ -46,6 +49,8 @@ func _draw() -> void:
 	var art_h := 135.0
 	if art != null:
 		art_h = maxf(art_h, float(art.get_script_constant_map().get("PORTRAIT_H", 135.0)))
+	if portrait_h > 0.0:
+		art_h = maxf(art_h, portrait_h)
 	var s := minf(art_scale, (size.y - 30.0) / art_h)
 	draw_set_transform(feet + Vector2(0, -4), 0.0, Vector2(s, s))
 	if art != null:

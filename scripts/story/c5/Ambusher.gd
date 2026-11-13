@@ -59,7 +59,7 @@ func _attack(p: EnemyPattern) -> void:
 			var behind := target_x() - float(facing) * 110.0
 			global_position.x = clamp_to_ground(behind)
 			if StoryManager.has_walls:
-				global_position.x = clampf(global_position.x, StoryManager.wall_left_x + 50.0, StoryManager.wall_right_x - 50.0)
+				global_position.x = clampf(global_position.x, StoryManager.arena_left() + 50.0, StoryManager.arena_right() - 50.0)
 			facing = -facing
 			SoundManager.play_sfx("whoosh", -6.0)
 

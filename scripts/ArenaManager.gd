@@ -73,4 +73,8 @@ func _spawn(entry: Dictionary, slot: int, pos: Vector2) -> Fighter:
 		else:
 			(f as ControlledFighter).ctl = FighterInput.new()
 	add_child(f)
+	if entry.has("versus_hp"):                    # Story enemies / bosses: their Versus HP
+		f.data.max_hp = int(entry["versus_hp"])
+		f.hp = f.data.max_hp
+		f.health_changed.emit(f.hp, f.data.max_hp)
 	return f

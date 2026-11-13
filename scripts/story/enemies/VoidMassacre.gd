@@ -121,8 +121,8 @@ func _attack(p: EnemyPattern) -> void:
 			_climbing = true
 			_climb_start = global_position
 			_floor_y = global_position.y
-			var left := StoryManager.wall_left_x if StoryManager.has_walls else global_position.x - 700.0
-			var right := StoryManager.wall_right_x if StoryManager.has_walls else global_position.x + 700.0
+			var left := StoryManager.arena_left() if StoryManager.has_walls else global_position.x - 700.0
+			var right := StoryManager.arena_right() if StoryManager.has_walls else global_position.x + 700.0
 			_climb_wall_x = left + WALL_GAP if absf(global_position.x - left) < absf(global_position.x - right) else right - WALL_GAP
 			SoundManager.play_sfx("dash", -4.0)
 		"goo":

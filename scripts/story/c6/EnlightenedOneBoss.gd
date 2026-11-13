@@ -84,7 +84,7 @@ func _attack(p: EnemyPattern) -> void:
 				_drop("relic_bomb", tx + dir * (float(k) - 2.0) * 170.0, 0.8 + 0.2 * float(k), dmg(p), 85.0)
 			SoundManager.play_sfx("chain", -4.0)
 		"hoard":
-			var from := StoryManager.wall_left_x + 100.0 if randf() < 0.5 else StoryManager.wall_right_x - 100.0
+			var from := StoryManager.arena_left() + 100.0 if randf() < 0.5 else StoryManager.arena_right() - 100.0
 			var dir := 1.0 if from < arena_center() else -1.0
 			for k in 9:
 				_drop("relic_bomb" if k % 3 == 1 else "relic", from + dir * float(k) * 140.0, 0.8 + 0.14 * float(k), dmg(p))
@@ -118,7 +118,7 @@ func _on_attack_update(p: EnemyPattern, _delta: float) -> void:
 		_blinked = true
 		Effects.gold_burst(self, global_position + Vector2(0, -120), 110.0)
 		var tx := target_x()
-		var x := StoryManager.wall_right_x - 160.0 if tx < arena_center() else StoryManager.wall_left_x + 160.0
+		var x := StoryManager.arena_right() - 160.0 if tx < arena_center() else StoryManager.arena_left() + 160.0
 		if not StoryManager.has_walls:
 			x = tx + (500.0 if tx < global_position.x else -500.0)
 		global_position.x = clamp_arena(x)

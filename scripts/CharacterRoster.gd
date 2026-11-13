@@ -43,7 +43,11 @@ static func all() -> Array[Dictionary]:
 	# list.append(_some_new_fighter())
 	# PvE enemies ("enemy": true) - Character Select shows them in ENEMY TEST.
 	# Rotor + every other enemy come from EnemyManager (one list, one place).
-	list.append_array(EnemyManager.entries())
+	# Story enemies / bosses only once you have ENCOUNTERED them in a Story level.
+	for e in EnemyManager.entries():
+		if e.get("story", false) and not StoryProgress.seen_enemy(String(e["class"])):
+			continue
+		list.append(e)
 	return list
 
 

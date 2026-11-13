@@ -225,8 +225,8 @@ func _attack(p: EnemyPattern) -> void:
 			Effects.gold_burst(self, global_position + Vector2(0, -130), 230.0)
 			SoundManager.play_sfx("holy")
 		"judgment":
-			var l := StoryManager.wall_left_x + 70.0
-			var r := StoryManager.wall_right_x - 70.0
+			var l := StoryManager.arena_left() + 70.0
+			var r := StoryManager.arena_right() - 70.0
 			for k in 10:
 				hazard("spear", lerpf(l, r, float(k) / 9.0), 0.5 + (0.35 if k % 2 == 1 else 0.0), dmg(p), Vector2(200, -420))
 			for k in 3:
@@ -283,8 +283,8 @@ func _attack(p: EnemyPattern) -> void:
 		"devour":
 			_devour_start()
 		"supernova":
-			var l := StoryManager.wall_left_x + 70.0
-			var r := StoryManager.wall_right_x - 70.0
+			var l := StoryManager.arena_left() + 70.0
+			var r := StoryManager.arena_right() - 70.0
 			var n := int((r - l) / 120.0)
 			var gap1 := randi() % n
 			@warning_ignore("integer_division")

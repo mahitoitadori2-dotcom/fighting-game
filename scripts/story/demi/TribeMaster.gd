@@ -87,7 +87,7 @@ func _attack(p: EnemyPattern) -> void:
 			Effects.shake(self, 10.0)
 			SoundManager.play_sfx("roar")
 		"drums":
-			var from := StoryManager.wall_left_x + 100.0 if global_position.x > arena_center() else StoryManager.wall_right_x - 100.0
+			var from := StoryManager.arena_left() + 100.0 if global_position.x > arena_center() else StoryManager.arena_right() - 100.0
 			var dir := 1.0 if from < arena_center() else -1.0
 			for k in 8:
 				hazard("spear", from + dir * float(k) * 170.0, 0.7 + 0.14 * float(k), dmg(p), Vector2(200, -460))

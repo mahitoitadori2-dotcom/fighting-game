@@ -33,7 +33,57 @@ static var c5_solo := false
 ## CHALLENGE BADGES per level: "level" -> ["no_powers", "no_blocks", "no_healing", "no_gauge",
 ## "solo", "solo_no_powers"...]. The "solo_" ones = that challenge was done in SOLO mode.
 static var badges := {}
+## ENEMIES MET in Story Mode (class name -> true). Story enemies / bosses appear in Versus only
+## once they are in here (BaseEnemy marks itself the first time it shows up in a Story level).
+static var seen := {}
 static var _loaded := false
+
+
+## An enemy class was met in a Story level (saved the first time).
+static func mark_seen(class_id: String) -> void:
+	load_progress()
+	if class_id == "" or seen.has(class_id):
+		return
+	seen[class_id] = true
+	save_progress()
+
+
+static func seen_enemy(class_id: String) -> bool:
+	load_progress()
+	return seen.has(class_id)
+
+
+## Old saves: everything in the levels you already CLEARED counts as met (waves, boss, the coin
+## flip's extras, cleared Boss Extension levels, DemiLand's camps + bosses).
+static func _backfill_seen() -> void:
+	var add := func(id: String) -> void:
+		if id != "":
+			seen[String(StoryLevels.enemy_script(id).get_global_name())] = true
+	for n in range(1, StoryLevels.count() + 1):
+		if not level_cleared(n):
+			continue
+		var lv := StoryLevels.get_level(n)
+		for wave in lv.get("waves", []):
+			for id in wave:
+				add.call(String(id))
+		add.call(String(lv.get("boss", "")))
+		if bool(lv.get("coin_flip", false)):
+			for id in ["ambusher", "grin", "pained"]:
+				add.call(id)
+		if StoryLevels.is_open_world(n):
+			for c in DemiWorld.CAMPS:
+				for id in c["ids"]:
+					add.call(String(id))
+			for b in DemiWorld.BOSSES:
+				add.call(String(b["id"]))
+	for k in StoryLevels.EXTENSIONS:
+		var first := int(StoryLevels.EXTENSIONS[k]["first"])
+		for i in ext_cleared(k):
+			var lv2 := StoryLevels.get_level(first + i)
+			for wave in lv2.get("waves", []):
+				for id in wave:
+					add.call(String(id))
+			add.call(String(lv2.get("boss", "")))
 
 
 static func load_progress() -> void:
@@ -54,6 +104,7 @@ static func load_progress() -> void:
 		ext_hero = ""                                  # Story Mode is Warrior / Architect only
 	c5_solo = bool(cfg.get_value("story", "c5_solo", false))
 	badges = cfg.get_value("story", "badges", {})
+	seen = cfg.get_value("story", "seen", {})
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -61,6 +112,7 @@ static func load_progress() -> void:
 	# Every beaten Colosseum unlocks the first level of the next one
 	unlocked_level = clampi(maxi(unlocked_level, StoryLevels.first_of(colosseums_done + 1)), 1, AVAILABLE_LEVELS)
 	current_level = unlocked_level
+	_backfill_seen()
 	save_progress()
 
 
@@ -76,6 +128,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "ext_hero", ext_hero)
 	cfg.set_value("story", "c5_solo", c5_solo)
 	cfg.set_value("story", "badges", badges)
+	cfg.set_value("story", "seen", seen)
 	cfg.save(SAVE_PATH)
 
 
@@ -198,4 +251,5 @@ static func reset() -> void:
 	ext_hero = ""
 	c5_solo = false
 	badges = {}
+	seen = {}                                          # Story enemies leave Versus again until met
 	save_progress()

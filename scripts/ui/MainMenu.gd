@@ -110,6 +110,7 @@ func _build() -> void:
 func _add_portrait(entry: Dictionary, left: bool) -> void:
 	var portrait := CharacterPortrait.new()
 	portrait.art = entry.get("art", null)
+	portrait.portrait_h = float(entry.get("portrait_h", 0.0))
 	portrait.accent = CharacterCard.YOU_COLOR if left else CharacterCard.OPP_COLOR
 	if left:
 		portrait.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)

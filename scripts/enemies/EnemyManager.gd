@@ -42,8 +42,90 @@ static func entries() -> Array[Dictionary]:
 	list.append(_entry("sisyphus", "Sisyphus", "Sisyphus", Sisyphus, Color(1.0, 0.70, 0.25), Sisyphus.HP, "boss_sisyphus"))
 	list.append(_entry("geyron", "Geyron", "Geyron", Geyron, Color(1.0, 0.30, 0.30), Geyron.HP, "boss_geyron"))
 	list.append(_entry("kokusen", "Kokusen", "Kokusen", Kokusen, Color(0.85, 0.12, 0.18), Kokusen.HP, "boss_satan"))
+	# ----- FROM STORY MODE: the stronger enemies (Versus HP = 1.6x their Story HP, at least 70) -----
+	for e in STORY_ENEMIES:
+		list.append(_story(e, false))
+	# ----- FROM STORY MODE: the bosses that work outside Story (their full Story HP, own music) -----
+	for e in STORY_BOSSES:
+		list.append(_story(e, true))
 	_cache = list
 	return list
+
+
+## [id, full name, short name, script, accent, music]. Left out on purpose: The Sun (her death is
+## the Story finale), Blasphemy Caeser (transforms in a Story cutscene), Architect Chorus (needs the
+## elevator), Void Massacre (climbs cave walls), the Void Horrids (a 3-boss group), The Shining (altar).
+const STORY_ENEMIES := [
+	["s_hydra", "Hydra Mutant", "Hydra", "HydraMutant", Color(0.45, 0.85, 0.35), "story_cave"],
+	["s_golem", "Rock Golem", "Rock Golem", "RockGolem", Color(0.65, 0.45, 0.95), "story_geode"],
+	["s_atomic", "The Atomic Creation", "Atomic Creation", "AtomicCreation", Color(0.45, 1.0, 0.35), "story_workshop"],
+	["s_masker", "The Hollow Masker", "Hollow Masker", "HollowMasker", Color(0.85, 0.85, 0.95), "story_void"],
+	["s_pained", "The Pained One", "Pained One", "PainedOne", Color(0.75, 0.30, 0.30), "story_darkcave"],
+	["s_grin", "The Devilish Grin", "Devilish Grin", "DevilishGrin", Color(0.95, 0.30, 0.20), "story_darkcave"],
+	["s_ambusher", "Ambusher", "Ambusher", "Ambusher", Color(0.55, 0.45, 0.35), "story_throne"],
+	["s_camel", "Enlightened Camel Rider", "Camel Rider", "EnlightenedCamel", Color(0.95, 0.80, 0.40), "story_chase"],
+	["s_saint", "Saint Warrior", "Saint Warrior", "SaintWarrior", Color(0.95, 0.85, 0.55), "story_altar"],
+	["s_oven", "Oven Owner", "Oven Owner", "OvenOwner", Color(1.0, 0.50, 0.15), "story_workshop"],
+	["s_brute", "Tribe Brute", "Tribe Brute", "TribeBrute", Color(0.75, 0.55, 0.40), "story_demiland"],
+	["s_cultist", "Pelt Cultist", "Pelt Cultist", "PeltCultist", Color(0.95, 0.60, 0.20), "story_demiland"],
+	["s_husk", "Husk", "Husk", "HuskTreant", Color(0.45, 0.35, 0.25), "story_demiland_night"],
+	["s_serpent", "Humane Serpent", "Humane Serpent", "HumaneSerpent", Color(0.45, 0.75, 0.35), "story_cave"],
+]
+const STORY_BOSSES := [
+	["s_blinded", "The Blinded Lord", "Blinded Lord", "BlindedLord", Color(0.45, 1.0, 0.35), "boss"],
+	["s_forgemother", "The Forge Mother", "Forge Mother", "ForgeMother", Color(1.0, 0.55, 0.15), "boss_forge_father"],
+	["s_archgolem", "The Architect's Golem", "Architect's Golem", "ArchitectsGolem", Color(0.40, 0.80, 1.0), "boss_golem"],
+	["s_needle", "Child Wielding Needle", "Needle", "ChildNeedle", Color(0.90, 0.85, 1.0), "boss_needle"],
+	["s_brothers", "The Brothers", "The Brothers", "TheBrothers", Color(0.92, 0.92, 0.95), "boss_brothers"],
+	["s_animal", "Animal Lord", "Animal Lord", "AnimalLord", Color(0.80, 0.55, 0.30), "boss_animal"],
+	["s_executor", "Executor", "Executor", "Executor", Color(0.65, 0.30, 0.95), "boss_executor"],
+	["s_nature", "Mother Nature", "Mother Nature", "MotherNature", Color(0.45, 1.0, 0.45), "boss_nature"],
+	["s_falsegod", "The False God", "False God", "FalseGod", Color(1.0, 0.30, 0.20), "boss_falsegod"],
+	["s_satan", "Satan", "Satan", "Satan", Color(1.0, 0.25, 0.10), "boss_satan"],
+	["s_prime", "The Enlightened First Prime", "First Prime", "FirstPrime", Color(1.0, 0.85, 0.40), "boss_prime"],
+	["s_enlightened", "The Enlightened One", "Enlightened One", "EnlightenedOneBoss", Color(1.0, 0.90, 0.55), "boss_enlightened"],
+	["s_grave", "The Caeser's Grave", "Caeser's Grave", "CaesersGrave", Color(0.60, 0.55, 0.45), "boss_grave"],
+	["s_saintgolem", "The Saint Architect's Golem", "Saint Golem", "SaintGolem", Color(1.0, 0.90, 0.60), "boss_saint_golem"],
+	["s_forgefather", "The Forge Father", "Forge Father", "ForgeFather", Color(1.0, 0.45, 0.10), "boss_forge_father"],
+	["s_radchorus", "The Radioactive Chorus", "Radioactive Chorus", "RadioactiveChorus", Color(0.50, 1.0, 0.30), "boss_reactor"],
+	["s_tribemaster", "The Tribe Master", "Tribe Master", "TribeMaster", Color(1.0, 0.40, 0.15), "boss_tribe"],
+	["s_tiger", "The Last Tiger", "Last Tiger", "LastTiger", Color(1.0, 0.62, 0.20), "boss_tiger"],
+	["s_treelord", "The LIVING Tree Lord", "Tree Lord", "TreeLord", Color(0.50, 1.0, 0.40), "boss_treelord"],
+]
+
+
+## A Story enemy / boss as a Versus roster entry. Reads its real HP and size from the enemy itself.
+static func _story(e: Array, boss: bool) -> Dictionary:
+	var script: Script = _script_named(String(e[3]))
+	var inst := script.new() as BaseEnemy
+	var d: CharacterData = inst.call("_make_data")
+	var hp := d.max_hp
+	if inst.has_method("boss_forms"):                       # Bosses with several forms: all of them
+		hp = 0
+		for f in inst.call("boss_forms"):
+			hp += int(f.get("hp", 0))
+	var scale_k: float = float(inst.get("art_scale")) if "art_scale" in inst else 1.0
+	var art_h := d.body_size.y * scale_k * 1.2 + 20.0         # So the card shows the whole body
+	inst.free()
+	var versus_hp := hp if boss else maxi(70, roundi(float(hp) * 1.6))
+	var entry := _entry(String(e[0]), String(e[1]), String(e[2]), script, e[4], versus_hp if boss else 0, String(e[5]))
+	if not boss:
+		entry["versus_hp"] = versus_hp                         # (bosses keep their own HP per form)
+	entry["portrait_h"] = art_h
+	entry["story"] = true
+	entry["class"] = String(e[3])                              # Shown in Versus only once met in Story (StoryProgress.seen)
+	var moves: Array = entry["moves"]
+	moves[moves.size() - 1] = {"key": "!", "name": ("BOSS: %d HP" if boss else "%d HP") % versus_hp,
+		"info": "From STORY MODE" + (" - its Story boss music" if boss else " (tougher in Versus)")}
+	return entry
+
+
+static func _script_named(class_id: String) -> Script:
+	for c in ProjectSettings.get_global_class_list():
+		if String(c["class"]) == class_id:
+			return load(String(c["path"]))
+	push_error("EnemyManager: no class " + class_id)
+	return Parasite
 
 
 ## Roster entry (same format as the playable characters). The card's move list is

@@ -107,8 +107,8 @@ func _attack(p: EnemyPattern) -> void:
 				summon("parasite", Vector2(clamp_arena(global_position.x + float(k - 1) * 200.0), floor_y() - 40.0))
 			SoundManager.play_sfx("spawn")
 		"inferno":
-			var l := StoryManager.wall_left_x + 80.0
-			var r := StoryManager.wall_right_x - 80.0
+			var l := StoryManager.arena_left() + 80.0
+			var r := StoryManager.arena_right() - 80.0
 			var n := 9
 			for k in n:
 				hazard("hellfire", lerpf(l, r, float(k) / float(n - 1)), 0.6 + 0.08 * float(k % 3) + (0.5 if k % 2 == 1 else 0.0), dmg(p))

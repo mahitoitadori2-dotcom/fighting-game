@@ -37,6 +37,28 @@ static var active := false
 static var has_walls := false
 static var wall_left_x := -100000.0
 static var wall_right_x := 100000.0
+
+
+## The arena's real LEFT / RIGHT limits for enemy attacks: the cave walls in Story Mode, the
+## floating island's edges in Versus (Story enemies and bosses can also fight in Versus).
+## Enemies use these instead of wall_left_x / wall_right_x directly.
+static func arena_left() -> float:
+	if has_walls:
+		return wall_left_x
+	var g := _arena_ground()
+	return g.left_edge() if g != null else -100000.0
+
+
+static func arena_right() -> float:
+	if has_walls:
+		return wall_right_x
+	var g := _arena_ground()
+	return g.right_edge() if g != null else 100000.0
+
+
+static func _arena_ground() -> ArenaGround:
+	var tree := Engine.get_main_loop() as SceneTree
+	return tree.get_first_node_in_group("arena_ground") as ArenaGround if tree != null else null
 ## TESTING ONLY: the Warrior is played by its CPU brain and takes 25% damage,
 ## so a whole Colosseum can run by itself. Never on in normal play.
 static var autoplay := false
@@ -148,6 +170,8 @@ func _exit_tree() -> void:
 	active = false
 	SoulsRules.active = false
 	has_walls = false
+	wall_left_x = -100000.0                        # Never carry this level's walls into Versus
+	wall_right_x = 100000.0
 	max_attackers = MAX_ATTACKERS
 	Companion.leader = null
 	MatchSettings.sandbox = _saved_sandbox

@@ -53,6 +53,7 @@ func setup(entry: Dictionary) -> void:
 	frame.add_theme_stylebox_override("panel", frame_style)
 	var portrait := CharacterPortrait.new()
 	portrait.art = entry.get("art", null)
+	portrait.portrait_h = float(entry.get("portrait_h", 0.0))
 	portrait.accent = _accent
 	portrait.custom_minimum_size = Vector2(0, 200)
 	frame.add_child(portrait)

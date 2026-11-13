@@ -52,7 +52,7 @@ func _run() -> void:
 	SoundManager.play_sfx("rumble")
 	_bomb = BombArt.new()
 	add_child(_bomb)
-	var bx := clampf(p.global_position.x + (160.0 if p.global_position.x < boss.global_position.x else -160.0), StoryManager.wall_left_x + 60.0, StoryManager.wall_right_x - 60.0)
+	var bx := clampf(p.global_position.x + (160.0 if p.global_position.x < boss.global_position.x else -160.0), StoryManager.arena_left() + 60.0, StoryManager.arena_right() - 60.0)
 	_bomb.global_position = Vector2(bx, _base_y - 500.0)
 	var tw := create_tween()
 	tw.tween_property(_bomb, "global_position:y", _base_y - 16.0, 0.6).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)

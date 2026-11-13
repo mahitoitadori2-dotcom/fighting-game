@@ -104,7 +104,7 @@ func _on_attack_update(p: EnemyPattern, _delta: float) -> void:
 		"rush", "hunt":
 			var spd := 900.0 if p.id == "hunt" else 820.0
 			velocity.x = float(facing) * spd
-			var wall := (facing > 0 and global_position.x > StoryManager.wall_right_x - 140.0) or (facing < 0 and global_position.x < StoryManager.wall_left_x + 140.0)
+			var wall := (facing > 0 and global_position.x > StoryManager.arena_right() - 140.0) or (facing < 0 and global_position.x < StoryManager.arena_left() + 140.0)
 			if wall or is_on_wall():
 				velocity.x = 0.0
 				Effects.shake(self, 8.0)
