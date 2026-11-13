@@ -409,12 +409,15 @@ func _run() -> void:
 			# clear everything still falling / flying, so nothing can hit you after the boss is dead.
 			CombatManager.fight_active = false
 			_clear_hazards()
+			await _dialogue("after")                       # The Enlightened One: spared
 			if String(level.get("cutscene_out", "")) != "":
 				await _play_cutscene(String(level["cutscene_out"]))
 			if _over:
 				return
+			await _dialogue("storm")                       # ...the dark cloud: the legend of the Storm
 		else:
 			await _boss_death_cutscene()
+			await _dialogue("after")                       # The First Prime falls: now he is scared
 	elif String(level.get("cutscene_out", "")) != "":
 		# Normal level that ends in a cutscene (Colosseum 4: the floor breaks, you fall into the void)
 		if bool(level.get("floor_break", false)):

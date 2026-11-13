@@ -37,8 +37,8 @@ const CAPTIONS := {
 		[8.4, 10.6, "BUT SOMEONE SAW EVERYTHING", "The Enlightened One is running.  NEXT: THE ENLIGHTENED CHASE"]],
 	# The Enlightened Chase (painted by C6Cutscenes)
 	"enl_chase": [[0.5, 3.4, "THE ENLIGHTENED CHASE", ""], [3.8, 7.0, "HE IS RUNNING", "Your partner is hurt and can't follow.  You go alone."]],
-	"enl_end": [[0.5, 3.0, "THE ENLIGHTENED ONE FALLS", ""], [3.3, 6.3, "HE POINTS TO THE SKY...", "Everything he threw rises into a DARK CLOUD."],
-		[6.8, 9.6, "TO BE CONTINUED...", "The dark cloud keeps growing."]],
+	"enl_end": [[0.5, 3.0, "AS HE TURNS TO LEAVE...", ""], [3.3, 6.3, "THE SKY GOES DARK", "Everything he threw rises into a DARK CLOUD."],
+		[6.8, 9.6, "THE STORM", "It has seen everything."]],
 }
 
 var kind := "elevator"

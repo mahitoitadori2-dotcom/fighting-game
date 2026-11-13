@@ -27,31 +27,81 @@ const OPENING := {
 		["P", "And on top of the mountain, something that shines."],
 		["H", "Whatever it is, we climb to it together."],
 		["P", "Then let's not keep it waiting."]],
-	# ----- THE ENLIGHTENED CHASE (placeholders) -----
-	51: [["enlightened", "You saw. You SAW, didn't you?"],
-		["H", "Everything. Stop running."],
-		["enlightened", "Running? I am LEAVING. There is a difference, little one."],
-		["enlightened", "Guards! Show this creature what devotion looks like."]],
-	52: [["enlightened", "Still behind me? How tiresome."],
-		["H", "I'll be behind you until there is nowhere left to run."],
-		["enlightened", "Riders, turn back. Trample it."]],
-	53: [["enlightened", "My caravan. My spears. My camels. All of it, mine."],
-		["H", "Then it's all in my way."]],
+	# ----- THE ENLIGHTENED CHASE -----
+	# The Colosseums belong to the Enlightened One's land: he took people and watched them fight for
+	# fun; whoever died was cured and became an enemy for the next challenger. The Warrior and the
+	# Architect (he trapped them both) were the first to kill every single one, setting them all free
+	# to go to heaven or hell. Scared they would come for him, he struck the one you did NOT pick
+	# with one of his strongest attacks, and ran. He hides his fear... until the First Prime falls.
+	51: [["enlightened", "You two. The first ever to empty my Colosseums."],
+		["enlightened", "Every fighter you killed walked free. To heaven, to hell... anywhere but MY arenas."],
+		["H", "You trapped us down there. You watched us fight for your entertainment."],
+		["enlightened", "And it WAS entertaining. Until you started winning."],
+		["H", "You hit {O} with everything you had. And now you run."],
+		["enlightened", "Run? A king does not run. A king... relocates. Guards! Keep this one busy."]],
+	52: [["enlightened", "Still following? My riders will trample you into the sand."],
+		["H", "Your riders. Your guards. People you stole, like us."],
+		["enlightened", "They are MINE. Everyone on this planet is mine."]],
+	53: [["enlightened", "A whole caravan stands between us. Spears, shields, camels."],
+		["H", "Then I go through all of it."],
+		["enlightened", "...Fine. FINE. There are always more."]],
 	54: [["H", "Statues. Every one of them wears your face."],
-		["enlightened", "Of course. Who else deserves the stone?"]],
-	55: [["enlightened", "Do you hear the gongs? My First Prime is waiting for you."],
-		["H", "Then I won't make him wait long."]],
-	57: [["enlightened", "Drink from the oasis, little one. The water never lies... mostly."],
-		["H", "I'm not thirsty."]],
+		["enlightened", "Admire them. Kneel to them. Just... stop chasing me."],
+		["H", "No."]],
+	55: [["enlightened", "Do you hear the gongs? My First Prime has never lost. Never."],
+		["H", "Neither had your Colosseums."],
+		["enlightened", "...Hmph. He will end you. He has to."]],
+	57: [["enlightened", "Drink from the oasis. Rest. Turn around. PLEASE turn around."],
+		["H", "You sound afraid."],
+		["enlightened", "I am NOT afraid! Guards! GUARDS!"]],
 	58: [["H", "Are you even here?"],
-		["enlightened", "Am I? Strike the mirage and find out."]],
+		["enlightened", "I am everywhere! I am the Light! ...Strike the mirage and see."]],
 	59: [["H", "You set your own caravan on fire."],
-		["enlightened", "Things burn. I do not."]],
-	60: [["enlightened", "The road ends here. Look up: the sky is turning gold for me."],
-		["H", "It will turn red soon enough."]],
-	61: [["enlightened", "My last guard. My gates. My stairway into the sky."],
-		["enlightened", "You will never touch a single step."],
-		["H", "Watch me."]],
+		["enlightened", "If I cannot have a wall of men, I will have a wall of FIRE!"]],
+	60: [["enlightened", "The sky is turning gold. It turns gold for ME. Never for you!"],
+		["H", "Your road. Your guards. Your statues. There is nothing left between us."]],
+	61: [["enlightened", "My last guards. My gates. My stairway."],
+		["enlightened", "If they fall... then I am..."],
+		["H", "Alone."],
+		["enlightened", "STOP THEM! SOMEBODY STOP THEM!"]],
+}
+
+## After the boss is dead (after its death scene / before the finale cutscene).
+const AFTER := {
+	# The First Prime falls: he finally SHOWS that he is scared
+	56: [["enlightened", "No... no, no, NO. He was my strongest!"],
+		["enlightened", "Who is left?! Who stands between me and YOU?"],
+		["H", "Nobody."],
+		["enlightened", "Stay away from me! STAY AWAY!"]],
+	# The Enlightened One beaten: he was meant to die... and is spared
+	62: [["enlightened", "...So this is how it ends."],
+		["enlightened", "So many champions thrown into my arenas to die... and in the end, it was me who was meant to die."],
+		["H", "Maybe. But I'm not you."],
+		["H", "You kept people in cages and watched them die. I won't do the same to you."],
+		["enlightened", "...You are sparing me?"],
+		["H", "Go. Before I change my mind."]],
+}
+
+## THE STORM: right after the "enl_end" cutscene (the dark cloud forms), the last talk of the Chase.
+const STORM := {
+	62: [["enlightened", "Wait. Look. The debris... everything I threw at you is rising."],
+		["H", "You're pulling it up there?"],
+		["enlightened", "No! I never send anything up there. That is not me..."],
+		["enlightened", "It's the Storm. The legend was TRUE."],
+		["O", "...I could hear the thunder from the dunes. What is that thing?"],
+		["enlightened", "When I was a child they told us the legend. The Storm sees everything. It lives, it breathes... like one giant organism."],
+		["enlightened", "It appears when there is a chance that creatures will leave this planet. It guards the sky. Nothing gets out."],
+		["enlightened", "I was so afraid it would come and kill everyone I knew. So when I became king, I made it a royal rule for the entire planet: no one leaves."],
+		["enlightened", "My guards kept everyone in. But now I have no guards left..."],
+		["enlightened", "The Storm thinks nothing stops anyone from leaving anymore. It is waking up. Fully."],
+		["H", "...I won't lie. That scares me a little."],
+		["H", "But I faced everything in your arenas. I'll face this head on. I want to know more about the Storm."],
+		["enlightened", "Then go to Orbis Terrarum. If anyone knows the Storm, it is there."],
+		["enlightened", "But no one simply walks in. You will have to travel through every land of this planet to earn a ticket."],
+		["H", "Then that's what I'll do."],
+		["H", "But first: heal {O}. You did that. Fix it."],
+		["enlightened", "...That is the least a fallen king can do."],
+		["O", "Don't get used to being forgiven."]],
 }
 
 const BOSS := {
@@ -102,13 +152,15 @@ const BOSS := {
 	50: [["the_sun", "Little moth..."],
 		["H", "We came all this way for you."],
 		["the_sun", "Then fly to the light."]],
-	# ----- THE ENLIGHTENED CHASE (placeholders) -----
-	56: [["first_prime", "Turn back."],
-		["H", "Move aside. I'm not here for you."],
-		["first_prime", "The Light does not forgive. Neither does my gong."]],
+	# ----- THE ENLIGHTENED CHASE -----
+	56: [["first_prime", "Turn back. The Light does not forgive."],
+		["H", "Your king is hiding behind you."],
+		["first_prime", "Then I will be the wall he hides behind."]],
+	# The last level: he goes CRAZY for his life
 	62: [["H", "No more running."],
-		["enlightened", "Running? I was waiting for an audience worthy of me."],
-		["enlightened", "You want me? Then CATCH EVERYTHING I OWN."]],
+		["enlightened", "Running? HA! HAHAHA! I'm not running... I'm SURVIVING!"],
+		["enlightened", "No guards, no Prime, no walls... FINE! I'll do it MYSELF!"],
+		["enlightened", "You want me? Then CATCH EVERYTHING I OWN! EVERYTHING!"]],
 }
 
 const NAMES := {
@@ -125,20 +177,26 @@ const SCALE := {"warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect
 
 
 ## The lines for a level ("opening" / "boss"), speakers resolved to real ids. [] = no dialogue.
+## kind: "opening" / "boss" / "after" / "storm". "O" = the OTHER hero (always there: the Chase's
+## injured one); "{O}" / "{H}" in a line = that hero's name.
 static func lines_for(n: int, kind: String, hero: String, partner: String) -> Array:
-	var src: Dictionary = OPENING if kind == "opening" else BOSS
+	var src: Dictionary = {"opening": OPENING, "boss": BOSS, "after": AFTER, "storm": STORM}.get(kind, {})
 	if not src.has(n) or StoryLevels.is_open_world(n):
 		return []
+	var other := "architect" if hero == "warrior" else "warrior"
 	var out: Array = []
 	for l in src[n]:
 		var who := String(l[0])
 		if who == "H":
 			who = hero
+		elif who == "O":
+			who = other
 		elif who == "P":
 			if partner == "":
 				continue                                   # SOLO: the partner isn't here to talk
 			who = partner
-		out.append([who, String(l[1])])
+		var text := String(l[1]).replace("{O}", StoryLevels.hero_name(other).capitalize()).replace("{H}", StoryLevels.hero_name(hero).capitalize())
+		out.append([who, text])
 	return out
 
 
