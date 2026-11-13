@@ -60,37 +60,37 @@ const STORY_ENEMIES := [
 	["s_golem", "Rock Golem", "Rock Golem", "RockGolem", Color(0.65, 0.45, 0.95), "story_geode"],
 	["s_atomic", "The Atomic Creation", "Atomic Creation", "AtomicCreation", Color(0.45, 1.0, 0.35), "story_workshop"],
 	["s_masker", "The Hollow Masker", "Hollow Masker", "HollowMasker", Color(0.85, 0.85, 0.95), "story_void"],
-	["s_pained", "The Pained One", "Pained One", "PainedOne", Color(0.75, 0.30, 0.30), "story_darkcave"],
-	["s_grin", "The Devilish Grin", "Devilish Grin", "DevilishGrin", Color(0.95, 0.30, 0.20), "story_darkcave"],
-	["s_ambusher", "Ambusher", "Ambusher", "Ambusher", Color(0.55, 0.45, 0.35), "story_throne"],
-	["s_camel", "Enlightened Camel Rider", "Camel Rider", "EnlightenedCamel", Color(0.95, 0.80, 0.40), "story_chase"],
+	["s_pained", "The Pained One", "Pained One", "PainedOne", Color(0.75, 0.30, 0.30), "story_darkcave", "duo"],
+	["s_grin", "The Devilish Grin", "Devilish Grin", "DevilishGrin", Color(0.95, 0.30, 0.20), "story_darkcave", "duo"],
+	["s_ambusher", "Ambusher", "Ambusher", "Ambusher", Color(0.55, 0.45, 0.35), "story_throne", "duo"],
+	["s_camel", "Enlightened Camel Rider", "Camel Rider", "EnlightenedCamel", Color(0.95, 0.80, 0.40), "story_chase", "faith"],
 	["s_saint", "Saint Warrior", "Saint Warrior", "SaintWarrior", Color(0.95, 0.85, 0.55), "story_altar"],
 	["s_oven", "Oven Owner", "Oven Owner", "OvenOwner", Color(1.0, 0.50, 0.15), "story_workshop"],
-	["s_brute", "Tribe Brute", "Tribe Brute", "TribeBrute", Color(0.75, 0.55, 0.40), "story_demiland"],
-	["s_cultist", "Pelt Cultist", "Pelt Cultist", "PeltCultist", Color(0.95, 0.60, 0.20), "story_demiland"],
-	["s_husk", "Husk", "Husk", "HuskTreant", Color(0.45, 0.35, 0.25), "story_demiland_night"],
+	["s_brute", "Tribe Brute", "Tribe Brute", "TribeBrute", Color(0.75, 0.55, 0.40), "story_demiland", "faith"],
+	["s_cultist", "Pelt Cultist", "Pelt Cultist", "PeltCultist", Color(0.95, 0.60, 0.20), "story_demiland", "faith"],
+	["s_husk", "Husk", "Husk", "HuskTreant", Color(0.45, 0.35, 0.25), "story_demiland_night", "faith"],
 	["s_serpent", "Humane Serpent", "Humane Serpent", "HumaneSerpent", Color(0.45, 0.75, 0.35), "story_cave"],
 ]
 const STORY_BOSSES := [
 	["s_blinded", "The Blinded Lord", "Blinded Lord", "BlindedLord", Color(0.45, 1.0, 0.35), "boss"],
 	["s_forgemother", "The Forge Mother", "Forge Mother", "ForgeMother", Color(1.0, 0.55, 0.15), "boss_forge_father"],
 	["s_archgolem", "The Architect's Golem", "Architect's Golem", "ArchitectsGolem", Color(0.40, 0.80, 1.0), "boss_golem"],
-	["s_needle", "Child Wielding Needle", "Needle", "ChildNeedle", Color(0.90, 0.85, 1.0), "boss_needle"],
-	["s_brothers", "The Brothers", "The Brothers", "TheBrothers", Color(0.92, 0.92, 0.95), "boss_brothers"],
-	["s_animal", "Animal Lord", "Animal Lord", "AnimalLord", Color(0.80, 0.55, 0.30), "boss_animal"],
-	["s_executor", "Executor", "Executor", "Executor", Color(0.65, 0.30, 0.95), "boss_executor"],
-	["s_nature", "Mother Nature", "Mother Nature", "MotherNature", Color(0.45, 1.0, 0.45), "boss_nature"],
-	["s_falsegod", "The False God", "False God", "FalseGod", Color(1.0, 0.30, 0.20), "boss_falsegod"],
-	["s_satan", "Satan", "Satan", "Satan", Color(1.0, 0.25, 0.10), "boss_satan"],
-	["s_prime", "The Enlightened First Prime", "First Prime", "FirstPrime", Color(1.0, 0.85, 0.40), "boss_prime"],
-	["s_enlightened", "The Enlightened One", "Enlightened One", "EnlightenedOneBoss", Color(1.0, 0.90, 0.55), "boss_enlightened"],
+	["s_needle", "Child Wielding Needle", "Needle", "ChildNeedle", Color(0.90, 0.85, 1.0), "boss_needle", "duo"],
+	["s_brothers", "The Brothers", "The Brothers", "TheBrothers", Color(0.92, 0.92, 0.95), "boss_brothers", "duo"],
+	["s_animal", "Animal Lord", "Animal Lord", "AnimalLord", Color(0.80, 0.55, 0.30), "boss_animal", "duo"],
+	["s_executor", "Executor", "Executor", "Executor", Color(0.65, 0.30, 0.95), "boss_executor", "duo"],
+	["s_nature", "Mother Nature", "Mother Nature", "MotherNature", Color(0.45, 1.0, 0.45), "boss_nature", "duo"],
+	["s_falsegod", "The False God", "False God", "FalseGod", Color(1.0, 0.30, 0.20), "boss_falsegod", "duo+faith"],
+	["s_satan", "Satan", "Satan", "Satan", Color(1.0, 0.25, 0.10), "boss_satan", "duo+faith"],
+	["s_prime", "The Enlightened First Prime", "First Prime", "FirstPrime", Color(1.0, 0.85, 0.40), "boss_prime", "faith"],
+	["s_enlightened", "The Enlightened One", "Enlightened One", "EnlightenedOneBoss", Color(1.0, 0.90, 0.55), "boss_enlightened", "faith"],
 	["s_grave", "The Caeser's Grave", "Caeser's Grave", "CaesersGrave", Color(0.60, 0.55, 0.45), "boss_grave"],
 	["s_saintgolem", "The Saint Architect's Golem", "Saint Golem", "SaintGolem", Color(1.0, 0.90, 0.60), "boss_saint_golem"],
 	["s_forgefather", "The Forge Father", "Forge Father", "ForgeFather", Color(1.0, 0.45, 0.10), "boss_forge_father"],
 	["s_radchorus", "The Radioactive Chorus", "Radioactive Chorus", "RadioactiveChorus", Color(0.50, 1.0, 0.30), "boss_reactor"],
-	["s_tribemaster", "The Tribe Master", "Tribe Master", "TribeMaster", Color(1.0, 0.40, 0.15), "boss_tribe"],
-	["s_tiger", "The Last Tiger", "Last Tiger", "LastTiger", Color(1.0, 0.62, 0.20), "boss_tiger"],
-	["s_treelord", "The LIVING Tree Lord", "Tree Lord", "TreeLord", Color(0.50, 1.0, 0.40), "boss_treelord"],
+	["s_tribemaster", "The Tribe Master", "Tribe Master", "TribeMaster", Color(1.0, 0.40, 0.15), "boss_tribe", "faith"],
+	["s_tiger", "The Last Tiger", "Last Tiger", "LastTiger", Color(1.0, 0.62, 0.20), "boss_tiger", "faith"],
+	["s_treelord", "The LIVING Tree Lord", "Tree Lord", "TreeLord", Color(0.50, 1.0, 0.40), "boss_treelord", "faith"],
 ]
 
 
@@ -107,17 +107,44 @@ static func _story(e: Array, boss: bool) -> Dictionary:
 	var scale_k: float = float(inst.get("art_scale")) if "art_scale" in inst else 1.0
 	var art_h := d.body_size.y * scale_k * 1.2 + 20.0         # So the card shows the whole body
 	inst.free()
-	var versus_hp := hp if boss else maxi(70, roundi(float(hp) * 1.6))
+	# SCALING for a 1-v-1 against a normal Versus hero:
+	#   "duo"   = fought WITH the CPU partner in Story (Colosseum 5): HP x DUO_HP, damage x DUO_DMG
+	#   "faith" = fought with DEEP FAITH active (+20% HP, +1 flask): HP x FAITH_HP, damage x FAITH_DMG
+	var tag := String(e[6]) if e.size() > 6 else ""
+	var hp_mult := 1.0
+	var dmg_mult := 1.0
+	if tag.contains("duo"):
+		hp_mult *= DUO_HP
+		dmg_mult *= DUO_DMG
+	if tag.contains("faith"):
+		hp_mult *= FAITH_HP
+		dmg_mult *= FAITH_DMG
+	var versus_hp := roundi(float(hp) * hp_mult) if boss else maxi(70, roundi(float(hp) * 1.6 * hp_mult))
 	var entry := _entry(String(e[0]), String(e[1]), String(e[2]), script, e[4], versus_hp if boss else 0, String(e[5]))
-	if not boss:
-		entry["versus_hp"] = versus_hp                         # (bosses keep their own HP per form)
+	if boss:
+		entry["hp_mult"] = hp_mult                             # Applied to EVERY form (ArenaManager)
+	else:
+		entry["versus_hp"] = versus_hp
+	entry["dmg_mult"] = dmg_mult
 	entry["portrait_h"] = art_h
 	entry["story"] = true
 	entry["class"] = String(e[3])                              # Shown in Versus only once met in Story (StoryProgress.seen)
+	var why := ""
+	if tag.contains("duo"):
+		why += ", scaled for 1-v-1 (it was fought with a partner)"
+	if tag.contains("faith"):
+		why += ", scaled down (it was fought with Deep Faith)"
 	var moves: Array = entry["moves"]
 	moves[moves.size() - 1] = {"key": "!", "name": ("BOSS: %d HP" if boss else "%d HP") % versus_hp,
-		"info": "From STORY MODE" + (" - its Story boss music" if boss else " (tougher in Versus)")}
+		"info": "From STORY MODE" + why}
 	return entry
+
+
+## Versus scaling of Story enemies / bosses (see _story()).
+const DUO_HP := 0.70
+const DUO_DMG := 0.85
+const FAITH_HP := 0.85
+const FAITH_DMG := 0.88
 
 
 static func _script_named(class_id: String) -> Script:

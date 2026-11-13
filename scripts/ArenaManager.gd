@@ -73,8 +73,16 @@ func _spawn(entry: Dictionary, slot: int, pos: Vector2) -> Fighter:
 		else:
 			(f as ControlledFighter).ctl = FighterInput.new()
 	add_child(f)
-	if entry.has("versus_hp"):                    # Story enemies / bosses: their Versus HP
+	if entry.has("versus_hp"):                    # Story enemies: their Versus HP
 		f.data.max_hp = int(entry["versus_hp"])
 		f.hp = f.data.max_hp
 		f.health_changed.emit(f.hp, f.data.max_hp)
+	if entry.has("hp_mult") and f is BaseEnemy:   # Story bosses: scaled HP on EVERY form (finish_transform reads boss_hp_mult)
+		var be := f as BaseEnemy
+		be.boss_hp_mult = float(entry["hp_mult"])
+		be.data.max_hp = roundi(float(be.data.max_hp) * be.boss_hp_mult)
+		be.hp = be.data.max_hp
+		be.health_changed.emit(be.hp, be.data.max_hp)
+	if entry.has("dmg_mult") and f is BaseEnemy:  # Story enemies / bosses: softer hits for a 1-v-1
+		(f as BaseEnemy).damage_mult *= float(entry["dmg_mult"])
 	return f
