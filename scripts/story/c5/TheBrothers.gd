@@ -87,7 +87,11 @@ func _spawn_twin() -> void:
 	twin.default_facing = -facing
 	twin.facing = -facing
 	twin.position = Vector2(mirror_x(global_position.x), global_position.y)
+	twin.damage_mult = damage_mult                       # Same scaling as the leader (Story buff / Versus nerf)
+	twin.boss_hp_mult = boss_hp_mult
 	get_parent().add_child(twin)
+	twin.data.max_hp = data.max_hp                       # (The twin's HP is the leader's: it forwards every hit)
+	twin.hp = hp
 
 
 func mirror_x(x: float) -> float:

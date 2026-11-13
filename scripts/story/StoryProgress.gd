@@ -36,7 +36,21 @@ static var badges := {}
 ## ENEMIES MET in Story Mode (class name -> true). Story enemies / bosses appear in Versus only
 ## once they are in here (BaseEnemy marks itself the first time it shows up in a Story level).
 static var seen := {}
+## DEMILAND run in progress (DemiLand._save_run): CamTons, bosses, artifacts... {} = none.
+static var demi := {}
 static var _loaded := false
+
+
+static func save_demi(state: Dictionary) -> void:
+	load_progress()
+	demi = state
+	save_progress()
+
+
+static func clear_demi() -> void:
+	load_progress()
+	demi = {}
+	save_progress()
 
 
 ## An enemy class was met in a Story level (saved the first time).
@@ -105,6 +119,7 @@ static func load_progress() -> void:
 	c5_solo = bool(cfg.get_value("story", "c5_solo", false))
 	badges = cfg.get_value("story", "badges", {})
 	seen = cfg.get_value("story", "seen", {})
+	demi = cfg.get_value("story", "demi", {})
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -129,6 +144,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "c5_solo", c5_solo)
 	cfg.set_value("story", "badges", badges)
 	cfg.set_value("story", "seen", seen)
+	cfg.set_value("story", "demi", demi)
 	cfg.save(SAVE_PATH)
 
 
@@ -252,4 +268,5 @@ static func reset() -> void:
 	c5_solo = false
 	badges = {}
 	seen = {}                                          # Story enemies leave Versus again until met
+	demi = {}
 	save_progress()

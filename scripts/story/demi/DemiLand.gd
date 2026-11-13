@@ -170,14 +170,19 @@ func _run() -> void:
 
 func _intro() -> void:
 	CombatManager.fight_active = false
-	_place_party(float(DemiWorld.SHRINES[0]["x"]) + 110.0)
-	_light_shrine(0, false)
+	var resumed := _load_run()                        # A saved run: wake at the last CamTon, keep everything
+	_place_party(float(DemiWorld.SHRINES[last_shrine]["x"]) + 110.0)
+	_light_shrine(last_shrine, false)
 	_enter_region(DemiWorld.region_at(player.global_position.x), false)
 	await _wait(0.4)
 	SoundManager.play_sfx("spawn", -6.0)
 	var who := StoryLevels.hero_name(hero)
-	_show_banner("DEMILAND", "%s\nYou are the %s - the one who did NOT chase the Enlightened One." % [level.get("intro", ""), who],
-		Color(0.80, 0.72, 0.60))
+	if resumed:
+		_show_banner("DEMILAND", "You wake at the %s.\nBosses beaten: %d / 3     Artifacts in the door: %d / 3" % [DemiWorld.SHRINES[last_shrine]["name"],
+			bosses_done.size(), _door.placed.size()], Color(0.80, 0.72, 0.60))
+	else:
+		_show_banner("DEMILAND", "%s\nYou are the %s - the one who did NOT chase the Enlightened One." % [level.get("intro", ""), who],
+			Color(0.80, 0.72, 0.60))
 	await _wait(3.4)
 	_hide_banner()
 	CombatManager.fight_active = true
@@ -363,6 +368,7 @@ func _light_shrine(i: int, announce: bool) -> void:
 		Effects.popup(player, player.global_position + Vector2(0, -210), "CAMTON WOKEN: %s" % DemiWorld.SHRINES[i]["name"], Color(1.0, 0.7, 0.3), 24)
 		SoundManager.play_sfx("flame", -6.0)
 		Effects.gold_burst(_shrine_nodes[i], (_shrine_nodes[i] as Node2D).global_position + Vector2(0, -60), 90.0)
+		_save_run()
 
 
 func _rest(i: int) -> void:
@@ -379,8 +385,9 @@ func _rest(i: int) -> void:
 	_reset_camps()
 	SoundManager.play_sfx("heal")
 	Effects.gold_burst(player, player.global_position + Vector2(0, -80), 120.0)
-	_show_banner("RESTED", "%s\nHP and flasks restored. The land's creatures have returned." % DemiWorld.SHRINES[i]["name"], Color(1.0, 0.75, 0.4))
+	_show_banner("RESTED", "%s\nHP and flasks restored. The land's creatures have returned.  (Progress saved)" % DemiWorld.SHRINES[i]["name"], Color(1.0, 0.75, 0.4))
 	get_tree().create_timer(2.0).timeout.connect(_hide_banner)
+	_save_run()
 
 
 # ============================================================
@@ -486,13 +493,58 @@ func _on_demi_boss_died() -> void:
 	await _wait(2.4)
 	_hide_banner()
 	# The artifact drops where it fell
+	_drop_artifact(b, clampf(where.x, wall_left_x + 60.0, wall_right_x - 60.0))
+	_end_fight()
+	_save_run()
+
+
+func _drop_artifact(b: Dictionary, x: float) -> void:
 	var pk := DemiWorld.Pickup.new()
 	pk.id = String(b["artifact"])
 	pk.set_meta("name", String(b["artifact_name"]))
-	pk.position = Vector2(clampf(where.x, wall_left_x + 60.0, wall_right_x - 60.0), _ground_y)
+	pk.position = Vector2(x, _ground_y)
 	add_child(pk)
 	_pickups.append(pk)
-	_end_fight()
+
+
+# ============================================================
+# SAVING A RUN (a 5-15 minute level: quitting must not lose it)
+# Saved when a CamTon wakes, when you rest, when a boss falls, when you pick up an artifact and
+# when you put one in the door. Coming back = you wake at the last CamTon with all of it kept.
+# Cleared when the Ancient Door opens.
+# ============================================================
+func _save_run() -> void:
+	if autoplay:
+		return                                        # Tests never touch the player's save
+	StoryProgress.save_demi({"lit": shrines_lit.keys(), "last": last_shrine, "bosses": bosses_done.keys(),
+		"carried": carried.duplicate(), "placed": _door.placed.duplicate(), "discovered": discovered.keys(),
+		"deaths": deaths, "rests": rests, "time": _time})
+
+
+## Restores a saved run. Returns true if there was one.
+func _load_run() -> bool:
+	var s: Dictionary = StoryProgress.demi
+	if s.is_empty() or autoplay:
+		return false
+	for i in s.get("lit", []):
+		shrines_lit[int(i)] = true
+		(_shrine_nodes[int(i)] as DemiWorld.CamTon).lit = true
+	last_shrine = clampi(int(s.get("last", 0)), 0, DemiWorld.SHRINES.size() - 1)
+	for id in s.get("bosses", []):
+		bosses_done[String(id)] = true
+	for k in s.get("discovered", []):
+		discovered[String(k)] = true
+	carried = (s.get("carried", []) as Array).duplicate()
+	_door.placed = (s.get("placed", []) as Array).duplicate()
+	deaths = int(s.get("deaths", 0))
+	rests = int(s.get("rests", 0))
+	_time = float(s.get("time", 0.0))
+	# A beaten boss whose artifact was never picked up: it still lies in its arena
+	for b in DemiWorld.BOSSES:
+		var art := String(b["artifact"])
+		if bosses_done.has(String(b["id"])) and not carried.has(art) and not _door.placed.has(art):
+			_drop_artifact(b, float(b["x"]))
+	return true
 
 
 ## The fight is over (boss dead, or you died): fog walls go, the world walls come back.
@@ -524,6 +576,7 @@ func _update_pickups(px: float) -> void:
 			SoundManager.play_sfx("holy")
 			_pickups.erase(pk)
 			(pk as Node).queue_free()
+			_save_run()
 
 
 func _update_door(px: float) -> void:
@@ -536,6 +589,7 @@ func _update_door(px: float) -> void:
 		carried.clear()
 		SoundManager.play_sfx("slam", -6.0)
 		Effects.shake(self, 6.0)
+		_save_run()
 	if _door.placed.size() >= 3:
 		_open_door()
 	elif _prompt_cd <= 0.0:
@@ -575,6 +629,7 @@ func _open_door() -> void:
 	_hide_banner()
 	await _fade(true)
 	ArenaCamera.focus = null
+	StoryProgress.clear_demi()                        # The run is over: next time DemiLand starts fresh
 	Achievements.unlock("demi_clear")
 	if deaths == 0:
 		Achievements.unlock("demi_deathless")

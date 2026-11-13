@@ -178,4 +178,4 @@ The alternate keys are added in `CombatManager.register_alt_keys()`. Block (F), 
 - Left out (need Story-only parts): The Sun (finale), Blasphemy Caeser (transform cutscene), Architect Chorus (elevator), Void Massacre (climbs cave walls), Void Horrids (3-boss group), The Shining (altar).
 - Boss attacks now use the arena's real edges (`StoryManager.arena_left/right()`: cave walls in Story, island edges in Versus).
 - Each gets Versus trophies (Trophy + Bare Hands); Monster Hunter now needs them too.
-- **Not tested in actual Versus fights** (a test of all 33 was started and stopped on request). Compiles; the unlock list checked on a real save.
+- **Checked:** all 33 spawn in a Versus arena with no script errors, stay on the island and get the right scaling (3 s each, by script). Full fights not played. The unlock list checked on a real save.

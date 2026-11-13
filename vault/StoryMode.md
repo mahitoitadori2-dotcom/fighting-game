@@ -195,7 +195,7 @@ The next Story part after The Enlightened Chase: ONE **open-world** level (5-15 
 - **Music:** `story_demiland` (day), `story_demiland_night`, `boss_tribe`, `boss_tiger`, `boss_treelord` (all new compositions, real instruments).
 - **Achievements:** The Ancient Door, 3 boss trophies, 3 "Bare Will" (a boss without flasks or Powers), Cartographer of Ash (every region), Never Woke at a CamTon (no deaths), No Rest for the Living (no resting), Through the Blade (25 dodges).
 - **Fixed during testing:** the Last Tiger's Charge hit every frame (up to 60 hits a second): now one hit per charge. Camps woke two at a time: now one.
-- **Tested** (CPU + scripted): every boss fight starts with both walls and no other enemies, every boss drops its artifact, the door opens with 3, the level saves as cleared and you return to the board. The CPU alone could not beat the bosses (it lost ~8-14 HP per 12 s while taking only 25% damage): **balance not checked by a human.** Progress inside the level is NOT saved if you quit.
+- **Tested** (CPU + scripted): every boss fight starts with both walls and no other enemies, every boss drops its artifact, the door opens with 3, the level saves as cleared and you return to the board. The CPU alone could not beat the bosses (it lost ~8-14 HP per 12 s while taking only 25% damage): **balance not checked by a human.** Progress inside the level IS saved (since 2026-11-13): when a CamTon wakes, when you rest, when a boss falls, when you pick up or place an artifact. Coming back = you wake at the last CamTon with all of it; cleared when the door opens.
 
 ## Boss Extension Levels (added 2026-11-10)
 
