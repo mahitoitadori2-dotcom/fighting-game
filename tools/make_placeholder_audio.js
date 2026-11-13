@@ -493,6 +493,7 @@ const MUSIC = {
 let made = 0, kept = 0;
 for (const [name, fn] of Object.entries(SFX)) {
   const f = path.join(ROOT, 'audio', 'sfx', name + '.wav');
+  if (fs.existsSync(path.join(ROOT, 'audio', 'sfx', name + '.ogg'))) { kept++; continue; }   // A real recording (audio/CREDITS.txt) wins
   if (!force && fs.existsSync(f)) { kept++; continue; }
   writeWav(f, fn()); made++;
 }

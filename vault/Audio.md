@@ -32,9 +32,16 @@ All 41 music tracks are played by **real instrument recordings** (orchestra, Sou
   - Where: `STYLES` (old-melody tracks: `dbl` doublings, `voice` solo singer) in `tools/make_music.js`; `MORE` + the jig at the bottom of `tools/music_pieces.js`.
 - **Not listened to by a human yet.** Checked only by numbers (loudness, no clipping, every instrument finds its recording). Listen and say which tracks need a change.
 
+## Sound effects: real recordings (since 2026-11-13)
+
+24 of the 36 sound effects are real recordings from **Kenney**'s CC0 packs (Impact Sounds, RPG Audio, Sci-fi Sounds, Interface Sounds; free for any use, credited in `audio/CREDITS.txt`): punch, hit, sword slash, block, swing, whoosh, jump, dash, explosion, slam, stone, chain, beam, laser, drill, spark, death, spawn, countdown tick / GO, telegraph, heal, void goo, chemical spill. They are `.ogg` files in `audio/sfx/` (the game loads .ogg before .wav).
+- Still synth placeholders (no matching recording in those packs): roar, dragon_roar, bark, croak, bite, flame, holy, ultimate, geyser, splash, rumble, flask_drink.
+- The downloaded packs live outside the repo in `C:/code/audio_tools/kenney/` (all 355 sounds, for swapping in other variants).
+- **Not listened to by a human yet** - volumes may need a tweak.
+
 ## Sound files
 
-All sound effects are generated placeholders:
+Older notes (placeholders):
 
 - 35 sound effects in `audio/sfx/`
 - 15 music tracks in `audio/music/`: menu, fight, boss, one per Fights-mode boss (Minos, Sisyphus, Geyron), one per Colosseum 1 area (surface, cave, geode, hive), and the Colosseum 2 tracks:
