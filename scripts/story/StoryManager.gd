@@ -642,7 +642,23 @@ func _intro() -> void:
 	_show_banner(StoryLevels.level_label(level_number), intro, Color(1.0, 0.7, 0.3))
 	await _wait(1.2 if bool(level.get("quick_boss", false)) else 2.4)
 	_hide_banner()
+	await _dialogue("opening")                         # Colosseum openings + the Enlightened Chase
 	CombatManager.fight_active = true
+
+
+## Undertale-style DIALOGUE (StoryDialogue lines, DialogueBox): the game is frozen until it ends.
+func _dialogue(kind: String) -> bool:
+	var pid := ""
+	if partner != null:
+		pid = "architect" if hero == "warrior" else "warrior"
+	var lines := StoryDialogue.lines_for(level_number, kind, hero, pid)
+	if lines.is_empty():
+		return false
+	for l in [_banner, _sub]:                          # No title banner frozen behind the box
+		l.modulate.a = 0.0
+	var box := DialogueBox.play(self, lines)
+	await box.finished
+	return true
 
 
 func _spawn_wave(group: Array, idx: int, total: int) -> void:
@@ -830,10 +846,12 @@ func _boss_intro() -> void:
 	await _wait(0.2)
 	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), boss_color)
 	var line := String(level.get("boss_line", ""))
-	if line != "":
+	var talks := StoryDialogue.BOSS.has(level_number)
+	if line != "" and not talks:
 		Effects.popup(boss, boss.global_position + Vector2(0, -boss.data.body_size.y - 60.0), line, boss_color.lightened(0.5), 20)
 	await _wait(2.6)
 	_hide_banner()
+	await _dialogue("boss")                            # The boss talks before the fight
 	ArenaCamera.focus_offset = Vector2(0, -110)
 	# Flasks refill after the boss intro
 	flasks = max_flasks
@@ -877,13 +895,14 @@ func _quick_boss_intro() -> void:
 	SoundManager.play_sfx("holy")
 	SoundManager.play_sfx("ultimate", -4.0)
 	SoundManager.play_music(String(level.get("boss_music", "boss")))
+	var talked: bool = await _dialogue("boss")         # The First Prime / The Enlightened One / The Sun talk first
 	flasks = max_flasks
 	partner_flasks = max_partner_flasks
 	boss_bar_visible = true
 	var col: Color = level.get("boss_color", Color(1, 1, 1))
 	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), col)
 	var line := String(level.get("boss_line", ""))
-	if line != "":
+	if line != "" and not talked:
 		Effects.popup(boss, boss.global_position + Vector2(0, -boss.data.body_size.y - 60.0), line, col.lightened(0.5), 20)
 	CombatManager.fight_active = true
 	await _wait(1.4)

@@ -250,3 +250,11 @@ The next Story part will be an open world (Elden Ring-like). Its **mechanics are
 - The CPU heroes roll through enemy attacks instead of blocking (for tests and the partner).
 - **Tested** with the rules forced on in level 48 (CPU Architect): stamina drains / refills, 3 rolls dodged 3 attacks, no errors. Not played by a human. Forcing them on for a test: `SoulsRules.test_force = true`.
 - **Ideas for later** (not built): Sites of Grace (checkpoints / respawn points), dropped souls you can pick back up after dying, poise, a lock-on, heavy (charged) attacks.
+
+## Dialogue (Undertale / Deltarune style, since 2026-11-13)
+
+- Before important fights the game FREEZES, a light shade covers the arena, and a black box with an ancient gold frame types out the lines. Name plate top-left, the speaker's portrait above the frame (1st speaker left, 2nd right, 3rd left...; the listener is dimmed). Attack / jump / Enter / click / tap = finish the line, then next.
+- Every speaker has a **voice blip** made in code (`scripts/story/dialogue/Blips.gd`): Architect = regular, a bit deep human; Warrior = dark and deep; Enlightened One = feminine, proud; every Story boss its own (Satan a deep growl, the Needle squeaky, the Sun a bell...).
+- Where: Colosseum openings (levels 1, 7, 16, 27, 35), every mini-boss and boss of C1-5 (they replace the old floating boss line), every Enlightened Chase level + the First Prime and the Enlightened One. DemiLand: none. In C5 the partner talks too (skipped in SOLO).
+- Lines: `scripts/story/dialogue/StoryDialogue.gd` (OPENING / BOSS per level). **The Enlightened Chase lines are placeholders** until the user's lore.
+- Checked: screenshots of the box on level 1 and of every portrait; the game unpauses after. Not played through by a human.
