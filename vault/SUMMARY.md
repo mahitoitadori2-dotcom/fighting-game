@@ -37,4 +37,5 @@ Play Colosseum 5, the Enlightened Chase, DemiLand and The Caves yourself and tun
 - [Roadmap](Roadmap.md): the large future plans.
 - [To-do list](Todo.md): small open tasks.
 - [Recap](Recap.md): what the last 10 requests changed.
+- [Future lore](FutureLore.md): the user's lore for later story parts (Orbis Terrarum, Terra Craterum, Terra Ordinariorum, the Learners). Not built yet.
 - [Handoff](Handoff.md): the state of the last session: work in progress, problems, decisions and the next steps. Read it at the start of a session.
