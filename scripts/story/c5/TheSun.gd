@@ -33,7 +33,7 @@ const ORANGE := Color(1.0, 0.5, 0.1)
 const EMBER := Color(0.75, 0.18, 0.04)
 const HOVER := 46.0
 ## NERF (2026-11-12): all her damage x this (every attack goes through dmg(), which applies it).
-const DAMAGE_NERF := 0.7
+const DAMAGE_NERF := 0.62                               # (0.7 before 2026-11-14)
 
 var finale := false
 var _bomb_hit := 0.0
@@ -42,9 +42,10 @@ var _dash := false
 
 func boss_forms() -> Array:
 	return [
-		# NERFED 2026-11-12: HP 760 -> 540 and 860 -> 620 (x1.35 Story boss buff on top)
-		{"name": "The Sun", "title": "THE SUN", "hp": 540, "body": Vector2(130, 250), "speed": 200.0},
-		{"name": "The Consumer", "title": "THE CONSUMER", "hp": 620, "body": Vector2(190, 300), "speed": 250.0,
+		# NERFED 2026-11-12: HP 760 -> 540 and 860 -> 620; again 2026-11-14 (user: "a big difficulty
+		# spike"): 540 -> 450 and 620 -> 520 (x1.35 Story boss buff on top)
+		{"name": "The Sun", "title": "THE SUN", "hp": 450, "body": Vector2(130, 250), "speed": 200.0},
+		{"name": "The Consumer", "title": "THE CONSUMER", "hp": 520, "body": Vector2(190, 300), "speed": 250.0,
 			"banner": "THE ORANGE GLOW SWALLOWS HER WHOLE", "subtitle": "PHASE 2  -  THE CONSUMER",
 			"line": "I WILL EAT THE WORLD... AND YOU FIRST.", "music": "boss_consumer"},
 	]
@@ -55,10 +56,10 @@ func setup_boss() -> void:
 	keep_max = 420.0
 	attack_chance = 0.9
 	art_scale = 1.25
-	chain_chance = 0.6
-	rage_at = 0.6                                       # The final boss enrages early
-	cooldown_mult = 0.8                                 # ...and attacks more often
-	damage_mult = DAMAGE_NERF                           # NERF: every attack of both forms hits ~30% softer
+	chain_chance = 0.4                                  # (0.6 before 2026-11-14: fewer combos)
+	rage_at = 0.45                                      # Enrages a bit later than before (0.6)
+	cooldown_mult = 1.0                                 # (0.8 before: no extra speed-up on top of the Story boss buff)
+	damage_mult = DAMAGE_NERF                           # NERF: every attack of both forms hits ~38% softer
 	tags = {"beams": ["anti_air", "ranged"], "swords": ["ranged"], "pillars": ["counter", "ranged"], "wing": ["close", "counter"],
 		"orbs": ["ranged", "anti_air"], "radiance": ["counter"], "judgment": ["ranged"], "eclipse": ["escape", "close", "evade"],
 		"halo": ["anti_air", "ranged"], "blind": ["ranged", "anti_air"],
@@ -72,8 +73,8 @@ func setup_boss() -> void:
 
 func _make_brain() -> EnemyAI:
 	var b := BossBrain.new()
-	b.think_min = 0.07                                  # The final boss reacts fastest
-	b.think_max = 0.12
+	b.think_min = 0.11                                  # Still the quickest boss, a bit more human (was 0.07-0.12)
+	b.think_max = 0.18
 	return b
 
 

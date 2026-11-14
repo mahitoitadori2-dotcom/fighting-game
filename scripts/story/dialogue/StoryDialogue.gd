@@ -168,7 +168,7 @@ const NAMES := {
 	"blasphemy_caeser": "BLASPHEMY CAESER", "forge_mother": "THE FORGE MOTHER", "arch_golem": "THE ARCHITECT'S GOLEM",
 	"void_massacre": "THE VOID MASSACRE", "needle": "CHILD WIELDING NEEDLE", "brothers": "THE BROTHERS",
 	"animal_lord": "ANIMAL LORD", "executor": "EXECUTOR", "mother_nature": "MOTHER NATURE", "false_god": "THE FALSE GOD",
-	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "???",
+	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "THE STRANGER",
 }
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
@@ -200,18 +200,48 @@ static func lines_for(n: int, kind: String, hero: String, partner: String) -> Ar
 	return out
 
 
-## DEMILAND'S STRANGER: a hooded figure with a lantern by the CamTons. It speaks a tongue nobody
-## understands (GIBBERISH until the user writes its lore). One set of talks per stage of the
-## journey (0..3 bosses beaten); each talk is one visit, the last one repeats.
+## DEMILAND'S STRANGER (lore by the user, 2026-11-14): the only one in DemiLand who is still SANE.
+## DemiLand is the barriered region of the planet: no one can enter or leave. Abandoned and cursed;
+## no advancements were ever made inside, so the walls were never broken. He has been stuck here for
+## 10 years. The Ancient Door was open, but its artifacts were given to the Lords of DemiLand, who
+## were born with genetic mutations that made them strong.
+## One set of talks per stage of the journey (0..3 Lords beaten); each talk is one visit, the last
+## one repeats. "H" = your hero.
 const STRANGER := [
-	[[["stranger", "Vaeth om'kal... teshra vun DOR."], ["stranger", "Hn. Ilma sor quen, ilma sor quen..."], ["stranger", "Kaa. Teshra."]],
-		[["stranger", "Oru veth naal? Naal SKORA mi tenn."], ["stranger", "...Fen. Fen dovah ul."]]],
-	[[["stranger", "Ah. Ah! Kroma vun hesh, kroma vun HESH!"], ["stranger", "Bone... bonn'ir. Tavas ka munn, tavas ka."], ["stranger", "Ilma sor quen."]],
-		[["stranger", "Hesh'ka dun dorr? Pff. Shaa."]]],
-	[[["stranger", "Vrrr... tiga. Tiga om'naal, tiga ul FENN."], ["stranger", "Sim sim. Kaa teshra vun dor, dor, DOR."]],
-		[["stranger", "Oru... oru shaa velk. Hn."]]],
-	[[["stranger", "...!"], ["stranger", "Tavas. Tavas, tavas, TAVAS. Dor emmil ka sorrow-vun."], ["stranger", "Ilma sor quen. Ilma sor... quen."]],
-		[["stranger", "Shaa."]]],
+	# Stage 0: the first meeting / asking about the Ancient Door
+	[[["stranger", "...You can see me? You can HEAR me? Then you are not one of them."],
+		["stranger", "Forgive me. It has been a long time since anyone answered me with words instead of teeth."],
+		["H", "Where am I?"],
+		["stranger", "DemiLand. The barriered region of this planet. No one can enter it. No one can leave it."],
+		["stranger", "It was abandoned long ago, and cursed. And in here, nobody ever made anything new. No tools, no machines. Nothing."],
+		["stranger", "So the walls were never broken. Not once."],
+		["H", "How long have you been here?"],
+		["stranger", "Ten years. I have walked every wall of this land, and I never found a way out."],
+		["stranger", "I am the only one left who still... thinks. The others forgot how."]],
+	[["H", "What about the Ancient Door?"],
+		["stranger", "The Door. It was open, once."],
+		["stranger", "But the artifacts that open it were given away. To the Lords of DemiLand."],
+		["stranger", "Three Lords. Three artifacts. Bring them back to the Door... and perhaps it remembers how to open."]]],
+	# Stage 1: one Lord is dead / asking about the Lords
+	[[["stranger", "You... you killed one of them. In ten years I never saw a Lord fall."],
+		["H", "Who are the Lords?"],
+		["stranger", "They were born here, like everyone else in DemiLand. But they were born... wrong."],
+		["stranger", "Mutations. Something in their blood from the day they were born. It made them stronger than anything else in this land."],
+		["stranger", "So the people gave them the artifacts. Who else could keep them safe?"]],
+	[["stranger", "Two Lords left. Two artifacts. Rest at the CamTons when you can. The flames remember you."]]],
+	# Stage 2: two Lords are dead
+	[[["stranger", "Two. TWO. Ten years I waited, and you do it in a day."],
+		["stranger", "The last Lord will not give up its artifact easily. None of them were ever... kind."],
+		["H", "If the Door opens, what then?"],
+		["stranger", "Then for the first time in ten years, I will have something to hope for."]],
+	[["stranger", "Go. I will wait here. I am very good at waiting."]]],
+	# Stage 3: all three artifacts are free
+	[[["stranger", "All three. You actually have all three."],
+		["stranger", "Put them in the Door. I do not know what is behind it. Nobody does."],
+		["stranger", "But whatever it is... it is not this place."],
+		["H", "Come with me."],
+		["stranger", "...When it opens. Not before. I have stood at that Door too many times to trust it."]],
+	[["stranger", "Go on. Open it. I will be right behind you."]]],
 ]
 
 

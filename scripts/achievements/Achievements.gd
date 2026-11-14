@@ -221,7 +221,7 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": Color(0.30, 0.22, 0.08)})
 	_add("messages_10", "Seeker of Wisdom", "Read 10 different messages written on the ground.", "story",
 		{"big": "star", "frame": "bronze", "bg": Color(0.34, 0.18, 0.08)})
-	_add("stranger_all", "Ilma Sor Quen", "Hear everything the hooded stranger of DemiLand has to say. (Whatever it means.)", "secret",
+	_add("stranger_all", "The Last Sane Man", "Hear everything the stranger of DemiLand has to say.", "secret",
 		{"big": "halo", "frame": "purple", "bg": Color(0.14, 0.12, 0.20)})
 	# ---------------- RETRY / SPEED ----------------
 	_add("second_wind", "Second Wind", "Die to a Story boss, choose RETRY FROM BOSS... and win.", "story",

@@ -140,6 +140,11 @@ static func _backfill_lore() -> void:
 		var b := String(StoryLevels.get_level(n).get("boss", ""))
 		if b != "" and not lore.has(b) and not StoryLore.item(b).is_empty():
 			lore.append(b)
+	for k in StoryLevels.EXT_ORDER:                    # Boss Extensions: the 3rd level is the boss
+		if ext_cleared(k) >= 3:
+			var eb := String(StoryLevels.get_level(int(StoryLevels.EXTENSIONS[k]["first"]) + 2).get("boss", ""))
+			if eb != "" and not lore.has(eb) and not StoryLore.item(eb).is_empty():
+				lore.append(eb)
 	var beaten: Array = demi.get("bosses", []) if demi.get("bosses", []) is Array else []   # (a DemiLand run in progress)
 	for b2 in ["tribe_master", "last_tiger", "tree_lord"]:
 		if (beaten.has(b2) or level_cleared(StoryLevels.DEMI_LEVEL)) and not lore.has(b2):

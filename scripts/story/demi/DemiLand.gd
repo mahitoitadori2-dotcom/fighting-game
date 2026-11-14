@@ -160,14 +160,17 @@ func _talk_to_stranger() -> void:
 	var visit := int(_stranger_visits.get(stage, 0))
 	_stranger_visits[stage] = visit + 1
 	var lines: Array = (StoryDialogue.stranger_talk(stage, visit) as Array).duplicate(true)
-	if stage == 0 and visit == 0:
-		lines.append([hero, "...What?"])
+	for l in lines:
+		if String(l[0]) == "H":
+			l[0] = hero                                   # Your hero asks the questions
 	# Every different talk heard counts (saved as bits: stage * 2 + visit)
 	StoryProgress.load_progress()
 	StoryProgress.npc_talks |= 1 << (stage * 2 + mini(visit, 1))
 	StoryProgress.save_progress()
 	if StoryProgress.npc_talks == 0xFF and not autoplay:
 		Achievements.unlock("stranger_all")
+	for l in [_banner, _sub]:                             # No title frozen behind the box
+		l.modulate.a = 0.0
 	var box := DialogueBox.play(self, lines)
 	await box.finished
 

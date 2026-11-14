@@ -44,6 +44,17 @@ const ITEMS := [
 		"The fang of the Last Tiger. When everything else died out, it kept hunting, because nobody told it the hunt was over.\n\nThe Ancient Door hungers for it. Nobody knows why."],
 	["tree_lord", "Living Heart",
 		"A heart of wood that still beats. The Tree Lord was the last thing in DemiLand that grew.\n\nIt did not want the Door opened. It knew what was behind it."],
+	# ----- Boss Extensions -----
+	["caeser_grave", "Grave-Dust of the Devourer",
+		"A pinch of dust from the Caeser's crypt. Even dead, the serpent kept its followers: they carried its bones below the arena and prayed to them.\n\nIt devoured gods. In the end it could not devour the one thing that always wins: the cure."],
+	["saint_golem", "Sanctified Rune",
+		"A rune the saints of the Rocks carved into the Golem when they found it waiting in the empty hall. They rebuilt it, blessed it, and called it holy.\n\nThe Golem did not notice. It was still guarding a hall for an Architect who was never coming back."],
+	["void_horrid", "Three-Eyed Shard",
+		"A shard of black glass with three reflections in it, though only one hand holds it. The Horrids were challengers who fell into the Void together.\n\nThe cure stitched them into one hunger. They still argue about whose turn it is to eat."],
+	["rad_chorus", "Glowing Hymn-Plate",
+		"A hymn-plate that will not stop glowing. When the reactor broke, the Chorus did not run. They sang louder.\n\nWhat is left of them sings the meltdown, note by note, to anyone who comes down to listen."],
+	["forge_father", "Hammer-Head of the First Forge",
+		"The head of a hammer older than the Colosseums. The Forge Father built the Forge Mother, and called her weak when she cooled.\n\nHe forged the first cage the Enlightened One ever ordered. He never asked who it was for."],
 ]
 
 static func count() -> int:
