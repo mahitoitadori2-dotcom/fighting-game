@@ -19,6 +19,7 @@ var _selectable := false
 var _is_you := false
 var _is_opp := false
 var _hover := false
+var _portrait: CharacterPortrait
 var _badge: Label
 var _style_normal: StyleBoxFlat
 var _style_hover: StyleBoxFlat
@@ -55,6 +56,8 @@ func setup(entry: Dictionary) -> void:
 	portrait.art = entry.get("art", null)
 	portrait.portrait_h = float(entry.get("portrait_h", 0.0))
 	portrait.accent = _accent
+	portrait.animate = false                        # Still until hovered / picked (_apply_style)
+	_portrait = portrait
 	portrait.custom_minimum_size = Vector2(0, 200)
 	frame.add_child(portrait)
 	v.add_child(frame)
@@ -139,6 +142,8 @@ func set_selection(is_you: bool, is_opp: bool) -> void:
 
 
 func _apply_style() -> void:
+	if _portrait != null:
+		_portrait.set_animate(_hover or _is_you or _is_opp)   # Only these move (the rest are drawn once)
 	var s := _style_normal
 	if _is_you or _is_opp:
 		var col := BOTH_COLOR if (_is_you and _is_opp) else (YOU_COLOR if _is_you else OPP_COLOR)

@@ -10,12 +10,25 @@ var art_scale := 1.6
 ## roster gives the big Story bosses theirs so they fit the card.
 var portrait_h := 0.0
 
+## Idle animation on (redrawn every frame). Character Select turns it on only for the hovered /
+## picked cards: 50 portraits redrawn every frame dropped the menu to ~25 FPS (sweep 2026-11-14).
+var animate := true
+
 var _t := 0.0
 
 
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	set_process(animate)
+
+
+func set_animate(on: bool) -> void:
+	if on == animate:
+		return
+	animate = on
+	set_process(on)
+	queue_redraw()
 
 
 func _process(delta: float) -> void:
