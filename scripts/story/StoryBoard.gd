@@ -272,8 +272,8 @@ func _refresh_ui() -> void:
 		if StoryLevels.is_open_world(_pawn_space):
 			tag = "  (OPEN WORLD  -  5-15 min)"
 		if StoryLevels.is_slide(_pawn_space):
-			_info.text = "Level %d: %s  (NO COMBAT  -  slide)    |    YOU: %s    |    %s" % [_pawn_space, lv["title"],
-				StoryLevels.hero_of(_pawn_space).to_upper(), "W: jump" if _pawn_space == StoryLevels.first_of(StoryLevels.CAVES_PART) else "W: jump   S: duck / dive"]
+			_info.text = "Level %d: %s  (NO COMBAT  -  slide)    |    YOU: %s    |    %s%s" % [_pawn_space, lv["title"],
+				StoryLevels.hero_of(_pawn_space).to_upper(), "W: jump" if _pawn_space == StoryLevels.first_of(StoryLevels.CAVES_PART) else "W: jump   S: duck / dive", _best_text()]
 			_play.text = "PLAY LEVEL %d" % _pawn_space
 			return
 		if String(lv.get("boss_sub", "")).begins_with("Mini-Boss"):
@@ -283,8 +283,14 @@ func _refresh_ui() -> void:
 		var nf := StoryManager.FLASKS_PER_LEVEL
 		if StoryManager.deep_faith_in(_pawn_space):
 			nf += StoryManager.DEEP_FAITH_EXTRA_FLASKS          # Deep Faith Payoff (Warrior / Architect, after Mother Nature)
-		_info.text = "Level %d: %s%s    |    %s    |    %d Flasks" % [_pawn_space, lv["title"], tag, hero_name, nf]
+		_info.text = "Level %d: %s%s    |    %s    |    %d Flasks%s" % [_pawn_space, lv["title"], tag, hero_name, nf, _best_text()]
 		_play.text = "PLAY LEVEL %d" % _pawn_space
+
+
+## "    |    Best 1:23" when this level has a saved best time.
+func _best_text() -> String:
+	var b := StoryProgress.best_time(_pawn_space)
+	return "    |    Best %s" % StoryManager.time_text(b) if b > 0.0 else ""
 
 
 func _board_rect() -> Rect2:

@@ -53,6 +53,7 @@ var _invuln := 0.0
 var _started := false
 var _done := false
 var hits := 0
+var run_time := 0.0                   # Seconds of sliding (stops while paused): best time per cave
 var _t := 0.0
 var _cam := Vector2.ZERO
 var _shake := 0.0
@@ -169,7 +170,13 @@ func _finish() -> void:
 	_done = true
 	SoundManager.play_sfx("count_go")
 	var flawless := hits == 0
-	_show("CAVE CLEARED!", ("NOT A SCRATCH!" if flawless else "Crashes: %d" % hits) + "    |    Progress saved")
+	var old := StoryProgress.best_time(level_n)
+	var best := ""
+	if StoryProgress.record_time(level_n, run_time):
+		best = "     NEW BEST TIME!" if old > 0.0 else ""
+	else:
+		best = "     BEST %s" % StoryManager.time_text(old)
+	_show("CAVE CLEARED!", "TIME %s     %s%s\nProgress saved" % [StoryManager.time_text(run_time), "NOT A SCRATCH!" if flawless else "CRASHES %d" % hits, best])
 	StoryProgress.complete_level(level_n)
 	Achievements.unlock("cave_%d" % tier)
 	if flawless:
@@ -293,6 +300,7 @@ func _process(delta: float) -> void:
 		d[2] -= delta
 	_dust = _dust.filter(func(d: Array) -> bool: return d[2] > 0.0)
 	if _started and not _done:
+		run_time += delta
 		if _crash >= 0.0:
 			_crash += delta
 			px += speed * 0.25 * delta

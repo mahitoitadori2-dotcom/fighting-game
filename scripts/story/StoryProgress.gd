@@ -40,7 +40,25 @@ static var seen := {}
 static var demi := {}
 ## STORY DIFFICULTY: 0 = EASY, 1 = NORMAL, 2 = HARD (StoryDifficulty.gd). Picked on the board.
 static var difficulty := 1
+## BEST TIMES per level ("level" -> seconds of fighting), shown on the board and on LEVEL CLEAR.
+static var best_times := {}
 static var _loaded := false
+
+
+static func best_time(level: int) -> float:
+	load_progress()
+	return float(best_times.get(str(level), 0.0))
+
+
+## Saves the time if it beats the old best (or is the first). True = it was saved.
+static func record_time(level: int, sec: float) -> bool:
+	load_progress()
+	var old := best_time(level)
+	if sec <= 0.5 or (old > 0.0 and sec >= old):
+		return false
+	best_times[str(level)] = sec
+	save_progress()
+	return true
 
 
 static func set_difficulty(d: int) -> void:
@@ -129,6 +147,7 @@ static func load_progress() -> void:
 	seen = cfg.get_value("story", "seen", {})
 	demi = cfg.get_value("story", "demi", {})
 	difficulty = clampi(int(cfg.get_value("story", "difficulty", 1)), 0, 2)
+	best_times = cfg.get_value("story", "best_times", {})
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -155,6 +174,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "seen", seen)
 	cfg.set_value("story", "demi", demi)
 	cfg.set_value("story", "difficulty", difficulty)
+	cfg.set_value("story", "best_times", best_times)
 	cfg.save(SAVE_PATH)
 
 

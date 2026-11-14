@@ -20,6 +20,13 @@ var _restart_btn: Button
 var _quit_btn: Button
 var _resume_btn: Button
 var _music_db := 0.0
+var _panel: PanelContainer
+var _main_box: VBoxContainer
+var _ctl_box: VBoxContainer
+var _ctl_back: Button
+var _gfx_btn: Button
+var _key_btns := {}                         # action -> its key button
+var _waiting := ""                          # Action waiting for a new key ("" = none)
 
 
 ## Is the current scene a fight that can be paused?
@@ -56,7 +63,7 @@ func _exit_tree() -> void:
 
 ## The scene changed under the menu (e.g. a level ended): close without touching the pause state.
 func _on_node_removed(n: Node) -> void:
-	if n == get_tree().current_scene and is_inside_tree():
+	if is_inside_tree() and n == get_tree().current_scene:
 		SoundManager.set_volume("music", _music_db)
 		queue_free()
 
@@ -70,7 +77,10 @@ func close() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_menu") or event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
-		close()
+		if _ctl_box.visible:
+			_show_controls(false)                   # Esc in CONTROLS: back to the pause menu
+		else:
+			close()
 
 
 func _build() -> void:
@@ -83,8 +93,10 @@ func _build() -> void:
 	panel.custom_minimum_size = Vector2(440, 0)
 	panel.offset_left = -220
 	panel.offset_right = 220
-	panel.offset_top = -250
-	panel.offset_bottom = 250
+	panel.offset_top = -200
+	panel.offset_bottom = 200
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH       # Taller content (CONTROLS) stays centred
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.03, 0.03, 0.04, 0.96)
 	sb.border_color = Color(0.78, 0.60, 0.28)
@@ -96,9 +108,17 @@ func _build() -> void:
 	sb.content_margin_bottom = 26
 	panel.add_theme_stylebox_override("panel", sb)
 	add_child(panel)
+	_panel = panel
+	var stack := VBoxContainer.new()
+	panel.add_child(stack)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
-	panel.add_child(box)
+	stack.add_child(box)
+	_main_box = box
+	_ctl_box = VBoxContainer.new()
+	_ctl_box.add_theme_constant_override("separation", 4)
+	_ctl_box.visible = false
+	stack.add_child(_ctl_box)
 	box.add_child(UiStyle.label("PAUSED", 40, Color(1.0, 0.86, 0.5), 10))
 	var where := _where_text()
 	if where != "":
@@ -111,9 +131,101 @@ func _build() -> void:
 	box.add_child(_restart_btn)
 	box.add_child(_slider("MUSIC", "music"))
 	box.add_child(_slider("SOUNDS", "sfx"))
+	# GRAPHICS (cycles POTATO / FAST / REGULAR / REAL, applied at once) + CONTROLS (see / rebind keys)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	_gfx_btn = UiStyle.make_button("", Vector2(184, 50), 16)
+	_gfx_btn.pressed.connect(_on_graphics)
+	row.add_child(_gfx_btn)
+	var ctl := UiStyle.make_button("CONTROLS", Vector2(184, 50), 16)
+	ctl.pressed.connect(_show_controls.bind(true))
+	row.add_child(ctl)
+	_refresh_gfx()
 	_quit_btn = UiStyle.make_button(_quit_text(), Vector2(380, 54), 20)
 	_quit_btn.pressed.connect(_on_quit)
 	box.add_child(_quit_btn)
+	_build_controls()
+
+
+# ----- GRAPHICS -----
+func _refresh_gfx() -> void:
+	_gfx_btn.text = "GRAPHICS: " + GraphicsSettings.NAMES[GraphicsSettings.level]
+
+
+func _on_graphics() -> void:
+	GraphicsSettings.set_level((GraphicsSettings.level + 1) % GraphicsSettings.NAMES.size(), get_tree())
+	_refresh_gfx()
+
+
+# ----- CONTROLS (the same keys as Settings > CONTROLS; a change is saved) -----
+func _build_controls() -> void:
+	_ctl_box.add_child(UiStyle.label("CONTROLS", 30, Color(1.0, 0.86, 0.5), 8))
+	_ctl_box.add_child(UiStyle.label("Click a key, then press the new key or mouse button.", 14, Color(0.8, 0.78, 0.72), 3))
+	for a in KeyBindings.ACTIONS:
+		var r := HBoxContainer.new()
+		r.add_theme_constant_override("separation", 10)
+		var l := UiStyle.label(String(a[1]), 15, Color(0.92, 0.9, 0.85), 3)
+		l.custom_minimum_size = Vector2(200, 0)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		r.add_child(l)
+		var b := UiStyle.make_button("", Vector2(176, 32), 14)
+		b.pressed.connect(func() -> void:
+			_waiting = String(a[0])
+			_refresh_keys())
+		r.add_child(b)
+		_key_btns[String(a[0])] = b
+		_ctl_box.add_child(r)
+	var bottom := HBoxContainer.new()
+	bottom.add_theme_constant_override("separation", 12)
+	var reset := UiStyle.make_button("RESET KEYS", Vector2(184, 44), 15)
+	reset.pressed.connect(func() -> void:
+		KeyBindings.reset_all()
+		_refresh_keys())
+	bottom.add_child(reset)
+	var back := UiStyle.make_button("< BACK", Vector2(184, 44), 15)
+	back.pressed.connect(_show_controls.bind(false))
+	bottom.add_child(back)
+	_ctl_box.add_child(bottom)
+	_ctl_back = back
+	_refresh_keys()
+
+
+func _refresh_keys() -> void:
+	for action in _key_btns:
+		var b: Button = _key_btns[action]
+		b.text = "PRESS A KEY..." if _waiting == action else KeyBindings.key_name(KeyBindings.current(action))
+		b.modulate = Color(1.0, 0.85, 0.4) if _waiting == action else Color(1, 1, 1)
+
+
+func _show_controls(on: bool) -> void:
+	_waiting = ""
+	_main_box.visible = not on
+	_ctl_box.visible = on
+	_refresh_keys()
+	if on:
+		_ctl_back.grab_focus.call_deferred()
+	else:
+		_resume_btn.grab_focus.call_deferred()
+
+
+## Waiting for a new key: the next key / mouse press becomes that action's key (Esc cancels).
+func _input(event: InputEvent) -> void:
+	if _waiting == "":
+		return
+	var k := event as InputEventKey
+	var mb := event as InputEventMouseButton
+	if k != null and k.pressed and not k.echo:
+		get_viewport().set_input_as_handled()
+		if k.keycode != KEY_ESCAPE:
+			KeyBindings.rebind(_waiting, k)
+		_waiting = ""
+		_refresh_keys()
+	elif mb != null and mb.pressed:
+		get_viewport().set_input_as_handled()
+		KeyBindings.rebind(_waiting, mb)
+		_waiting = ""
+		_refresh_keys()
 
 
 func _where_text() -> String:

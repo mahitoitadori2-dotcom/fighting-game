@@ -97,6 +97,35 @@ var _sub: Label
 var _bar_top: ColorRect
 var _bar_bottom: ColorRect
 
+## BOSS CHECKPOINT: "RETRY FROM BOSS" on the death screen sets this to the level number; the
+## reloaded level then skips its waves (and the opening talk) and starts at the boss.
+static var boss_retry := 0
+var _from_boss := false                     # This run started at the boss (no best time recorded)
+var _reached_boss := false                  # The waves are cleared: the boss checkpoint is open
+## LEVEL STATS (shown on LEVEL CLEAR): fight time (only while fighting, not paused / in talks),
+## damage taken, flasks drunk. Best times are saved (StoryProgress.best_times).
+var stats_time := 0.0
+var stats_damage := 0
+var stats_flasks := 0
+var _stat_hp := -1
+
+
+## Counts the level stats (its own node: works in DemiLand too, stops while paused).
+class StatsClock extends Node:
+	var m: StoryManager
+	func _process(delta: float) -> void:
+		if m == null or m._over or m.player == null:
+			return
+		if CombatManager.fight_active:
+			m.stats_time += delta
+		if m._stat_hp >= 0 and m.player.hp < m._stat_hp:
+			m.stats_damage += m._stat_hp - m.player.hp
+		m._stat_hp = m.player.hp
+
+
+static func time_text(sec: float) -> String:
+	return "%d:%02d" % [int(sec) / 60, int(sec) % 60]
+
 
 # ============================================================
 # GROUP BATTLE RULE
@@ -160,6 +189,12 @@ func _ready() -> void:
 		fps.name = "FpsCounter"
 		add_child(fps)
 	_build_ui()
+	if boss_retry == level_number and String(level.get("boss", "")) != "":
+		_from_boss = true                          # RETRY FROM BOSS: straight to the boss
+	boss_retry = 0
+	var clock := StatsClock.new()
+	clock.m = self
+	add_child(clock)
 	SoundManager.play_music(String(StoryLevels.map_of(level_number).get("music", "fight")))   # Fits the area
 	if autoplay:
 		print("STORY autoplay: level %d start" % level_number)
@@ -376,12 +411,14 @@ func _run() -> void:
 		var sm := String(level.get("stage_map", ""))
 		if sm != "":
 			await _switch_map(sm, String(level.get("stage_title", "")), String(level.get("stage_sub", "")), Color(0.75, 0.6, 1.0))
-	if bool(level.get("bombard", false)):
+	if bool(level.get("bombard", false)) and not _from_boss:
 		await _enl_bombard(false)                  # The Enlightened Chase: he flies over and throws things
 		if _over:
 			return
 	var waves: Array = (level.get("waves", []) as Array).duplicate(true)
-	if bool(level.get("coin_flip", false)) and not bool(level.get("quick_boss", false)):
+	if _from_boss:
+		waves = []                                 # Boss checkpoint: no waves this time
+	if bool(level.get("coin_flip", false)) and not bool(level.get("quick_boss", false)) and not _from_boss:
 		# Colosseum 5: the coin decides who ELSE joins this level (added to the first wave)
 		var extra := _coin_flip()
 		if waves.is_empty():
@@ -400,6 +437,7 @@ func _run() -> void:
 			await _wait(1.3)
 			_hide_banner()
 	if String(level.get("boss", "")) != "":
+		_reached_boss = true                       # Dying from here on offers RETRY FROM BOSS
 		await _boss_intro()
 		await boss_defeated
 		if _over:
@@ -642,10 +680,13 @@ func _intro() -> void:
 		intro += "\nThe Shining lives: the Void Massacre is STRONGER."
 	if partner != null:
 		intro += "\nYour partner: %s (CPU)" % partner.data.character_name.to_upper()
+	if _from_boss:
+		intro = "%s\nRETRY FROM THE BOSS" % level.get("title", "")
 	_show_banner(StoryLevels.level_label(level_number), intro, Color(1.0, 0.7, 0.3))
-	await _wait(1.2 if bool(level.get("quick_boss", false)) else 2.4)
+	await _wait(1.2 if bool(level.get("quick_boss", false)) or _from_boss else 2.4)
 	_hide_banner()
-	await _dialogue("opening")                         # Colosseum openings + the Enlightened Chase
+	if not _from_boss:
+		await _dialogue("opening")                     # Colosseum openings + the Enlightened Chase
 	CombatManager.fight_active = true
 
 
@@ -1088,9 +1129,9 @@ func _level_clear() -> void:
 		if autoplay:
 			print("STORY autoplay: %s CLEAR (player hp %d)" % [StoryLevels.ext_code(level_number), player.hp])
 		var last := StoryLevels.ext_index(level_number) == 2
-		_show_banner("%s CLEAR!" % StoryLevels.ext_code(level_number), ("Extension complete!  Progress saved" if last else "Progress saved") + badge_text, Color(0.6, 1.0, 0.6))
+		_show_banner("%s CLEAR!" % StoryLevels.ext_code(level_number), _stats_text() + "\n" + ("Extension complete!  Progress saved" if last else "Progress saved") + badge_text, Color(0.6, 1.0, 0.6))
 		SoundManager.play_sfx("ultimate")
-		await _wait(1.8)
+		await _wait(3.0)
 		_hide_banner()
 		StoryBoard.ext_return = StoryLevels.ext_of(level_number)
 		StoryProgress.current_level = int(StoryLevels.EXTENSIONS[StoryBoard.ext_return]["parent"])
@@ -1099,9 +1140,9 @@ func _level_clear() -> void:
 	StoryProgress.complete_level(level_number)     # SAVED here
 	if autoplay:
 		print("STORY autoplay: level %d CLEAR (player hp %d, flasks %d)" % [level_number, player.hp, flasks])
-	_show_banner("LEVEL CLEAR!", "Progress saved" + badge_text, Color(0.6, 1.0, 0.6))
+	_show_banner("LEVEL CLEAR!", _stats_text() + "\nProgress saved" + badge_text, Color(0.6, 1.0, 0.6))
 	SoundManager.play_sfx("ultimate")
-	await _wait(1.8)
+	await _wait(3.0)
 	_hide_banner()
 	# Back to the BOARD: the pawn hops forward to the next space, then (from the board)
 	# you fall into the caves to the next level. After the boss: Colosseum complete.
@@ -1109,6 +1150,24 @@ func _level_clear() -> void:
 	if level_number < StoryProgress.AVAILABLE_LEVELS:
 		StoryProgress.current_level = level_number + 1
 	get_tree().change_scene_to_file(STORY_MENU)
+
+
+## "TIME 1:23   DAMAGE TAKEN 54   FLASKS 1   NEW BEST TIME!" (best time saved; not after a boss retry).
+func _stats_text() -> String:
+	var t := "TIME %s     DAMAGE TAKEN %d     FLASKS %d" % [time_text(stats_time), stats_damage, stats_flasks]
+	if not autoplay:
+		if _from_boss:
+			Achievements.unlock("second_wind")
+		elif stats_time < 30.0 and stats_flasks == 0 and not (level.get("waves", []) as Array).is_empty():
+			Achievements.unlock("speed_clear")
+	if _from_boss:
+		return t + "     (from the boss checkpoint)"
+	var old := StoryProgress.best_time(level_number)
+	if StoryProgress.record_time(level_number, stats_time):
+		t += "     NEW BEST TIME!" if old > 0.0 else ""
+	else:
+		t += "     BEST %s" % time_text(old)
+	return t
 
 
 func _on_player_died() -> void:
@@ -1124,6 +1183,12 @@ func _on_player_died() -> void:
 	var panel := _panel()
 	panel.add_child(UiStyle.label("YOU DIED", 80, Color(0.9, 0.2, 0.15), 16))
 	panel.add_child(UiStyle.label("%s: %s" % [StoryLevels.level_label(level_number).capitalize(), level.get("title", "")], 22, UiStyle.TEXT_DIM, 8))
+	if _reached_boss and not (level.get("waves", []) as Array).is_empty():
+		# BOSS CHECKPOINT: the waves were cleared, so you may start again right at the boss
+		var lv := level_number
+		_panel_button(panel, "RETRY FROM BOSS", func() -> void:
+			StoryManager.boss_retry = lv
+			get_tree().change_scene_to_file(ARENA_SCENE))
 	_panel_button(panel, "RETRY LEVEL", func() -> void: get_tree().change_scene_to_file(ARENA_SCENE))
 	_panel_button(panel, "STORY MENU", func() -> void: get_tree().change_scene_to_file(STORY_MENU))
 	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
@@ -1169,6 +1234,7 @@ func use_flask() -> void:
 		Effects.popup(player, player.global_position + Vector2(0, -170), "HP IS FULL", Color(0.8, 0.8, 0.8), 20)
 		return
 	flasks -= 1
+	stats_flasks += 1
 	SoundManager.play_sfx("flask_drink")             # Glug glug + sparkle
 	player.heal(roundi(player.data.max_hp * FLASK_HEAL))
 	Effects.gold_burst(player, player.global_position + Vector2(0, -64), 70.0)

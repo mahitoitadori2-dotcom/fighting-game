@@ -212,6 +212,11 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": _col_bg(StoryLevels.CAVES_PART)})
 	_add("cave_crash", "Face, Meet Rock", "Crash 15 times in one cave... and still make it out.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.20, 0.14, 0.10)})
+	# ---------------- RETRY / SPEED ----------------
+	_add("second_wind", "Second Wind", "Die to a Story boss, choose RETRY FROM BOSS... and win.", "story",
+		{"big": "halo", "frame": "bronze", "bg": Color(0.20, 0.24, 0.30)})
+	_add("speed_clear", "Blink and It's Over", "Clear a Story level with enemy waves in under 30 seconds of fighting, without drinking a flask.", "challenge",
+		{"big": "star", "frame": "silver", "bg": Color(0.14, 0.26, 0.34)})
 	# ---------------- STORY DIFFICULTY ----------------
 	_add("hard_first", "No Mercy Asked", "Beat any Story boss on HARD.", "challenge",
 		{"big": "skull", "frame": "silver", "bg": Color(0.36, 0.08, 0.06)})

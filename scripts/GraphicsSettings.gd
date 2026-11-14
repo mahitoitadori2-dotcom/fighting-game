@@ -56,6 +56,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		PauseMenu.toggle(get_tree())
 
 
+## AUTO-PAUSE: the window / browser tab loses focus or the phone app goes to the background in a
+## fight -> the pause menu opens, so you never come back to a lost fight. (Not in CPU test runs.)
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		if is_inside_tree() and not PauseMenu.is_open and not StoryManager.autoplay and PauseMenu.in_fight(get_tree()):
+			PauseMenu.toggle(get_tree())
+
+
 static func load_settings() -> void:
 	if _loaded:
 		return
