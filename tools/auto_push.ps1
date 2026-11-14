@@ -81,6 +81,12 @@ if ($behind -gt 0) {
 # and the next push sends it. Skipped when the Godot console exe is not found (GODOT env or default).
 $changed = (Run-Git @("diff", "--name-only", "origin/$branch..HEAD")).out -split "`n" | Where-Object { $_ -match '\.(gd|tscn|tres|godot)$' }
 $godot = if ($env:GODOT) { $env:GODOT } else { "C:/code/Godot_v4.7.2-stable_win64_console.exe" }
+# Scene / resource files that start with a UTF-8 BOM don't parse ("Parse Error: Expected '['")
+$bom = @($changed | Where-Object { $_ -match '\.(tscn|tres|godot)$' -and (Test-Path (Join-Path $repo $_)) } | Where-Object {
+	$b = [IO.File]::ReadAllBytes((Join-Path $repo $_)); $b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF })
+if ($bom.Count -gt 0) {
+	Finish ("NOT pushed: these files start with a BOM and Godot can't parse them (save as UTF-8 without BOM): " + ($bom -join ", ") + $note)
+}
 if ($changed.Count -gt 0 -and (Test-Path $godot)) {
 	$null = & $godot --headless --path $repo --import 2>&1                  # Register new / renamed classes first
 	$log = & $godot --headless --path $repo "res://tools/check_scripts.tscn" 2>&1 | ForEach-Object { "$_" }
