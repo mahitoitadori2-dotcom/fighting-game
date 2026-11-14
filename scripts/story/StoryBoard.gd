@@ -76,8 +76,11 @@ const PAGES := {
 		"board": [Color(0.62, 0.45, 0.20), Color(0.85, 0.70, 0.38)], "boss_label": Color(1.0, 0.95, 0.6)},
 	7: {"title": "STORY MODE  -  DEMILAND",
 		"board": [Color(0.12, 0.11, 0.13), Color(0.20, 0.17, 0.18)], "boss_label": Color(0.8, 0.72, 0.95)},
+	8: {"title": "STORY MODE  -  THE CAVES",
+		"board": [Color(0.08, 0.07, 0.09), Color(0.10, 0.14, 0.20)], "boss_label": Color(0.5, 0.85, 1.0)},
 }
 const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
+const SLIDE_SCENE := "res://scenes/CaveSlide.tscn"        # The Caves: no-combat slide levels
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
 
 const WOOD := Color(0.30, 0.17, 0.09)
@@ -233,9 +236,9 @@ func _refresh_ui() -> void:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
 	_title.text = String(_page_data().get("title", "STORY MODE"))
 	if _celebrate:
-		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun", 6: "The Enlightened One", 7: "The Ancient Door"}
+		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun", 6: "The Enlightened One", 7: "The Ancient Door", 8: "The Deep Throat"}
 		if _final_page():
-			_info.text = "TO BE CONTINUED...  The Ancient Door of DemiLand stands open. What waits beyond it?"
+			_info.text = "TO BE CONTINUED...  You slid out of the deepest cave. What waits at the bottom?"
 		else:
 			_info.text = "%s COMPLETE!  %s has fallen.  Next: %s" % [
 				StoryLevels.part_name(_page), boss_names.get(_page, "The boss"), StoryLevels.part_name(_page + 1)]
@@ -257,6 +260,11 @@ func _refresh_ui() -> void:
 		var tag := "  (BOSS)" if boss else ""
 		if StoryLevels.is_open_world(_pawn_space):
 			tag = "  (OPEN WORLD  -  5-15 min)"
+		if StoryLevels.is_slide(_pawn_space):
+			_info.text = "Level %d: %s  (NO COMBAT  -  slide)    |    YOU: %s    |    %s" % [_pawn_space, lv["title"],
+				StoryLevels.hero_of(_pawn_space).to_upper(), "W: jump" if _pawn_space == StoryLevels.first_of(StoryLevels.CAVES_PART) else "W: jump   S: duck / dive"]
+			_play.text = "PLAY LEVEL %d" % _pawn_space
+			return
 		if String(lv.get("boss_sub", "")).begins_with("Mini-Boss"):
 			tag = "  (MINI-BOSS)"
 		if StoryLevels.is_optional(_pawn_space):
@@ -542,7 +550,7 @@ func _on_play() -> void:
 		scene.hero_art = art
 		add_child(scene)
 		await scene.finished
-	elif Three.enabled():
+	elif Three.enabled() and not StoryLevels.is_slide(_pawn_space):     # (The Caves: you just fall in)
 		# 3D LEVEL INTRO: walk in / fly over / fall in / gate opens / boss reveal (Scenes3D.intro_for)
 		var intro := StoryCutscene.new()
 		intro.kind = Scenes3D.intro_for(_pawn_space)
@@ -556,6 +564,9 @@ func _on_play() -> void:
 		fall.caption = "LEVEL %d:  %s" % [_pawn_space, StoryLevels.get_level(_pawn_space)["title"]]
 		add_child(fall)
 		await fall.finished
+	if StoryLevels.is_slide(_pawn_space):
+		get_tree().change_scene_to_file(SLIDE_SCENE)
+		return
 	get_tree().change_scene_to_file(DEMI_SCENE if StoryLevels.is_open_world(_pawn_space) else StoryManager.ARENA_SCENE)
 
 
@@ -869,6 +880,17 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.CAVES_PART:
+		# The Caves: a cave mouth, stalactites, glowing crystals, a chute sloping down to the right
+		var base8 := r.position.y + r.size.y
+		for k in 12:
+			var sx := r.position.x + r.size.x * (0.03 + 0.085 * float(k))
+			var ln := 40.0 + 30.0 * absf(sin(float(k) * 2.3))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(sx - 14, r.position.y), Vector2(sx + 14, r.position.y), Vector2(sx, r.position.y + ln)]), Color(0.03, 0.03, 0.05, 0.85))
+		c.draw_colored_polygon(PackedVector2Array([Vector2(r.position.x, base8 - r.size.y * 0.35), Vector2(r.end.x, base8 - r.size.y * 0.08), Vector2(r.end.x, base8), Vector2(r.position.x, base8)]), Color(0.04, 0.04, 0.06, 0.7))
+		for k in 7:
+			var cp := r.position + Vector2(r.size.x * (0.1 + 0.13 * float(k)), r.size.y * (0.25 + 0.3 * absf(sin(float(k) * 1.3))))
+			c.draw_circle(cp, 9.0 + 3.0 * sin(_t * 2.0 + float(k)), Color([Color(1.0, 0.62, 0.25), Color(0.35, 0.85, 1.0), Color(1.0, 0.35, 0.55)][k % 3], 0.35))
 	elif _page >= StoryLevels.DEMI_PART:
 		# DemiLand: a dark land of dead trees under a dark sky, a colossal door in the middle
 		var base7 := r.position.y + r.size.y
@@ -1041,10 +1063,16 @@ func _space(n: int) -> void:
 	# Mini enemy figure on the tile
 	var center := rect.get_center() + Vector2(0, -6)
 	if unlocked:
-		var id := StoryLevels.tile_enemy(n)
-		var sc: float = FIGURE_SCALE.get(StoryLevels.base_id(id), 0.3)
-		c.draw_set_transform(center + Vector2(0, s * 0.32), 0.0, Vector2(sc, sc))
-		StoryLevels.draw_portrait(c, id, _t)
+		if StoryLevels.is_slide(n):
+			# The Caves: no enemy - your hero sliding down a little slope
+			c.draw_line(center + Vector2(-s * 0.4, s * 0.18), center + Vector2(s * 0.4, s * 0.38), Color(0.05, 0.05, 0.07), 6.0)
+			c.draw_set_transform(center + Vector2(0, s * 0.27), 0.03, Vector2(0.34, 0.34))
+			StoryLevels.hero_art(StoryLevels.hero_of(n)).call("draw_portrait", c, _t)
+		else:
+			var id := StoryLevels.tile_enemy(n)
+			var sc: float = FIGURE_SCALE.get(StoryLevels.base_id(id), 0.3)
+			c.draw_set_transform(center + Vector2(0, s * 0.32), 0.0, Vector2(sc, sc))
+			StoryLevels.draw_portrait(c, id, _t)
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
 		_lock(center)

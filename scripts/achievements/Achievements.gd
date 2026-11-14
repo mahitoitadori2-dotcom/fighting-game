@@ -63,8 +63,8 @@ const HARD_LEVELS := [
 	[53, "Caravan Breaker"], [61, "The Gates of Light"],
 ]
 ## Story parts 1-5 are Colosseums; part 6 is THE ENLIGHTENED CHASE (not a Colosseum).
-const COLOSSEUM_NAMES := ["The Ashen Depths", "The Ascent", "The Burning Crown", "The Void Below", "The Final Ascent", "The Enlightened Chase", "DemiLand"]
-const PARTS := 7
+const COLOSSEUM_NAMES := ["The Ashen Depths", "The Ascent", "The Burning Crown", "The Void Below", "The Final Ascent", "The Enlightened Chase", "DemiLand", "The Caves"]
+const PARTS := 8
 const C5_FIRST := 35
 const C5_LAST := 50
 
@@ -159,8 +159,8 @@ static func _build() -> void:
 
 	# ---------------- STORY: Colosseums ----------------
 	for c in range(1, PARTS + 1):
-		if c == StoryLevels.DEMI_PART:
-			continue                                     # DemiLand has its own achievements (below)
+		if c == StoryLevels.DEMI_PART or c == StoryLevels.CAVES_PART:
+			continue                                     # DemiLand / The Caves have their own achievements (below)
 		var part := _part(c)
 		var full := part if c == StoryLevels.CHASE_PART else "%s: %s" % [part, COLOSSEUM_NAMES[c - 1]]
 		var art := {"big": "crown", "frame": "gold", "bg": _col_bg(c)}
@@ -200,6 +200,18 @@ static func _build() -> void:
 		{"big": "no_healing", "frame": "silver", "bg": Color(0.20, 0.12, 0.06)})
 	_add("demi_dodges", "Through the Blade", "Dodge 25 attacks with the invincibility of your roll in one DemiLand run.", "challenge",
 		{"big": "no_blocks", "frame": "purple", "bg": Color(0.16, 0.10, 0.26)})
+	# ---------------- THE CAVES (no combat: slide) ----------------
+	var cave_names := ["Beyond the Door", "The Crystal Chute", "The Deep Throat"]
+	var cave_bg := [Color(0.24, 0.14, 0.08), Color(0.08, 0.16, 0.24), Color(0.22, 0.06, 0.14)]
+	for i in 3:
+		_add("cave_%d" % (i + 1), "%s" % cave_names[i], "Slide all the way through %s (The Caves, Level %d)." % [cave_names[i], 64 + i], "story",
+			{"big": "star", "frame": "bronze", "bg": cave_bg[i]})
+		_add("cave_flawless_%d" % (i + 1), "%s: Not a Scratch" % cave_names[i], "Slide through %s without crashing even once." % cave_names[i], "challenge",
+			{"big": "no_blocks", "frame": "silver" if i < 2 else "gold", "bg": cave_bg[i].darkened(0.3)})
+	_add("col_%d" % StoryLevels.CAVES_PART, "The Caves Conquered", "Slide out of all three caves.", "story",
+		{"big": "crown", "frame": "gold", "bg": _col_bg(StoryLevels.CAVES_PART)})
+	_add("cave_crash", "Face, Meet Rock", "Crash 15 times in one cave... and still make it out.", "secret",
+		{"big": "skull", "frame": "bronze", "bg": Color(0.20, 0.14, 0.10)})
 	_add("ext_all", "Deep Explorer", "Beat the final boss of all 5 Boss Extensions.", "story",
 		{"big": "crown", "frame": "silver", "bg": Color(0.10, 0.22, 0.30)})
 
@@ -228,11 +240,13 @@ static func _short(nm: String) -> String:
 
 static func _col_bg(c: int) -> Color:
 	return [Color(0.40, 0.12, 0.06), Color(0.32, 0.28, 0.10), Color(0.40, 0.20, 0.06), Color(0.14, 0.08, 0.26), Color(0.42, 0.32, 0.10),
-		Color(0.55, 0.42, 0.16), Color(0.18, 0.17, 0.20)][clampi(c - 1, 0, 6)]
+		Color(0.55, 0.42, 0.16), Color(0.18, 0.17, 0.20), Color(0.08, 0.12, 0.18)][clampi(c - 1, 0, 7)]
 
 
 ## "Colosseum 3" / "The Enlightened Chase" (the 6th part is NOT a Colosseum).
 static func _part(c: int) -> String:
+	if c == StoryLevels.CAVES_PART:
+		return "The Caves"
 	if c == StoryLevels.DEMI_PART:
 		return "DemiLand"
 	return "The Enlightened Chase" if c == StoryLevels.CHASE_PART else "Colosseum %d" % c
@@ -396,7 +410,7 @@ static func _check_meta() -> void:
 	if total >= 100:
 		unlock("badge_100")
 	for c in range(1, PARTS + 1):
-		if c == StoryLevels.DEMI_PART:
+		if c == StoryLevels.DEMI_PART or c == StoryLevels.CAVES_PART:
 			continue
 		for k in KINDS:
 			if _colosseum_has(c, k):

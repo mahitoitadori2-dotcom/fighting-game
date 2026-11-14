@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1]       # 6th = THE ENLIGHTENED CHASE (levels 51-62), 7th = DEMILAND (63)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3]    # 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -553,6 +553,20 @@ const LEVELS := {
 		"world_maps": ["demi_plains", "demi_village", "demi_ravine", "demi_grove", "demi_door"],
 		"intro": "A dark land. Dead trees. Primitive people. Everything else is extinct.",
 		"waves": [], "boss": "", "tile": "tribe_master"},
+
+	# ======================= THE CAVES (levels 64-66) =======================
+	# Its own Story part after DemiLand: beyond the Ancient Door the ground drops into caves and you
+	# SLIDE down them (CaveSlide.gd). NO combat, NO enemies: W jumps (all three), S ducks / dives
+	# down (64 has no S). Same hero as DemiLand.
+	64: {"title": "BEYOND THE DOOR", "theme": "dark_cave", "map": "dark_cave", "hero": "demi", "slide": true,
+		"intro": "Behind the Ancient Door the floor drops away. You slide into the dark.",
+		"waves": [], "boss": ""},
+	65: {"title": "THE CRYSTAL CHUTE", "theme": "dark_cave", "map": "dark_cave", "hero": "demi", "slide": true,
+		"intro": "Blue crystals light a chute of low rock. Duck under it.",
+		"waves": [], "boss": ""},
+	66: {"title": "THE DEEP THROAT", "theme": "dark_cave", "map": "dark_cave", "hero": "demi", "slide": true,
+		"intro": "The deepest cave. Fast, red, and very, very low.",
+		"waves": [], "boss": ""},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -561,9 +575,13 @@ const CHASE_PART := 6
 ## DEMILAND: the part after The Enlightened Chase (one open-world level, 63).
 const DEMI_PART := 7
 const DEMI_LEVEL := 63
+## THE CAVES: the part after DemiLand (three no-combat SLIDE levels, 64-66).
+const CAVES_PART := 8
 
 
 static func part_name(c: int) -> String:
+	if c == CAVES_PART:
+		return "THE CAVES"
 	if c == DEMI_PART:
 		return "DEMILAND"
 	return "THE ENLIGHTENED CHASE" if c == CHASE_PART else "COLOSSEUM %d" % c
@@ -572,6 +590,11 @@ static func part_name(c: int) -> String:
 ## Is level n an open-world level (DemiLand)?
 static func is_open_world(n: int) -> bool:
 	return bool(get_level(n).get("open_world", false))
+
+
+## Is level n a cave SLIDE level (The Caves: no combat)?
+static func is_slide(n: int) -> bool:
+	return bool(get_level(n).get("slide", false))
 
 
 static func get_level(n: int) -> Dictionary:
