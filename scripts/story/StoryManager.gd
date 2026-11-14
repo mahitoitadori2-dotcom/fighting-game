@@ -123,6 +123,25 @@ class StatsClock extends Node:
 		m._stat_hp = m.player.hp
 
 
+## GROUND MESSAGES (Souls): most levels have one glowing message on the floor; DemiLand has one
+## near every CamTon. Same place and text every time (seeded by the level).
+func _place_messages() -> void:
+	if player == null:
+		return
+	if StoryLevels.is_open_world(level_number):
+		for i in DemiWorld.SHRINES.size():
+			GroundMessage.place(self, Vector2(float(DemiWorld.SHRINES[i]["x"]) + 260.0, _ground_y), level_number, i, player)
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = level_number * 7919
+	if rng.randf() > 0.75 and not GroundMessage.SPECIAL.has(level_number):
+		return                                          # Not every level has one
+	var x := player.global_position.x + rng.randf_range(260.0, 620.0)
+	if has_walls:
+		x = clampf(x, wall_left_x + 140.0, wall_right_x - 140.0)
+	GroundMessage.place(self, Vector2(x, _ground_y), level_number, 0, player)
+
+
 static func time_text(sec: float) -> String:
 	return "%d:%02d" % [int(sec) / 60, int(sec) % 60]
 
@@ -177,6 +196,7 @@ func _ready() -> void:
 	if StoryLevels.has_partner(level_number):
 		_spawn_partner()
 		max_attackers = MAX_ATTACKERS + 1
+	_place_messages()
 	_hud = StoryHUD.new()
 	_hud.manager = self
 	add_child(_hud)
@@ -447,6 +467,7 @@ func _run() -> void:
 			# clear everything still falling / flying, so nothing can hit you after the boss is dead.
 			CombatManager.fight_active = false
 			_clear_hazards()
+			await SoulsBanner.felled(self, true).finished  # The Sun / The Enlightened One
 			await _dialogue("after")                       # The Enlightened One: spared
 			if String(level.get("cutscene_out", "")) != "":
 				await _play_cutscene(String(level["cutscene_out"]))
@@ -603,6 +624,7 @@ func _altar_stage() -> void:
 const BOSS_HP_MULT := 1.35
 const BOSS_CD_MULT := 0.8                    # Cooldowns x0.8 = attacks 25% more often
 const BOSS_SPEED_MULT := 1.12
+const STANCE_SHARE := 0.18                   # Poise = 18% of the boss's (first form) HP
 
 
 func buff_boss(e: BaseEnemy) -> void:
@@ -613,6 +635,7 @@ func buff_boss(e: BaseEnemy) -> void:
 	e.boss_speed_mult = BOSS_SPEED_MULT
 	e.data.max_hp = roundi(float(e.data.max_hp) * BOSS_HP_MULT)
 	e.hp = e.data.max_hp
+	e.poise_max = maxf(float(e.data.max_hp) * STANCE_SHARE, 40.0)   # STANCE: ~1/5 of its HP in quick hits breaks it
 	e.health_changed.emit(e.hp, e.data.max_hp)
 
 
@@ -1093,10 +1116,15 @@ func _boss_death_cutscene() -> void:
 		boss.visuals.visible = false
 		mark.queue_free()
 		SoundManager.play_sfx("rumble", -4.0)
+	# Souls: "GREAT ENEMY FELLED" (mini-bosses: "ENEMY FELLED"), the old title line under it
 	var title := String(level.get("boss_death_title", "%s HAS FALLEN" % boss.enemy_name.to_upper()))
-	_show_banner(title, String(level.get("boss_death_sub", "")), Color(1.0, 0.85, 0.3))
-	await _wait(3.0)
-	_hide_banner()
+	var mini := String(level.get("boss_sub", "")).begins_with("Mini-Boss")
+	await SoulsBanner.felled(self, not mini, title.capitalize()).finished
+	var after := String(level.get("boss_death_sub", ""))
+	if after != "":
+		_show_banner("", after, Color(1.0, 0.85, 0.3))
+		await _wait(1.6)
+		_hide_banner()
 	ArenaCamera.focus = null
 	_letterbox(false)
 	# Full-screen ending cutscene (Blasphemy Caeser: climbing the serpent's corpse to the shrine)
@@ -1119,6 +1147,9 @@ func _level_clear() -> void:
 		for k in badges:
 			names.append(Achievements.KIND_NAMES.get(k, String(k)))
 		badge_text = "    |    BADGES: " + ", ".join(names)
+	var lore_name := StoryLore.collect(String(level.get("boss", "")))
+	if lore_name != "":
+		badge_text += "\nITEM FOUND: %s  (read it in the CODEX on the board)" % lore_name
 	if level_number == DEEP_FAITH_AFTER:
 		badge_text += "\nDEEP FAITH PAYOFF UNLOCKED!  Warrior + Architect: +20% HP, +1 flask, shorter cooldowns"
 	if autoplay:
@@ -1177,11 +1208,11 @@ func _on_player_died() -> void:
 	boss_bar_visible = false
 	if autoplay:
 		print("STORY autoplay: player DIED on level %d" % level_number)
-	await _wait(1.6)
+	await _wait(1.0)
 	CombatManager.fight_active = false
 	Engine.time_scale = 1.0
+	await SoulsBanner.died(self).finished                # The Souls "YOU DIED"
 	var panel := _panel()
-	panel.add_child(UiStyle.label("YOU DIED", 80, Color(0.9, 0.2, 0.15), 16))
 	panel.add_child(UiStyle.label("%s: %s" % [StoryLevels.level_label(level_number).capitalize(), level.get("title", "")], 22, UiStyle.TEXT_DIM, 8))
 	if _reached_boss and not (level.get("waves", []) as Array).is_empty():
 		# BOSS CHECKPOINT: the waves were cleared, so you may start again right at the boss

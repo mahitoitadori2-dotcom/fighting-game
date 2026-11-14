@@ -212,6 +212,17 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": _col_bg(StoryLevels.CAVES_PART)})
 	_add("cave_crash", "Face, Meet Rock", "Crash 15 times in one cave... and still make it out.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.20, 0.14, 0.10)})
+	# ---------------- SOULS ----------------
+	_add("stance_break", "Broken Stance", "Break a Story boss's stance with a flurry of hits.", "story",
+		{"big": "no_blocks", "frame": "bronze", "bg": Color(0.36, 0.26, 0.08)})
+	_add("lore_5", "Reader of Remains", "Find 5 lore items (bosses leave them behind; read them in the CODEX).", "story",
+		{"big": "badge", "frame": "bronze", "bg": Color(0.26, 0.20, 0.12)})
+	_add("lore_all", "Keeper of the Codex", "Find every lore item.", "story",
+		{"big": "crown", "frame": "gold", "bg": Color(0.30, 0.22, 0.08)})
+	_add("messages_10", "Seeker of Wisdom", "Read 10 different messages written on the ground.", "story",
+		{"big": "star", "frame": "bronze", "bg": Color(0.34, 0.18, 0.08)})
+	_add("stranger_all", "Ilma Sor Quen", "Hear everything the hooded stranger of DemiLand has to say. (Whatever it means.)", "secret",
+		{"big": "halo", "frame": "purple", "bg": Color(0.14, 0.12, 0.20)})
 	# ---------------- RETRY / SPEED ----------------
 	_add("second_wind", "Second Wind", "Die to a Story boss, choose RETRY FROM BOSS... and win.", "story",
 		{"big": "halo", "frame": "bronze", "bg": Color(0.20, 0.24, 0.30)})

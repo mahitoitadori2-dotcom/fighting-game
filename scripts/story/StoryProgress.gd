@@ -42,6 +42,12 @@ static var demi := {}
 static var difficulty := 1
 ## BEST TIMES per level ("level" -> seconds of fighting), shown on the board and on LEVEL CLEAR.
 static var best_times := {}
+## LORE ITEMS found (boss ids, StoryLore.gd), read in the CODEX.
+static var lore: Array = []
+## GROUND MESSAGES read (message keys): achievement + they stay read.
+static var messages_read: Array = []
+## DemiLand's stranger: how many of its talks you heard.
+static var npc_talks := 0
 static var _loaded := false
 
 
@@ -126,6 +132,20 @@ static func _backfill_seen() -> void:
 			add.call(String(lv2.get("boss", "")))
 
 
+## Old saves: the lore items of every boss you already beat.
+static func _backfill_lore() -> void:
+	for n in range(1, StoryLevels.count() + 1):
+		if not level_cleared(n):
+			continue
+		var b := String(StoryLevels.get_level(n).get("boss", ""))
+		if b != "" and not lore.has(b) and not StoryLore.item(b).is_empty():
+			lore.append(b)
+	var beaten: Array = demi.get("bosses", []) if demi.get("bosses", []) is Array else []   # (a DemiLand run in progress)
+	for b2 in ["tribe_master", "last_tiger", "tree_lord"]:
+		if (beaten.has(b2) or level_cleared(StoryLevels.DEMI_LEVEL)) and not lore.has(b2):
+			lore.append(b2)
+
+
 static func load_progress() -> void:
 	if _loaded:
 		return
@@ -148,6 +168,9 @@ static func load_progress() -> void:
 	demi = cfg.get_value("story", "demi", {})
 	difficulty = clampi(int(cfg.get_value("story", "difficulty", 1)), 0, 2)
 	best_times = cfg.get_value("story", "best_times", {})
+	lore = cfg.get_value("story", "lore", [])
+	messages_read = cfg.get_value("story", "messages_read", [])
+	npc_talks = int(cfg.get_value("story", "npc_talks", 0))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -156,6 +179,7 @@ static func load_progress() -> void:
 	unlocked_level = clampi(maxi(unlocked_level, StoryLevels.first_of(colosseums_done + 1)), 1, AVAILABLE_LEVELS)
 	current_level = unlocked_level
 	_backfill_seen()
+	_backfill_lore()
 	save_progress()
 
 
@@ -175,6 +199,9 @@ static func save_progress() -> void:
 	cfg.set_value("story", "demi", demi)
 	cfg.set_value("story", "difficulty", difficulty)
 	cfg.set_value("story", "best_times", best_times)
+	cfg.set_value("story", "lore", lore)
+	cfg.set_value("story", "messages_read", messages_read)
+	cfg.set_value("story", "npc_talks", npc_talks)
 	cfg.save(SAVE_PATH)
 
 

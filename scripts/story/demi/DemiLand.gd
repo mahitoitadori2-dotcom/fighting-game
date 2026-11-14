@@ -52,6 +52,23 @@ var _night_sky: ColorRect
 var _bg_fade: ColorRect
 var _died_label: Label
 var _overlay: Control
+## THE STRANGER: a hooded figure by a CamTon (which one depends on how many bosses fell). DOWN near
+## it = talk (gibberish for now: StoryDialogue.STRANGER).
+const STRANGER_AT := [0, 3, 2, 0]         # CamTon index per stage (0..3 bosses beaten)
+var _stranger: Stranger
+var _stranger_visits := {}                # stage -> talks heard this run
+
+
+class Stranger extends Node2D:
+	var t := 0.0
+	func _process(delta: float) -> void:
+		t += delta
+		queue_redraw()
+	func _draw() -> void:
+		draw_colored_polygon(EnemyArt.ellipse_points(Vector2(0, -2), 30, 6, 14), Color(0, 0, 0, 0.35))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.05, 1.05))
+		StoryDialogue.draw_stranger(self, t)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 # ============================================================
@@ -110,6 +127,49 @@ func _build_world() -> void:
 	_door = DemiWorld.Door.new()
 	_door.position = Vector2(DemiWorld.DOOR_X, _ground_y)
 	add_child(_door)
+	_stranger = Stranger.new()
+	add_child(_stranger)
+	_place_stranger()
+
+
+func _stranger_stage() -> int:
+	return clampi(bosses_done.size(), 0, 3)
+
+
+## The stranger waits by a different CamTon at each stage of the journey.
+func _place_stranger() -> void:
+	if _stranger == null:
+		return
+	var i: int = STRANGER_AT[_stranger_stage()]
+	_stranger.position = Vector2(float(DemiWorld.SHRINES[i]["x"]) - 240.0, _ground_y)
+
+
+func _update_stranger(px: float) -> void:
+	_place_stranger()                                   # (Also right after a saved run was loaded)
+	if _stranger == null or absf(px - _stranger.position.x) > 100.0 or not _fight.is_empty():
+		return
+	if _prompt_cd <= 0.0:
+		_prompt_cd = 3.0
+		Effects.popup(player, player.global_position + Vector2(0, -190), "DOWN = TALK", Color(0.85, 0.85, 1.0), 18)
+	if player.ctl != null and player.ctl.just_pressed("crouch"):
+		_talk_to_stranger()
+
+
+func _talk_to_stranger() -> void:
+	var stage := _stranger_stage()
+	var visit := int(_stranger_visits.get(stage, 0))
+	_stranger_visits[stage] = visit + 1
+	var lines: Array = (StoryDialogue.stranger_talk(stage, visit) as Array).duplicate(true)
+	if stage == 0 and visit == 0:
+		lines.append([hero, "...What?"])
+	# Every different talk heard counts (saved as bits: stage * 2 + visit)
+	StoryProgress.load_progress()
+	StoryProgress.npc_talks |= 1 << (stage * 2 + mini(visit, 1))
+	StoryProgress.save_progress()
+	if StoryProgress.npc_talks == 0xFF and not autoplay:
+		Achievements.unlock("stranger_all")
+	var box := DialogueBox.play(self, lines)
+	await box.finished
 
 
 func _build_overlays() -> void:
@@ -220,6 +280,7 @@ func _process(delta: float) -> void:
 	if _tick <= 0.0:
 		_tick = 0.25
 		_update_camps(px)
+	_update_stranger(px)
 	_update_shrines(px)
 	if _fight.is_empty():
 		_check_boss_arenas(px)
@@ -486,15 +547,17 @@ func _on_demi_boss_died() -> void:
 	SoundManager.stop_music()
 	SoundManager.play_sfx("ultimate")
 	Effects.shake(self, 14.0)
-	_show_banner("%s HAS FALLEN" % boss.enemy_name.to_upper(), "Something it guarded lies on the ground...", Color(1.0, 0.82, 0.35))
 	Achievements.unlock("demi_" + String(b["id"]))
 	if not player.used.get("healing", false) and not player.used.get("powers", false):
 		Achievements.unlock("demi_pure_" + String(b["id"]))
-	await _wait(2.4)
-	_hide_banner()
+	var lore_name := StoryLore.collect(String(b["id"]))
+	await SoulsBanner.felled(self, true, "Something it guarded lies on the ground...").finished
+	if lore_name != "":
+		Effects.popup(player, player.global_position + Vector2(0, -220), "ITEM FOUND: %s  (CODEX)" % lore_name, Color(1.0, 0.82, 0.38), 20)
 	# The artifact drops where it fell
 	_drop_artifact(b, clampf(where.x, wall_left_x + 60.0, wall_right_x - 60.0))
 	_end_fight()
+	_place_stranger()                                   # The stranger moves on to another CamTon
 	_save_run()
 
 
@@ -654,12 +717,8 @@ func _on_player_died() -> void:
 		print("DEMILAND autoplay: player died (%d)" % deaths)
 	await _wait(1.0)
 	SoundManager.stop_music()
-	SoundManager.play_sfx("death")
-	var tw := create_tween()
-	tw.tween_property(_died_label, "modulate:a", 1.0, 0.8)
-	await _wait(2.6)
+	await SoulsBanner.died(self).finished                # The Souls "YOU DIED"
 	await _fade(true)
-	_died_label.modulate.a = 0.0
 	# A boss fight is lost: the boss goes back to its arena (full HP next time)
 	if not _fight.is_empty():
 		_clear_hazards()

@@ -18,6 +18,7 @@ const PROFILES := {
 	"architect": {"f": 150.0, "wave": "pulse", "dur": 0.055, "soft": 0.45, "noise": 0.0, "glide": -0.02, "sub": 0.15},   # Human, regular, a bit deep
 	"warrior": {"f": 92.0, "wave": "saw", "dur": 0.07, "soft": 0.75, "noise": 0.06, "glide": -0.04, "sub": 0.45},        # Dark and deep
 	"enlightened": {"f": 330.0, "wave": "tri", "dur": 0.06, "soft": 0.2, "noise": 0.0, "glide": 0.09, "sub": 0.0, "vib": 0.4},   # Feminine, proud
+	"stranger": {"f": 118.0, "wave": "tri", "dur": 0.075, "soft": 0.55, "noise": 0.12, "glide": 0.10, "sub": 0.3, "vib": 1.0},   # Hollow, wavering, old
 	"narrator": {"f": 210.0, "wave": "sine", "dur": 0.04, "soft": 0.3, "noise": 0.0, "glide": 0.0, "sub": 0.0},
 	# ----- Story bosses -----
 	"blinded_lord": {"f": 175.0, "wave": "saw", "dur": 0.06, "soft": 0.5, "noise": 0.25, "glide": 0.05, "sub": 0.0, "vib": 0.6},     # Raspy, unhinged

@@ -45,6 +45,18 @@ var damage_mult := 1.0                   # Story modifiers (Colosseum 4: The Shi
 var boss_hp_mult := 1.0                  # Applied to max HP (also to later forms)
 var boss_cd_mult := 1.0                  # Attack cooldowns x this (< 1 = attacks more often)
 var boss_speed_mult := 1.0               # Move speed x this
+## STANCE (Story bosses only, set in StoryManager.buff_boss): every hit you land fills a hidden
+## poise meter. Full = STANCE BROKEN: the boss drops its attack and staggers for STANCE_TIME,
+## taking STANCE_DMG x damage (critical hits). Poise drains again after a few seconds without hits.
+const STANCE_TIME := 3.0
+const STANCE_DMG := 1.6
+const POISE_DRAIN_AFTER := 2.5
+var poise := 0.0
+var poise_max := 0.0                      # 0 = no stance (normal enemies, Versus)
+var stance_broken := 0.0                  # > 0: broken, seconds left
+var stance_breaks := 0
+var _poise_quiet := 0.0                   # Time since the last poise hit
+var _poise_lock := 0.0                    # No poise build-up right after a break
 
 var anim_time := 0.0
 var walk_phase := 0.0
@@ -193,6 +205,7 @@ func _physics_process(delta: float) -> void:
 	if visuals.modulate == Color(0.55, 0.5, 0.7):
 		visuals.modulate = Color.WHITE
 	tick_status(delta)
+	_poise_tick(delta)
 	anim_time += delta
 	for p in patterns:
 		p.cooldown_left = maxf(p.cooldown_left - delta, 0.0)
@@ -316,6 +329,58 @@ func _on_respawn() -> void:
 
 
 ## Text on the Story Mode BOSS BAR at the top of the screen. Override for named phases.
+# ============================================================
+# STANCE (poise) - Story bosses
+# ============================================================
+## A hit landed on this boss (CombatManager.apply_hit): fill the poise meter.
+func add_poise(amount: float) -> void:
+	if poise_max <= 0.0 or is_dead or stance_broken > 0.0 or _poise_lock > 0.0:
+		return
+	poise += amount
+	_poise_quiet = 0.0
+	if poise >= poise_max:
+		_break_stance()
+
+
+func _break_stance() -> void:
+	poise = poise_max
+	stance_broken = STANCE_TIME
+	stance_breaks += 1
+	damage_taken_mult *= STANCE_DMG
+	if current != null:
+		_cancel_pattern()                       # Even armored attacks stop
+	stun_timer = maxf(stun_timer, STANCE_TIME)
+	velocity.x = 0.0
+	Effects.shake(self, 10.0)                       # (No text, no meter: you see it stagger)
+	Effects.hit_sparks(self, global_position + Vector2(0, -data.body_size.y * 0.6), 16, 1.4)
+	SoundManager.play_sfx("stone")
+	SoundManager.play_sfx("block", -4.0)
+	if StoryManager.active and not StoryManager.autoplay:
+		Achievements.unlock("stance_break")
+
+
+func _poise_tick(delta: float) -> void:
+	if poise_max <= 0.0:
+		return
+	_poise_lock = maxf(_poise_lock - delta, 0.0)
+	if stance_broken > 0.0:
+		stance_broken -= delta
+		stun_timer = maxf(stun_timer, 0.05)
+		if visuals != null:                         # Reeling: slumped, swaying (the only sign of it)
+			visuals.rotation = -0.16 * float(facing) + 0.04 * sin(stance_broken * 9.0)
+		if stance_broken <= 0.0 or is_dead:
+			stance_broken = 0.0
+			damage_taken_mult /= STANCE_DMG
+			poise = 0.0
+			_poise_lock = 2.0
+			if visuals != null and not is_dead:
+				visuals.rotation = 0.0
+		return
+	_poise_quiet += delta
+	if _poise_quiet > POISE_DRAIN_AFTER:
+		poise = maxf(poise - poise_max * 0.3 * delta, 0.0)
+
+
 func boss_title() -> String:
 	return enemy_name.to_upper() + ("   -   PHASE 2" if enraged else "")
 

@@ -148,7 +148,7 @@ func _paint() -> void:
 		FighterArt.label(_painter, Vector2(cx, 76), boss.boss_title(), 20, Color(1.0, 0.95, 0.4) if boss.enraged else Color.WHITE)
 		var bk := float(boss.hp) / maxf(float(boss.data.max_hp), 1.0)
 		_bar(r, bk, Color(0.55, 0.95, 0.2) if not boss.enraged else Color(1.0, 0.85, 0.15))
-		var mark := boss.phase2_threshold
+		var mark := boss.phase2_threshold                # (STANCE is hidden on purpose: no meter, like Elden Ring)
 		if boss is C5Boss:
 			mark = (boss as C5Boss).rage_at              # Colosseum 5: where it gets ENRAGED
 			var cb := boss as C5Boss

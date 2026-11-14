@@ -186,6 +186,15 @@ func _build_ui() -> void:
 	add_child(top)
 	_title = UiStyle.label("", 32, Color(1.0, 0.65, 0.3), 12)
 	top.add_child(_title)
+	# CODEX (top right): the lore items found so far
+	var codex := UiStyle.make_button("CODEX", Vector2(120, 40), 16)
+	codex.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	codex.offset_left = -140
+	codex.offset_right = -20
+	codex.offset_top = 14
+	codex.offset_bottom = 54
+	codex.pressed.connect(_open_codex)
+	add_child(codex)
 	_info = UiStyle.label("", 17, UiStyle.TEXT, 6)
 	top.add_child(_info)
 
@@ -532,6 +541,17 @@ func _click(pos: Vector2) -> void:
 				_celebrate = false
 				_hop(n)
 			return
+
+
+func _open_codex() -> void:
+	if _busy:
+		return
+	_busy = true
+	var cx := StoryCodex.new()
+	add_child(cx)
+	await cx.closed
+	_busy = false
+	_play.grab_focus.call_deferred()
 
 
 func _unhandled_input(event: InputEvent) -> void:

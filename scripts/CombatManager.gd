@@ -172,6 +172,13 @@ static func apply_hit(hit: HitData, victim: Fighter) -> String:
 	victim.take_hit(final_damage, hit)
 	if final_damage > 0:
 		Effects.on_hit(hit, victim)                # Hitstop, shake, sparks, impact flash, sound
+		# STANCE: Story bosses fill a poise meter (powers and ultimates break it faster)
+		var be := victim as BaseEnemy
+		if be != null and be.poise_max > 0.0:
+			if be.stance_broken > 0.0:
+				Effects.popup(be, be.global_position + Vector2(randf_range(-40, 40), -be.data.body_size.y - 40.0), "CRITICAL!", Color(1.0, 0.85, 0.3), 20)
+			else:
+				be.add_poise(float(base_damage) * (1.6 if hit.move != "" else 1.0))
 
 	# --- GAUGE from dealing damage ---
 	if attacker != null:

@@ -168,11 +168,11 @@ const NAMES := {
 	"blasphemy_caeser": "BLASPHEMY CAESER", "forge_mother": "THE FORGE MOTHER", "arch_golem": "THE ARCHITECT'S GOLEM",
 	"void_massacre": "THE VOID MASSACRE", "needle": "CHILD WIELDING NEEDLE", "brothers": "THE BROTHERS",
 	"animal_lord": "ANIMAL LORD", "executor": "EXECUTOR", "mother_nature": "MOTHER NATURE", "false_god": "THE FALSE GOD",
-	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "",
+	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "???",
 }
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -200,6 +200,48 @@ static func lines_for(n: int, kind: String, hero: String, partner: String) -> Ar
 	return out
 
 
+## DEMILAND'S STRANGER: a hooded figure with a lantern by the CamTons. It speaks a tongue nobody
+## understands (GIBBERISH until the user writes its lore). One set of talks per stage of the
+## journey (0..3 bosses beaten); each talk is one visit, the last one repeats.
+const STRANGER := [
+	[[["stranger", "Vaeth om'kal... teshra vun DOR."], ["stranger", "Hn. Ilma sor quen, ilma sor quen..."], ["stranger", "Kaa. Teshra."]],
+		[["stranger", "Oru veth naal? Naal SKORA mi tenn."], ["stranger", "...Fen. Fen dovah ul."]]],
+	[[["stranger", "Ah. Ah! Kroma vun hesh, kroma vun HESH!"], ["stranger", "Bone... bonn'ir. Tavas ka munn, tavas ka."], ["stranger", "Ilma sor quen."]],
+		[["stranger", "Hesh'ka dun dorr? Pff. Shaa."]]],
+	[[["stranger", "Vrrr... tiga. Tiga om'naal, tiga ul FENN."], ["stranger", "Sim sim. Kaa teshra vun dor, dor, DOR."]],
+		[["stranger", "Oru... oru shaa velk. Hn."]]],
+	[[["stranger", "...!"], ["stranger", "Tavas. Tavas, tavas, TAVAS. Dor emmil ka sorrow-vun."], ["stranger", "Ilma sor quen. Ilma sor... quen."]],
+		[["stranger", "Shaa."]]],
+]
+
+
+## The stranger's talk for this stage of the journey and this visit.
+static func stranger_talk(stage: int, visit: int) -> Array:
+	var talks: Array = STRANGER[clampi(stage, 0, STRANGER.size() - 1)]
+	return talks[clampi(visit, 0, talks.size() - 1)]
+
+
+## The stranger: a tall hood, a ragged cloak, two pale eyes and a swinging lantern (feet at 0, 0).
+static func draw_stranger(c: CanvasItem, t: float) -> void:
+	var sway := sin(t * 1.3) * 2.0
+	var cloak := PackedVector2Array([Vector2(-26, 0), Vector2(-20, -52), Vector2(-16 + sway * 0.3, -96), Vector2(0 + sway * 0.5, -118),
+		Vector2(16 + sway * 0.3, -96), Vector2(22, -50), Vector2(28, 0), Vector2(14, -6), Vector2(4, 0), Vector2(-8, -5)])
+	c.draw_colored_polygon(cloak, Color(0.13, 0.11, 0.12))
+	c.draw_polyline(cloak + PackedVector2Array([cloak[0]]), Color(0, 0, 0), 3.0)
+	c.draw_colored_polygon(EnemyArt.ellipse_points(Vector2(sway * 0.5, -100), 11, 10, 16), Color(0.02, 0.02, 0.03))   # The dark inside of the hood
+	var blink := fmod(t, 4.0) < 0.12
+	if not blink:
+		for ex in [-4.0, 4.0]:
+			c.draw_circle(Vector2(sway * 0.5 + ex, -101), 2.2, Color(0.85, 0.9, 1.0))
+	# Staff and lantern
+	c.draw_line(Vector2(20, 0), Vector2(22, -86), Color(0.30, 0.20, 0.12), 4.0)
+	var lp := Vector2(22, -86) + Vector2(sin(t * 2.0) * 4.0, 14.0)
+	c.draw_line(Vector2(22, -86), lp, Color(0.2, 0.2, 0.2), 1.5)
+	c.draw_circle(lp + Vector2(0, 6), 14.0, Color(1.0, 0.6, 0.25, 0.18))
+	c.draw_rect(Rect2(lp + Vector2(-5, 0), Vector2(10, 12)), Color(1.0, 0.72, 0.35))
+	c.draw_rect(Rect2(lp + Vector2(-5, 0), Vector2(10, 12)), Color(0.1, 0.08, 0.06), false, 1.5)
+
+
 static func name_of(id: String) -> String:
 	if id == "warrior" or id == "architect":
 		return StoryLevels.hero_name(id)
@@ -223,5 +265,7 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			StoryLevels.hero_art(id).call("draw_portrait", c, t)
 		"enlightened":
 			EnlightenedOneArt.draw_portrait(c, t)
+		"stranger":
+			draw_stranger(c, t)
 		_:
 			StoryLevels.draw_portrait(c, id, t)
