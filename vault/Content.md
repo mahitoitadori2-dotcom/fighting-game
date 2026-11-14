@@ -76,6 +76,22 @@ A dark, very powerful version of the Architect: black helmet, black metal chest,
 
 **Architect look (2026-11-10):** redrawn less bulky and more athletic: broad shoulders, V-shaped chest plate with pecs, visible abs, narrow waist, leaner arms and legs, slightly smaller helmet; the blue core sits on the chest. Only the drawing changed (`ArchitectArt.gd`), not his hitbox.
 
+### The Mimic (added 2026-11-14, Versus only)
+
+A big SKELETON of pure steel: a metal skull with red pupils, spine, ribcage, pelvis, thin steel bones. Bigger body (84 x 160 instead of 64 x 128), 130 HP, 80% knockback, slower. His punch can't be Onslaughted. Code: `scripts/Mimic.gd`, `MimicArt.gd`, `ai/MimicAI.gd`, numbers in `data/MimicData.gd`.
+
+| Move | What it does |
+|---|---|
+| Punch | 4 dmg |
+| 1 Shredding Fist | Lunging stab (5); on hit the forearm-blade GRINDS: 4 x 2 = 13 total, 6 s cd |
+| 2 Stab Kick | The shin becomes a spike: 9 dmg, HIGH knockback, 8 s cd |
+| 3 Wings of Lies | Steel wings out of the spine, he spins ~1 s: hits all around, ~18 total, 14 s cd |
+| G1 Recital of Steel | Shredding Fist 7, Fist 5, Shredding Kick 11 (= 23); faces the enemy before each hit |
+| G2 Eating Fear | Grab; the ribcage opens into a maw and chews (4 + 6 x 3 = 22), then spits them out |
+| G3 Stolen Skin | Bite (8). On a hit on a PLAYABLE fighter he BECOMES them for 30 s: a copy with their body and moves, your keys (or their CPU). Every hit on the copy is the Mimic's HP; the copy falling off = he falls. Bosses / enemies / the Dummy / another Mimic can't be copied: a 16-dmg bite instead. |
+
+Achievements: Stolen Skin (become someone), Wearing Your Face (K.O. them while wearing their skin), plus the usual Versus ones for every fighter. Checked by script: every move + ultimate hits, the skin starts, forwards damage and ends cleanly; a 20 s CPU-vs-CPU fight ran without errors (the Mimic won it clearly: watch his balance). Not played by a human.
+
 ## Match extras
 
 - **Epic countdown** at the start of every Versus match: 3, 2, 1, GO!, with screen shake, flash and drum hits.

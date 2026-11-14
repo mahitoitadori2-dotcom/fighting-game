@@ -39,6 +39,7 @@ static func all() -> Array[Dictionary]:
 	list.append(_fire_lord())
 	list.append(_enlightened_one())
 	list.append(_apha_architect())
+	list.append(_mimic())                     # Versus only (Story Mode never uses the roster heroes)
 	# Add future characters here, e.g.:
 	# list.append(_some_new_fighter())
 	# PvE enemies ("enemy": true) - Character Select shows them in ENEMY TEST.
@@ -278,6 +279,41 @@ static func _apha_architect() -> Dictionary:
 				"info": "CINEMATIC + Earth cutscene: 2 rods x %d dmg, %ss cd" % [d.bomb_damage, _num(d.bomb_cooldown)]},
 			{"key": "7", "name": "World Opening",
 				"info": "CINEMATIC: barrier + giant hands, %d x %d + %d dmg, %ss cd" % [d.opening_hand_hits, d.opening_hand_damage, d.opening_final_damage, _num(d.opening_cooldown)]},
+		],
+	}
+
+
+static func _mimic() -> Dictionary:
+	var d := MimicData.new()
+	var grind := d.shred_damage + d.shred_grind_damage * d.shred_grind_ticks
+	var chew := d.fear_grab_damage + d.fear_chew_damage * d.fear_chew_ticks
+	return {
+		"id": "mimic",
+		"name": "The Mimic",
+		"short": "Mimic",
+		"selectable": true,
+		"accent": Color(0.85, 0.12, 0.10),
+		"art": MimicArt,
+		"fighter": Mimic,
+		"ai": MimicAI,
+		"portrait_h": MimicArt.PORTRAIT_H,
+		"moves": [
+			{"key": "!", "name": "Pure Steel",
+				"info": "Bigger and heavier: %d HP, less knockback, slower. Can't Onslaught" % d.max_hp},
+			{"key": "LMB", "name": "Punch",
+				"info": "%d damage" % d.punch_damage},
+			{"key": "1", "name": "Shredding Fist",
+				"info": "Stab forward, on hit it GRINDS: %d total damage, %ss cooldown" % [grind, _num(d.shred_cooldown)]},
+			{"key": "2", "name": "Stab Kick",
+				"info": "Leg turns into a spike: %d damage, HIGH knockback, %ss cooldown" % [d.kick_damage, _num(d.kick_cooldown)]},
+			{"key": "3", "name": "Wings of Lies",
+				"info": "Steel wings, spins: hits all around (%d per hit), %ss cooldown" % [d.wings_damage, _num(d.wings_cooldown)]},
+			{"key": "G", "name": "Recital of Steel",
+				"info": "1 Bar Ultimate: Shredding Fist, Fist, Shredding Kick (%d damage)" % (int(d.recital_damage[0]) + int(d.recital_damage[1]) + int(d.recital_damage[2]))},
+			{"key": "G", "name": "Eating Fear",
+				"info": "2 Bar Ultimate: grab, his stomach opens and chews (%d damage), spits them out" % chew},
+			{"key": "G", "name": "Stolen Skin",
+				"info": "3 Bar Ultimate: bite (%d dmg). On hit he BECOMES that fighter for %ss" % [d.bite_damage, _num(d.skin_duration)]},
 		],
 	}
 

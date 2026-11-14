@@ -57,6 +57,7 @@ const MOVE_SFX := {
 	"grab": "void_goo", "eternal": "void_goo",   # Warrior: void moves
 	"flame": "flame", "bat": "flame", "spikes": "flame",   # Nightmare (Fire) Lord
 	"beam": "beam",                      # Enlightened One: Beam Blast
+	"shred": "sword_slash", "kick": "stone", "wings": "chain",   # The Mimic
 	"heal": "heal",
 }
 

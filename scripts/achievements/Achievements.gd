@@ -212,6 +212,11 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": _col_bg(StoryLevels.CAVES_PART)})
 	_add("cave_crash", "Face, Meet Rock", "Crash 15 times in one cave... and still make it out.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.20, 0.14, 0.10)})
+	# ---------------- THE MIMIC ----------------
+	_add("mimic_steal", "Stolen Skin", "As the Mimic, bite an opponent with Stolen Skin and become them.", "versus",
+		{"script": MimicArt, "frame": "silver", "emblem": "star", "bg": Color(0.30, 0.06, 0.06)})
+	_add("mimic_copy_ko", "Wearing Your Face", "As the Mimic, K.O. an opponent while wearing their own skin.", "challenge",
+		{"script": MimicArt, "frame": "gold", "emblem": "skull", "bg": Color(0.36, 0.04, 0.04)})
 	# ---------------- SOULS ----------------
 	_add("stance_break", "Broken Stance", "Break a Story boss's stance with a flurry of hits.", "story",
 		{"big": "no_blocks", "frame": "bronze", "bg": Color(0.36, 0.26, 0.08)})
