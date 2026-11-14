@@ -38,33 +38,52 @@ const ROCK_PERIOD := 2400.0
 const CLOUD_PERIOD := 3000.0
 
 var _t := 0.0
-var _painter: Painter
 var _hex_towers: Array[Dictionary] = []
 var _city: Array[Dictionary] = []
 var _rocks: Array[Dictionary] = []
 var _clouds_far: Array[Dictionary] = []
 var _clouds_near: Array[Dictionary] = []
 
+## LAYERS (2026-11-14 perf pass): the sky, the Hexagon, the city and the rocks are drawn ONCE and only
+## SLIDE (parallax = the node's position). Only the small moving parts (clouds, the emblem, antenna
+## lights) are redrawn each frame. Before, the whole backdrop (hundreds of windows) was redrawn every
+## frame: the Test Arena ran at ~75 FPS where Story maps ran at 130+ (sweep).
+var _layers := {}                        # kind -> Layer
+var _static_kinds := ["sky", "hex", "city", "rocks", "dim"]
+var _last_size := Vector2.ZERO
+var _last_level := -1
 
-class Painter extends Node2D:
+
+class Layer extends Node2D:
 	var bg: ArenaBackground
+	var kind := ""
 
 	func _draw() -> void:
-		bg.paint(self)
+		bg.paint_layer(self, kind)
 
 
 func _ready() -> void:
 	layer = -10
 	_generate()
-	_painter = Painter.new()
-	_painter.bg = self
-	add_child(_painter)
+	for k in ["sky", "clouds_far", "hex", "city", "clouds_near", "rocks", "dim"]:
+		_layers[k] = _add_layer(self, k)
+	_layers["hex_fx"] = _add_layer(_layers["hex"], "hex_fx")          # Moves with its layer
+	_layers["city_fx"] = _add_layer(_layers["city"], "city_fx")
 	# MENUS (parent is a Control screen): the 3D floating-arena background instead (Menu3D)
 	if get_parent() is Control and Three.enabled():
 		var screen := String(get_parent().name)
 		Menu3D.build(self, dim, screen == "MainMenu" or screen == "PreFight")
-		_painter.visible = false
+		for k in _layers:
+			(_layers[k] as Node2D).visible = false
 		_menu_3d = true
+
+
+func _add_layer(parent: Node, kind: String) -> Layer:
+	var l := Layer.new()
+	l.bg = self
+	l.kind = kind
+	parent.add_child(l)
+	return l
 
 
 var _menu_3d := false
@@ -74,8 +93,22 @@ func _process(delta: float) -> void:
 	if _menu_3d:
 		return                                   # The 3D view animates itself
 	_t += delta
+	var size := get_viewport().get_visible_rect().size
+	var cam := _camera_pos()
+	var dy := cam.y - 300.0
+	# Static layers: redrawn only when the screen size or the graphics level changes
+	if size != _last_size or GraphicsSettings.level != _last_level:
+		_last_size = size
+		_last_level = GraphicsSettings.level
+		for k in _static_kinds:
+			(_layers[k] as Node2D).queue_redraw()
+	(_layers["sky"] as Node2D).position.y = -dy * 0.03
+	(_layers["hex"] as Node2D).position = Vector2(fposmod(-cam.x * 0.05, HEX_PERIOD) - HEX_PERIOD, -dy * 0.03)
+	(_layers["city"] as Node2D).position = Vector2(fposmod(-cam.x * 0.15, CITY_PERIOD) - CITY_PERIOD, -dy * 0.07)
+	(_layers["rocks"] as Node2D).position = Vector2(fposmod(-cam.x * 0.32, ROCK_PERIOD) - ROCK_PERIOD, -dy * 0.11)
 	if GraphicsSettings.bg_should_redraw():
-		_painter.queue_redraw()
+		for k in ["clouds_far", "clouds_near", "hex_fx", "city_fx"]:
+			(_layers[k] as Node2D).queue_redraw()
 
 
 func _camera_pos() -> Vector2:
@@ -142,47 +175,82 @@ func _make_cloud(rng: RandomNumberGenerator, x: float, y_frac: float, s: float) 
 # ============================================================
 # PAINTING
 # ============================================================
-func paint(c: CanvasItem) -> void:
+## One layer. Static layers are drawn in their own space: x from 0 to `span` (whole periods), the
+## horizon as if the camera were at y = 300; _process slides them.
+func paint_layer(c: CanvasItem, kind: String) -> void:
 	var size := get_viewport().get_visible_rect().size
-	var cam := _camera_pos()
 	var w := size.x
 	var h := size.y
-	var horizon := h * 0.62 - (cam.y - 300.0) * 0.03
+	var hb := h + 260.0                                # Bottom edge with room for the vertical slide
+	var horizon := h * 0.62
+	var cam := _camera_pos()
+	_cull = false
+	match kind:
+		"sky":
+			_grad(c, -200.0, horizon * 0.55, w, SKY_TOP, SKY_MID)
+			_grad(c, horizon * 0.55, horizon, w, SKY_MID, SKY_HORIZON)
+			_grad(c, horizon, hb, w, SKY_HORIZON, VALLEY_BOTTOM)
+			_draw_sun(c, Vector2(w * 0.8, h * 0.2))
+		"clouds_far":
+			if GraphicsSettings.bg_full():
+				_draw_clouds(c, _clouds_far, -cam.x * 0.03 - _t * 6.0, w, h, 0.85)
+		"clouds_near":
+			if GraphicsSettings.bg_detail():
+				_draw_clouds(c, _clouds_near, -cam.x * 0.2 - _t * 12.0, w, h, 0.95)
+		"hex":
+			var span := _span(HEX_PERIOD, w)
+			for start in _tile_starts(HEX_PERIOD, span):
+				for tw in _hex_towers:
+					_draw_hex_tower(c, Vector2(start + float(tw["x"]), horizon + 20.0), tw, hb)
+			_mist(c, horizon - 10.0, hb, span, 0.75)
+		"hex_fx":
+			for start in _tile_starts(HEX_PERIOD, _span(HEX_PERIOD, w)):
+				for tw in _hex_towers:
+					if tw["main"]:
+						_draw_hex_emblem(c, Vector2(start + float(tw["x"]), horizon + 20.0), tw)
+		"city":
+			var span2 := _span(CITY_PERIOD, w)
+			var city_base := horizon + 45.0
+			for start in _tile_starts(CITY_PERIOD, span2):
+				for b in _city:
+					_draw_building(c, Vector2(start + float(b["x"]), city_base), b, hb)
+			_mist(c, city_base - 25.0, hb, span2, 0.6)
+		"city_fx":
+			for start in _tile_starts(CITY_PERIOD, _span(CITY_PERIOD, w)):
+				for b in _city:
+					if int(b["roof"]) == 1:                  # Blinking antenna lights
+						var bx := start + float(b["x"]) + float(b["w"]) * 0.4
+						var top := horizon + 45.0 - float(b["h"])
+						var blink := 1.0 if fmod(_t + (start + float(b["x"])) * 0.01, 1.6) < 0.8 else 0.3
+						Dots.circle(c, Vector2(bx, top - 36.0), 4.0, Color(1.0, 0.25, 0.2, blink))
+		"rocks":
+			var span3 := _span(ROCK_PERIOD, w)
+			var rock_base := horizon + 150.0
+			for start in _tile_starts(ROCK_PERIOD, span3):
+				for r in _rocks:
+					_draw_rock(c, Vector2(start + float(r["x"]), rock_base), r["pts"], hb)
+			_mist(c, rock_base + 30.0, hb, span3, 0.5)
+		"dim":
+			if dim > 0.0:
+				c.draw_rect(Rect2(0, -300, w, h + 600), Color(0, 0, 0, dim))
+	_cull = true
 
-	# Sky gradient + valley
-	_grad(c, 0.0, horizon * 0.55, w, SKY_TOP, SKY_MID)
-	_grad(c, horizon * 0.55, horizon, w, SKY_MID, SKY_HORIZON)
-	_grad(c, horizon, h, w, SKY_HORIZON, VALLEY_BOTTOM)
 
-	_draw_sun(c, Vector2(w * 0.8 - cam.x * 0.01, h * 0.2))
-	if GraphicsSettings.bg_full():
-		_draw_clouds(c, _clouds_far, -cam.x * 0.03 - _t * 6.0, w, h, 0.85)
+var _cull := true                        # Off while drawing a whole static layer
 
-	# Far: the Hexagon
-	for start in _starts(-cam.x * 0.05, HEX_PERIOD, w):
-		for tw in _hex_towers:
-			_draw_hex_tower(c, Vector2(start + float(tw["x"]), horizon + 20.0), tw, h)
-	_mist(c, horizon - 10.0, h, w, 0.75)
 
-	# Mid: city skyline
-	var city_base := horizon + 45.0 - (cam.y - 300.0) * 0.04
-	for start in _starts(-cam.x * 0.15, CITY_PERIOD, w):
-		for b in _city:
-			_draw_building(c, Vector2(start + float(b["x"]), city_base), b, h)
-	_mist(c, city_base - 25.0, h, w, 0.6)
+## Width a sliding layer must cover: the screen + one period on each side.
+func _span(period: float, w: float) -> float:
+	return period * (ceilf((w + 300.0) / period) + 1.0)
 
-	if GraphicsSettings.bg_detail():
-		_draw_clouds(c, _clouds_near, -cam.x * 0.2 - _t * 12.0, w, h, 0.95)
 
-	# Near: rocky spires
-	var rock_base := horizon + 150.0 - (cam.y - 300.0) * 0.08
-	for start in _starts(-cam.x * 0.32, ROCK_PERIOD, w):
-		for r in _rocks:
-			_draw_rock(c, Vector2(start + float(r["x"]), rock_base), r["pts"], h)
-	_mist(c, rock_base + 30.0, h, w, 0.5)
-
-	if dim > 0.0:
-		c.draw_rect(Rect2(0, 0, w, h), Color(0, 0, 0, dim))
+func _tile_starts(period: float, span: float) -> Array[float]:
+	var out: Array[float] = []
+	var s := 0.0
+	while s < span:
+		out.append(s)
+		s += period
+	return out
 
 
 ## Start offsets for a layer that repeats every `period` pixels.
@@ -226,13 +294,13 @@ func _draw_clouds(c: CanvasItem, clouds: Array[Dictionary], shift: float, w: flo
 				continue
 			var s: float = cl["s"]
 			var line := Color(0.22, 0.28, 0.45, alpha)
+			for p in cl["puffs"]:                          # (Dots: all puffs batch into one draw call)
+				Dots.circle(c, base + p["o"] * s, p["r"] * s + 3.5, line)
 			for p in cl["puffs"]:
-				c.draw_circle(base + p["o"] * s, p["r"] * s + 3.5, line)
-			for p in cl["puffs"]:
-				c.draw_circle(base + p["o"] * s, p["r"] * s, Color(0.80, 0.87, 0.97, alpha))
+				Dots.circle(c, base + p["o"] * s, p["r"] * s, Color(0.80, 0.87, 0.97, alpha))
 			for p in cl["puffs"]:
 				var r: float = p["r"] * s
-				c.draw_circle(base + p["o"] * s + Vector2(-r * 0.1, -r * 0.18), r * 0.8, Color(1, 1, 1, alpha))
+				Dots.circle(c, base + p["o"] * s + Vector2(-r * 0.1, -r * 0.18), r * 0.8, Color(1, 1, 1, alpha))
 
 
 static func _hex(center: Vector2, r: float, rot: float = 0.0) -> PackedVector2Array:
@@ -250,7 +318,7 @@ func _closed(c: CanvasItem, pts: PackedVector2Array, col: Color, w: float) -> vo
 
 
 func _draw_hex_tower(c: CanvasItem, base: Vector2, tw: Dictionary, h: float) -> void:
-	if base.x < -300.0 or base.x > c.get_viewport_rect().size.x + 300.0:
+	if _cull and (base.x < -300.0 or base.x > c.get_viewport_rect().size.x + 300.0):
 		return
 	var w: float = tw["w"]
 	var th: float = tw["h"]
@@ -279,23 +347,28 @@ func _draw_hex_tower(c: CanvasItem, base: Vector2, tw: Dictionary, h: float) -> 
 			c.draw_colored_polygon(_hex(Vector2(wx, y), 5.0), HEX_GLOW if on else HEX_SIDE)
 		y += 26.0
 		row += 1
-	if tw["main"]:
-		# The Hexagon emblem floating above the HQ, slowly rotating
-		var ec := Vector2(base.x, top - cap_h - 70.0)
-		var pulse := 0.5 + 0.5 * sin(_t * 1.6)
-		c.draw_line(Vector2(base.x, top - cap_h), ec, Color(HEX_GLOW.r, HEX_GLOW.g, HEX_GLOW.b, 0.6), 4.0)
-		c.draw_circle(ec, 80.0 + 8.0 * pulse, Color(HEX_GLOW.r, HEX_GLOW.g, HEX_GLOW.b, 0.12 + 0.08 * pulse))
-		var ring := _hex(ec, 52.0, _t * 0.25)
-		_closed(c, ring, HEX_LINE, 12.0)
-		_closed(c, ring, HEX_GLOW, 6.0)
-		var core := _hex(ec, 20.0, -_t * 0.4)
-		c.draw_colored_polygon(core, HEX_GLOW)
-		_closed(c, core, HEX_LINE, 3.0)
+
+
+## The Hexagon emblem floating above the HQ tower, slowly rotating (the "hex_fx" layer, every frame).
+func _draw_hex_emblem(c: CanvasItem, base: Vector2, tw: Dictionary) -> void:
+	var w: float = tw["w"]
+	var top := base.y - float(tw["h"])
+	var cap_h := w * 0.45
+	var ec := Vector2(base.x, top - cap_h - 70.0)
+	var pulse := 0.5 + 0.5 * sin(_t * 1.6)
+	c.draw_line(Vector2(base.x, top - cap_h), ec, Color(HEX_GLOW.r, HEX_GLOW.g, HEX_GLOW.b, 0.6), 4.0)
+	c.draw_circle(ec, 80.0 + 8.0 * pulse, Color(HEX_GLOW.r, HEX_GLOW.g, HEX_GLOW.b, 0.12 + 0.08 * pulse))
+	var ring := _hex(ec, 52.0, _t * 0.25)
+	_closed(c, ring, HEX_LINE, 12.0)
+	_closed(c, ring, HEX_GLOW, 6.0)
+	var core := _hex(ec, 20.0, -_t * 0.4)
+	c.draw_colored_polygon(core, HEX_GLOW)
+	_closed(c, core, HEX_LINE, 3.0)
 
 
 func _draw_building(c: CanvasItem, base: Vector2, b: Dictionary, h: float) -> void:
 	var w: float = b["w"]
-	if base.x + w < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0:
+	if _cull and (base.x + w < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0):
 		return
 	var bh: float = b["h"]
 	var top := base.y - bh
@@ -315,10 +388,8 @@ func _draw_building(c: CanvasItem, base: Vector2, b: Dictionary, h: float) -> vo
 		wy += 22.0
 	# Roof
 	match int(b["roof"]):
-		1:  # Antenna with blinking light
+		1:  # Antenna (its blinking light is the "city_fx" layer)
 			c.draw_line(Vector2(base.x + w * 0.4, top), Vector2(base.x + w * 0.4, top - 34.0), OUTLINE, 3.0)
-			var blink := 1.0 if fmod(_t + base.x * 0.01, 1.6) < 0.8 else 0.3
-			c.draw_circle(Vector2(base.x + w * 0.4, top - 36.0), 4.0, Color(1.0, 0.25, 0.2, blink))
 		2:  # Small hex dome
 			var dome := _hex(Vector2(base.x + w * 0.4, top), w * 0.22, PI / 6.0)
 			c.draw_colored_polygon(dome, CITY_SIDE)
@@ -343,7 +414,7 @@ static func _min_y(pts: PackedVector2Array) -> float:
 
 func _draw_rock(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: float) -> void:
 	var last: Vector2 = pts[pts.size() - 1]
-	if base.x + last.x < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0:
+	if _cull and (base.x + last.x < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0):
 		return
 	var poly := PackedVector2Array()
 	poly.append(Vector2(base.x, h + 10.0))

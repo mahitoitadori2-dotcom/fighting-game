@@ -84,6 +84,16 @@ Measured on PC with FAST graphics (what phones use), FPS without a cap. The big 
 - **Still the biggest:** the web engine itself (`index.wasm`, 37.7 MB) - only a custom slimmed engine build would shrink it (3D is now used, so it can't simply be removed). Characters (~100+ draw calls each, made of circles and polygons) are the next cost if phones still lag.
 - **Not tested on a real iPhone.**
 
+## Whole-game sweep (2026-11-14)
+
+`tools/game_sweep.tscn` plays EVERYTHING by itself (CPU): 7 menus, 50 Versus maps, 50 opponents + 6 fighters, Story 1-62 (boss levels also from the boss checkpoint), 15 Boss Extension levels, DemiLand, The Caves = 197 tests, ~35 min. One RESULT line per test (FPS, 1% low, worst frame, draw calls, nodes, memory); errors are logged per test. Back up the saves first. Run: `godot --audio-driver Dummy --path . --log-file sweep.log res://tools/game_sweep.tscn` (one part: `UB_SWEEP=menus|maps|versus|story|ext|demi`).
+
+Result (PC, REGULAR, uncapped):
+- **0 script errors** in all 197 tests. **No memory leak:** 155 MB after the menus, 158 MB at the end.
+- **Fixed lag spots:** Character Select 23 -> 244 FPS (every portrait was redrawn every frame; now only the hovered / picked ones animate). Achievements 44 -> 1300 FPS, 6565 -> ~840 draw calls (each card's art is baked once into a texture). Test Arena 76 -> ~120-148 FPS and Void Arena 63 -> ~130-141 (the far backdrop layers are drawn once and slide; clouds / sparks / fog use batched textured dots: `scripts/Dots.gd`). Story board 72 -> ~160-180 FPS (idle redraw at 30 Hz).
+- **FAST (phones):** every checked scene 212-358 FPS on this PC.
+- **Still the heaviest:** DemiLand (~80 FPS REGULAR, ~210 FAST, ~3700 draw calls on REGULAR) and the C5 thorn / foothill levels (~150 FPS). Not measured on a real iPhone.
+
 ## Open work
 
 Some projectiles are not pooled yet. They are in the [To-do list](Todo.md).

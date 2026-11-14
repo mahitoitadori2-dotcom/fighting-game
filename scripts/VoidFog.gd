@@ -37,13 +37,13 @@ func _draw() -> void:
 	# Fog blobs hugging the floor (y = 0 is the walkable surface)
 	for b in _blobs:
 		var x := fposmod(b.x + _t * b.z + hw, width) - hw
-		var bob := sin(_t * 0.7 + b.x) * 6.0
-		draw_circle(Vector2(x, -b.y * 0.25 + bob), b.y, Color(FOG.r, FOG.g, FOG.b, 0.06))
-		draw_circle(Vector2(x + b.y * 0.5, -b.y * 0.1 + bob), b.y * 0.7, Color(FOG.r, FOG.g, FOG.b, 0.05))
+		var bob := sin(_t * 0.7 + b.x) * 6.0                # (Dots: batched into one draw call)
+		Dots.circle(self, Vector2(x, -b.y * 0.25 + bob), b.y, Color(FOG.r, FOG.g, FOG.b, 0.06))
+		Dots.circle(self, Vector2(x + b.y * 0.5, -b.y * 0.1 + bob), b.y * 0.7, Color(FOG.r, FOG.g, FOG.b, 0.05))
 	# Sparks rising from the ground
 	for s in _sparks:
 		var life := fposmod(s.y + _t * s.z, 1.0)
 		var p := Vector2(s.x + sin(_t * 1.5 + s.w) * 14.0, -life * 360.0)
 		var a := sin(life * PI) * (0.6 + 0.4 * sin(_t * 9.0 + s.w))
-		draw_circle(p, 5.0, Color(FOG.r, FOG.g, FOG.b, 0.18 * a))
-		draw_circle(p, 1.8, Color(SPARK.r, SPARK.g, SPARK.b, a))
+		Dots.circle(self, p, 5.0, Color(FOG.r, FOG.g, FOG.b, 0.18 * a))
+		Dots.circle(self, p, 1.8, Color(SPARK.r, SPARK.g, SPARK.b, a))

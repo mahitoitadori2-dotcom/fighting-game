@@ -38,9 +38,33 @@ class Painter extends Node2D:
 		bg.paint(self)
 
 
+## STATIC layers (2026-11-14 perf pass): the sky + moon and the mountain range are drawn ONCE and
+## slide (parallax); only the tentacles, fog and sparks are redrawn each frame.
+class StaticLayer extends Node2D:
+	var bg: VoidBackground
+	var kind := ""
+
+	func _draw() -> void:
+		bg.paint_static(self, kind)
+
+
+var _sky: StaticLayer
+var _mount: StaticLayer
+var _last_size := Vector2.ZERO
+var _last_level := -1
+
+
 func _ready() -> void:
 	layer = -10
 	_generate()
+	_sky = StaticLayer.new()
+	_sky.bg = self
+	_sky.kind = "sky"
+	add_child(_sky)
+	_mount = StaticLayer.new()
+	_mount.bg = self
+	_mount.kind = "mountains"
+	add_child(_mount)
 	_painter = Painter.new()
 	_painter.bg = self
 	add_child(_painter)
@@ -48,8 +72,38 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	var size := get_viewport().get_visible_rect().size
+	var cam := _camera_pos()
+	if size != _last_size or GraphicsSettings.level != _last_level:
+		_last_size = size
+		_last_level = GraphicsSettings.level
+		_sky.queue_redraw()
+		_mount.queue_redraw()
+	_sky.position.y = -(cam.y - 300.0) * 0.03
+	_mount.position = Vector2(fposmod(-cam.x * 0.05, MOUNTAIN_PERIOD) - MOUNTAIN_PERIOD, -(cam.y - 300.0) * 0.03)
 	if GraphicsSettings.bg_should_redraw():
 		_painter.queue_redraw()
+
+
+func paint_static(c: CanvasItem, kind: String) -> void:
+	var size := get_viewport().get_visible_rect().size
+	var w := size.x
+	var h := size.y
+	var hb := h + 260.0
+	var horizon := h * 0.62
+	if kind == "sky":
+		_grad(c, -200.0, horizon * 0.5, w, SKY_TOP, SKY_MID)
+		_grad(c, horizon * 0.5, horizon, w, SKY_MID, SKY_HORIZON)
+		_grad(c, horizon, hb, w, SKY_HORIZON, Color(0.02, 0.06, 0.03))
+		_draw_moon(c, Vector2(w * 0.22, h * 0.22))
+		return
+	var span := MOUNTAIN_PERIOD * (ceilf((w + 300.0) / MOUNTAIN_PERIOD) + 1.0)
+	var s := 0.0
+	while s < span:
+		for m in _mountains:
+			_draw_mountain(c, Vector2(s + float(m["x"]), horizon + 30.0), m["pts"], hb, false)
+		s += MOUNTAIN_PERIOD
+	_fog_band(c, horizon - 40.0, hb, span, 0.45)
 
 
 func _camera_pos() -> Vector2:
@@ -100,19 +154,7 @@ func paint(c: CanvasItem) -> void:
 	var w := size.x
 	var h := size.y
 	var horizon := h * 0.62 - (cam.y - 300.0) * 0.03
-
-	_grad(c, 0.0, horizon * 0.5, w, SKY_TOP, SKY_MID)
-	_grad(c, horizon * 0.5, horizon, w, SKY_MID, SKY_HORIZON)
-	_grad(c, horizon, h, w, SKY_HORIZON, Color(0.02, 0.06, 0.03))
-
-	_draw_moon(c, Vector2(w * 0.22 - cam.x * 0.01, h * 0.22))
-
-	# Far mountains
-	var m_base := horizon + 30.0
-	for start in _starts(-cam.x * 0.05, MOUNTAIN_PERIOD, w):
-		for m in _mountains:
-			_draw_mountain(c, Vector2(start + float(m["x"]), m_base), m["pts"], h)
-	_fog_band(c, horizon - 40.0, h, w, 0.45)
+	# (Sky, moon, mountains: the static layers below this painter)
 
 	# Far tentacles
 	var tf_base := horizon + 90.0 - (cam.y - 300.0) * 0.05
@@ -131,10 +173,10 @@ func paint(c: CanvasItem) -> void:
 
 	# Rolling fog blobs + sparks: skipped on Potato
 	var deco: Array = _fog_blobs if GraphicsSettings.bg_detail() else []
-	for f in deco:
+	for f in deco:                                       # (Dots: batched)
 		var fx := fposmod(f.x * (w + 400.0) + _t * f.w - cam.x * 0.15, w + 400.0) - 200.0
-		c.draw_circle(Vector2(fx, f.y * h), f.z, Color(FOG.r, FOG.g, FOG.b, 0.10))
-		c.draw_circle(Vector2(fx + f.z * 0.6, f.y * h + 10.0), f.z * 0.7, Color(FOG.r, FOG.g, FOG.b, 0.08))
+		Dots.circle(c, Vector2(fx, f.y * h), f.z, Color(FOG.r, FOG.g, FOG.b, 0.10))
+		Dots.circle(c, Vector2(fx + f.z * 0.6, f.y * h + 10.0), f.z * 0.7, Color(FOG.r, FOG.g, FOG.b, 0.08))
 	_fog_band(c, tn_base - 40.0, h, w, 0.55)
 
 	# Floating sparks (rise, flicker, wrap)
@@ -142,8 +184,8 @@ func paint(c: CanvasItem) -> void:
 		var sx := fposmod(s.x * w - cam.x * 0.3 + sin(_t * 0.8 + s.w) * 20.0, w)
 		var sy := fposmod(s.y - _t * s.z, 1.0) * h
 		var flick := 0.5 + 0.5 * sin(_t * 6.0 + s.w * 3.0)
-		c.draw_circle(Vector2(sx, sy), 5.0, Color(GLOW.r, GLOW.g, GLOW.b, 0.15 * flick))
-		c.draw_circle(Vector2(sx, sy), 1.8, Color(SPARK.r, SPARK.g, SPARK.b, 0.5 + 0.5 * flick))
+		Dots.circle(c, Vector2(sx, sy), 5.0, Color(GLOW.r, GLOW.g, GLOW.b, 0.15 * flick))
+		Dots.circle(c, Vector2(sx, sy), 1.8, Color(SPARK.r, SPARK.g, SPARK.b, 0.5 + 0.5 * flick))
 
 	if dim > 0.0:
 		c.draw_rect(Rect2(0, 0, w, h), Color(0, 0, 0, dim))
@@ -180,9 +222,9 @@ func _draw_moon(c: CanvasItem, p: Vector2) -> void:
 	c.draw_circle(p + Vector2(-16, -14), 7.0, Color(0.85, 1.0, 0.82))
 
 
-func _draw_mountain(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: float) -> void:
+func _draw_mountain(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: float, cull: bool = true) -> void:
 	var last: Vector2 = pts[pts.size() - 1]
-	if base.x + last.x < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0:
+	if cull and (base.x + last.x < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0):
 		return
 	var poly := PackedVector2Array([Vector2(base.x, h + 10.0)])
 	for p in pts:
@@ -241,4 +283,4 @@ func _draw_tentacle(c: CanvasItem, base: Vector2, tt: Dictionary, scale_k: float
 		var u := float(i) / float(n)
 		var p := center[i].lerp(right[right.size() - 1 - i], 0.45)
 		var pulse := 0.5 + 0.5 * sin(_t * 3.0 + phase + float(i))
-		c.draw_circle(p, 4.5 * scale_k * (1.0 - u * 0.6), Color(GLOW.r, GLOW.g, GLOW.b, 0.35 + 0.5 * pulse))
+		Dots.circle(c, p, 4.5 * scale_k * (1.0 - u * 0.6), Color(GLOW.r, GLOW.g, GLOW.b, 0.35 + 0.5 * pulse))

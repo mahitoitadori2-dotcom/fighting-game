@@ -444,7 +444,14 @@ func _process(delta: float) -> void:
 	if part != _page:
 		_page = part
 		_refresh_ui()
-	_cv.queue_redraw()
+	# Redraw: every frame while something moves (scroll, drag, hop, landing), else 30 times a
+	# second - the board's idle animations are slow (sweep 2026-11-14: the board ran at ~60 FPS).
+	_redraw_acc += delta
+	var moving := _dragging or _hop_t >= 0.0 or _land_t < 0.6 or absf(_scroll - _scroll_target) > 0.5 or absf(_over) > 0.5
+	var redraw := moving or _redraw_acc >= 1.0 / 30.0
+	if redraw:
+		_redraw_acc = 0.0
+		_cv.queue_redraw()
 	if _hop_t >= 0.0:
 		_hop_t += delta
 		if _hop_t >= HOP_TIME:
@@ -455,8 +462,11 @@ func _process(delta: float) -> void:
 			_refresh_ui()
 			if StoryManager.autoplay:
 				_autoplay_next()                          # Testing: keep going by itself
-	_board.queue_redraw()
+	if redraw:
+		_board.queue_redraw()
 
+
+var _redraw_acc := 0.0
 
 func _pawn_pos() -> Vector2:
 	if _hop_t >= 0.0:
