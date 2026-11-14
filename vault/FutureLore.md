@@ -29,7 +29,8 @@ After the Enlightened Chase the hero learns about **the Storm**: an all-seeing l
 - **Story Mode heroes stay the Warrior and the Architect.** The hurt hero is the one you did NOT play in the Enlightened Chase.
 - **The DemiLand stranger** escapes through the Ancient Door, but will not appear again for a while.
 - **The hut:** for now nobody goes inside it.
-- **The Ticket:** an important LORE ITEM. You must get it to EXIT Terra Ordinariorum (it is the way up into Orbis Terrarum). Already named in the Enlightened One's Storm talk. When built: a Codex lore item (`StoryLore`) + the gate out of Ordinariorum needs it.
+- **The Ticket:** an important LORE ITEM. You must get it to EXIT Terra Ordinariorum (it is the way up into Orbis Terrarum). It DROPS FROM A BOSS that lives in Terra Ordinariorum (boss not designed yet).
+- **When the Storm appears:** the moment the heroes have learned EVERYTHING from the Trainer (not before). Already named in the Enlightened One's Storm talk. When built: a Codex lore item (`StoryLore`) + the gate out of Ordinariorum needs it.
 - **The two heroes meet again in Orbis Terrarum** (one came from the Chase, the other from DemiLand + The Caves). They train with the Trainer together; then the Storm attacks both.
 
 ## Orbis Terrarum
@@ -44,5 +45,5 @@ After the Enlightened Chase the hero learns about **the Storm**: an all-seeing l
 ## Open questions (ask the user when this part is built)
 
 - The Storm's 1st entrance: where / what is it?
-- Where in Ordinariorum the Ticket is, and who holds it.
+- The Ordinariorum boss that holds the Ticket: who / what is it?
 - Who rules Terra Ordinariorum; who leads the Kharlemings and the Lava Monsters.
