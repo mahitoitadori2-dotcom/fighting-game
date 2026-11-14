@@ -570,7 +570,7 @@ const BOSS_SPEED_MULT := 1.12
 func buff_boss(e: BaseEnemy) -> void:
 	if e == null or e.data == null:
 		return
-	e.boss_hp_mult = BOSS_HP_MULT
+	e.boss_hp_mult = BOSS_HP_MULT * StoryDifficulty.hp()   # (Max HP was already scaled by the difficulty on spawn)
 	e.boss_cd_mult = BOSS_CD_MULT
 	e.boss_speed_mult = BOSS_SPEED_MULT
 	e.data.max_hp = roundi(float(e.data.max_hp) * BOSS_HP_MULT)

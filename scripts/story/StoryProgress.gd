@@ -38,7 +38,15 @@ static var badges := {}
 static var seen := {}
 ## DEMILAND run in progress (DemiLand._save_run): CamTons, bosses, artifacts... {} = none.
 static var demi := {}
+## STORY DIFFICULTY: 0 = EASY, 1 = NORMAL, 2 = HARD (StoryDifficulty.gd). Picked on the board.
+static var difficulty := 1
 static var _loaded := false
+
+
+static func set_difficulty(d: int) -> void:
+	load_progress()
+	difficulty = clampi(d, 0, 2)
+	save_progress()
 
 
 static func save_demi(state: Dictionary) -> void:
@@ -120,6 +128,7 @@ static func load_progress() -> void:
 	badges = cfg.get_value("story", "badges", {})
 	seen = cfg.get_value("story", "seen", {})
 	demi = cfg.get_value("story", "demi", {})
+	difficulty = clampi(int(cfg.get_value("story", "difficulty", 1)), 0, 2)
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -145,6 +154,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "badges", badges)
 	cfg.set_value("story", "seen", seen)
 	cfg.set_value("story", "demi", demi)
+	cfg.set_value("story", "difficulty", difficulty)
 	cfg.save(SAVE_PATH)
 
 

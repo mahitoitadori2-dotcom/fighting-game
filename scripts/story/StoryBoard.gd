@@ -110,6 +110,7 @@ var _play: Button
 var _switch: Button
 var _ext_btn: Button
 var _solo_btn: Button
+var _diff_btn: Button
 ## Badge colours on the tiles (AchievementArt.draw_icon draws the icon).
 const BADGE_COLORS := {"no_powers": Color(0.95, 0.75, 0.15), "no_blocks": Color(0.30, 0.55, 1.0),
 	"no_healing": Color(0.25, 0.80, 0.35), "no_gauge": Color(0.10, 0.75, 0.90), "solo": Color(0.70, 0.35, 1.0)}
@@ -192,15 +193,15 @@ func _build_ui() -> void:
 	row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	row.offset_top = -74
 	row.offset_bottom = -14
-	row.offset_left = -500
-	row.offset_right = 500
+	row.offset_left = -620
+	row.offset_right = 620
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 14)
 	add_child(row)
 	var back := UiStyle.make_button("< BACK", Vector2(150, 56), 20)
 	back.pressed.connect(_go_back)
 	row.add_child(back)
-	_play = UiStyle.make_button("PLAY", Vector2(280, 56), 22)
+	_play = UiStyle.make_button("PLAY", Vector2(240, 56), 22)
 	_play.pressed.connect(_on_play)
 	row.add_child(_play)
 	# Colosseum 5 only: swap which hero you play (the other one is your CPU partner)
@@ -218,6 +219,14 @@ func _build_ui() -> void:
 	_ext_btn.pressed.connect(func() -> void: _open_extensions(""))
 	_ext_btn.visible = false
 	row.add_child(_ext_btn)
+	# Story DIFFICULTY (EASY / NORMAL / HARD): enemy HP + damage, cave speed. Saved.
+	_diff_btn = UiStyle.make_button("DIFFICULTY: NORMAL", Vector2(230, 56), 15)
+	_diff_btn.tooltip_text = "Difficulty: EASY = enemies 70% HP / 65% damage, HARD = 130% HP / 125% damage"
+	_diff_btn.pressed.connect(func() -> void:
+		StoryProgress.set_difficulty((StoryDifficulty.level() + 1) % 3)
+		SoundManager.play_sfx("count_tick")
+		_refresh_ui())
+	row.add_child(_diff_btn)
 	var reset := UiStyle.make_button("RESET", Vector2(150, 56), 16)
 	reset.pressed.connect(_reset.bind(reset))
 	row.add_child(reset)
@@ -232,6 +241,8 @@ func _refresh_ui() -> void:
 	_solo_btn.text = "SOLO: %s" % ("ON" if StoryProgress.c5_solo else "OFF")
 	_solo_btn.modulate = Color(0.85, 0.6, 1.0) if StoryProgress.c5_solo else Color(1, 1, 1)
 	_ext_btn.visible = not StoryLevels.exts_on_page(_page).is_empty()
+	_diff_btn.text = "DIFFICULTY: " + StoryDifficulty.name_of()
+	_diff_btn.modulate = StoryDifficulty.COLORS[StoryDifficulty.level()]
 	if choice:
 		_switch.text = "PLAY AS %s" % ("WARRIOR" if StoryLevels.hero_of(_pawn_space) == "architect" else "ARCHITECT")
 	_title.text = String(_page_data().get("title", "STORY MODE"))

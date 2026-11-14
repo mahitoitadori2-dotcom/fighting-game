@@ -165,6 +165,10 @@ func _drag(finger: int, pos: Vector2) -> void:
 func _press(b: Dictionary) -> void:
 	b["pressed"] = true
 	if b["id"] == "menu":
+		if PauseMenu.in_fight(get_tree()):
+			_release_all()
+			PauseMenu.toggle(get_tree())                  # One tap: the pause menu
+			return
 		var now := Time.get_ticks_msec() / 1000.0
 		if now - _menu_tap_time < 0.6:
 			_release_all()

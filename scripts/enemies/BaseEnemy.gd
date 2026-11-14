@@ -70,6 +70,8 @@ func _ready() -> void:
 	hud = EnemyHUD.new()
 	hud.enemy = self
 	add_child(hud)
+	if StoryManager.active:
+		StoryDifficulty.apply_enemy(self)                # Story EASY / NORMAL / HARD (HP + damage)
 
 
 # ----- Override in each enemy -----

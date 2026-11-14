@@ -83,6 +83,8 @@ func _box_rect() -> Rect2:
 
 
 func _process(delta: float) -> void:
+	if PauseMenu.is_open:
+		return                                      # Typing waits while the game is paused
 	_t += delta
 	_fade = minf(_fade + delta * 4.0, 1.0)
 	var r := _box_rect()
@@ -99,7 +101,7 @@ func _process(delta: float) -> void:
 				for c in range(before, int(_shown)):
 					_on_letter(full, c)
 			_text.visible_characters = int(_shown)
-		if StoryManager.autoplay and _shown >= float(full.length()):
+		if StoryManager.autoplay and _shown >= float(full.length()) and not PauseMenu.is_open:
 			_advance()                                  # Tests: never stop for dialogue
 	_paint.queue_redraw()
 	_shade.queue_redraw()
@@ -153,6 +155,8 @@ func _on_letter(full: String, c: int) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if PauseMenu.is_open:
+		return                                      # The pause menu's buttons get the clicks
 	var go := event.is_action_pressed("punch") or event.is_action_pressed("jump") or event.is_action_pressed("ui_accept")
 	var mb := event as InputEventMouseButton
 	if mb != null and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:

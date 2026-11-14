@@ -174,6 +174,8 @@ func _finish() -> void:
 	Achievements.unlock("cave_%d" % tier)
 	if flawless:
 		Achievements.unlock("cave_flawless_%d" % tier)
+		if StoryDifficulty.is_hard():
+			Achievements.unlock("hard_caves")
 	if hits >= 15:
 		Achievements.unlock("cave_crash")
 	if level_n == StoryLevels.last_of(StoryLevels.CAVES_PART):
@@ -216,9 +218,6 @@ func _respawn() -> void:
 # INPUT
 # ============================================================
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		get_tree().change_scene_to_file(StoryManager.STORY_MENU)
-		return
 	if event.is_action_pressed("jump"):
 		_jump_buf = BUFFER
 	if event.is_action_pressed("crouch"):
@@ -311,7 +310,7 @@ func _process(delta: float) -> void:
 func _run(delta: float) -> void:
 	if StoryManager.autoplay:
 		_bot()
-	var top_speed := float(_cfg["speed"]) * (1.0 + 0.10 * px / _len)
+	var top_speed := float(_cfg["speed"]) * StoryDifficulty.cave_speed() * (1.0 + 0.10 * px / _len)
 	speed = move_toward(speed, top_speed, 500.0 * delta)
 	px += speed * delta
 	var grounded := h <= 0.0 and not _in_gap(px)
@@ -556,6 +555,16 @@ func _build_ui() -> void:
 	box.add_child(_banner)
 	_sub = UiStyle.label("", 22, Color(0.95, 0.92, 0.85), 4)
 	box.add_child(_sub)
+	# Pause button (top right) for phones; Esc does the same on a keyboard
+	var pause := UiStyle.make_button("II", Vector2(64, 56), 22)
+	pause.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	pause.offset_left = -80
+	pause.offset_right = -16
+	pause.offset_top = 12
+	pause.offset_bottom = 68
+	pause.focus_mode = Control.FOCUS_NONE
+	pause.pressed.connect(func() -> void: PauseMenu.toggle(get_tree()))
+	_ui.add_child(pause)
 
 
 func _show(a: String, b: String) -> void:

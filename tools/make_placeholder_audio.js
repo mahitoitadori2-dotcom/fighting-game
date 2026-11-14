@@ -490,10 +490,13 @@ const MUSIC = {
     ['T', 'c', 's', 'c', 't', 'c', 's', 't', 'T', 'c', 's', 'c', 't', 't', 's', 's'], organ, saw),
 };
 
+// These 12 are DESIGNED by tools/make_sfx.js now (never overwritten here, even with --force)
+const DESIGNED = ['roar', 'dragon_roar', 'bark', 'croak', 'bite', 'flame', 'holy', 'ultimate', 'geyser', 'splash', 'rumble', 'flask_drink'];
 let made = 0, kept = 0;
 for (const [name, fn] of Object.entries(SFX)) {
   const f = path.join(ROOT, 'audio', 'sfx', name + '.wav');
   if (fs.existsSync(path.join(ROOT, 'audio', 'sfx', name + '.ogg'))) { kept++; continue; }   // A real recording (audio/CREDITS.txt) wins
+  if (DESIGNED.includes(name)) { kept++; continue; }                                          // Made by tools/make_sfx.js
   if (!force && fs.existsSync(f)) { kept++; continue; }
   writeWav(f, fn()); made++;
 }

@@ -518,6 +518,8 @@ function writeWav(file, b) {
 }
 
 // ============================================================
+// Used as a library by tools/make_sfx.js: export the instrument player, don't render music.
+if (require.main !== module) { module.exports = { readSF2, note, reverb, SR, SF2 }; return; }
 if (!fs.existsSync(SF2)) { console.error('SoundFont not found: ' + SF2 + '\nDownload MuseScore_General.sf2 (see the top of this file).'); process.exit(1); }
 console.log('loading ' + SF2 + ' ...');
 const sf = readSF2(SF2);

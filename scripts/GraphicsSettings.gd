@@ -48,6 +48,14 @@ func _ready() -> void:
 	CombatManager.register_inputs()                 # All controls (+ the player's saved keys) from the very start
 
 
+## Esc / controller Start in ANY fight scene opens the PAUSE MENU. Lives here (an autoload that runs
+## even while the game is paused), so it also works in The Caves and during a dialogue box.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause_menu") and not PauseMenu.is_open and PauseMenu.in_fight(get_tree()):
+		get_viewport().set_input_as_handled()
+		PauseMenu.toggle(get_tree())
+
+
 static func load_settings() -> void:
 	if _loaded:
 		return

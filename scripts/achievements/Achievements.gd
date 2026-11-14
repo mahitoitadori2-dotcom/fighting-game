@@ -212,6 +212,15 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": _col_bg(StoryLevels.CAVES_PART)})
 	_add("cave_crash", "Face, Meet Rock", "Crash 15 times in one cave... and still make it out.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.20, 0.14, 0.10)})
+	# ---------------- STORY DIFFICULTY ----------------
+	_add("hard_first", "No Mercy Asked", "Beat any Story boss on HARD.", "challenge",
+		{"big": "skull", "frame": "silver", "bg": Color(0.36, 0.08, 0.06)})
+	_add("hard_sun", "Burn Brighter", "Beat The Sun on HARD.", "challenge",
+		{"enemy": "the_sun", "frame": "gold", "emblem": "skull", "bg": Color(0.42, 0.30, 0.08)})
+	_add("hard_enlightened", "No More Running, No More Mercy", "Beat The Enlightened One on HARD.", "challenge",
+		{"enemy": "enlightened_one", "frame": "gold", "emblem": "skull", "bg": Color(0.45, 0.32, 0.12)})
+	_add("hard_caves", "Fast and Flawless", "Slide through a cave on HARD without crashing once.", "challenge",
+		{"big": "star", "frame": "purple", "bg": Color(0.20, 0.06, 0.14)})
 	_add("ext_all", "Deep Explorer", "Beat the final boss of all 5 Boss Extensions.", "story",
 		{"big": "crown", "frame": "silver", "bg": Color(0.10, 0.22, 0.30)})
 
@@ -372,6 +381,12 @@ static func on_story_clear(n: int, player: Fighter, solo: bool, hero: String) ->
 	if solo:
 		earned.append("solo")
 	StoryProgress.add_badges(n, earned, solo)
+	if StoryDifficulty.is_hard() and String(StoryLevels.get_level(n).get("boss", "")) != "":
+		unlock("hard_first")
+		if n == 50:
+			unlock("hard_sun")
+		elif n == StoryLevels.last_of(StoryLevels.CHASE_PART):
+			unlock("hard_enlightened")
 	for b in BOSSES:
 		if int(b[0]) != n:
 			continue

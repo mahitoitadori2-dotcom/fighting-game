@@ -35,7 +35,11 @@ All 41 music tracks are played by **real instrument recordings** (orchestra, Sou
 ## Sound effects: real recordings (since 2026-11-13)
 
 24 of the 36 sound effects are real recordings from **Kenney**'s CC0 packs (Impact Sounds, RPG Audio, Sci-fi Sounds, Interface Sounds; free for any use, credited in `audio/CREDITS.txt`): punch, hit, sword slash, block, swing, whoosh, jump, dash, explosion, slam, stone, chain, beam, laser, drill, spark, death, spawn, countdown tick / GO, telegraph, heal, void goo, chemical spill. They are `.ogg` files in `audio/sfx/` (the game loads .ogg before .wav).
-- Still synth placeholders (no matching recording in those packs): roar, dragon_roar, bark, croak, bite, flame, holy, ultimate, geyser, splash, rumble, flask_drink.
+- The other 12 are **designed** by `node tools/make_sfx.js` (since 2026-11-14, no downloads):
+  - Creatures through vowel formant filters on a rough "vocal cord" source: roar (big beast), dragon_roar (Geyron: low growl + screech), bark (Rotor: two barks), croak (King Frog: "rib-bit"), bite (hiss, teeth clacks, crunch, thud).
+  - Fire / water synthesis: flame (whoosh + crackles), geyser (gurgle, burst, lava drops), splash (slap + rising droplets).
+  - Real orchestral samples from the MuseScore_General SoundFont: holy (choir + tubular bells + glockenspiel), ultimate (reverse cymbal, orchestra hit, brass, timpani, crash), rumble (timpani roll + bass drum), flask_drink (cork pop, gulps, glockenspiel + harp sparkle). These 4 need the SoundFont to be rebuilt.
+  - All 12 are about the same loudness (-12 to -15 dB RMS). `make_placeholder_audio.js` never overwrites them. Checked by numbers and spectrograms; **not listened to by a human yet**.
 - The downloaded packs live outside the repo in `C:/code/audio_tools/kenney/` (all 355 sounds, for swapping in other variants).
 - **Not listened to by a human yet** - volumes may need a tweak.
 

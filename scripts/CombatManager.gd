@@ -58,11 +58,11 @@ func _ready() -> void:
 		if n is Fighter:
 			register(n)
 
-## Esc / controller Start returns to the Main Menu.
+## Esc / controller Start: in a fight the PAUSE MENU (PauseMenu.gd), elsewhere back to the Main Menu.
 ## (Not ui_cancel: that includes the controller B button, which is Move 2 in a fight.)
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause_menu"):
-		quit_to_menu(get_tree())
+	if event.is_action_pressed("pause_menu") and not PauseMenu.in_fight(get_tree()):
+		quit_to_menu(get_tree())                         # (Fights: the Graphics autoload opens the PAUSE MENU)
 
 
 static func quit_to_menu(tree: SceneTree) -> void:
