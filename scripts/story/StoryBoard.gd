@@ -78,7 +78,10 @@ const PAGES := {
 		"board": [Color(0.12, 0.11, 0.13), Color(0.20, 0.17, 0.18)], "boss_label": Color(0.8, 0.72, 0.95)},
 	8: {"title": "STORY MODE  -  THE CAVES",
 		"board": [Color(0.08, 0.07, 0.09), Color(0.10, 0.14, 0.20)], "boss_label": Color(0.5, 0.85, 1.0)},
+	9: {"title": "STORY MODE  -  TERRA CRATERUM",
+		"board": [Color(0.30, 0.09, 0.04), Color(0.14, 0.07, 0.07)], "boss_label": Color(1.0, 0.6, 0.3)},
 }
+const CRATER_SCENE := "res://scenes/CraterLand.tscn"      # The second open world
 const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
 const SLIDE_SCENE := "res://scenes/CaveSlide.tscn"        # The Caves: no-combat slide levels
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
@@ -614,7 +617,10 @@ func _on_play() -> void:
 	if StoryLevels.is_slide(_pawn_space):
 		get_tree().change_scene_to_file(SLIDE_SCENE)
 		return
-	get_tree().change_scene_to_file(DEMI_SCENE if StoryLevels.is_open_world(_pawn_space) else StoryManager.ARENA_SCENE)
+	var scene := StoryManager.ARENA_SCENE
+	if StoryLevels.is_open_world(_pawn_space):
+		scene = CRATER_SCENE if StoryLevels.is_crater(_pawn_space) else DEMI_SCENE
+	get_tree().change_scene_to_file(scene)
 
 
 ## Colosseum 5: play as the other hero from now on (saved). The one you leave becomes
@@ -927,6 +933,16 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.CRATER_PART:
+		# Terra Craterum: volcanoes glowing on a red horizon, the wreck of a ship half buried
+		var base9 := r.position.y + r.size.y
+		for k in 4:
+			var vx := r.position.x + r.size.x * (0.12 + 0.25 * float(k))
+			var vh := 90.0 + 40.0 * absf(sin(float(k) * 1.7))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(vx - 120.0, base9), Vector2(vx - 20.0, base9 - vh), Vector2(vx + 20.0, base9 - vh), Vector2(vx + 120.0, base9)]), Color(0.08, 0.04, 0.04, 0.7))
+			c.draw_circle(Vector2(vx, base9 - vh), 26.0 + 4.0 * sin(_t * 2.0 + float(k)), Color(1.0, 0.4, 0.1, 0.22))
+		c.draw_colored_polygon(PackedVector2Array([Vector2(r.position.x + r.size.x * 0.02, base9), Vector2(r.position.x + r.size.x * 0.08, base9 - 60.0),
+			Vector2(r.position.x + r.size.x * 0.3, base9 - 80.0), Vector2(r.position.x + r.size.x * 0.36, base9)]), Color(0.12, 0.12, 0.15, 0.6))
 	elif _page >= StoryLevels.CAVES_PART:
 		# The Caves: a cave mouth, stalactites, glowing crystals, a chute sloping down to the right
 		var base8 := r.position.y + r.size.y
@@ -1050,21 +1066,29 @@ func _world_space(n: int) -> void:
 	var top := Rect2(r.position + Vector2(0, -6), r.size)
 	c.draw_colored_polygon(FighterArt.rrect_points(top, 8.0), Color(0.13, 0.12, 0.14) if unlocked else Color(0.22, 0.21, 0.21))
 	if unlocked:
-		# The land in miniature: five regions, the floor, the door in the middle, three boss marks
-		for reg in DemiWorld.REGIONS:
-			var x0 := top.position.x + (float(reg["x0"]) + DemiWorld.HALF) / (DemiWorld.HALF * 2.0) * top.size.x
-			var x1 := top.position.x + (float(reg["x1"]) + DemiWorld.HALF) / (DemiWorld.HALF * 2.0) * top.size.x
+		# The land in miniature: its regions, the floor, the landmark, the boss marks
+		var crater := StoryLevels.is_crater(n)
+		var w: Script = StoryLevels.world_of(n)
+		var half: float = w.HALF
+		for reg in w.REGIONS:
+			var x0 := top.position.x + (float(reg["x0"]) + half) / (half * 2.0) * top.size.x
+			var x1 := top.position.x + (float(reg["x1"]) + half) / (half * 2.0) * top.size.x
 			c.draw_rect(Rect2(x0 + 2.0, top.position.y + 6.0, x1 - x0 - 4.0, top.size.y - 12.0), (reg["col"] as Color).darkened(0.3))
 		var gy := top.position.y + top.size.y * 0.72
 		c.draw_line(Vector2(top.position.x + 6.0, gy), Vector2(top.end.x - 6.0, gy), Color(0.5, 0.45, 0.4), 2.0)
-		var dx := top.get_center().x
-		c.draw_rect(Rect2(dx - 7.0, gy - 26.0, 14.0, 26.0), Color(0.45, 0.42, 0.55))
-		for b in DemiWorld.BOSSES:
-			var bx := top.position.x + (float(b["x"]) + DemiWorld.HALF) / (DemiWorld.HALF * 2.0) * top.size.x
+		if crater:                                       # The Basalt Wall at the east end
+			var wx := top.position.x + (CraterWorld.WALL_X + half) / (half * 2.0) * top.size.x
+			c.draw_rect(Rect2(wx - 5.0, gy - 30.0, 10.0, 30.0), Color(0.1, 0.1, 0.12))
+		else:
+			var dx := top.get_center().x
+			c.draw_rect(Rect2(dx - 7.0, gy - 26.0, 14.0, 26.0), Color(0.45, 0.42, 0.55))
+		for b in w.BOSSES:
+			var bx := top.position.x + (float(b["x"]) + half) / (half * 2.0) * top.size.x
 			c.draw_set_transform(Vector2(bx, gy), 0.0, Vector2(0.09, 0.09))
 			StoryLevels.draw_portrait(c, String(b["id"]), _t)
 			c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		FighterArt.label(c, Vector2(top.get_center().x, top.position.y + 22.0), "DEMILAND", 18, Color(0.85, 0.80, 0.95))
+		FighterArt.label(c, Vector2(top.get_center().x, top.position.y + 22.0), "TERRA CRATERUM" if crater else "DEMILAND", 16 if crater else 18,
+			Color(1.0, 0.7, 0.5) if crater else Color(0.85, 0.80, 0.95))
 	else:
 		_lock(top.get_center())
 	c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), GOLD if cleared else Color(0, 0, 0), 3.5, FighterArt.AA)

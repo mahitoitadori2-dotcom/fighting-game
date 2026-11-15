@@ -212,6 +212,28 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": _col_bg(StoryLevels.CAVES_PART)})
 	_add("cave_crash", "Face, Meet Rock", "Crash 15 times in one cave... and still make it out.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.20, 0.14, 0.10)})
+	# ---------------- TERRA CRATERUM (open world, level 67) ----------------
+	var cr_bg := Color(0.34, 0.12, 0.06)
+	_add("col_%d" % StoryLevels.CRATER_PART, "Terra Craterum Conquered", "Blow up the Basalt Wall and leave Terra Craterum.", "story",
+		{"big": "crown", "frame": "gold", "bg": cr_bg})
+	_add("crater_clear", "Out of the Crater", "Walk through the broken Basalt Wall of Terra Craterum.", "story",
+		{"big": "star", "frame": "bronze", "bg": cr_bg})
+	_add("crater_lava_melter", "Lava Melter Trophy", "Defeat the Lava Melter at the War Front of Terra Craterum.", "story",
+		{"enemy": "lava_melter", "frame": "gold", "emblem": "trophy", "bg": Color(0.42, 0.14, 0.04)})
+	_add("crater_kharleming_lord", "Kharleming Lord Trophy", "Defeat the Kharleming Lord in the wreck of the ancient ship.", "story",
+		{"enemy": "kharleming_lord", "frame": "gold", "emblem": "trophy", "bg": Color(0.14, 0.18, 0.24)})
+	_add("crater_wall", "Colony Breaker", "Blow up the Basalt Wall with the Technician's Breaker and a pile of Kharleming corpses.", "story",
+		{"enemy": "kharleming", "frame": "silver", "emblem": "skull", "bg": Color(0.10, 0.10, 0.12)})
+	_add("crater_explorer", "Cartographer of Cinders", "Walk into every region of Terra Craterum.", "story",
+		{"big": "star", "frame": "bronze", "bg": Color(0.26, 0.12, 0.08)})
+	_add("crater_deathless", "Fireproof", "Leave Terra Craterum without dying once.", "challenge",
+		{"big": "skull", "frame": "red", "bg": Color(0.24, 0.06, 0.04)})
+	_add("crater_lore", "The Slave's Story", "Hear the whole story of the Volcano Slave.", "story",
+		{"big": "star", "frame": "silver", "bg": Color(0.20, 0.14, 0.12)})
+	_add("crater_free_slave", "Broken Pickaxe", "Free the Volcano Slave. (The Kharleming Sacrifice burns.)", "story",
+		{"big": "crown", "frame": "red", "bg": Color(0.30, 0.16, 0.10)})
+	_add("crater_free_sacrifice", "Snapped Chains", "Free the Kharleming Sacrifice. (The Volcano Slave is buried.)", "story",
+		{"enemy": "kharleming", "frame": "red", "emblem": "halo", "bg": Color(0.10, 0.22, 0.26)})
 	# ---------------- THE MIMIC ----------------
 	_add("mimic_steal", "Stolen Skin", "As the Mimic, bite an opponent with Stolen Skin and become them.", "versus",
 		{"script": MimicArt, "frame": "silver", "emblem": "star", "bg": Color(0.30, 0.06, 0.06)})

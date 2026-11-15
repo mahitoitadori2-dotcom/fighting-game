@@ -169,10 +169,11 @@ const NAMES := {
 	"void_massacre": "THE VOID MASSACRE", "needle": "CHILD WIELDING NEEDLE", "brothers": "THE BROTHERS",
 	"animal_lord": "ANIMAL LORD", "executor": "EXECUTOR", "mother_nature": "MOTHER NATURE", "false_god": "THE FALSE GOD",
 	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "THE STRANGER",
+	"volcano_slave": "VOLCANO SLAVE", "kharleming_sacrifice": "KHARLEMING SACRIFICE",
 }
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -245,6 +246,45 @@ const STRANGER := [
 ]
 
 
+## TERRA CRATERUM'S NPCs (lore by the user, 2026-11-15). The VOLCANO SLAVE mines a mountain for the
+## lava creatures and tells the main lore; the KHARLEMING SACRIFICE is chained on top of the
+## wreck's energy reactor and mostly screams. Freeing one (a strong move on its chains) kills the
+## other (the link between them - the chain feeding the reactor - is Claude's invention).
+## One talk per visit, the last one repeats. "H" = your hero.
+const SLAVE := [
+	[["volcano_slave", "...You're not a Kharleming. And you're not made of lava. Then what are you?"],
+		["H", "Someone who fell in. Where am I?"],
+		["volcano_slave", "Terra Craterum. Once it was a normal land, they say. Green, even."],
+		["volcano_slave", "Then an ancient ship of the Kharlemings fell out of the sky. It hit right here."],
+		["volcano_slave", "Something leaked out of that ship. Chemicals. The ground drank them... and the ground began to boil."],
+		["volcano_slave", "That's where the volcanoes came from. And the lava... the lava woke up."],
+		["volcano_slave", "Ever since, it's war. The lava against the Kharlemings. Every day. It never stops."]],
+	[["H", "How do I get out of here?"],
+		["volcano_slave", "East. Behind the Lava Melter stands a wall of basalt. Nothing gets through it."],
+		["volcano_slave", "Nothing except the Kharlemings' own TECHNICIAN'S BREAKER. They use it to blow up a whole colony of themselves when the lava wins."],
+		["volcano_slave", "Their Lord keeps one, down in the wreck. Take it. Pile enough of their dead at the wall... and boom."]],
+	[["H", "Why are you in chains?"],
+		["volcano_slave", "The lava makes me dig. My chain runs deep into the mountain... all the way to the old ship's reactor."],
+		["volcano_slave", "My digging feeds its fire. And there's a Kharleming chained on top of it. A sacrifice."],
+		["volcano_slave", "Break MY chain, and the reactor has nothing left to eat. It overloads... and that poor thing on top burns."],
+		["volcano_slave", "Free the thing on top instead, and the reactor goes cold. The mountain cracks... and buries me."],
+		["volcano_slave", "One of us. Never both. A strong blow on the chains would do it. ...I won't ask you which."]],
+	[["volcano_slave", "*the pickaxe rises and falls, rises and falls*"]],
+]
+const SACRIFICE := [
+	[["kharleming_sacrifice", "SKREEEEEEE!"],
+		["kharleming_sacrifice", "*it rattles its chains, terrified*"],
+		["H", "Easy... I'm not here to hurt you."],
+		["kharleming_sacrifice", "KREEK! KREEK! KREEEEEK!"]],
+	[["kharleming_sacrifice", "*click... click...*"],
+		["kharleming_sacrifice", "SKREEEEEEEEEE!"]],
+]
+
+
+static func npc_talk(lines: Array, visit: int) -> Array:
+	return lines[clampi(visit, 0, lines.size() - 1)]
+
+
 ## The stranger's talk for this stage of the journey and this visit.
 static func stranger_talk(stage: int, visit: int) -> Array:
 	var talks: Array = STRANGER[clampi(stage, 0, STRANGER.size() - 1)]
@@ -297,5 +337,9 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			EnlightenedOneArt.draw_portrait(c, t)
 		"stranger":
 			draw_stranger(c, t)
+		"volcano_slave":
+			CraterWorld.draw_slave(c, Vector2.ZERO, t, false)
+		"kharleming_sacrifice":
+			Kharleming.draw_bot(c, {"t": t * 3.0, "pose": "idle", "moving": true})
 		_:
 			StoryLevels.draw_portrait(c, id, t)

@@ -129,8 +129,9 @@ func _place_messages() -> void:
 	if player == null:
 		return
 	if StoryLevels.is_open_world(level_number):
-		for i in DemiWorld.SHRINES.size():
-			GroundMessage.place(self, Vector2(float(DemiWorld.SHRINES[i]["x"]) + 260.0, _ground_y), level_number, i, player)
+		var w: Script = StoryLevels.world_of(level_number)
+		for i in w.SHRINES.size():
+			GroundMessage.place(self, Vector2(float(w.SHRINES[i]["x"]) + 260.0, _ground_y), level_number, i, player)
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = level_number * 7919

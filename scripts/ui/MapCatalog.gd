@@ -65,6 +65,10 @@ const DESC := {
 	"demi_ravine": "DemiLand - the Tiger Ravine: cliff walls, orange dust and a giant tiger skull on the rocks.",
 	"demi_grove": "DemiLand - the Dead Grove: colossal dead trees in the mist, one of them still alive.",
 	"demi_door": "DemiLand - the Ancient Door: a colossal ruined monolith with faint violet runes.",
+	"crater_floor": "Terra Craterum - the Crater Floor: three volcanoes smoking under a red sky, ash falling.",
+	"crater_wreck": "Terra Craterum - the Kharleming Wreck: the broken hull of an ancient ship, cyan lights still blinking.",
+	"crater_fields": "Terra Craterum - the Magma Fields: rivers of lava winding to the horizon.",
+	"crater_front": "Terra Craterum - the War Front: fires along the rim, war banners of lava and steel.",
 }
 
 static var _cache: Array = []

@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3]    # 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1] # 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -158,6 +158,11 @@ const MAPS := {
 	"demi_ravine":  {"bg": "demi_ravine", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE TIGER RAVINE"},
 	"demi_grove":   {"bg": "demi_grove", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE DEAD GROVE"},
 	"demi_door":    {"bg": "demi_door", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE ANCIENT DOOR"},
+	# ----- Terra Craterum (one open world, four regions) -----
+	"crater_floor":  {"bg": "crater_floor", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_cave", "zone": "THE CRATER FLOOR"},
+	"crater_wreck":  {"bg": "crater_wreck", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_hive", "zone": "THE KHARLEMING WRECK"},
+	"crater_fields": {"bg": "crater_fields", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_cave", "zone": "THE MAGMA FIELDS"},
+	"crater_front":  {"bg": "crater_front", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_cave", "zone": "THE WAR FRONT"},
 }
 
 # ======================= BOSS EXTENSION LEVELS =======================
@@ -567,6 +572,18 @@ const LEVELS := {
 	66: {"title": "THE DEEP THROAT", "theme": "dark_cave", "map": "dark_cave", "hero": "demi", "slide": true,
 		"intro": "The deepest cave. Fast, red, and very, very low.",
 		"waves": [], "boss": ""},
+
+	# ======================= TERRA CRATERUM (level 67) =======================
+	# Its own Story part: an OPEN-WORLD level (like DemiLand: Souls rules, CamTons, a map, run saved).
+	# You shoot out of the last cave and fall into a crater full of volcanoes. Lava creatures and
+	# Kharlemings at eternal war. Kill the LAVA MELTER (the magma barrier drains), kill the
+	# KHARLEMING LORD (the TECHNICIAN'S BREAKER), pile Kharleming corpses at the BASALT WALL and blow
+	# it up = the way on. Two NPCs: the Volcano Slave and the Kharleming Sacrifice (free one: the
+	# other dies; saved for later parts).
+	67: {"title": "TERRA CRATERUM", "theme": "crater_floor", "map": "crater_floor", "hero": "demi", "open_world": true, "crater": true,
+		"world_maps": ["crater_floor", "crater_wreck", "crater_fields", "crater_front"],
+		"intro": "A crater of volcanoes. Lava and Kharlemings at war - forever.",
+		"waves": [], "boss": "", "tile": "kharleming_lord"},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -577,9 +594,14 @@ const DEMI_PART := 7
 const DEMI_LEVEL := 63
 ## THE CAVES: the part after DemiLand (three no-combat SLIDE levels, 64-66).
 const CAVES_PART := 8
+## TERRA CRATERUM: the part after The Caves (one open-world level, 67). CraterLand.gd.
+const CRATER_PART := 9
+const CRATER_LEVEL := 67
 
 
 static func part_name(c: int) -> String:
+	if c == CRATER_PART:
+		return "TERRA CRATERUM"
 	if c == CAVES_PART:
 		return "THE CAVES"
 	if c == DEMI_PART:
@@ -590,6 +612,16 @@ static func part_name(c: int) -> String:
 ## Is level n an open-world level (DemiLand)?
 static func is_open_world(n: int) -> bool:
 	return bool(get_level(n).get("open_world", false))
+
+
+## Is level n TERRA CRATERUM (the second open world: CraterLand / CraterWorld)?
+static func is_crater(n: int) -> bool:
+	return bool(get_level(n).get("crater", false))
+
+
+## The world layout script of an open-world level: DemiWorld or CraterWorld (same fields).
+static func world_of(n: int) -> Script:
+	return CraterWorld if is_crater(n) else DemiWorld
 
 
 ## Is level n a cave SLIDE level (The Caves: no combat)?
@@ -875,6 +907,23 @@ static func enemy_script(id: String) -> Script:
 			return LastTiger
 		"tree_lord":
 			return TreeLord
+		# ----- Terra Craterum -----
+		"lava_golem":
+			return LavaGolem
+		"lava_demon":
+			return LavaDemon
+		"lava_goblin":
+			return LavaGoblin
+		"fragmenter":
+			return AncientFragmenter
+		"full_kharleming":
+			return FullKharleming
+		"master_kharleming":
+			return MasterKharleming
+		"lava_melter":
+			return LavaMelter
+		"kharleming_lord":
+			return KharlemingLord
 	return Parasite
 
 
@@ -1039,7 +1088,9 @@ static func make_enemy(id: String) -> BaseEnemy:
 		"forge_father":
 			return ForgeFather.new()
 	if id in ["tribe_hunter", "tribe_brute", "tribe_shaman", "tiger_cub", "pelt_cultist", "husk", "sapling",
-			"tribe_master", "last_tiger", "tree_lord"]:
-		return enemy_script(id).new()                    # DemiLand enemies + bosses
+			"tribe_master", "last_tiger", "tree_lord",
+			"lava_golem", "lava_demon", "lava_goblin", "fragmenter", "full_kharleming", "master_kharleming",
+			"lava_melter", "kharleming_lord"]:
+		return enemy_script(id).new()                    # DemiLand + Terra Craterum enemies + bosses
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()

@@ -82,6 +82,9 @@ func _paint() -> void:
 	if DemiBackdrops.handles(theme):                       # DemiLand (DemiBackdrops.gd)
 		DemiBackdrops.paint(_painter, theme, sz)
 		return
+	if CraterBackdrops.handles(theme):                     # Terra Craterum (CraterBackdrops.gd)
+		CraterBackdrops.paint(_painter, theme, sz)
+		return
 	match theme:
 		"cave":
 			_paint_cave(sz)

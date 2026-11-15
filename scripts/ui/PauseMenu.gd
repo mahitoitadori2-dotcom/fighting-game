@@ -9,8 +9,8 @@ extends CanvasLayer
 ##   QUIT              Story: back to the board / Versus: main menu (asks first)
 
 const FIGHT_SCENES := ["res://scenes/VoidArena.tscn", "res://scenes/StoryArena.tscn", "res://scenes/StoryMapArena.tscn",
-	"res://scenes/DemiLand.tscn", "res://scenes/CaveSlide.tscn"]
-const STORY_SCENES := ["res://scenes/StoryArena.tscn", "res://scenes/DemiLand.tscn", "res://scenes/CaveSlide.tscn"]
+	"res://scenes/DemiLand.tscn", "res://scenes/CaveSlide.tscn", "res://scenes/CraterLand.tscn"]
+const STORY_SCENES := ["res://scenes/StoryArena.tscn", "res://scenes/DemiLand.tscn", "res://scenes/CaveSlide.tscn", "res://scenes/CraterLand.tscn"]
 
 static var is_open := false
 

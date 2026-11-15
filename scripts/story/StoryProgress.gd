@@ -11,8 +11,8 @@ extends RefCounted
 ## are moved to the matching level of the new layout when they load.
 
 const SAVE_PATH := "user://story.cfg"
-const TOTAL_LEVELS := 66                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES
-const AVAILABLE_LEVELS := 66             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves (opening the Ancient Door opens them)
+const TOTAL_LEVELS := 67                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM
+const AVAILABLE_LEVELS := 67             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -48,6 +48,29 @@ static var lore: Array = []
 static var messages_read: Array = []
 ## DemiLand's stranger: how many of its talks you heard.
 static var npc_talks := 0
+## TERRA CRATERUM run in progress (CraterLand._save_run) - {} = none.
+static var crater := {}
+## TERRA CRATERUM's choice, KEPT FOR LATER PARTS: "slave" (freed the Volcano Slave - the
+## Kharleming Sacrifice burned), "sacrifice" (freed the Sacrifice - the Slave was buried), "" = none.
+static var crater_choice := ""
+
+
+static func save_crater(state: Dictionary) -> void:
+	load_progress()
+	crater = state
+	save_progress()
+
+
+static func clear_crater() -> void:
+	load_progress()
+	crater = {}
+	save_progress()
+
+
+static func set_crater_choice(choice: String) -> void:
+	load_progress()
+	crater_choice = choice
+	save_progress()
 static var _loaded := false
 
 
@@ -117,10 +140,11 @@ static func _backfill_seen() -> void:
 			for id in ["ambusher", "grin", "pained"]:
 				add.call(id)
 		if StoryLevels.is_open_world(n):
-			for c in DemiWorld.CAMPS:
+			var w: Script = StoryLevels.world_of(n)
+			for c in w.CAMPS:
 				for id in c["ids"]:
 					add.call(String(id))
-			for b in DemiWorld.BOSSES:
+			for b in w.BOSSES:
 				add.call(String(b["id"]))
 	for k in StoryLevels.EXTENSIONS:
 		var first := int(StoryLevels.EXTENSIONS[k]["first"])
@@ -176,6 +200,8 @@ static func load_progress() -> void:
 	lore = cfg.get_value("story", "lore", [])
 	messages_read = cfg.get_value("story", "messages_read", [])
 	npc_talks = int(cfg.get_value("story", "npc_talks", 0))
+	crater = cfg.get_value("story", "crater", {})
+	crater_choice = String(cfg.get_value("story", "crater_choice", ""))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -207,6 +233,8 @@ static func save_progress() -> void:
 	cfg.set_value("story", "lore", lore)
 	cfg.set_value("story", "messages_read", messages_read)
 	cfg.set_value("story", "npc_talks", npc_talks)
+	cfg.set_value("story", "crater", crater)
+	cfg.set_value("story", "crater_choice", crater_choice)
 	cfg.save(SAVE_PATH)
 
 
@@ -331,4 +359,6 @@ static func reset() -> void:
 	badges = {}
 	seen = {}                                          # Story enemies leave Versus again until met
 	demi = {}
+	crater = {}
+	crater_choice = ""
 	save_progress()

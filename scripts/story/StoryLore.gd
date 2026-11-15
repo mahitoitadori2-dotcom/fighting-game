@@ -44,6 +44,13 @@ const ITEMS := [
 		"The fang of the Last Tiger. When everything else died out, it kept hunting, because nobody told it the hunt was over.\n\nThe Ancient Door hungers for it. Nobody knows why."],
 	["tree_lord", "Living Heart",
 		"A heart of wood that still beats. The Tree Lord was the last thing in DemiLand that grew.\n\nIt did not want the Door opened. It knew what was behind it."],
+	# ----- Terra Craterum -----
+	["lava_melter", "Melter's Eye",
+		"A rock that was an eye of the Lava Melter. It is still hot - it will be hot for a hundred years.\n\nThe pillar did not hate the Kharlemings. It only stood where the lava told it to stand: in front of the wall."],
+	["kharleming_lord", "Lord's Feather",
+		"A feather of steel from the Kharleming Lord. Horns, wings, a tail with a sting: it carried a piece of every Kharleming that ever lived.\n\nThe ship it was born in never flew again. It never stopped trying to make it fly."],
+	["technician_breaker", "The Technician's Breaker",
+		"An ancient device of the Kharlemings. One click, and every Kharleming nearby begins to glow... and then a whole colony is gone.\n\nThey built it for the day the lava wins. That day comes often in Terra Craterum."],
 	# ----- Boss Extensions -----
 	["caeser_grave", "Grave-Dust of the Devourer",
 		"A pinch of dust from the Caeser's crypt. Even dead, the serpent kept its followers: they carried its bones below the arena and prayed to them.\n\nIt devoured gods. In the end it could not devour the one thing that always wins: the cure."],

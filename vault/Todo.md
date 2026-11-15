@@ -48,6 +48,12 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 - [ ] **Blasphemy Caeser after the nerf** (210 + 260 HP, sword +45%): too easy now?
 - [ ] Play Story with **Deep Faith Payoff** (Warrior / Architect: +20% HP, 3 flasks, -15% cooldowns, stacks on the older Story buff): is Story now too easy? Tune `DEEP_FAITH_*` in `StoryManager.gd`.
 - [ ] **Play The Caves (levels 64-66) yourself:** are the speeds (560 / 620 / 690 px/s), the jump height and the low rocks fair? Is the "chasm then low rock" combo in cave 3 doable with S-dive? Numbers in `scripts/story/slide/CaveSlide.gd` (`TIERS`, `JUMP_V`, `CEIL_GAP`). Only a bot played them.
+- [ ] **Play Terra Craterum (level 67) yourself:**
+  - Are the Lava Melter (360 HP) and the Kharleming Lord (400 HP) fair?
+  - Is dragging 3 corpses fun or a chore? (`CORPSES_NEEDED` in `CraterLand.gd`)
+  - Is the NPC choice clear enough? (Talk first, then use a power next to one of them.)
+  - Numbers are in `scripts/story/crater/`.
+  - Only scripts have played it so far.
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).

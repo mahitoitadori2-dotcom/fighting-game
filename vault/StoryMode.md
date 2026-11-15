@@ -280,3 +280,29 @@ The Story part after DemiLand: beyond the Ancient Door the floor drops away and 
 - Achievements: one per cave, "Not a Scratch" per cave (no crash), The Caves Conquered, secret "Face, Meet Rock" (15 crashes in one cave).
 - Code: `scripts/story/slide/CaveSlide.gd`, scene `scenes/CaveSlide.tscn`. Board: page 8 (cave scenery, hero sliding on the tiles).
 - Checked: a bot cleared all three with 0 crashes; with no input you crash at the first rock. Not played by a human yet.
+
+## Terra Craterum (level 67, added 2026-11-15)
+
+Its own Story part (page 9) after The Caves: the second OPEN-WORLD level, with the same rules as DemiLand (Souls rules, CamTons, camps, day / night, a map, the run is saved). Lore by the user; see [Future lore](FutureLore.md).
+- **Start:** a cutscene. You shoot out of the last cave and fall into a crater full of volcanoes.
+- **Regions** (16 000 px, west to east): The Kharleming Wreck (the ancient ship) | The Crater Floor (start) | The Magma Fields | The War Front. 4 CamTons, 9 camps.
+- **Enemies:** Lava Golem, Lava Demon, Lava Goblin, Ancient Fragmenter, Full Kharleming, Master Kharleming (winged, spits void goo), plus normal Kharlemings.
+- **Bosses:** the **Lava Melter** (War Front: a rooted lava pillar with rock eyes, spits lava and rocks) and the **Kharleming Lord** (in the wreck: horns, feathers, wings, a scorpion tail; summons Full Kharlemings when enraged).
+- **The way out:** kill the Melter, and the magma barrier behind it drains, showing the **Basalt Wall**. Kill the Lord, and it drops the **Technician's Breaker**. Dead Kharlemings leave corpses: DOWN picks one up or drops it, and you drag it. Bring **3** to the wall. With the Breaker and the pile, DOWN at the wall blows it up. Walk through to clear the level.
+- **NPCs:** talk with DOWN.
+  - The **Volcano Slave** mines a mountain in the Magma Fields and tells the main lore: the ship crash, the chemicals, the volcanoes, the eternal war, the way out, and the chains.
+  - The **Kharleming Sacrifice**, chained on top of the wreck's energy reactor, mostly screams.
+  - After talking to one, a **power (1 / 2 / 3)** next to it breaks its chains. That one is freed and **the other one dies**. The choice is saved for later parts (`StoryProgress.crater_choice` = "slave" / "sacrifice").
+  - Why freeing one kills the other (the slave's chain feeds the reactor) is Claude's own idea and can be changed.
+- **Lore items:** Melter's Eye, Lord's Feather, The Technician's Breaker.
+- **Achievements:** 11 new (both trophies, Colony Breaker, Cartographer of Cinders, Fireproof, The Slave's Story, Broken Pickaxe / Snapped Chains, Out of the Crater, Terra Craterum Conquered).
+- **Music:** reuses existing tracks (story_cave, story_hive, boss_titan, boss_massacre).
+- **Code:** `scripts/story/crater/` (CraterLand, CraterWorld, CraterMap, CraterBackdrops, CraterArt, 6 enemies, 2 bosses), scene `scenes/CraterLand.tscn`.
+- **Checked by script, headless:**
+  - Every region loads.
+  - Corpses spawn when a Kharleming dies.
+  - Freeing the slave kills the Sacrifice and saves the choice.
+  - Both boss fights start and end.
+  - The Breaker drops and is picked up; the magma drains; the wall blows up; level 67 clears.
+  - Screenshots looked right.
+- **Not checked:** played by a human, and the boss balance. The CPU cannot really play an open world.
