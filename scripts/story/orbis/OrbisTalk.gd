@@ -11,8 +11,16 @@ extends Node2D
 ##                     Laid out side by side on the board: any order, all four are needed.
 ## Both heroes are here (they meet up in Orbis Terrarum); the Architect sits, the Warrior stands.
 
+## LEVEL 80 (THE STORM ATTACKS) runs through several scenes: 0 = the table (the Storm breaks in),
+## 1 = the breaking bridge (CaveSlide), 2 = the dead town (here), 3 = the cave slide (CaveSlide),
+## 4 = the fight (StoryArena). Set to 0 by the board when the level starts.
+static var storm_phase := 0
+
 var level_n := 75
 var mood := "calm"
+var _dark := 0.0                        # The Storm over the island (0..1)
+var _crack := 0.0                       # The hut's spell dome cracking (0..1)
+var _town := false                      # Phase 2: draw the dead town instead of the island
 var _t := 0.0
 var _walk := 1.0                       # 0..1: the heroes walk in from the bridge (level 75)
 var _ui: CanvasLayer
@@ -25,11 +33,18 @@ func _ready() -> void:
 	StoryProgress.load_progress()
 	level_n = clampi(StoryProgress.current_level, StoryLevels.first_of(StoryLevels.ORBIS_PART), StoryLevels.last_of(StoryLevels.ORBIS_PART))
 	_build_ui()
-	SoundManager.play_music("story_orbis")
+	_town = level_n == StoryLevels.STORM_LEVEL and storm_phase == 2
+	SoundManager.play_music("story_snow" if _town else "story_orbis")
 	_run.call_deferred()
 
 
 func _run() -> void:
+	if level_n == StoryLevels.STORM_LEVEL:
+		if storm_phase == 2:
+			await _storm_town()
+		else:
+			await _storm_table()
+		return
 	if level_n == StoryLevels.first_of(StoryLevels.ORBIS_PART):
 		await _arrival()
 	else:
@@ -87,6 +102,62 @@ func _lesson() -> void:
 		var box2 := DialogueBox.play(self, _lines(StoryDialogue.ORBIS_ALL_LEARNED))
 		await box2.finished
 	await _clear("LESSON LEARNED", "All lessons learned!" if done >= total else "%d of %d lessons learned." % [done, total])
+
+
+## LEVEL 80, phase 0: the last talk at the table - cut off. The Storm breaks into Orbis Terrarum.
+func _storm_table() -> void:
+	storm_phase = 0
+	_show("LEVEL %d:  THE STORM ATTACKS" % level_n, "Back at the Trainer's table. One last thing to learn.")
+	await get_tree().create_timer(2.2).timeout
+	_hide()
+	var box := DialogueBox.play(self, _lines(StoryDialogue.STORM_TABLE))
+	await box.finished
+	# CUT OFF: thunder, the sky goes black, the spell dome cracks
+	SoundManager.stop_music()
+	SoundManager.play_sfx("slam")
+	SoundManager.play_sfx("roar")
+	mood = "upset"
+	var tw := create_tween()
+	tw.tween_property(self, "_dark", 1.0, 1.2)
+	tw.parallel().tween_property(self, "_crack", 1.0, 1.6)
+	_show("THE STORM BREAKS INTO ORBIS TERRARUM", "")
+	for i in 6:
+		SoundManager.play_sfx("beam" if i % 2 == 0 else "rumble", -4.0)
+		await get_tree().create_timer(0.3).timeout
+	_hide()
+	SoundManager.play_music("boss_storm_finger")
+	var box2 := DialogueBox.play(self, _lines(StoryDialogue.STORM_RUN))
+	await box2.finished
+	_next_phase(1, "res://scenes/CaveSlide.tscn")
+
+
+## LEVEL 80, phase 2: the bottom of the bridge - the dead villagers - the ground opens.
+func _storm_town() -> void:
+	_dark = 1.0
+	_walk = 0.0
+	_show("THE TOWN", "At the foot of the bridge.")
+	var tw := create_tween()
+	tw.tween_property(self, "_walk", 1.0, 3.0).set_trans(Tween.TRANS_SINE)
+	await tw.finished
+	_hide()
+	var box := DialogueBox.play(self, _lines(StoryDialogue.STORM_TOWN))
+	await box.finished
+	SoundManager.play_sfx("rumble")
+	SoundManager.play_sfx("slam", -2.0)
+	_show("THE GROUND GIVES WAY", "You fall into the mountain...")
+	var tw2 := create_tween()
+	tw2.tween_property(self, "_white", 1.0, 1.0)
+	await tw2.finished
+	_next_phase(3, "res://scenes/CaveSlide.tscn")
+
+
+## Go on to the next scene of level 80.
+func _next_phase(phase: int, scene: String) -> void:
+	storm_phase = phase
+	StoryProgress.current_level = level_n
+	if StoryManager.autoplay:
+		print("ORBIS autoplay: level 80 -> phase %d" % phase)
+	get_tree().change_scene_to_file(scene)
 
 
 func _count_done() -> int:

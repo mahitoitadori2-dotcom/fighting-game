@@ -60,6 +60,62 @@ static func trainer(c: CanvasItem, t: float, mood: String = "calm", seated: bool
 			c.draw_line(hp + Vector2(3, 6), hp + Vector2(10, 6), mouth, 2.0)
 
 
+## THE STORM HAND (boss of level 80): the Storm's whole HAND reaching down out of the sky - a
+## palm of dark cloud, five fingers, lightning crawling over it. The wrist goes up off the screen.
+## pose: idle / slam(_tele) / sweep(_tele) / fist(_tele) / zap(_tele). "short" = portraits.
+static func storm_hand(c: CanvasItem, st: Dictionary) -> void:
+	var t: float = st.get("t", 0.0)
+	var pose: String = st.get("pose", "idle")
+	var tele := pose.ends_with("_tele")
+	var base := pose.trim_suffix("_tele")
+	var dark := OrdArt.STORM
+	var hi := OrdArt.STORM_HI
+	var shade := OrdArt.STORM_SHADE
+	var lift := 0.0
+	if tele and (base == "slam" or base == "fist"):
+		lift = 150.0 + 20.0 * sin(t * 10.0)
+	var palm := Vector2(0, -150 - lift)
+	# The wrist, up and out of the screen
+	if not bool(st.get("short", false)):
+		c.draw_line(palm + Vector2(0, -40), palm + Vector2(-60, -2400), BLACK, 150.0)
+		c.draw_line(palm + Vector2(0, -40), palm + Vector2(-60, -2400), dark, 136.0)
+	# Fingers: spread for a slam / sweep, curled into a fist, pointed for a zap
+	var fist := base == "fist"
+	for i in 5:
+		var ang := PI * 0.5 + (float(i) - 2.0) * (0.22 if not fist else 0.08)
+		var ln := 120.0 + 25.0 * float(2 - absi(i - 2)) - (70.0 if fist else 0.0)
+		if base == "zap" and i == 1:
+			ln += 40.0
+		var root := palm + Vector2((float(i) - 2.0) * 26.0, 40.0)
+		var mid := root + Vector2.from_angle(ang) * ln * 0.55
+		var tip := root + Vector2.from_angle(ang + (0.25 if base == "sweep" else 0.0)) * ln
+		if i == 4:                                                 # The thumb, off to the side
+			mid = palm + Vector2(70, 10)
+			tip = palm + Vector2(110, -20 + (40.0 if fist else 0.0))
+		c.draw_polyline(PackedVector2Array([root, mid, tip]), BLACK, 40.0)
+		c.draw_polyline(PackedVector2Array([root, mid, tip]), dark, 32.0)
+		c.draw_line(root + Vector2(-6, 0), mid + Vector2(-6, 0), hi.lerp(dark, 0.5), 7.0)
+		c.draw_circle(mid, 17.0, shade)
+		c.draw_colored_polygon(EnemyArt.ellipse_points(tip + Vector2.from_angle(ang) * -6.0, 10, 13, 10), shade)
+	# The palm
+	var p := EnemyArt.ellipse_points(palm, 90, 70, 24)
+	c.draw_colored_polygon(p, dark)
+	c.draw_colored_polygon(EnemyArt.ellipse_points(palm + Vector2(-14, -12), 52, 34, 18), hi.lerp(dark, 0.6))
+	FighterArt.outline(c, p, 4.0)
+	# A storm-eye in the middle of the palm + lightning over the hand
+	c.draw_circle(palm + Vector2(0, 6), 18.0, Color(0, 0, 0))
+	c.draw_circle(palm + Vector2(0, 6), 12.0, Color(0.75, 0.88, 1.0, 0.6 + 0.4 * sin(t * 4.0)))
+	for k in 3:
+		var y0 := -40.0 - fmod(t * 240.0 + float(k) * 90.0, 260.0)
+		var b := PackedVector2Array([palm + Vector2(-60 + float(k) * 50.0, y0 + 130.0), palm + Vector2(-44 + float(k) * 50.0, y0 + 100.0),
+			palm + Vector2(-58 + float(k) * 50.0, y0 + 80.0), palm + Vector2(-40 + float(k) * 50.0, y0 + 50.0)])
+		c.draw_polyline(b, Color(OrdArt.BOLT.r, OrdArt.BOLT.g, OrdArt.BOLT.b, 0.7), 2.5)
+	if tele:
+		c.draw_circle(palm, 130.0, Color(0.7, 0.85, 1.0, 0.10 + 0.08 * sin(t * 12.0)))
+	if lift > 0.0:
+		c.draw_colored_polygon(EnemyArt.ellipse_points(Vector2(0, -2), 120.0, 10.0, 16), Color(0, 0, 0, 0.35))
+
+
 ## THE HUT: old stone and wood, a CLOSED door, ancient runes glowing on it (the spells that keep
 ## the Storm away).
 static func hut(c: CanvasItem, o: Vector2, t: float) -> void:

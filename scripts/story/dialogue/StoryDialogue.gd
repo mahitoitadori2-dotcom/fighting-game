@@ -376,6 +376,29 @@ const ORBIS_ALL_LEARNED := [
 	["W", "...Do you hear that?"],
 	["narrator", "Far below, the Storm stirs. For the first time since you came, the sky over Orbis Terrarum grows dark."],
 ]
+## LEVEL 80, THE STORM ATTACKS (lore by the user): back at the table, the Trainer is about to say
+## WHO CREATED THE STORM - and is cut off.
+const STORM_TABLE := [
+	["trainer", "Sit, both of you. There is one more thing. The one thing I have not told you."],
+	["A", "About the Storm?"],
+	["trainer", "About where it came from. The Storm did not simply appear. Someone made it."],
+	["W", "Someone MADE that thing?"],
+	["trainer", "Yes. The one who created the Storm was-"],
+]
+const STORM_RUN := [
+	["trainer", "The spells - they're BREAKING! It has never come this far!"],
+	["W", "Where do we go?!"],
+	["trainer", "DOWN! The bridge - RUN, before it falls!"],
+]
+## At the bottom of the bridge: the town of Terra Ordinariorum. The Storm got there first.
+const STORM_TOWN := [
+	["narrator", "The town at the foot of the bridge. Quiet. Too quiet."],
+	["narrator", "The baker. The washerwoman. The guard. The child. All of them lie in the street."],
+	["W", "...No."],
+	["A", "They never believed the Storm was real."],
+	["trainer", "It does not matter now what they believed. Keep moving. It is still coming."],
+	["narrator", "The ground shakes - and opens beneath your feet."],
+]
 ## THE ROAD TO PEACE, level 74: the OTHER hero (the one who chased the Enlightened One) appears on
 ## the bridge - the Enlightened One sent them there. "H" = you, "P" = the other hero.
 const ROAD_REUNION := [

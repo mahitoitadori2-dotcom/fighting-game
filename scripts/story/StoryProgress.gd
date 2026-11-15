@@ -11,8 +11,8 @@ extends RefCounted
 ## are moved to the matching level of the new layout when they load.
 
 const SAVE_PATH := "user://story.cfg"
-const TOTAL_LEVELS := 79                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE, 75-79 = ORBIS TERRARUM
-const AVAILABLE_LEVELS := 79             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
+const TOTAL_LEVELS := 80                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE, 75-80 = ORBIS TERRARUM (80 = THE STORM ATTACKS)
+const AVAILABLE_LEVELS := 80             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -361,16 +361,15 @@ static func complete_level(level: int) -> void:
 			lessons_done.append(level)
 		var c2 := StoryLevels.ORBIS_PART
 		var all := true
-		for n in range(StoryLevels.first_of(c2) + 1, StoryLevels.last_of(c2) + 1):
+		for n in range(StoryLevels.first_of(c2) + 1, StoryLevels.STORM_LEVEL):
 			if not lessons_done.has(n):
 				all = false
-		if all:
-			colosseums_done = maxi(colosseums_done, c2)
-			unlocked_level = clampi(maxi(unlocked_level, StoryLevels.last_of(c2) + 1), 1, AVAILABLE_LEVELS)
+		if all:                                         # Every lesson learned: THE STORM ATTACKS opens
+			unlocked_level = clampi(maxi(unlocked_level, StoryLevels.STORM_LEVEL), 1, AVAILABLE_LEVELS)
 		save_progress()
 		return
 	if StoryLevels.is_orbis(level):                   # The arrival opens ALL the lessons at once
-		unlocked_level = clampi(maxi(unlocked_level, StoryLevels.last_of(StoryLevels.ORBIS_PART)), 1, AVAILABLE_LEVELS)
+		unlocked_level = clampi(maxi(unlocked_level, StoryLevels.STORM_LEVEL - 1), 1, AVAILABLE_LEVELS)
 		save_progress()
 		return
 	var nxt := level + 1

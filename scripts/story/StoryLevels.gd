@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 5] # 13th = ORBIS TERRARUM (75-79) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6] # 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -171,6 +171,7 @@ const MAPS := {
 	"ord_desert":   {"bg": "ord_desert", "ground": 26, "walls": "thorn", "half_width": 840.0, "music": "story_desert", "zone": "THE DESERT"},
 	"ord_mountain": {"bg": "ord_mountain", "ground": 23, "walls": "thorn", "half_width": 840.0, "music": "story_mountain", "zone": "THE MOUNTAIN"},
 	"ord_snow":     {"bg": "ord_snow", "ground": 24, "walls": "thorn", "half_width": 840.0, "music": "story_snow", "zone": "THE SNOW DESERT"},
+	"storm_cave":   {"bg": "dark_cave", "ground": 13, "walls": "dark", "half_width": 820.0, "music": "boss_storm_finger", "solid": true, "zone": "INSIDE THE MOUNTAIN"},
 	"orbis":        {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_orbis", "zone": "ORBIS TERRARUM"},
 }
 
@@ -647,6 +648,16 @@ const LEVELS := {
 		"intro": "How far the Storm can reach.", "waves": [], "boss": ""},
 	79: {"title": "LESSON: WEAK POINTS", "theme": "ord_meadow", "map": "orbis", "hero": "demi", "orbis": true, "lesson": true,
 		"intro": "Where the Storm can be hurt.", "waves": [], "boss": ""},
+	# THE STORM ATTACKS (lore by the user): the Trainer is cut off as he is about to say who created the
+	# Storm - it breaks into Orbis Terrarum. Run down the breaking bridge with the other two, the dead
+	# villagers, a fall into the mountain, a slide with the Storm behind you, then this FIGHT: waves of
+	# CORPSES the Storm controls (only regular enemies) and THE STORM HAND. The other hero AND the
+	# Trainer fight beside you.
+	80: {"title": "THE STORM ATTACKS", "theme": "dark_cave", "map": "storm_cave", "hero": "demi", "partner": true, "trainer_ally": true,
+		"storm_attack": true, "possessed": true, "intro": "The Storm has found you. Its corpses come first.",
+		"waves": [["guard", "tribe_hunter", "kharleming"], ["warrior_a", "lava_goblin", "tribe_brute", "full_kharleming"],
+			["guard_shield", "lava_demon", "master_kharleming", "fragmenter"]],
+		"boss": "storm_hand", "boss_sub": "The Storm reaches into the mountain", "boss_music": "boss_storm_hand", "boss_color": Color(0.6, 0.8, 1.0)},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -669,6 +680,10 @@ const ORD_LEVEL := 71
 const ROAD_PART := 12
 ## ORBIS TERRARUM: pure lore (dialogue only). 75 = the arrival, 76-79 = the LESSONS (any order).
 const ORBIS_PART := 13
+## Level 80: THE STORM ATTACKS (after all the lessons) - one level in five phases (OrbisTalk / CaveSlide /
+## StoryArena chained by OrbisTalk.storm_phase): the table, the breaking bridge, the dead town, the cave
+## slide with the Storm behind you, then possessed corpses + THE STORM HAND.
+const STORM_LEVEL := 80
 
 
 static func part_name(c: int) -> String:
@@ -719,6 +734,11 @@ static func is_orbis(n: int) -> bool:
 ## Is level n one of Orbis Terrarum's LESSONS (side by side on the board, any order)?
 static func is_lesson(n: int) -> bool:
 	return bool(get_level(n).get("lesson", false))
+
+
+## Is level n THE STORM ATTACKS (level 80: scenes, a run, a slide, then the fight)?
+static func is_storm(n: int) -> bool:
+	return bool(get_level(n).get("storm_attack", false))
 
 
 ## Is level n a cave SLIDE level (The Caves: no combat)?
@@ -1025,6 +1045,8 @@ static func enemy_script(id: String) -> Script:
 			return CrystalSwarm
 		"storm_finger":
 			return StormFinger
+		"storm_hand":
+			return StormHand
 	return Parasite
 
 
@@ -1191,7 +1213,7 @@ static func make_enemy(id: String) -> BaseEnemy:
 	if id in ["tribe_hunter", "tribe_brute", "tribe_shaman", "tiger_cub", "pelt_cultist", "husk", "sapling",
 			"tribe_master", "last_tiger", "tree_lord",
 			"lava_golem", "lava_demon", "lava_goblin", "fragmenter", "full_kharleming", "master_kharleming",
-			"lava_melter", "kharleming_lord", "crystal_swarm", "storm_finger"]:
+			"lava_melter", "kharleming_lord", "crystal_swarm", "storm_finger", "storm_hand"]:
 		return enemy_script(id).new()                    # DemiLand + Terra Craterum + Ordinariorum enemies + bosses
 	if Animal.KINDS.has(id):                           # Terra Ordinariorum's animals (never hostile)
 		var a := Animal.new()

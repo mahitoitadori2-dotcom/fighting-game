@@ -152,12 +152,12 @@ static func time_text(sec: float) -> String:
 # ============================================================
 ## True if this enemy may start an attack now (Versus / Enemy Test: always true).
 static func may_attack(e: BaseEnemy) -> bool:
-	if not active or e == null or not e.is_inside_tree():
-		return true
+	if not active or e == null or not e.is_inside_tree() or e.team == 1:
+		return true                                    # (Allies on your side - the Trainer - always may)
 	var busy := 0
 	for n in e.get_tree().get_nodes_in_group("fighters"):
 		var o := n as BaseEnemy
-		if o == null or o == e or o.is_dead:
+		if o == null or o == e or o.is_dead or o.team == 1:
 			continue
 		if o.estate == BaseEnemy.EState.TELEGRAPH or o.estate == BaseEnemy.EState.ATTACK:
 			busy += 1
@@ -197,6 +197,9 @@ func _ready() -> void:
 	if StoryLevels.has_partner(level_number):
 		_spawn_partner()
 		max_attackers = MAX_ATTACKERS + 1
+	if bool(level.get("trainer_ally", false)):          # Level 80: the Trainer fights with you
+		_spawn_trainer_ally()
+		max_attackers += 1
 	_place_messages()
 	_hud = StoryHUD.new()
 	_hud.manager = self
@@ -361,6 +364,19 @@ func _spawn_partner() -> void:
 	partner.died.connect(_on_partner_died)
 	partner.respawned.connect(_on_partner_revived)
 	Companion.leader = player
+
+
+## Level 80 (THE STORM ATTACKS): THE TRAINER fights on your side (a CPU ally, TrainerAlly.gd).
+func _spawn_trainer_ally() -> void:
+	var tr := TrainerAlly.new()
+	tr.name = "TrainerAlly"
+	tr.slot = 3
+	tr.team = 1
+	tr.default_facing = 1
+	tr.facing = 1
+	tr.position = player_spawn + Vector2(-180, -10)
+	tr.spawn_position = tr.position
+	add_child(tr)
 
 
 ## Story Mode buff for the heroes (WarriorData / ArchitectData.apply_story_buff). Each
@@ -773,6 +789,10 @@ func _spawn_enemy(id: String, pos: Vector2) -> BaseEnemy:
 	e.position = pos
 	add_child(e)
 	_apply_void_mod(e, id)
+	if bool(level.get("possessed", false)):              # Level 80: CORPSES the Storm controls
+		e.modulate = Color(0.60, 0.66, 0.92)
+		e.data.character_name = "Possessed " + e.data.character_name
+		Effects.hit_sparks(e, pos + Vector2(0, -60), 10, 1.2)
 	Effects.hit_sparks(e, pos + Vector2(0, -40), 8, 1.0)
 	e.died.connect(_on_enemy_died.bind(e))
 	_alive += 1
