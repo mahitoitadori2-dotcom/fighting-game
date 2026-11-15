@@ -99,13 +99,21 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	# --- Torso: cloth, gold breastplate, tabard ---
 	FighterArt.rrect(c, Rect2(Vector2(-17, -100) + u, Vector2(34, 50)), CLOTH, CLOTH_SHADE, CLOTH_HI, 8.0, 4.0)
 	FighterArt.rrect(c, Rect2(Vector2(-16, -99) + u, Vector2(32, 30)), GOLD, GOLD_SHADE, GOLD_HI, 8.0, 3.5)
-	# Sun emblem on the chest
+	# Concept art (2026-11-15): engraved DIAMOND lines over the breastplate and a HEART in the middle
+	for k in 3:
+		var dy := -97.0 + float(k) * 9.0
+		c.draw_polyline(PackedVector2Array([Vector2(-14, dy + 4) + u, Vector2(-7, dy) + u, Vector2(0, dy + 4) + u, Vector2(7, dy) + u, Vector2(14, dy + 4) + u]), GOLD_SHADE, 1.3)
 	var ec := Vector2(1, -85) + u
 	for i in 8:
 		var a := TAU * float(i) / 8.0
-		c.draw_line(ec + Vector2.from_angle(a) * 4.0, ec + Vector2.from_angle(a) * 8.0, GOLD_SHADE, 2.0)
-	c.draw_circle(ec, 4.0, BLACK)
-	c.draw_circle(ec, 2.8, GOLD_HI)
+		c.draw_line(ec + Vector2.from_angle(a) * 6.0, ec + Vector2.from_angle(a) * 9.0, GOLD_SHADE, 1.6)
+	var heart := PackedVector2Array()
+	for i in 20:
+		var th := TAU * float(i) / 20.0
+		heart.append(ec + Vector2(16.0 * pow(sin(th), 3.0), -(13.0 * cos(th) - 5.0 * cos(2.0 * th) - 2.0 * cos(3.0 * th) - cos(4.0 * th))) * 0.28)
+	c.draw_colored_polygon(heart, Color(0.85, 0.18, 0.22))
+	c.draw_polyline(heart + PackedVector2Array([heart[0]]), BLACK, 1.6, FighterArt.AA)
+	c.draw_circle(ec + Vector2(-1.2, -1.4), 0.9, Color(1, 0.8, 0.8))
 	# Belt + tabard
 	FighterArt.rrect(c, Rect2(Vector2(-17, -58) + u, Vector2(34, 8)), GOLD_SHADE, CLOTH_SHADE, GOLD, 3.0, 3.0)
 	var tab := PackedVector2Array([Vector2(-6, -51) + u, Vector2(8, -51) + u, Vector2(6, -32) + u, Vector2(1, -28) + u, Vector2(-4, -32) + u])
@@ -171,6 +179,15 @@ static func _halo(c: CanvasItem, center: Vector2, t: float) -> void:
 
 
 static func _head(c: CanvasItem, hc: Vector2, t: float, gor: bool) -> void:
+	# Concept art (2026-11-15): a tall POINTED crown-hood rising from the head, spiral lines on it
+	var cone := PackedVector2Array([hc + Vector2(-15, -6), hc + Vector2(-4, -38), hc + Vector2(1, -44), hc + Vector2(5, -37), hc + Vector2(13, -8)])
+	c.draw_colored_polygon(cone, CLOTH)
+	for k in 4:
+		var y := -10.0 - float(k) * 7.5
+		var hw := 13.0 - float(k) * 3.0
+		c.draw_arc(hc + Vector2(-1, y), hw, PI * 0.15, PI * 0.85, 8, GOLD_SHADE, 1.5)
+	c.draw_circle(hc + Vector2(1, -44), 2.6, GOLD)
+	c.draw_polyline(cone + PackedVector2Array([cone[0]]), BLACK, 3.0, FighterArt.AA)
 	# Hood (indigo cloth) behind the mask
 	c.draw_circle(hc + Vector2(-2, 0), 17.5, BLACK)
 	c.draw_circle(hc + Vector2(-2, 0), 15.0, CLOTH)
@@ -201,6 +218,12 @@ static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool) -> void:
 	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
 	FighterArt.limb(c, hip, knee, 12.0, base, CLOTH_SHADE, CLOTH_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 12.0, GOLD_SHADE if far else GOLD, GOLD_SHADE, GOLD_HI)  # Greave
+	# Concept art: SPIRAL patterns on the legs
+	for k in 2:
+		var sp := hip.lerp(knee, 0.35 + 0.4 * float(k))
+		c.draw_arc(sp, 3.5, 0.0, PI * 1.6, 8, CLOTH_HI, 1.3)
+		var gp := knee.lerp(foot, 0.3 + 0.35 * float(k))
+		c.draw_arc(gp, 3.5, PI, PI * 2.6, 8, GOLD_SHADE, 1.3)
 	FighterArt.ball(c, knee, 5.5, GOLD, GOLD_SHADE, GOLD_HI)
 	FighterArt.rrect(c, Rect2(foot.x - 8.0, foot.y - 4.0, 24, 9), GOLD_SHADE if far else GOLD, GOLD_SHADE, GOLD_HI, 3.0, 3.5)
 
@@ -211,6 +234,10 @@ static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2
 	FighterArt.limb(c, shoulder, elbow, 9.0, base, CLOTH_SHADE, CLOTH_HI)
 	var br := BRONZE_SHADE if far else BRONZE
 	FighterArt.limb(c, elbow, hand, 11.0, br, BRONZE_SHADE, BRONZE_HI)   # Bronze forearm guard
+	for k in 3:                                                            # Concept art: round studs on the gauntlet
+		var gp := elbow.lerp(hand, 0.2 + 0.25 * float(k))
+		c.draw_circle(gp, 2.4, BRONZE_SHADE)
+		c.draw_circle(gp, 1.2, BRONZE_HI)
 	var size := 18.0 if gor else 15.0
 	FighterArt.rrect(c, Rect2(hand - Vector2(size, size) * 0.5, Vector2(size, size)), br, BRONZE_SHADE, BRONZE_HI, 4.0, 3.5)
 	c.draw_line(hand + Vector2(-size * 0.3, -size * 0.15), hand + Vector2(size * 0.3, -size * 0.15), BRONZE_SHADE, 2.0)   # Knuckle plate

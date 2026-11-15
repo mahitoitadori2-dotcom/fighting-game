@@ -171,14 +171,14 @@ const NAMES := {
 	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "THE STRANGER",
 	"volcano_slave": "VOLCANO SLAVE", "kharleming_sacrifice": "KHARLEMING SACRIFICE",
 	"baker": "THE BAKER", "washerwoman": "THE WASHERWOMAN", "guard": "THE TOWN GUARD", "elder": "THE ELDER",
-	"farmer": "THE FARMER", "child": "A CHILD", "trainer": "THE TRAINER",
+	"farmer": "THE FARMER", "child": "A CHILD", "trainer": "THE TRAINER", "storm": "THE STORM",
 }
 ## Townsfolk: their look (OrdArt.villager) and voice.
 const TOWN_LOOK := {"baker": 0, "washerwoman": 1, "guard": 3, "elder": 4, "farmer": 2, "child": 5}
 const TOWN_VOICE := {"baker": "town_m", "washerwoman": "town_f", "guard": "town_m", "elder": "town_old", "farmer": "town_m", "child": "town_child"}
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"storm": 1.0, "trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -512,6 +512,8 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			Kharleming.draw_bot(c, {"t": t * 3.0, "pose": "idle", "moving": true})
 		"trainer":
 			OrbisArt.trainer(c, t, "calm")
+		"storm":
+			StormArt.draw_portrait(c, t)
 		"baker", "washerwoman", "guard", "elder", "farmer", "child":
 			OrdArt.villager(c, int(TOWN_LOOK[id]), t)
 		_:

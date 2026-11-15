@@ -18,36 +18,39 @@ const WOOD_DARK := Color(0.30, 0.19, 0.10)
 ## The Trainer. mood: "calm" / "happy" / "upset". seated = only what shows above a table edge
 ## matters (the legs are bent under it).
 static func trainer(c: CanvasItem, t: float, mood: String = "calm", seated: bool = false) -> void:
+	# CONCEPT ART (2026-11-15): a SLIM body and very long limbs that TAPER TO POINTS (no hands, no
+	# feet - blades of blue), dark marks at the joints, a small round head. Still all blue, no eyes.
 	var breathe := sin(t * 1.8) * 1.2
 	var o := Vector2(0, 0)
 	if seated:
 		o = Vector2(0, 34)                                         # Sitting: everything lower
-		FighterArt.limb(c, Vector2(-6, -40) + o, Vector2(18, -40) + o, 10.0, ROBE_SHADE, BLACK, ROBE)
-		FighterArt.limb(c, Vector2(18, -40) + o, Vector2(20, -2), 9.0, ROBE_SHADE, BLACK, ROBE)
+		_spike_limb(c, Vector2(-6, -40) + o, Vector2(20, -42) + o, 9.0, ROBE_SHADE)
+		_spike_limb(c, Vector2(18, -42) + o, Vector2(22, 0), 7.0, ROBE_SHADE)
 	else:
 		for d: float in [-1.0, 1.0]:
-			FighterArt.limb(c, Vector2(d * 7.0, -50), Vector2(d * 9.0, -2), 9.0, ROBE_SHADE, BLACK, ROBE)
-	# A long robe
-	var robe := PackedVector2Array([Vector2(-18, -98 + breathe) + o, Vector2(18, -98 + breathe) + o, Vector2(22, -40) + o, Vector2(-22, -40) + o])
-	c.draw_colored_polygon(robe, ROBE)
-	c.draw_line(Vector2(0, -96 + breathe) + o, Vector2(0, -42) + o, ROBE_HI, 2.0)
-	c.draw_line(Vector2(-20, -60) + o, Vector2(20, -60) + o, Color(0.55, 0.75, 1.0), 4.0)          # A pale-blue sash
-	FighterArt.outline(c, robe, 2.5)
-	# Arms (one resting, one gesturing when happy / upset)
-	var hand := Vector2(26, -66 + breathe) + o
+			_spike_limb(c, Vector2(d * 6.0, -50), Vector2(d * 16.0, 2), 9.0, ROBE_SHADE if d < 0.0 else ROBE)
+	# Slim torso: narrow at the waist, a pale-blue band across it
+	var body := PackedVector2Array([Vector2(-13, -98 + breathe) + o, Vector2(13, -98 + breathe) + o, Vector2(9, -70) + o,
+		Vector2(8, -48) + o, Vector2(-8, -48) + o, Vector2(-9, -70) + o])
+	c.draw_colored_polygon(body, ROBE)
+	c.draw_line(Vector2(0, -96 + breathe) + o, Vector2(0, -50) + o, ROBE_HI, 2.0)
+	c.draw_line(Vector2(-9, -62) + o, Vector2(9, -62) + o, Color(0.55, 0.75, 1.0), 3.0)
+	FighterArt.outline(c, body, 2.5)
+	for jp: Vector2 in [Vector2(-12, -94), Vector2(12, -94), Vector2(-6, -50), Vector2(6, -50)]:   # Dark joint marks
+		c.draw_circle(jp + o + Vector2(0, breathe if jp.y < -90.0 else 0.0), 3.5, HAIR)
+	# Arms: long blades of blue (one resting, one gesturing when happy / upset)
+	var hand := Vector2(34, -62 + breathe) + o
 	match mood:
 		"happy":
-			hand = Vector2(28, -104 + sin(t * 6.0) * 6.0) + o
+			hand = Vector2(30, -128 + sin(t * 6.0) * 6.0) + o
 		"upset":
-			hand = Vector2(10, -58) + o
-	FighterArt.limb(c, Vector2(16, -92 + breathe) + o, hand, 7.0, ROBE, BLACK, ROBE_HI)
-	c.draw_circle(hand, 5.5, SKIN)
-	FighterArt.limb(c, Vector2(-16, -92 + breathe) + o, Vector2(-18, -60) + o, 7.0, ROBE_SHADE, BLACK, ROBE)
-	c.draw_circle(Vector2(-18, -58) + o, 5.5, SKIN_SHADE)
-	# Head: blue skin, darker blue hair
-	var hp := Vector2(2, -114 + breathe) + o
-	FighterArt.ball(c, hp, 15.0, SKIN, SKIN_SHADE, SKIN_HI)
-	c.draw_colored_polygon(PackedVector2Array([hp + Vector2(-15, -2), hp + Vector2(-12, -14), hp + Vector2(0, -19), hp + Vector2(12, -15), hp + Vector2(15, -4), hp + Vector2(6, -11)]), HAIR)
+			hand = Vector2(14, -50) + o
+	_spike_limb(c, Vector2(12, -94 + breathe) + o, hand, 7.0, ROBE)
+	_spike_limb(c, Vector2(-12, -94 + breathe) + o, Vector2(-30, -50) + o, 7.0, ROBE_SHADE)
+	# Head: small and round, blue skin, darker blue hair
+	var hp := Vector2(2, -112 + breathe) + o
+	FighterArt.ball(c, hp, 12.0, SKIN, SKIN_SHADE, SKIN_HI)
+	c.draw_colored_polygon(PackedVector2Array([hp + Vector2(-12, -2), hp + Vector2(-10, -11), hp + Vector2(0, -15), hp + Vector2(10, -12), hp + Vector2(12, -3), hp + Vector2(5, -9)]), HAIR)
 	# NO EYES (the user's design): only smooth blue skin where eyes would be. The mood shows in
 	# the mouth alone - a darker blue line.
 	var mouth := SKIN_SHADE.darkened(0.35)
@@ -58,6 +61,19 @@ static func trainer(c: CanvasItem, t: float, mood: String = "calm", seated: bool
 			c.draw_arc(hp + Vector2(6, 9), 5.0, PI + 0.3, TAU - 0.3, 8, mouth, 2.0)
 		_:
 			c.draw_line(hp + Vector2(3, 6), hp + Vector2(10, 6), mouth, 2.0)
+
+
+## One of the Trainer's limbs: wide at the joint, tapering to a sharp point (concept art).
+static func _spike_limb(c: CanvasItem, a: Vector2, b: Vector2, w: float, col: Color) -> void:
+	var d := b - a
+	if d.length() < 2.0:
+		return
+	var side := d.normalized().orthogonal() * (w * 0.5)
+	var mid := a.lerp(b, 0.55)
+	var pts := PackedVector2Array([a + side, mid + side * 0.75, b, mid - side * 0.75, a - side])
+	c.draw_colored_polygon(pts, col)
+	c.draw_line(a + side * 0.2, mid + side * 0.2, col.lightened(0.2), 1.5)
+	FighterArt.outline(c, pts, 2.2)
 
 
 ## THE STORM HAND (boss of level 80): the Storm's whole HAND reaching down out of the sky - a

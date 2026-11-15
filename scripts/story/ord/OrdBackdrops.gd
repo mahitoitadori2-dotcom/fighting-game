@@ -82,8 +82,10 @@ static func paint(p: Control, theme: String, sz: Vector2) -> void:
 	p.draw_rect(Rect2(0, sz.y * 0.84, sz.x, sz.y * 0.16), low.darkened(0.15))
 
 
-## The Storm: a low dark wall of cloud on the horizon, lightning inside it.
+## The Storm: a low dark wall of cloud on the horizon, lightning inside it - and, far away above
+## it, the STORM ITSELF (its true shape, StormArt), small and faint.
 static func _storm(p: Control, sz: Vector2) -> void:
+	StormArt.draw(p, Vector2(sz.x * 0.30, sz.y * 0.36), 0.22, 0.0, 0.5)
 	var y := sz.y * 0.50
 	for i in 26:
 		var x := sz.x * float(i) / 25.0

@@ -214,6 +214,7 @@ func _draw() -> void:
 	_draw_island(vs)
 	if _dark > 0.0:                                              # The Storm breaking in
 		draw_rect(Rect2(Vector2.ZERO, vs), Color(0.05, 0.06, 0.12, 0.55 * _dark))
+		StormArt.draw(self, Vector2(vs.x * 0.5, -140.0 + 260.0 * _dark), 0.95, _t, _dark)   # ITSELF, coming down
 		for i in 14:
 			var x := vs.x * float(i) / 13.0
 			draw_circle(Vector2(x + 30.0 * sin(_t + float(i)), vs.y * 0.08 + 30.0 * sin(float(i) * 1.7)), 110.0 * _dark, Color(0.14, 0.15, 0.24, 0.9 * _dark))

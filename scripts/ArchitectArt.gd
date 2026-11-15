@@ -137,25 +137,43 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 	c.draw_line(Vector2(0, -98), Vector2(0, -78), WHITE_SHADE, 2.0)              # Pec split
 	c.draw_line(Vector2(-17, -84), Vector2(-3, -80), WHITE_SHADE, 2.0)           # Pec undersides
 	c.draw_line(Vector2(17, -84), Vector2(3, -80), WHITE_SHADE, 2.0)
+	# Concept art (2026-11-15): the plate is FACETED - angular panels meeting at the chest
+	for seg: Array in [[Vector2(-20, -102), Vector2(-8, -90)], [Vector2(20, -102), Vector2(8, -90)], [Vector2(-24, -96), Vector2(-12, -88)],
+			[Vector2(24, -96), Vector2(12, -88)], [Vector2(-8, -90), Vector2(8, -90)]]:
+		c.draw_line(seg[0], seg[1], WHITE_SHADE, 1.5)
+	for rv: Vector2 in [Vector2(-18, -99), Vector2(18, -99), Vector2(-21, -88), Vector2(21, -88)]:
+		c.draw_circle(rv, 1.4, WHITE_SHADE.darkened(0.2))                         # Rivets
 	FighterArt.rrect(c, Rect2(-12, -57, 24, 8), DARK_SHADE, VISOR, DARK, 3.0, 3.0)   # Belt (slim waist)
-	c.draw_rect(Rect2(-3, -55, 6, 4), CORE)                                  # Belt buckle light
+	# The belt is tied in a small BOW knot (concept art)
+	c.draw_colored_polygon(PackedVector2Array([Vector2(0, -53), Vector2(-7, -58), Vector2(-7, -48)]), DARK_HI)
+	c.draw_colored_polygon(PackedVector2Array([Vector2(0, -53), Vector2(7, -58), Vector2(7, -48)]), DARK_HI)
+	c.draw_rect(Rect2(-2, -55, 4, 4), CORE)                                  # Knot light
 
 	# --- Glowing BLUE core ---
 	var pulse2 := 0.5 + 0.5 * sin(t * 4.0)
 	var cc := Vector2(-6, -90)                                                  # Left pec: not hidden by the arm
 	c.draw_circle(cc, 11.0 + 2.5 * pulse2, Color(CORE.r, CORE.g, CORE.b, 0.22 + 0.15 * pulse2))
-	c.draw_circle(cc, 9.0, FighterArt.BLACK)
-	c.draw_circle(cc, 6.8, CORE)
-	c.draw_circle(cc + Vector2(-1.3, -1.3), 3.8, CORE_HI)
-	c.draw_circle(cc + Vector2(-2.6, -2.6), 1.4, Color.WHITE)
+	# Concept art: a HEXAGONAL core inside a hexagonal frame
+	c.draw_colored_polygon(_hex(cc, 9.5), FighterArt.BLACK)
+	c.draw_colored_polygon(_hex(cc, 7.2), CORE)
+	c.draw_colored_polygon(_hex(cc + Vector2(-1.0, -1.0), 3.8), CORE_HI)
+	c.draw_circle(cc + Vector2(-2.4, -2.4), 1.3, Color.WHITE)
 	FighterArt.ball(c, Vector2(3, -96), 8.5, DARK, DARK_SHADE, DARK_HI)   # Shoulder pad
 
 	# --- Head: PURE WHITE helmet (a bit smaller: athletic proportions), black visor ---
 	c.draw_line(Vector2(2, -102), Vector2(3, -110), FighterArt.BLACK, 12.0)   # Neck
 	c.draw_line(Vector2(2, -102), Vector2(3, -110), DARK, 7.0)
 	FighterArt.ball(c, Vector2(3, -117), 12.5, WHITE, WHITE_SHADE, WHITE)
-	FighterArt.rrect(c, Rect2(6, -123, 12, 8), VISOR, VISOR, DARK, 3.0, 3.0)
-	c.draw_rect(Rect2(8, -120, 8, 3), CORE)
+	FighterArt.rrect(c, Rect2(4, -124, 14, 9), VISOR, VISOR, DARK, 3.0, 3.0)
+	# Concept art: two round EYES glowing behind the visor band
+	var blink := fmod(t, 3.7) < 0.1
+	for ex: float in [8.5, 14.5]:
+		if blink:
+			c.draw_line(Vector2(ex - 2, -119.5), Vector2(ex + 2, -119.5), CORE, 1.5)
+		else:
+			c.draw_circle(Vector2(ex, -119.5), 2.4, CORE)
+			c.draw_circle(Vector2(ex - 0.6, -120.1), 0.9, CORE_HI)
+	c.draw_line(Vector2(-9, -121), Vector2(4, -121), WHITE_SHADE, 1.5)            # Helmet seam
 	c.draw_circle(Vector2(-5, -117), 3.4, FighterArt.BLACK)                 # Ear bolt
 	c.draw_circle(Vector2(-5, -117), 2.2, CORE)
 
@@ -179,6 +197,9 @@ static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool) -> void:
 	var knee := (hip + foot) * 0.5 + Vector2(6, 0)
 	FighterArt.limb(c, hip, knee, 10.0, base, shade, hi)                   # Athletic: lean thigh
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 8.0, base, shade, hi)  # Slim shin
+	# Concept art: SEGMENTED, RIVETED legs - plate seams in a zig-zag, rivets along the edge
+	_plates(c, hip, knee, 9.0, shade)
+	_plates(c, knee, foot + Vector2(0, -4), 7.0, shade)
 	FighterArt.ball(c, knee, 4.5, DARK_SHADE if far else DARK, DARK_SHADE, DARK_HI)
 	c.draw_circle(knee, 1.6, CORE)
 	FighterArt.rrect(c, Rect2(foot.x - 7.0, foot.y - 4.0, 20, 8), DARK_SHADE if far else DARK, VISOR, DARK_HI, 3.0, 3.5)
@@ -190,11 +211,43 @@ static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2
 	var shade := VISOR if far else DARK_SHADE
 	FighterArt.limb(c, shoulder, elbow, 8.5, base, shade, DARK_HI)          # Defined upper arm
 	FighterArt.limb(c, elbow, hand, 7.5, base, shade, DARK_HI)              # Lean forearm
+	_plates(c, shoulder, elbow, 7.5, shade)                                  # Plated, riveted (concept art)
+	_plates(c, elbow, hand, 6.5, shade)
 	FighterArt.ball(c, elbow, 4.5, base, shade, DARK_HI)
 	c.draw_circle(elbow, 1.6, CORE)
 	var g := GREEN_FAR if far else GREEN
 	var gs := GREEN_FAR_SHADE if far else GREEN_SHADE
 	FighterArt.rrect(c, Rect2(hand.x - 6.5, hand.y - 6.5, 13, 13), g, gs, GREEN_HI, 3.5, 3.5)
+	# Concept art: three mechanical FINGERS
+	var fwd := (hand - elbow).normalized() if (hand - elbow).length() > 1.0 else Vector2.RIGHT
+	for k in 3:
+		var a := fwd.rotated(-0.45 + float(k) * 0.45)
+		c.draw_line(hand + a * 5.0, hand + a * 10.0, FighterArt.BLACK, 3.6)
+		c.draw_line(hand + a * 5.0, hand + a * 10.0, g, 2.0)
+
+
+## Plate seams (a zig-zag) and rivets along a limb segment.
+static func _plates(c: CanvasItem, a: Vector2, b: Vector2, w: float, col: Color) -> void:
+	var d := b - a
+	if d.length() < 4.0:
+		return
+	var dir := d.normalized()
+	var side := dir.orthogonal() * (w * 0.5)
+	var zz := PackedVector2Array()
+	for i in 5:
+		var p := a.lerp(b, 0.15 + 0.7 * float(i) / 4.0)
+		zz.append(p + side * (0.5 if i % 2 == 0 else -0.5))
+	c.draw_polyline(zz, col, 1.5)
+	for i in 3:
+		var p2 := a.lerp(b, 0.2 + 0.3 * float(i))
+		c.draw_circle(p2 + side * 0.8, 1.0, col.darkened(0.3))
+
+
+static func _hex(center: Vector2, r: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 6:
+		pts.append(center + Vector2.from_angle(TAU * float(i) / 6.0 + PI / 6.0) * r)
+	return pts
 
 
 ## Armaggedon Drill: extends from the stomach.

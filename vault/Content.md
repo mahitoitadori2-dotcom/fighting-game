@@ -14,6 +14,19 @@ The game is **Universal Beatdown**. Its old name was Universal Showdown. The dom
 
 The game icon (`icon.png`, 512 px) shows the 4 fighters (Architect, Warrior, Nightmare Lord, Enlightened One), each on a glow in their own colour. It was rendered from their in-game art on 2026-11-08.
 
+## New detailed looks from the user's concept art (2026-11-15)
+
+The user drew 6 concept arts. The fight models, and every portrait (Character Select, dialogue, board, menus), were made more detailed to match them. The current colour palettes and all animations are kept (the user's rule).
+- **Warrior:** a dark visor band with one glowing eye and a little antenna; a STUDDED shoulder; a vest with lapels, a tie and a belt; striped arms and legs with knee patches; CLAWED hands and feet.
+- **Architect:** a faceted, riveted chest plate; a HEXAGON core; two round eyes behind the visor; segmented, riveted limbs (zig-zag seams); three mechanical fingers; a bow knot on the belt.
+- **Enlightened One:** a tall POINTED hood with spiral lines; diamond lines and a HEART on the breastplate; spiral patterns on the legs; studs on the gauntlets.
+- **Nightmare Lord:** a tall dark TOP HAT with a red band and a round emblem; a frayed, shaggy suit; long CLAWED fingers; pointed shoes; a belt.
+- **The Trainer:** a slim body and very long limbs that taper to POINTS, dark joint marks, a small round head (still all blue, no eyes).
+- **The Storm, its TRUE SHAPE** (`scripts/story/orbis/StormArt.gd`):
+  - What it is: a colossal flying ray-like creature covered in EYES and dark organ spots, with a long hooked neck ending in a claw crest, a segmented tube on its back, and debris circling it.
+  - Where it's seen: far away over Ordinariorum's horizon, in the sky above the bridge (The Road to Peace and level 80), and coming down when it breaks into Orbis Terrarum. It also has a dialogue portrait ("storm").
+- Checked: a side-by-side render, and a CPU fight with every playable fighter with no drawing errors. Not looked at by the user yet.
+
 ## Playable fighters
 
 Versus mode has 6 fighters. Each fighter has an attack, special moves, a CPU opponent and lives; all but one have G-Gauge ultimates. The **APHA Architect** has 7 powers and Flight instead (see below).

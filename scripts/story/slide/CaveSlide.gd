@@ -802,6 +802,8 @@ func _draw_road(vs: Vector2, cam: Vector2) -> void:
 			var cx := float(i) * 260.0 - par
 			var cy := vs.y * (0.08 + 0.75 * float(layer)) + 30.0 * sin(float(i) * 1.7 + floor(cam.x * spd / 260.0))
 			draw_circle(Vector2(cx, cy), 120.0 + 30.0 * float(layer), Color(0.14, 0.15, 0.24, 0.75 - 0.15 * float(layer)))
+	# The STORM ITSELF (its true shape) drifting through the clouds, watching you run
+	StormArt.draw(self, Vector2(vs.x * 0.30 - fmod(cam.x * 0.02, vs.x * 0.6), vs.y * 0.24), 0.55, _t, 0.55)
 	if fmod(_t * 1.3, 3.0) < 0.12:
 		var lx := vs.x * fmod(_t * 0.37, 1.0)
 		draw_rect(Rect2(Vector2.ZERO, vs), Color(0.8, 0.85, 1.0, 0.10))

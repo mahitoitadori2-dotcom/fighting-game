@@ -126,9 +126,10 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_polyline(tc, BLACK, 2.0, FighterArt.AA)
 	c.draw_rect(Rect2(-2, -99, 7, 5), TIE)                       # Knot
 	c.draw_rect(Rect2(-2, -99, 7, 5), BLACK, false, 1.5)
-	# Buttons + pocket square
+	# Buttons + pocket square + a belt (concept art)
 	c.draw_circle(Vector2(8, -66), 1.8, SUIT_HI)
-	c.draw_circle(Vector2(8, -59), 1.8, SUIT_HI)
+	c.draw_rect(Rect2(-17, -58, 34, 4), BLACK)
+	c.draw_rect(Rect2(-1, -58, 6, 4), Color(0.75, 0.72, 0.66))
 	c.draw_colored_polygon(PackedVector2Array([Vector2(-14, -88), Vector2(-8, -88), Vector2(-11, -84)]), TIE)
 	# Passive: torn jacket shows red scales
 	if tear >= 1:
@@ -184,6 +185,18 @@ static func _head(c: CanvasItem, t: float, tear: int) -> void:
 	# Angry eyebrows
 	c.draw_line(Vector2(4, -121), Vector2(11, -118.5), BLACK, 2.5)
 	c.draw_line(Vector2(19, -121), Vector2(13, -118.5), BLACK, 2.5)
+	# Concept art (2026-11-15): a tall dark TOP HAT with a red band and a round emblem on it
+	var brim := Rect2(-12, -128, 30, 4)
+	var crown := PackedVector2Array([Vector2(-7, -128), Vector2(-6, -146), Vector2(13, -147), Vector2(13, -128)])
+	c.draw_colored_polygon(crown, SUIT)
+	c.draw_colored_polygon(PackedVector2Array([Vector2(7, -128), Vector2(7, -146.6), Vector2(13, -147), Vector2(13, -128)]), SUIT_SHADE)
+	c.draw_rect(Rect2(-7, -133, 20, 4), TIE)                             # Red band
+	c.draw_polyline(crown + PackedVector2Array([crown[0]]), BLACK, 2.5, FighterArt.AA)
+	c.draw_rect(brim, SUIT_SHADE)
+	c.draw_rect(brim, BLACK, false, 2.0)
+	c.draw_circle(Vector2(4, -140), 4.0, BLACK)                           # The round emblem
+	c.draw_circle(Vector2(4, -140), 2.8, SKIN)
+	c.draw_circle(Vector2(4, -140), 1.2, BLACK)
 	# THE SMIRK: one corner pulled up
 	c.draw_polyline(PackedVector2Array([Vector2(6, -105), Vector2(11, -104.5), Vector2(15, -105.5), Vector2(18, -108)]), BLACK, 2.5, FighterArt.AA)
 	c.draw_line(Vector2(17, -108.5), Vector2(19, -107), BLACK, 1.5)
@@ -194,10 +207,15 @@ static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool, tear: in
 	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
 	FighterArt.limb(c, hip, knee, 12.0, base, SUIT_SHADE, SUIT_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 11.0, base, SUIT_SHADE, SUIT_HI)
+	_shag(c, hip, knee, 11.0)                                             # Concept art: shaggy, frayed cloth
+	_shag(c, knee, foot + Vector2(0, -4), 10.0)
 	if not far and tear >= 2:
 		_tear_hole(c, knee + Vector2(-1, 2), 4.5, 6)
-	# Polished shoe
-	FighterArt.rrect(c, Rect2(foot.x - 8.0, foot.y - 4.0, 24, 9), SHOE, SHOE, Color(0.5, 0.5, 0.55), 3.0, 3.5)
+	# Pointed shoe (concept art: long, pointed toes)
+	var shoe := PackedVector2Array([foot + Vector2(-8, -5), foot + Vector2(10, -5), foot + Vector2(22, 1), foot + Vector2(18, 4), foot + Vector2(-8, 4)])
+	c.draw_colored_polygon(shoe, SHOE)
+	c.draw_line(foot + Vector2(-4, -3), foot + Vector2(10, -3), Color(0.5, 0.5, 0.55), 1.5)
+	c.draw_polyline(shoe + PackedVector2Array([shoe[0]]), BLACK, 2.0, FighterArt.AA)
 
 
 static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2, far: bool, tear: int) -> void:
@@ -210,11 +228,34 @@ static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2
 			var p := elbow.lerp(hand, 0.25 + 0.25 * float(i))
 			c.draw_arc(p, 2.5, 0.0, PI, 6, SCALE_LINE, 1.5)
 	else:
+		_shag(c, shoulder, elbow, 8.0)
+		_shag(c, elbow, hand, 9.0)
 		c.draw_circle(hand + (elbow - hand).normalized() * 6.0, 4.5, SHIRT)   # Cuff
 	var sk := SKIN_SHADE if far else SKIN
 	c.draw_circle(hand, 8.0, BLACK)
 	c.draw_circle(hand, 5.6, sk)
 	c.draw_circle(hand + Vector2(-1.5, -1.5), 1.8, SKIN_HI)
+	# Concept art: long CLAWED fingers
+	var fwd := (hand - elbow).normalized() if (hand - elbow).length() > 1.0 else Vector2.RIGHT
+	for k in 4:
+		var a := fwd.rotated(-0.7 + float(k) * 0.45)
+		var root := hand + a * 4.5
+		c.draw_line(root, root + a * 7.0, BLACK, 3.2)
+		c.draw_line(root, root + a * 6.0, sk, 1.6)
+		c.draw_colored_polygon(PackedVector2Array([root + a * 6.0 + a.orthogonal() * 1.2, root + a * 10.0, root + a * 6.0 - a.orthogonal() * 1.2]), BLACK)
+
+
+## Frayed, shaggy cloth: short dark strokes along the edges of a limb (concept art).
+static func _shag(c: CanvasItem, a: Vector2, b: Vector2, w: float) -> void:
+	var d := b - a
+	if d.length() < 4.0:
+		return
+	var dir := d.normalized()
+	var side := dir.orthogonal() * (w * 0.5)
+	for i in 4:
+		var p := a.lerp(b, 0.15 + 0.22 * float(i))
+		var s := 1.0 if i % 2 == 0 else -1.0
+		c.draw_line(p + side * s, p + side * s * 1.45 + dir * 2.5, SUIT_SHADE, 1.6)
 
 
 ## Ragged tear in the suit with red scales underneath.

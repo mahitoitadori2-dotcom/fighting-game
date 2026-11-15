@@ -105,10 +105,19 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	var b_hand := Vector2(-9.0 + arm_sw, -55).lerp(Vector2(20, -80), b)
 	_arm(c, Vector2(-4, -92), b_el, b_hand, true, royal)
 
-	# --- Torso: void body with drips ---
+	# --- Torso: void body (concept art 2026-11-15: a dark VEST with lapels and a TIE, a belt) ---
 	FighterArt.rrect(c, Rect2(-16, -100, 32, 48), VOID, VOID_SHADE, VOID_HI, 9.0, 4.0)
-	c.draw_arc(Vector2(2, -80), 9.0, -2.4 + t * 1.5, -0.4 + t * 1.5, 10, VOID_GLOW, 2.0, FighterArt.AA)   # Swirl
-	c.draw_arc(Vector2(2, -80), 4.0, 0.6 - t * 2.0, 2.6 - t * 2.0, 8, VOID_HI, 2.0, FighterArt.AA)
+	var vest := PackedVector2Array([Vector2(-13, -97), Vector2(1, -76), Vector2(14, -97), Vector2(13, -58), Vector2(-13, -58)])
+	c.draw_colored_polygon(vest, VOID_SHADE.lerp(VOID, 0.45))
+	c.draw_polyline(PackedVector2Array([Vector2(-13, -97), Vector2(1, -76), Vector2(14, -97)]), VOID_HI, 2.0, FighterArt.AA)   # Lapels
+	c.draw_colored_polygon(PackedVector2Array([Vector2(-2, -94), Vector2(4, -94), Vector2(3, -88), Vector2(-1, -88)]), BLACK)            # Tie knot
+	c.draw_colored_polygon(PackedVector2Array([Vector2(-1, -88), Vector2(3, -88), Vector2(6, -70), Vector2(1, -64), Vector2(-3, -70)]), VOID_SHADE)
+	c.draw_line(Vector2(1, -86), Vector2(2, -70), Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, 0.55), 1.5)
+	for i in 3:                                                    # Vest buttons
+		c.draw_circle(Vector2(-6.0 + float(i) * 1.0, -70.0 + float(i) * 5.0), 1.3, VOID_HI)
+	c.draw_rect(Rect2(-16, -61, 32, 5), BLACK)                       # Belt
+	c.draw_rect(Rect2(-2, -61, 6, 5), SILVER_SHADE)                  # Buckle
+	c.draw_arc(Vector2(2, -80), 9.0, -2.4 + t * 1.5, -0.4 + t * 1.5, 10, Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, 0.35), 2.0, FighterArt.AA)   # Faint void swirl under the vest
 	for i in 3:
 		var dx := -9.0 + float(i) * 8.0
 		var dl := 5.0 + 4.0 * (0.5 + 0.5 * sin(t * 3.0 + float(i) * 2.1))
@@ -189,12 +198,19 @@ static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool, royal: f
 	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
 	FighterArt.limb(c, hip, knee, 12.0, base, VOID_SHADE, VOID_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 11.0, base, VOID_SHADE, VOID_HI)
-	c.draw_circle(knee, 2.0, VOID_GLOW)
-	# Void "foot": a puddle-like blob
+	# Concept art: BANDED legs (dark stripes) and a dark patch on the knee
+	_bands(c, hip, knee, 2, 10.0)
+	_bands(c, knee, foot + Vector2(0, -4), 2, 9.0)
+	c.draw_colored_polygon(FighterArt.rrect_points(Rect2(knee - Vector2(5, 5), Vector2(10, 10)), 2.0), VOID_SHADE)
+	c.draw_circle(knee, 1.8, VOID_GLOW)
+	# CLAWED void foot: a low blob with three black talons in front
 	var fp := foot + Vector2(4, -1)
-	c.draw_circle(fp, 9.5, BLACK)
-	c.draw_circle(fp, 7.0, base)
-	c.draw_circle(fp + Vector2(-2, -2), 2.0, VOID_HI)
+	c.draw_colored_polygon(EnemyArt.ellipse_points(fp, 10.0, 6.0, 12), BLACK)
+	c.draw_colored_polygon(EnemyArt.ellipse_points(fp, 8.0, 4.4, 12), base)
+	for k in 3:
+		var root := fp + Vector2(4.0 + float(k) * 1.5, -2.0 + float(k) * 2.5)
+		c.draw_colored_polygon(PackedVector2Array([root + Vector2(0, -2), root + Vector2(8, 1), root + Vector2(0, 2)]), BLACK)
+	c.draw_circle(fp + Vector2(-3, -2), 1.6, VOID_HI)
 	if royal > 0.0:   # White shin guard
 		var mid := knee.lerp(foot, 0.5)
 		c.draw_circle(mid, 8.0, Color(0, 0, 0, royal))
@@ -205,13 +221,31 @@ static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2
 	var base := VOID_SHADE if far else VOID
 	FighterArt.limb(c, shoulder, elbow, 9.0, base, VOID_SHADE, VOID_HI)
 	FighterArt.limb(c, elbow, hand, 10.0, base, VOID_SHADE, VOID_HI)
+	_bands(c, shoulder, elbow, 2, 8.0)                              # Concept art: STRIPED arms
+	_bands(c, elbow, hand, 2, 9.0)
 	c.draw_circle(elbow, 1.8, VOID_GLOW)
 	c.draw_circle(hand, 8.5, BLACK)
 	c.draw_circle(hand, 6.0, base)
+	var fwd := (hand - elbow).normalized()                          # CLAWED hand: three black talons
+	for k in 3:
+		var a := fwd.rotated(-0.6 + float(k) * 0.6)
+		var root := hand + a * 5.0
+		c.draw_colored_polygon(PackedVector2Array([root + a.orthogonal() * 1.8, root + a * 7.0, root - a.orthogonal() * 1.8]), BLACK)
 	if royal > 0.0:   # White gauntlet
 		c.draw_circle(hand, 9.0, Color(0, 0, 0, royal))
 		c.draw_circle(hand, 6.5, Color(ROYAL.r, ROYAL.g, ROYAL.b, royal))
 		c.draw_circle(hand + Vector2(-2, -2), 2.0, Color(ROYAL_GLOW.r, ROYAL_GLOW.g, ROYAL_GLOW.b, royal))
+
+
+## Dark bands across a limb segment (the striped arms / legs of the concept art).
+static func _bands(c: CanvasItem, a: Vector2, b: Vector2, n: int, w: float) -> void:
+	var d := b - a
+	if d.length() < 2.0:
+		return
+	var side := d.normalized().orthogonal() * (w * 0.5)
+	for i in n:
+		var p := a.lerp(b, (float(i) + 0.7) / (float(n) + 0.6))
+		c.draw_line(p + side, p - side, VOID_SHADE, 3.0)
 
 
 static func _drip(c: CanvasItem, top: Vector2, length: float) -> void:
@@ -224,18 +258,23 @@ static func _drip(c: CanvasItem, top: Vector2, length: float) -> void:
 static func _helmet(c: CanvasItem, t: float) -> void:
 	var hc := Vector2(3, -113)
 	FighterArt.ball(c, hc, 15.0, SILVER, SILVER_SHADE, SILVER_HI)
-	# Crest ridge
+	# Crest ridge + a short antenna spike (concept art)
 	c.draw_line(Vector2(-9, -124), Vector2(8, -127), SILVER_SHADE, 3.0)
-	# Eyeholes (black slots with a faint void glow inside)
+	c.draw_line(Vector2(0, -127), Vector2(4, -134), BLACK, 3.0)
+	c.draw_line(Vector2(0, -127), Vector2(4, -134), SILVER_SHADE, 1.5)
+	# Concept art: a dark VISOR BAND across the face, one glowing eye in the slit
 	var glow := 0.55 + 0.45 * sin(t * 3.0)
-	for ex in [7.0, 14.0]:
-		var r := Rect2(ex, -118, 5, 6)
-		c.draw_colored_polygon(FighterArt.rrect_points(r.grow(1.5), 2.0), BLACK)
-		c.draw_colored_polygon(FighterArt.rrect_points(r, 1.5), VOID_SHADE)
-		c.draw_circle(r.get_center(), 1.4, Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, glow))
-	# Nose guard + rim
-	c.draw_rect(Rect2(12.0, -119, 2, 11), SILVER_SHADE)
+	var visor := PackedVector2Array([Vector2(-6, -121), Vector2(18, -121), Vector2(18, -112), Vector2(-6, -113)])
+	c.draw_colored_polygon(visor, BLACK)
+	c.draw_colored_polygon(PackedVector2Array([Vector2(-4, -119.5), Vector2(16.5, -119.5), Vector2(16.5, -114), Vector2(-4, -114.5)]), VOID_SHADE)
+	c.draw_line(Vector2(6, -117), Vector2(16, -117), Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, 0.35 * glow), 2.0)
+	c.draw_circle(Vector2(13, -117), 2.0, Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, glow))
+	c.draw_circle(Vector2(13, -117), 0.9, Color(1, 1, 1, glow))
+	# Jaw guard + rim + rivets
+	c.draw_rect(Rect2(10.0, -111, 7, 4), SILVER_SHADE)
 	c.draw_arc(hc, 15.0, 0.35, 2.6, 12, SILVER_SHADE, 3.0, FighterArt.AA)
+	for rv: Vector2 in [Vector2(-8, -110), Vector2(-3, -104)]:
+		c.draw_circle(rv, 1.3, SILVER_SHADE)
 
 
 static func _void_face(c: CanvasItem, t: float, charge: float) -> void:
@@ -264,8 +303,12 @@ static func _shoulder_pad(c: CanvasItem, royal: float) -> void:
 	c.draw_colored_polygon(pts, SILVER_SHADE)
 	c.draw_colored_polygon(PackedVector2Array([Vector2(-6, -96), Vector2(-1, -104), Vector2(10, -105), Vector2(16, -99), Vector2(14, -93), Vector2(-4, -93)]), SILVER)
 	c.draw_line(Vector2(-1, -102), Vector2(9, -103), SILVER_HI, 2.5)
-	c.draw_circle(Vector2(0, -92), 1.6, SILVER_SHADE)
-	c.draw_circle(Vector2(12, -92), 1.6, SILVER_SHADE)
+	# Concept art: the shoulder is STUDDED - two rows of round studs
+	for row in 2:
+		for k in 4:
+			var sp := Vector2(-2.0 + float(k) * 4.6, -101.0 + float(row) * 5.0)
+			c.draw_circle(sp, 1.7, SILVER_SHADE.darkened(0.25))
+			c.draw_circle(sp + Vector2(-0.5, -0.5), 0.7, SILVER_HI)
 	var closed := pts.duplicate()
 	closed.append(pts[0])
 	c.draw_polyline(closed, BLACK, 3.5, FighterArt.AA)
