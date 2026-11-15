@@ -54,6 +54,11 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Is the NPC choice clear enough? (Talk first, then use a power next to one of them.)
   - Numbers are in `scripts/story/crater/`.
   - Only scripts have played it so far.
+- [ ] **Play The Magma Run (68-70) yourself:**
+  - Is the flood too slow or too fast? (`HUNT_SPEED` 0.93, `HUNT_START` in `CaveSlide.gd`)
+  - Is J for walls comfortable while also jumping and ducking?
+  - Is the level 70 wave fight fair?
+  - Only a bot played it so far.
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).

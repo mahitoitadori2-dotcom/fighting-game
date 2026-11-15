@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1] # 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3] # 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -584,6 +584,22 @@ const LEVELS := {
 		"world_maps": ["crater_floor", "crater_wreck", "crater_fields", "crater_front"],
 		"intro": "A crater of volcanoes. Lava and Kharlemings at war - forever.",
 		"waves": [], "boss": "", "tile": "kharleming_lord"},
+
+	# ======================= THE MAGMA RUN (levels 68-70) =======================
+	# Sliding out of Terra Craterum down lava tunnels. NEW: ATTACK breaks walls; a LAVA FLOOD with a
+	# Kharleming swarm hunts you from behind (crash too often and it catches you). Level 70 stops
+	# halfway for 3 WAVES of Craterum enemies (a normal Story fight: cooldowns reset, flasks
+	# refilled), then the last slide. Every slide level ends at a WHITE WALL.
+	68: {"title": "THE LAVA CHUTE", "theme": "dark_cave", "map": "dark_cave", "hero": "demi", "slide": true,
+		"intro": "Out of the crater, down a tunnel of lava. Something is coming behind you.",
+		"waves": [], "boss": "", "tile": "lava_goblin"},
+	69: {"title": "THE SWARM TUNNEL", "theme": "dark_cave", "map": "dark_cave", "hero": "demi", "slide": true,
+		"intro": "The Kharlemings have joined the hunt. Break the walls. Do not slow down.",
+		"waves": [], "boss": "", "tile": "full_kharleming"},
+	70: {"title": "THE LAST DESCENT", "theme": "lair", "map": "lair", "hero": "demi", "slide": true, "slide_fight": true,
+		"intro": "The tunnel ends in a cavern. They caught up. Fight - then slide for your life.",
+		"waves": [["lava_goblin", "kharleming", "kharleming"], ["lava_demon", "full_kharleming", "lava_goblin"], ["fragmenter", "master_kharleming", "lava_demon"]],
+		"boss": "", "tile": "master_kharleming", "music": "boss_melter"},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -597,9 +613,13 @@ const CAVES_PART := 8
 ## TERRA CRATERUM: the part after The Caves (one open-world level, 67). CraterLand.gd.
 const CRATER_PART := 9
 const CRATER_LEVEL := 67
+## THE MAGMA RUN: the part after Terra Craterum (three SLIDE levels with attacks, 68-70; hunted from behind).
+const RUN_PART := 10
 
 
 static func part_name(c: int) -> String:
+	if c == RUN_PART:
+		return "THE MAGMA RUN"
 	if c == CRATER_PART:
 		return "TERRA CRATERUM"
 	if c == CAVES_PART:

@@ -80,6 +80,8 @@ const PAGES := {
 		"board": [Color(0.08, 0.07, 0.09), Color(0.10, 0.14, 0.20)], "boss_label": Color(0.5, 0.85, 1.0)},
 	9: {"title": "STORY MODE  -  TERRA CRATERUM",
 		"board": [Color(0.30, 0.09, 0.04), Color(0.14, 0.07, 0.07)], "boss_label": Color(1.0, 0.6, 0.3)},
+	10: {"title": "STORY MODE  -  THE MAGMA RUN",
+		"board": [Color(0.22, 0.05, 0.03), Color(0.40, 0.14, 0.04)], "boss_label": Color(1.0, 0.75, 0.4)},
 }
 const CRATER_SCENE := "res://scenes/CraterLand.tscn"      # The second open world
 const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
@@ -284,8 +286,15 @@ func _refresh_ui() -> void:
 		if StoryLevels.is_open_world(_pawn_space):
 			tag = "  (OPEN WORLD  -  5-15 min)"
 		if StoryLevels.is_slide(_pawn_space):
-			_info.text = "Level %d: %s  (NO COMBAT  -  slide)    |    YOU: %s    |    %s%s" % [_pawn_space, lv["title"],
-				StoryLevels.hero_of(_pawn_space).to_upper(), "W: jump" if _pawn_space == StoryLevels.first_of(StoryLevels.CAVES_PART) else "W: jump   S: duck / dive", _best_text()]
+			var run_part := StoryLevels.colosseum_of(_pawn_space) == StoryLevels.RUN_PART
+			var kind := "SLIDE  -  HUNTED" if run_part else "NO COMBAT  -  slide"
+			if bool(lv.get("slide_fight", false)):
+				kind = "SLIDE  -  3 WAVES  -  SLIDE"
+			var keys := "W: jump   S: duck / dive" + ("   J: smash walls" if run_part else "")
+			if _pawn_space == StoryLevels.first_of(StoryLevels.CAVES_PART):
+				keys = "W: jump"
+			_info.text = "Level %d: %s  (%s)    |    YOU: %s    |    %s%s" % [_pawn_space, lv["title"], kind,
+				StoryLevels.hero_of(_pawn_space).to_upper(), keys, _best_text()]
 			_play.text = "PLAY LEVEL %d" % _pawn_space
 			return
 		if String(lv.get("boss_sub", "")).begins_with("Mini-Boss"):
@@ -933,6 +942,19 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.RUN_PART:
+		# The Magma Run: a tunnel sloping down to the right, a lava flood rolling after it, a white light at the end
+		var base10 := r.position.y + r.size.y
+		c.draw_colored_polygon(PackedVector2Array([Vector2(r.position.x, base10 - r.size.y * 0.45), Vector2(r.end.x, base10 - r.size.y * 0.1),
+			Vector2(r.end.x, base10), Vector2(r.position.x, base10)]), Color(0.06, 0.03, 0.03, 0.7))
+		var wave := PackedVector2Array([Vector2(r.position.x, base10)])
+		for k in 9:
+			var u := float(k) / 8.0
+			wave.append(Vector2(r.position.x + r.size.x * 0.18 + 20.0 * sin(u * 8.0 + _t * 3.0), base10 - u * r.size.y * 0.75))
+		wave.append(Vector2(r.position.x, base10 - r.size.y * 0.75))
+		c.draw_colored_polygon(wave, Color(1.0, 0.42, 0.08, 0.45))
+		c.draw_circle(Vector2(r.end.x - 60.0, base10 - r.size.y * 0.35), 70.0 + 5.0 * sin(_t * 2.0), Color(1, 1, 1, 0.18))
+		c.draw_rect(Rect2(r.end.x - 40.0, r.position.y + r.size.y * 0.15, 30.0, r.size.y * 0.7), Color(1, 1, 1, 0.55))
 	elif _page >= StoryLevels.CRATER_PART:
 		# Terra Craterum: volcanoes glowing on a red horizon, the wreck of a ship half buried
 		var base9 := r.position.y + r.size.y

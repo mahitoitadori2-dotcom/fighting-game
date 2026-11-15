@@ -281,6 +281,33 @@ The Story part after DemiLand: beyond the Ancient Door the floor drops away and 
 - Code: `scripts/story/slide/CaveSlide.gd`, scene `scenes/CaveSlide.tscn`. Board: page 8 (cave scenery, hero sliding on the tiles).
 - Checked: a bot cleared all three with 0 crashes; with no input you crash at the first rock. Not played by a human yet.
 
+**White wall (2026-11-15):** every slide level (The Caves and The Magma Run) now ends at a WHITE WALL of light: you slide into it, the screen goes white, then LEVEL CLEAR. The user's rule: ALL slide levels end like this unless the user says otherwise.
+
+## The Magma Run (levels 68-70, added 2026-11-15)
+
+The Story part after Terra Craterum (page 10). It's the slide again, but you're hunted. Same hero as DemiLand.
+- **J (attack)** smashes the cracked basalt walls; they go from floor to roof and can't be jumped. Touch: tap the top of the screen. **W** = jump, **S** = duck or dive, as in caves 2 and 3.
+- **The hunt:** a lava flood with Kharlemings riding it chases you from behind (the user's choice: only from behind).
+  - It's a little slower than a clean slide (93%), so clean sliding pulls away.
+  - A crash no longer sends you back: you get up where you fell, but the flood closes in.
+  - If it reaches you, you're **CAUGHT** and restart at the last crystal. A bar at the bottom left shows how close it is.
+- 68 The Lava Chute (640 px/s), 69 The Swarm Tunnel (690), 70 The Last Descent (720).
+- **Level 70:**
+  1. Halfway, the slide stops ("THEY CAUGHT UP!"). It becomes a **normal Story fight** in the Lava Lair: 3 waves of minor Craterum enemies (goblins, Kharlemings, demons, Full and Master Kharlemings, a fragmenter).
+  2. At the start, cooldowns reset and flasks refill.
+  3. After the waves you're back on the slide, from that point to the white wall.
+  4. Dying in the fight: RETRY repeats the fight. From the board the level starts at the beginning.
+- After 70 the part simply ends. Terra Ordinariorum comes later, when it's built (the user's choice).
+- Music: story_magma, story_wreck, boss_kharleming_lord on the slides; boss_melter in the fight.
+- Achievements: 8 new (one per level, "Untouched" per level, The Magma Run Conquered, secret "Lava Between the Toes": caught 5 times).
+- Code: `scripts/story/slide/CaveSlide.gd` (tiers 4-6, `run` / `fight`); the fight hand-off is `slide_fight` in `StoryManager` (`_intro` / `_level_clear`).
+- **Checked by script:**
+  - The bot cleared 68 and 70 with 0 crashes; the flood never got near it.
+  - 70's full chain (slide → 3 waves → slide → white wall) works.
+  - With no input you get caught twice in 20 s.
+  - Cave 64 still clears with the new white wall.
+  - **Not played by a human:** the flood speed (`HUNT_SPEED`) may need tuning.
+
 ## Terra Craterum (level 67, added 2026-11-15)
 
 Its own Story part (page 9) after The Caves: the second OPEN-WORLD level, with the same rules as DemiLand (Souls rules, CamTons, camps, day / night, a map, the run is saved). Lore by the user; see [Future lore](FutureLore.md).

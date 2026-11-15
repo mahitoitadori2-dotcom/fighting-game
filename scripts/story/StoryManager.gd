@@ -216,7 +216,7 @@ func _ready() -> void:
 	var clock := StatsClock.new()
 	clock.m = self
 	add_child(clock)
-	SoundManager.play_music(String(StoryLevels.map_of(level_number).get("music", "fight")))   # Fits the area
+	SoundManager.play_music(String(level.get("music", StoryLevels.map_of(level_number).get("music", "fight"))))   # Fits the area
 	if autoplay:
 		print("STORY autoplay: level %d start" % level_number)
 	_run.call_deferred()
@@ -706,6 +706,14 @@ func _intro() -> void:
 		intro += "\nYour partner: %s (CPU)" % partner.data.character_name.to_upper()
 	if _from_boss:
 		intro = "%s\nRETRY FROM THE BOSS" % level.get("title", "")
+	if bool(level.get("slide_fight", false)):
+		# THE MAGMA RUN, level 70: the slide stopped - a fresh start for the 3 waves
+		player.cooldowns.clear()
+		flasks = max_flasks
+		player.health_changed.emit(player.hp, player.data.max_hp)
+		Effects.gold_burst(player, player.global_position + Vector2(0, -80), 120.0)
+		SoundManager.play_sfx("heal")
+		intro = "THE SLIDE STOPS!  3 WAVES OF THEM.\nCOOLDOWNS RESET  -  FLASKS REFILLED"
 	_show_banner(StoryLevels.level_label(level_number), intro, Color(1.0, 0.7, 0.3))
 	await _wait(1.2 if bool(level.get("quick_boss", false)) or _from_boss else 2.4)
 	_hide_banner()
@@ -1140,6 +1148,17 @@ func _boss_death_cutscene() -> void:
 func _level_clear() -> void:
 	CombatManager.fight_active = false
 	wave_text = ""
+	if bool(level.get("slide_fight", false)):
+		# THE MAGMA RUN, level 70: the waves are beaten - back to the slide for the last run
+		_show_banner("THE WAVES ARE BEATEN!", "More are coming.  SLIDE!", Color(1.0, 0.6, 0.3))
+		SoundManager.play_sfx("ultimate")
+		if autoplay:
+			print("STORY autoplay: level %d waves beaten -> slide" % level_number)
+		await _wait(2.4)
+		_hide_banner()
+		CaveSlide.resume_after_fight = level_number
+		get_tree().change_scene_to_file("res://scenes/CaveSlide.tscn")
+		return
 	# ACHIEVEMENTS + challenge BADGES (no powers / blocks / healing / G Gauge, Colosseum 5 solo)
 	var badges := Achievements.on_story_clear(level_number, player, StoryLevels.is_solo(level_number), hero)
 	var badge_text := ""

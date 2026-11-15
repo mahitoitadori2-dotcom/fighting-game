@@ -8,6 +8,14 @@ extends Node2D
 ## Touch: right half = jump, left half = duck / dive.
 ## Hitting something: a tumble, then you start again from the last glowing crystal (checkpoint).
 ## The layout is the same every time (seeded), so you can learn it.
+##
+## THE MAGMA RUN (Story part 10, levels 68-70) uses the same slide with more:
+##   J / ATTACK          smash the cracked basalt WALLS in the way (you cannot jump them)
+##   A LAVA FLOOD with a Kharleming swarm HUNTS you from behind. A crash no longer sends you back:
+##   you tumble and lose ground. If the flood CATCHES you, you restart at the last crystal.
+##   Level 70 stops halfway: 3 WAVES of Craterum enemies (a normal Story fight in StoryArena),
+##   then back here for the last slide.
+## Every slide level ends at a WHITE WALL (the screen goes white = level clear).
 
 const G := 2700.0                     # Gravity (px/s^2)
 const JUMP_V := 1000.0                # Jump speed: ~185 px high, ~0.74 s in the air
@@ -29,7 +37,22 @@ const TIERS := {
 		"glow": Color(0.35, 0.85, 1.0), "music": "story_darkcave", "pool": ["rock", "spikes", "gap", "ceil", "ceil", "rock_ceil", "double"]},
 	3: {"len": 46000.0, "speed": 690.0, "sky": [Color(0.08, 0.02, 0.08), Color(0.18, 0.04, 0.10)], "rock": Color(0.17, 0.09, 0.15),
 		"glow": Color(1.0, 0.35, 0.55), "music": "story_void", "pool": ["rock", "spikes", "gap", "ceil", "long_ceil", "gap_ceil", "rock_ceil", "double"]},
+	# ----- THE MAGMA RUN (hunted; walls to smash) -----
+	4: {"len": 36000.0, "speed": 640.0, "sky": [Color(0.12, 0.03, 0.02), Color(0.30, 0.09, 0.03)], "rock": Color(0.16, 0.10, 0.09),
+		"glow": Color(1.0, 0.5, 0.15), "music": "story_magma", "run": true, "pool": ["rock", "wall", "gap", "ceil", "wall", "spikes", "double"]},
+	5: {"len": 42000.0, "speed": 690.0, "sky": [Color(0.05, 0.06, 0.08), Color(0.20, 0.08, 0.05)], "rock": Color(0.14, 0.13, 0.15),
+		"glow": Color(0.35, 1.0, 0.95), "music": "story_wreck", "run": true, "pool": ["rock", "wall", "gap", "ceil", "wall_ceil", "rock_ceil", "gap", "wall"]},
+	6: {"len": 46000.0, "speed": 720.0, "sky": [Color(0.14, 0.02, 0.02), Color(0.38, 0.10, 0.02)], "rock": Color(0.12, 0.08, 0.08),
+		"glow": Color(1.0, 0.4, 0.1), "music": "boss_kharleming_lord", "run": true, "fight": true,
+		"pool": ["rock", "wall", "gap", "ceil", "wall_ceil", "gap_ceil", "rock_ceil", "wall", "long_ceil"]},
 }
+const ATTACK_REACH := 170.0           # Smash a wall this close in front of you
+const ATTACK_CD := 0.32
+const HUNT_START := 1000.0            # The flood starts this far behind
+const HUNT_MAX := 1500.0
+const HUNT_SPEED := 0.93              # x the slide speed: clean sliding slowly pulls away
+## Level 70: set by StoryManager after the 3 waves are beaten -> the slide resumes after the fight.
+static var resume_after_fight := 0
 
 var level_n := 64
 var tier := 1
@@ -59,6 +82,15 @@ var _cam := Vector2.ZERO
 var _shake := 0.0
 var _dust: Array = []                 # [pos, vel, life]
 var _touch_duck := {}                 # touch index -> true (left half held)
+var run := false                      # THE MAGMA RUN tier (walls + the hunt)
+var gap := HUNT_START                 # How far behind the flood is
+var caught := 0
+var smashed := 0
+var _atk_t := 0.0                     # Swing animation
+var _atk_cd := 0.0
+var _fight_x := -1.0                  # Level 70: the slide stops here for the waves
+var _resumed := false
+var _white := 0.0                     # The white wall: the screen fades to white
 
 var _ui: CanvasLayer
 var _hud: Control
@@ -68,12 +100,25 @@ var _sub: Label
 
 func _ready() -> void:
 	StoryProgress.load_progress()
-	level_n = clampi(StoryProgress.current_level, StoryLevels.first_of(StoryLevels.CAVES_PART), StoryLevels.last_of(StoryLevels.CAVES_PART))
-	tier = clampi(level_n - StoryLevels.first_of(StoryLevels.CAVES_PART) + 1, 1, 3)
+	level_n = StoryProgress.current_level
+	if StoryLevels.colosseum_of(level_n) == StoryLevels.RUN_PART:
+		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.RUN_PART) + 4, 4, 6)
+	else:
+		level_n = clampi(level_n, StoryLevels.first_of(StoryLevels.CAVES_PART), StoryLevels.last_of(StoryLevels.CAVES_PART))
+		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.CAVES_PART) + 1, 1, 3)
 	hero = StoryLevels.hero_of(level_n)
 	_cfg = TIERS[tier]
 	_len = float(_cfg["len"])
+	run = bool(_cfg.get("run", false))
 	_build_layout()
+	if bool(_cfg.get("fight", false)):
+		_fight_x = float(_checks[1]) - 60.0
+		if resume_after_fight == level_n:               # Back from the 3 waves: the last slide
+			resume_after_fight = 0
+			_resumed = true
+			_check_i = 1
+			px = float(_checks[1])
+			gap = HUNT_START * 0.7
 	_build_ui()
 	SoundManager.play_music(String(_cfg["music"]))
 	_intro()
@@ -104,7 +149,7 @@ func _build_layout() -> void:
 			x += 300.0
 			continue
 		# The first few obstacles of a cave are the easy ones
-		var kind: String = pool[rng.randi() % pool.size()] if step > 2 else ["rock", "gap", "ceil" if tier > 1 else "rock"][step]
+		var kind: String = pool[rng.randi() % pool.size()] if step > 2 else (["wall", "rock", "gap"] if run else ["rock", "gap", "ceil" if tier > 1 else "rock"])[step]
 		step += 1
 		var end := x
 		match kind:
@@ -144,7 +189,15 @@ func _build_layout() -> void:
 				var c2 := x + v * 0.66
 				_obs.append({"kind": "ceil", "x": c2, "w": 260.0, "h": CEIL_GAP})
 				end = c2 + 260.0
-		x = end + v * rng.randf_range(0.95, 1.55) * (0.85 if tier == 3 else 1.0)
+			"wall":                                          # Cracked basalt: SMASH it (ATTACK)
+				_obs.append({"kind": "wall", "x": x, "w": 56.0, "h": TUNNEL_H, "broken": false})
+				end = x + 56.0
+			"wall_ceil":                                     # Smash a wall, then duck right away
+				_obs.append({"kind": "wall", "x": x, "w": 56.0, "h": TUNNEL_H, "broken": false})
+				var c3 := x + v * 0.9
+				_obs.append({"kind": "ceil", "x": c3, "w": 240.0, "h": CEIL_GAP})
+				end = c3 + 240.0
+		x = end + v * rng.randf_range(0.95, 1.55) * (0.85 if tier == 3 or tier == 6 else 1.0)
 
 
 func _in_gap(x: float) -> bool:
@@ -160,7 +213,14 @@ func _in_gap(x: float) -> bool:
 func _intro() -> void:
 	var title := String(StoryLevels.get_level(level_n).get("title", "THE CAVES"))
 	var keys := "W  -  JUMP" if tier == 1 else "W  -  JUMP        S  -  DUCK / DIVE DOWN"
-	_show("LEVEL %d:  %s" % [level_n, title], keys + "\nNo enemies.  Just slide.")
+	var line := "No enemies.  Just slide."
+	if run:
+		keys += "        J  -  SMASH WALLS"
+		line = "The lava and the Kharlemings are HUNTING you.  Do not slow down."
+		if _resumed:
+			title = "THE LAST SLIDE"
+			line = "They keep coming.  Reach the white wall!"
+	_show("LEVEL %d:  %s" % [level_n, title], keys + "\n" + line)
 	await get_tree().create_timer(2.8).timeout
 	_hide()
 	_started = true
@@ -168,6 +228,11 @@ func _intro() -> void:
 
 func _finish() -> void:
 	_done = true
+	# The WHITE WALL: slide into the light, the screen goes white
+	SoundManager.play_sfx("holy")
+	var tw := create_tween()
+	tw.tween_property(self, "_white", 1.0, 0.9)
+	await tw.finished
 	SoundManager.play_sfx("count_go")
 	var flawless := hits == 0
 	var old := StoryProgress.best_time(level_n)
@@ -176,17 +241,28 @@ func _finish() -> void:
 		best = "     NEW BEST TIME!" if old > 0.0 else ""
 	else:
 		best = "     BEST %s" % StoryManager.time_text(old)
-	_show("CAVE CLEARED!", "TIME %s     %s%s\nProgress saved" % [StoryManager.time_text(run_time), "NOT A SCRATCH!" if flawless else "CRASHES %d" % hits, best])
+	_show("TUNNEL ESCAPED!" if run else "CAVE CLEARED!", "TIME %s     %s%s%s\nProgress saved" % [StoryManager.time_text(run_time),
+		"NOT A SCRATCH!" if flawless else "CRASHES %d" % hits, ("     CAUGHT %d" % caught) if run else "", best])
 	StoryProgress.complete_level(level_n)
-	Achievements.unlock("cave_%d" % tier)
-	if flawless:
-		Achievements.unlock("cave_flawless_%d" % tier)
-		if StoryDifficulty.is_hard():
-			Achievements.unlock("hard_caves")
-	if hits >= 15:
-		Achievements.unlock("cave_crash")
-	if level_n == StoryLevels.last_of(StoryLevels.CAVES_PART):
-		Achievements.unlock("col_%d" % StoryLevels.CAVES_PART)
+	if run:
+		var k := tier - 3
+		Achievements.unlock("run_%d" % k)
+		if flawless and caught == 0:
+			Achievements.unlock("run_flawless_%d" % k)
+		if caught >= 5:
+			Achievements.unlock("run_caught")
+		if level_n == StoryLevels.last_of(StoryLevels.RUN_PART):
+			Achievements.unlock("col_%d" % StoryLevels.RUN_PART)
+	else:
+		Achievements.unlock("cave_%d" % tier)
+		if flawless:
+			Achievements.unlock("cave_flawless_%d" % tier)
+			if StoryDifficulty.is_hard():
+				Achievements.unlock("hard_caves")
+		if hits >= 15:
+			Achievements.unlock("cave_crash")
+		if level_n == StoryLevels.last_of(StoryLevels.CAVES_PART):
+			Achievements.unlock("col_%d" % StoryLevels.CAVES_PART)
 	if StoryManager.autoplay:
 		print("CAVES autoplay: level %d CLEAR, crashes %d" % [level_n, hits])
 	await get_tree().create_timer(2.2).timeout
@@ -212,6 +288,18 @@ func _crash_now(why: String) -> void:
 
 func _respawn() -> void:
 	_crash = -1.0
+	if run:
+		# The Magma Run: you get up WHERE you crashed (and lost ground to the flood)
+		for o in _obs:
+			if o["kind"] == "gap" and px > float(o["x"]) - HALF_W and px < float(o["x"]) + float(o["w"]) + HALF_W:
+				px = float(o["x"]) + float(o["w"]) + HALF_W + 4.0
+		h = 0.0
+		vy = 0.0
+		speed = float(_cfg["speed"]) * 0.5
+		ducking = false
+		_invuln = 1.0
+		SoundManager.play_sfx("spawn", -6.0)
+		return
 	px = float(_checks[_check_i]) if _check_i >= 0 else 300.0
 	h = 0.0
 	vy = 0.0
@@ -229,10 +317,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		_jump_buf = BUFFER
 	if event.is_action_pressed("crouch"):
 		_press_down()
+	if event.is_action_pressed("punch"):
+		_attack()
 	var st := event as InputEventScreenTouch
 	if st != null:
 		var left := st.position.x < get_viewport_rect().size.x * 0.5
-		if st.pressed:
+		if st.pressed and run and st.position.y < get_viewport_rect().size.y * 0.4:
+			_attack()                                      # Touch: the top of the screen = SMASH
+		elif st.pressed:
 			if left:
 				_touch_duck[st.index] = true
 				_press_down()
@@ -258,6 +350,68 @@ func _press_down() -> void:
 		SoundManager.play_sfx("whoosh", -10.0)
 
 
+## J / ATTACK (The Magma Run): smash the first cracked wall right in front of you.
+func _attack() -> void:
+	if not run or not _started or _crash >= 0.0 or _done or _atk_cd > 0.0:
+		return
+	_atk_cd = ATTACK_CD
+	_atk_t = 0.22
+	SoundManager.play_sfx("swing", -4.0)
+	for o in _obs:
+		if o["kind"] != "wall" or bool(o["broken"]):
+			continue
+		var d := float(o["x"]) - px
+		if d > ATTACK_REACH:
+			break
+		if d > -HALF_W - float(o["w"]):
+			o["broken"] = true
+			smashed += 1
+			_shake = 8.0
+			SoundManager.play_sfx("stone")
+			SoundManager.play_sfx("explosion", -10.0)
+			var wx := float(o["x"]) + 28.0
+			for i in 18:
+				_dust.append([Vector2(wx, floor_y(wx) - randf_range(20.0, TUNNEL_H - 40.0)), Vector2(randf_range(80, 520), randf_range(-420, 120)), 0.8])
+			return
+
+
+## The flood caught you: restart at the last crystal, the flood far behind again.
+func _caught() -> void:
+	caught += 1
+	_crash = -1.0
+	_shake = 18.0
+	SoundManager.play_sfx("roar")
+	SoundManager.play_sfx("flame", -4.0)
+	_show("CAUGHT!", "Back to the last crystal.")
+	get_tree().create_timer(1.4).timeout.connect(_hide)
+	var back := float(_checks[_check_i]) if _check_i >= 0 else 300.0
+	if _resumed and back < float(_checks[1]):
+		back = float(_checks[1])
+	px = back
+	h = 0.0
+	vy = 0.0
+	speed = float(_cfg["speed"]) * 0.5
+	ducking = false
+	_invuln = 1.2
+	gap = HUNT_START
+	if StoryManager.autoplay:
+		print("CAVES autoplay: CAUGHT at %d" % int(px))
+
+
+## Level 70: the slide stops; the 3 waves are a normal Story fight (StoryArena).
+func _stop_for_fight() -> void:
+	_done = true
+	SoundManager.stop_music()
+	SoundManager.play_sfx("roar")
+	_shake = 16.0
+	_show("THEY CAUGHT UP!", "The tunnel opens into a cavern.  FIGHT!")
+	if StoryManager.autoplay:
+		print("CAVES autoplay: level %d stops for the waves" % level_n)
+	await get_tree().create_timer(2.0).timeout
+	StoryProgress.current_level = level_n
+	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+
+
 ## Autoplay (tests only): looks ahead and presses the keys.
 func _bot() -> void:
 	var v := maxf(speed, 1.0)
@@ -270,6 +424,11 @@ func _bot() -> void:
 		if dist > v * 0.9:
 			break
 		match String(o["kind"]):
+			"wall":
+				if bool(o["broken"]):
+					continue
+				if dist < 120.0:
+					_attack()
 			"rock", "spikes":
 				if dist < v * 0.16 + 30.0 and h <= 0.5:
 					_jump_buf = BUFFER
@@ -294,6 +453,8 @@ func _process(delta: float) -> void:
 	_jump_buf = maxf(_jump_buf - delta, 0.0)
 	_invuln = maxf(_invuln - delta, 0.0)
 	_duck_t = maxf(_duck_t - delta, 0.0)
+	_atk_t = maxf(_atk_t - delta, 0.0)
+	_atk_cd = maxf(_atk_cd - delta, 0.0)
 	for d in _dust:
 		d[0] += d[1] * delta
 		d[1].y += 900.0 * delta
@@ -309,10 +470,21 @@ func _process(delta: float) -> void:
 				_respawn()
 		else:
 			_run(delta)
+		if run and not _done:
+			_hunt(delta)
 	var target := Vector2(px - get_viewport_rect().size.x * 0.32, floor_y(px) - get_viewport_rect().size.y * 0.60)
 	_cam = target if _t < 0.1 else _cam.lerp(target, minf(delta * 6.0, 1.0))
 	queue_redraw()
 	_hud.queue_redraw()
+
+
+## The flood behind you: it moves a little slower than a clean slide. Crashes let it close in.
+func _hunt(delta: float) -> void:
+	var top := float(_cfg["speed"]) * StoryDifficulty.cave_speed() * (1.0 + 0.10 * px / _len)
+	var moved := speed if _crash < 0.0 else speed * 0.25
+	gap = minf(gap + (moved - top * HUNT_SPEED) * delta, HUNT_MAX)
+	if gap <= 0.0:
+		_caught()
 
 
 func _run(delta: float) -> void:
@@ -352,6 +524,9 @@ func _run(delta: float) -> void:
 		if ox + float(o["w"]) < px - HALF_W:
 			continue
 		match String(o["kind"]):
+			"wall":
+				if not bool(o["broken"]):
+					_crash_now("wall")
 			"rock", "spikes":
 				if h < float(o["h"]) - 6.0:
 					_crash_now(String(o["kind"]))
@@ -362,6 +537,9 @@ func _run(delta: float) -> void:
 	while _check_i + 1 < _checks.size() and px >= float(_checks[_check_i + 1]):
 		_check_i += 1
 		SoundManager.play_sfx("holy", -6.0)
+	if _fight_x > 0.0 and not _resumed and px >= _fight_x:
+		_stop_for_fight()
+		return
 	if px >= _len:
 		_finish()
 
@@ -409,6 +587,8 @@ func _draw() -> void:
 	for d in _dust:
 		draw_circle(d[0], 3.0, Color(glow.r, glow.g, glow.b, clampf(float(d[2]) * 2.0, 0.0, 1.0)))
 	_draw_hero()
+	if run:
+		_draw_hunters(x0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -474,6 +654,23 @@ func _draw_obstacle(o: Dictionary, rock: Color, glow: Color) -> void:
 	var oh := float(o["h"])
 	var base := floor_y(ox + w * 0.5)
 	match String(o["kind"]):
+		"wall":                                              # Cracked basalt from floor to roof (or rubble)
+			var fy0 := floor_y(ox)
+			if bool(o["broken"]):
+				for i in 4:
+					var rx := ox + float(i) * 18.0
+					var rr := PackedVector2Array([Vector2(rx - 10, floor_y(rx) + 4), Vector2(rx - 4, floor_y(rx) - 16 - float(i % 2) * 10.0), Vector2(rx + 10, floor_y(rx) + 4)])
+					draw_colored_polygon(rr, rock.lightened(0.1))
+				return
+			var top_y := fy0 - TUNNEL_H - 60.0
+			for i in 3:                                      # Three basalt columns
+				var cx := ox + float(i) * 19.0
+				var col := Rect2(cx, top_y, 18.0, floor_y(cx + 9.0) - top_y + 4.0)
+				draw_rect(col, Color(0.10, 0.09, 0.10).lightened(0.05 * float(i % 2)))
+				draw_rect(col, Color(0, 0, 0), false, 2.5)
+			# Glowing cracks: smash here
+			var cr := PackedVector2Array([Vector2(ox + 6, fy0 - 300), Vector2(ox + 30, fy0 - 240), Vector2(ox + 18, fy0 - 170), Vector2(ox + 44, fy0 - 110), Vector2(ox + 26, fy0 - 40)])
+			draw_polyline(cr, Color(glow.r, glow.g, glow.b, 0.6 + 0.3 * sin(_t * 8.0)), 3.0)
 		"rock":
 			var pts := PackedVector2Array([Vector2(ox - 6, floor_y(ox) + 6), Vector2(ox + w * 0.1, base - oh * 0.7), Vector2(ox + w * 0.35, base - oh),
 				Vector2(ox + w * 0.7, base - oh * 0.92), Vector2(ox + w + 4, base - oh * 0.35), Vector2(ox + w + 8, floor_y(ox + w) + 6)])
@@ -512,10 +709,42 @@ func _draw_crystal(x: float, lit: bool, glow: Color) -> void:
 	draw_polyline(PackedVector2Array([c[0], c[1], c[2], c[3], c[0]]), Color(1, 1, 1, 0.6 * a), 2.0)
 
 
+## The WHITE WALL at the end of every slide level: a wall of pure light across the tunnel.
 func _draw_exit() -> void:
 	var fy := floor_y(_len)
-	draw_circle(Vector2(_len + 200.0, fy - 200.0), 320.0, Color(1.0, 0.95, 0.8, 0.10))
-	draw_circle(Vector2(_len + 200.0, fy - 200.0), 170.0, Color(1.0, 0.95, 0.8, 0.22))
+	var wx := _len + 60.0
+	draw_circle(Vector2(wx, fy - 200.0), 420.0, Color(1.0, 1.0, 1.0, 0.08))
+	draw_circle(Vector2(wx, fy - 200.0), 260.0, Color(1.0, 1.0, 1.0, 0.12))
+	draw_rect(Rect2(wx, fy - TUNNEL_H - 200.0, 2400.0, TUNNEL_H + 600.0), Color(1, 1, 1))
+	for i in 6:                                              # Soft glowing edge
+		draw_rect(Rect2(wx - 12.0 * float(i + 1), fy - TUNNEL_H - 200.0, 12.0, TUNNEL_H + 600.0), Color(1, 1, 1, 0.5 - 0.08 * float(i)))
+
+
+## THE MAGMA RUN: the lava flood + the Kharleming swarm, `gap` behind you.
+func _draw_hunters(x0: float) -> void:
+	var hx := px - gap
+	if hx < x0 - 400.0:
+		return
+	var lava := Color(1.0, 0.42, 0.08)
+	var hot := Color(1.0, 0.85, 0.35)
+	var front := PackedVector2Array()
+	var back := hx - 2600.0
+	front.append(Vector2(back, floor_y(back) + 200.0))
+	for i in 15:                                             # The bubbling front, from the floor up to the roof
+		var k := float(i) / 14.0
+		var y := floor_y(hx) + 10.0 - k * (TUNNEL_H + 20.0)
+		front.append(Vector2(hx + 40.0 * sin(k * 9.0 + _t * 7.0) + 30.0 * sin(k * 3.0 - _t * 3.0) - k * 80.0, y))
+	front.append(Vector2(back, floor_y(back) - TUNNEL_H - 300.0))
+	draw_colored_polygon(front, lava)
+	var edge := front.slice(1, front.size() - 1)
+	draw_polyline(edge, hot, 6.0)
+	draw_circle(Vector2(hx, floor_y(hx) - TUNNEL_H * 0.5), 300.0, Color(1.0, 0.4, 0.1, 0.10))
+	for i in 3:                                              # Kharlemings riding the wave
+		var kx := hx + 10.0 - float(i) * 70.0 + 18.0 * sin(_t * 5.0 + float(i))
+		var ky := floor_y(kx) - 30.0 - float(i) * 120.0 - 20.0 * absf(sin(_t * 6.0 + float(i) * 2.0))
+		draw_set_transform(Vector2(kx, ky) - _cam, 0.0, Vector2(0.9, 0.9))
+		Kharleming.draw_bot(self, {"t": _t * 3.0 + float(i), "pose": "idle", "moving": true})
+		draw_set_transform(-_cam, 0.0, Vector2.ONE)
 
 
 func _draw_hero() -> void:
@@ -537,6 +766,9 @@ func _draw_hero() -> void:
 	draw_set_transform(pos - _cam, rot, sc)
 	StoryLevels.hero_art(hero).call("draw_portrait", self, _t * 0.3)
 	draw_set_transform(-_cam, 0.0, Vector2.ONE)
+	if _atk_t > 0.0:                                         # The smash: a white arc in front
+		var k := 1.0 - _atk_t / 0.22
+		draw_arc(pos + Vector2(40, -70), 70.0, -1.4 + k * 1.2, 0.2 + k * 1.2, 12, Color(1, 1, 1, 0.8 * (1.0 - k)), 8.0)
 
 
 # ============================================================
@@ -600,4 +832,19 @@ func _draw_hud() -> void:
 		var cx := r.position.x + r.size.x * float(_checks[i]) / _len
 		c.draw_colored_polygon(PackedVector2Array([Vector2(cx, r.position.y - 8), Vector2(cx + 6, r.get_center().y), Vector2(cx, r.end.y + 8), Vector2(cx - 6, r.get_center().y)]),
 			glow if i <= _check_i else Color(0.4, 0.4, 0.45))
-	FighterArt.label(c, Vector2(c.size.x * 0.5, 62.0), "%s  -  LEVEL %d     CRASHES: %d" % [StoryLevels.part_name(StoryLevels.CAVES_PART), level_n, hits], 16, Color(0.9, 0.88, 0.82))
+	FighterArt.label(c, Vector2(c.size.x * 0.5, 62.0), "%s  -  LEVEL %d     CRASHES: %d" % [StoryLevels.part_name(StoryLevels.colosseum_of(level_n)), level_n, hits], 16, Color(0.9, 0.88, 0.82))
+	if _fight_x > 0.0 and not _resumed:                      # Level 70: where the fight is
+		var fx := r.position.x + r.size.x * _fight_x / _len
+		FighterArt.label(c, Vector2(fx, r.position.y - 6.0), "X", 14, Color(1.0, 0.4, 0.3))
+	if run:
+		# The flood behind you: a red bar that fills as it closes in
+		var bw := 260.0
+		var br := Rect2(Vector2(40.0, c.size.y - 70.0), Vector2(bw, 14.0))
+		var k := 1.0 - clampf(gap / HUNT_MAX, 0.0, 1.0)
+		c.draw_rect(br.grow(3.0), Color(0, 0, 0, 0.6))
+		c.draw_rect(Rect2(br.position, Vector2(bw * k, br.size.y)), Color(1.0, 0.35 - 0.25 * k, 0.1).lerp(Color(1, 0.1, 0.05), k))
+		var warn := gap < 350.0 and fmod(_t, 0.4) < 0.2
+		FighterArt.label(c, br.position + Vector2(bw * 0.5, -12.0), "THE FLOOD IS RIGHT BEHIND YOU!" if warn else "THE HUNT: %d m behind" % int(gap / 10.0), 15,
+			Color(1.0, 0.4, 0.3) if gap < 350.0 else Color(1.0, 0.8, 0.6))
+	if _white > 0.0:
+		c.draw_rect(Rect2(Vector2.ZERO, c.size), Color(1, 1, 1, _white))

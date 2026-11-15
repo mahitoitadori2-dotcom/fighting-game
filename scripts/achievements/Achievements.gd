@@ -234,6 +234,18 @@ static func _build() -> void:
 		{"big": "crown", "frame": "red", "bg": Color(0.30, 0.16, 0.10)})
 	_add("crater_free_sacrifice", "Snapped Chains", "Free the Kharleming Sacrifice. (The Volcano Slave is buried.)", "story",
 		{"enemy": "kharleming", "frame": "red", "emblem": "halo", "bg": Color(0.10, 0.22, 0.26)})
+	# ---------------- THE MAGMA RUN (hunted slide, levels 68-70) ----------------
+	var run_names := ["The Lava Chute", "The Swarm Tunnel", "The Last Descent"]
+	var run_bg := [Color(0.34, 0.10, 0.04), Color(0.08, 0.20, 0.22), Color(0.40, 0.08, 0.04)]
+	for i in 3:
+		_add("run_%d" % (i + 1), run_names[i], "Reach the white wall at the end of %s (The Magma Run, Level %d)." % [run_names[i], 68 + i], "story",
+			{"big": "star", "frame": "bronze", "bg": run_bg[i]})
+		_add("run_flawless_%d" % (i + 1), "%s: Untouched" % run_names[i], "Slide through %s without a single crash - the flood never gets close." % run_names[i], "challenge",
+			{"big": "no_blocks", "frame": "silver" if i < 2 else "gold", "bg": run_bg[i].darkened(0.3)})
+	_add("col_%d" % StoryLevels.RUN_PART, "The Magma Run Conquered", "Escape the lava and the Kharlemings: reach the last white wall.", "story",
+		{"big": "crown", "frame": "gold", "bg": Color(0.36, 0.10, 0.04)})
+	_add("run_caught", "Lava Between the Toes", "Get caught by the flood 5 times in one level... and still reach the white wall.", "secret",
+		{"big": "skull", "frame": "bronze", "bg": Color(0.30, 0.08, 0.04)})
 	# ---------------- THE MIMIC ----------------
 	_add("mimic_steal", "Stolen Skin", "As the Mimic, bite an opponent with Stolen Skin and become them.", "versus",
 		{"script": MimicArt, "frame": "silver", "emblem": "star", "bg": Color(0.30, 0.06, 0.06)})
