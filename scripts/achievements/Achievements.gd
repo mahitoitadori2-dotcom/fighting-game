@@ -275,6 +275,17 @@ static func _build() -> void:
 		{"big": "crown", "frame": "gold", "bg": Color(0.50, 0.46, 0.32)})
 	_add("road_swordsman", "Storm Cutter", "Cut 40 of the Storm's particles in one bridge level.", "challenge",
 		{"big": "star", "frame": "purple", "bg": Color(0.16, 0.30, 0.20)})
+	# ---------------- ORBIS TERRARUM (dialogue only, levels 75-79) ----------------
+	var orbis_bg := Color(0.30, 0.45, 0.80)
+	_add("orbis_student", "A Student at Last", "Agree to become the Trainer's Student in Orbis Terrarum.", "story",
+		{"big": "star", "frame": "gold", "bg": orbis_bg})
+	var lesson_names := ["The Storm", "The Organs of the Storm", "The Storm's Range", "The Storm's Weak Points"]
+	_add("orbis_75", "The Free Seat", "Sit down at the Trainer's table.", "story", {"big": "star", "frame": "bronze", "bg": orbis_bg.darkened(0.2)})
+	for i in 4:
+		_add("orbis_%d" % (76 + i), "Lesson: %s" % lesson_names[i], "Learn the lesson about %s." % lesson_names[i].to_lower(), "story",
+			{"big": "star", "frame": "silver", "bg": orbis_bg.lerp(Color(0.2, 0.2, 0.3), 0.15 * float(i))})
+	_add("col_%d" % StoryLevels.ORBIS_PART, "Everything He Could Tell", "Learn every lesson of the Trainer in Orbis Terrarum.", "story",
+		{"big": "crown", "frame": "gold", "bg": orbis_bg})
 	_add("run_caught", "Lava Between the Toes", "Get caught by the flood 5 times in one level... and still reach the white wall.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.30, 0.08, 0.04)})
 	# ---------------- THE MIMIC ----------------

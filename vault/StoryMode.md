@@ -308,6 +308,48 @@ The Story part after Terra Craterum (page 10). It's the slide again, but you're 
   - Cave 64 still clears with the new white wall.
   - **Not played by a human:** the flood speed (`HUNT_SPEED`) may need tuning.
 
+## Orbis Terrarum (levels 75-79, added 2026-11-15)
+
+**PURE LORE: only dialogue**, no fighting (the user's rule). Scene `scenes/OrbisTalk.tscn` (`scripts/story/orbis/`). An island above the Storm: the closed hut (ancient spells keep the Storm away, shown as a faint dome and glowing runes), a table with one free seat, and **THE TRAINER**: a Learner at the Trainer level, **fully blue with NO EYES** (the user's design). His mood shows only in his mouth. **Both heroes are here** (they meet up in Orbis Terrarum, the user's choice): the Architect is asked, the Warrior stands by.
+- **75 The Trainer:**
+  - You walk off the bridge to the table. He introduces himself:
+    - The Learners: Students learn, Trainers teach, and a Master has taught someone everything.
+    - He hasn't had a student in a while.
+    - The hut's ancient spells protect the island.
+    - His Master is out, and the Learners only visit from time to time.
+  - Then he asks the Architect to be his Student: a **CHOICE** between "I Agree" and "I Don't Want That".
+  - **"I Don't Want That":** he gets upset, **LEVEL FAILED**, and the level restarts.
+  - **"I Agree":** he's happy and promises to help, the level clears, and all four lessons open.
+- **76-79 The LESSONS**, laid out **side by side** on the board (each with its own road from 75), any order, all four needed:
+  - 76 The Storm: alive, a Giant Anti-Nano Organism with Organs of the Storm.
+  - 77 The Organs: they work together like a body; one is an all-seeing eye.
+  - 78 Its Range: wider than any land; only Orbis Terrarum is safe while the spells hold.
+  - 79 Its Weak Points: every living thing has places it must protect.
+  - All four done means the part is done.
+- **The lessons are kept SIMPLE on purpose** (the user will give more lore). Claude's own small additions:
+  - "It saw you long before the bridge."
+  - "Only one finger."
+  - "First you learn, then you fight."
+  - The Learner ranks put into the Trainer's words.
+- Board: the 13th page, an island above storm clouds; Trainer figures on the tiles. Saved: `StoryProgress.lessons_done`.
+- **Music:** a new `story_orbis` (calm, warm: harp, soft strings, flute, far choir).
+- **Achievements:** 7 new (A Student at Last, The Free Seat, one per lesson, Everything He Could Tell).
+- **Checked by script:**
+  - Refusing fails and restarts the level.
+  - Agreeing clears it and opens 76-79.
+  - The lessons played in a random order (78, 76, 79, 77) each clear; the 4th completes the part.
+  - Board screenshot looked right.
+
+**The new DIALOGUE BOX look (2026-11-15, all Story dialogue):**
+- A soft vignette instead of a flat shade, and the box slides up as it appears.
+- A gradient ink background, a stone bevel, a double gold rim with a light sweeping over it.
+- Ornate corners with red gems, three kinds of carved runes.
+- Speakers stand on a lit pedestal, and the one talking gets a soft light behind them.
+- A gold name plate with tabs and gems that pops on a new speaker.
+- A typing caret, a bobbing gold diamond for "next", and text with a shadow.
+- **CHOICES** (option buttons; arrows / A-D, confirm, or click / tap).
+- The narrator has no portrait any more.
+
 ## The Road to Peace (levels 72-74, added 2026-11-15)
 
 The Story part after Terra Ordinariorum (page 12), between Ordinariorum and Orbis Terrarum. It's not a slide but a **RUN**: you're forced to run up the bridge from Orbis Terrarum (it climbs up into the sky). Same hero as DemiLand.

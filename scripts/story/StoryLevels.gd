@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3] # 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 5] # 13th = ORBIS TERRARUM (75-79) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -171,6 +171,7 @@ const MAPS := {
 	"ord_desert":   {"bg": "ord_desert", "ground": 26, "walls": "thorn", "half_width": 840.0, "music": "story_desert", "zone": "THE DESERT"},
 	"ord_mountain": {"bg": "ord_mountain", "ground": 23, "walls": "thorn", "half_width": 840.0, "music": "story_mountain", "zone": "THE MOUNTAIN"},
 	"ord_snow":     {"bg": "ord_snow", "ground": 24, "walls": "thorn", "half_width": 840.0, "music": "story_snow", "zone": "THE SNOW DESERT"},
+	"orbis":        {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_orbis", "zone": "ORBIS TERRARUM"},
 }
 
 # ======================= BOSS EXTENSION LEVELS =======================
@@ -632,6 +633,20 @@ const LEVELS := {
 	74: {"title": "THE ROAD TO PEACE", "theme": "ord_mountain", "map": "ord_mountain", "hero": "demi", "slide": true, "road": true,
 		"intro": "The island is right above you. One last run.",
 		"waves": [], "boss": "", "tile": "storm_finger"},
+
+	# ======================= ORBIS TERRARUM (levels 75-79) =======================
+	# PURE LORE: only dialogue (OrbisTalk.tscn). 75 = the arrival + the Trainer's question (a CHOICE:
+	# refusing fails the level). 76-79 = the LESSONS: side by side on the board, any order, all needed.
+	75: {"title": "THE TRAINER", "theme": "ord_meadow", "map": "orbis", "hero": "demi", "orbis": true,
+		"intro": "An island above the Storm. A table with one free seat.", "waves": [], "boss": ""},
+	76: {"title": "LESSON: THE STORM", "theme": "ord_meadow", "map": "orbis", "hero": "demi", "orbis": true, "lesson": true,
+		"intro": "What the Storm really is.", "waves": [], "boss": ""},
+	77: {"title": "LESSON: THE ORGANS", "theme": "ord_meadow", "map": "orbis", "hero": "demi", "orbis": true, "lesson": true,
+		"intro": "The Organs of the Storm.", "waves": [], "boss": ""},
+	78: {"title": "LESSON: ITS RANGE", "theme": "ord_meadow", "map": "orbis", "hero": "demi", "orbis": true, "lesson": true,
+		"intro": "How far the Storm can reach.", "waves": [], "boss": ""},
+	79: {"title": "LESSON: WEAK POINTS", "theme": "ord_meadow", "map": "orbis", "hero": "demi", "orbis": true, "lesson": true,
+		"intro": "Where the Storm can be hurt.", "waves": [], "boss": ""},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -652,9 +667,13 @@ const ORD_PART := 11
 const ORD_LEVEL := 71
 ## THE ROAD TO PEACE: the part after Terra Ordinariorum (three RUNNING levels up the bridge, 72-74).
 const ROAD_PART := 12
+## ORBIS TERRARUM: pure lore (dialogue only). 75 = the arrival, 76-79 = the LESSONS (any order).
+const ORBIS_PART := 13
 
 
 static func part_name(c: int) -> String:
+	if c == ORBIS_PART:
+		return "ORBIS TERRARUM"
 	if c == ROAD_PART:
 		return "THE ROAD TO PEACE"
 	if c == ORD_PART:
@@ -690,6 +709,16 @@ static func world_of(n: int) -> Script:
 ## Is level n TERRA ORDINARIORUM (the third open world: OrdLand / OrdWorld)?
 static func is_ord(n: int) -> bool:
 	return bool(get_level(n).get("ord", false))
+
+
+## Is level n an ORBIS TERRARUM dialogue level (OrbisTalk.tscn)?
+static func is_orbis(n: int) -> bool:
+	return bool(get_level(n).get("orbis", false))
+
+
+## Is level n one of Orbis Terrarum's LESSONS (side by side on the board, any order)?
+static func is_lesson(n: int) -> bool:
+	return bool(get_level(n).get("lesson", false))
 
 
 ## Is level n a cave SLIDE level (The Caves: no combat)?

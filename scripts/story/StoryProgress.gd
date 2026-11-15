@@ -11,8 +11,8 @@ extends RefCounted
 ## are moved to the matching level of the new layout when they load.
 
 const SAVE_PATH := "user://story.cfg"
-const TOTAL_LEVELS := 74                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE
-const AVAILABLE_LEVELS := 74             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace
+const TOTAL_LEVELS := 79                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE, 75-79 = ORBIS TERRARUM
+const AVAILABLE_LEVELS := 79             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -22,6 +22,8 @@ static var unlocked_level := 1
 static var colosseums_done := 0
 static var shining_choice := ""
 static var optional_done: Array = []
+## Orbis Terrarum's LESSONS learned (any order; all needed to go on).
+static var lessons_done: Array = []
 ## Colosseum 5: the hero you picked ("warrior" / "architect"); the other one is your CPU partner.
 static var c5_hero := ""
 ## BOSS EXTENSIONS: how many levels of each extension are beaten ("BC" -> 0..3) and the hero
@@ -218,6 +220,7 @@ static func load_progress() -> void:
 	colosseums_done = int(cfg.get_value("story", "colosseums_done", 0))
 	shining_choice = String(cfg.get_value("story", "shining_choice", ""))
 	optional_done = cfg.get_value("story", "optional_done", [])
+	lessons_done = cfg.get_value("story", "lessons_done", [])
 	c5_hero = String(cfg.get_value("story", "c5_hero", ""))
 	ext_done = cfg.get_value("story", "ext_done", {})
 	ext_hero = String(cfg.get_value("story", "ext_hero", ""))
@@ -256,6 +259,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "colosseums_done", colosseums_done)
 	cfg.set_value("story", "shining_choice", shining_choice)
 	cfg.set_value("story", "optional_done", optional_done)
+	cfg.set_value("story", "lessons_done", lessons_done)
 	cfg.set_value("story", "c5_hero", c5_hero)
 	cfg.set_value("story", "ext_done", ext_done)
 	cfg.set_value("story", "ext_hero", ext_hero)
@@ -352,6 +356,23 @@ static func set_ext_hero(hero: String) -> void:
 ## Level beaten: unlock the next one (an OPTIONAL next level also unlocks the one after it,
 ## so it can be skipped) and mark the Colosseum done after its boss.
 static func complete_level(level: int) -> void:
+	if StoryLevels.is_lesson(level):                  # A LESSON (any order): all of them = the part is done
+		if not lessons_done.has(level):
+			lessons_done.append(level)
+		var c2 := StoryLevels.ORBIS_PART
+		var all := true
+		for n in range(StoryLevels.first_of(c2) + 1, StoryLevels.last_of(c2) + 1):
+			if not lessons_done.has(n):
+				all = false
+		if all:
+			colosseums_done = maxi(colosseums_done, c2)
+			unlocked_level = clampi(maxi(unlocked_level, StoryLevels.last_of(c2) + 1), 1, AVAILABLE_LEVELS)
+		save_progress()
+		return
+	if StoryLevels.is_orbis(level):                   # The arrival opens ALL the lessons at once
+		unlocked_level = clampi(maxi(unlocked_level, StoryLevels.last_of(StoryLevels.ORBIS_PART)), 1, AVAILABLE_LEVELS)
+		save_progress()
+		return
 	var nxt := level + 1
 	if StoryLevels.is_optional(nxt):
 		nxt += 1
@@ -366,6 +387,10 @@ static func complete_level(level: int) -> void:
 
 ## True once a level is beaten (board check marks).
 static func level_cleared(level: int) -> bool:
+	if StoryLevels.is_lesson(level):
+		return lessons_done.has(level)
+	if StoryLevels.is_orbis(level):
+		return unlocked_level > level
 	if StoryLevels.is_optional(level):
 		return optional_done.has(level)
 	if level < unlocked_level:
@@ -390,6 +415,7 @@ static func reset() -> void:
 	colosseums_done = 0
 	shining_choice = ""
 	optional_done = []
+	lessons_done = []
 	c5_hero = ""
 	ext_done = {}
 	ext_hero = ""

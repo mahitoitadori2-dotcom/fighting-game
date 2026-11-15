@@ -171,14 +171,14 @@ const NAMES := {
 	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "THE STRANGER",
 	"volcano_slave": "VOLCANO SLAVE", "kharleming_sacrifice": "KHARLEMING SACRIFICE",
 	"baker": "THE BAKER", "washerwoman": "THE WASHERWOMAN", "guard": "THE TOWN GUARD", "elder": "THE ELDER",
-	"farmer": "THE FARMER", "child": "A CHILD",
+	"farmer": "THE FARMER", "child": "A CHILD", "trainer": "THE TRAINER",
 }
 ## Townsfolk: their look (OrdArt.villager) and voice.
 const TOWN_LOOK := {"baker": 0, "washerwoman": 1, "guard": 3, "elder": 4, "farmer": 2, "child": 5}
 const TOWN_VOICE := {"baker": "town_m", "washerwoman": "town_f", "guard": "town_m", "elder": "town_old", "farmer": "town_m", "child": "town_child"}
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -337,6 +337,66 @@ const TOWN := {
 }
 
 
+## ORBIS TERRARUM (lore by the user, 2026-11-15): PURE LORE, only dialogue. "A" = the Architect,
+## "W" = the Warrior (both heroes meet here). The Trainer wants the ARCHITECT as his Student.
+## The lessons are kept simple for now (the user will give more lore later).
+const ORBIS_ARRIVAL := [
+	["narrator", "Orbis Terrarum. Warm wind, green grass. Far below, the Storm roars - but up here, not one drop of rain."],
+	["narrator", "A closed hut. No one else in sight. And at a table with one free seat... a man, blue from head to toe. He has no eyes."],
+	["A", "Who are you?"],
+	["trainer", "Visitors! Oh, it's been so long. Sit, sit! I am the Trainer - one of the Learners. At the Trainer level."],
+	["W", "The Learners?"],
+	["trainer", "Students learn. Trainers teach. And a Master is one who has taught someone everything they know."],
+	["trainer", "I have not had a Student in a long while."],
+	["A", "We came straight through the Storm. Why doesn't it touch this place?"],
+	["trainer", "Orbis Terrarum is highly protected from the Storm. The hut - there are ancient spells put on it."],
+	["W", "And who lives in the hut?"],
+	["trainer", "My Master. He is out at the moment."],
+	["trainer", "Not many of us Learners stayed at Orbis Terrarum. They only visit it from time to time."],
+	["trainer", "*he has no eyes, yet he turns his face to the Architect - and keeps it there for a long, long time*"],
+	["trainer", "You. Architect. Will you become my Student?", ["I Agree", "I Don't Want That"]],
+]
+const ORBIS_AGREE := [
+	["trainer", "You will? YOU WILL! Ha ha! Wonderful!"],
+	["trainer", "Then I promise you this: I will teach you everything I can. And I will help you."],
+	["W", "...Looks like we're staying a while."],
+	["trainer", "Come back to the table whenever you are ready. Every lesson is a different subject. Learn them all."],
+]
+const ORBIS_REFUSE := [
+	["trainer", "...Oh."],
+	["trainer", "*his blue face turns a darker blue*"],
+	["trainer", "Then I have nothing to say to you. The bridge is right behind you."],
+]
+## The lessons (levels 76-79, any order). [title, lines]
+const ORBIS_LESSONS := {
+	76: ["THE STORM", [
+		["trainer", "Lesson one. Tell me - what IS the Storm?"],
+		["W", "A storm. Wind. Lightning. A lot of it."],
+		["trainer", "Ha! No. The Storm is ALIVE. We call it a GIANT ANTI-NANO ORGANISM."],
+		["A", "An organism? Something alive... that big?"],
+		["trainer", "As big as the sky. And like every living thing, it has organs inside it. We call them the Organs of the Storm."],
+		["trainer", "That is enough for one lesson. Think about it."]]],
+	77: ["THE ORGANS OF THE STORM", [
+		["trainer", "Lesson two. The Organs of the Storm."],
+		["trainer", "The Storm is not one thing. It is many parts, working together - like a body."],
+		["trainer", "One of them is an ALL-SEEING EYE. Wherever the Storm looks, it sees everything."],
+		["W", "So it saw us on the bridge."],
+		["trainer", "It saw you long before the bridge."],
+		["trainer", "There are other Organs. One day you will learn about them too."]]],
+	78: ["THE STORM'S RANGE", [
+		["trainer", "Lesson three. How far can the Storm reach?"],
+		["A", "It reached all the way down into the town."],
+		["trainer", "And that was only one finger. Its range of attack is wider than any land you have walked."],
+		["trainer", "Here, on Orbis Terrarum, you are safe. As long as the hut's spells hold."]]],
+	79: ["THE STORM'S WEAK POINTS", [
+		["trainer", "Lesson four. Its weak points."],
+		["W", "Finally. How do we hurt it?"],
+		["trainer", "Every living thing has places it must protect. The Storm is no different."],
+		["A", "Then we find those places."],
+		["trainer", "Slowly, Student. First you learn. Then you fight."]]],
+}
+
+
 static func npc_talk(lines: Array, visit: int) -> Array:
 	return lines[clampi(visit, 0, lines.size() - 1)]
 
@@ -399,6 +459,8 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			CraterWorld.draw_slave(c, Vector2.ZERO, t, false)
 		"kharleming_sacrifice":
 			Kharleming.draw_bot(c, {"t": t * 3.0, "pose": "idle", "moving": true})
+		"trainer":
+			OrbisArt.trainer(c, t, "calm")
 		"baker", "washerwoman", "guard", "elder", "farmer", "child":
 			OrdArt.villager(c, int(TOWN_LOOK[id]), t)
 		_:

@@ -86,9 +86,12 @@ const PAGES := {
 		"board": [Color(0.30, 0.52, 0.78), Color(0.36, 0.56, 0.28)], "boss_label": Color(0.8, 0.92, 1.0)},
 	12: {"title": "STORY MODE  -  THE ROAD TO PEACE",
 		"board": [Color(0.12, 0.13, 0.22), Color(0.55, 0.50, 0.38)], "boss_label": Color(1.0, 0.92, 0.6)},
+	13: {"title": "STORY MODE  -  ORBIS TERRARUM",
+		"board": [Color(0.95, 0.82, 0.55), Color(0.45, 0.62, 0.88)], "boss_label": Color(0.35, 0.55, 1.0)},
 }
 const CRATER_SCENE := "res://scenes/CraterLand.tscn"      # The second open world
 const ORD_SCENE := "res://scenes/OrdLand.tscn"            # The third open world
+const ORBIS_SCENE := "res://scenes/OrbisTalk.tscn"        # Orbis Terrarum: dialogue only
 const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
 const SLIDE_SCENE := "res://scenes/CaveSlide.tscn"        # The Caves: no-combat slide levels
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
@@ -299,6 +302,11 @@ func _refresh_ui() -> void:
 		var tag := "  (BOSS)" if boss else ""
 		if StoryLevels.is_open_world(_pawn_space):
 			tag = "  (OPEN WORLD  -  5-15 min)"
+		if StoryLevels.is_orbis(_pawn_space):
+			var what := "DIALOGUE ONLY  -  a lesson (any order, all needed)" if StoryLevels.is_lesson(_pawn_space) else "DIALOGUE ONLY"
+			_info.text = "Level %d: %s  (%s)    |    The Architect and the Warrior, at the Trainer's table" % [_pawn_space, lv["title"], what]
+			_play.text = "PLAY LEVEL %d" % _pawn_space
+			return
 		if StoryLevels.is_slide(_pawn_space):
 			var run_part := StoryLevels.colosseum_of(_pawn_space) == StoryLevels.RUN_PART
 			var kind := "SLIDE  -  HUNTED" if run_part else "NO COMBAT  -  slide"
@@ -369,6 +377,8 @@ func _max_scroll() -> float:
 
 ## Map position (x, y 0..1 of the board height) of level n: one slow wave over the whole map.
 func _map_point(n: int) -> Vector2:
+	if StoryLevels.is_lesson(n):                       # Orbis Terrarum's lessons: one flat row (any order)
+		return Vector2(_level_x(n), WAVE_MID + (-0.16 if n % 2 == 0 else 0.16))
 	var g := float(n - 1)
 	return Vector2(_level_x(n), WAVE_MID + WAVE_AMP * sin(g * WAVE_FREQ + 0.3))
 
@@ -638,6 +648,8 @@ func _on_play() -> void:
 		scene.hero_art = art
 		add_child(scene)
 		await scene.finished
+	elif StoryLevels.is_orbis(_pawn_space):
+		pass                                                            # Orbis Terrarum: straight to the table
 	elif Three.enabled() and not StoryLevels.is_slide(_pawn_space):     # (The Caves: you just fall in)
 		# 3D LEVEL INTRO: walk in / fly over / fall in / gate opens / boss reveal (Scenes3D.intro_for)
 		var intro := StoryCutscene.new()
@@ -652,6 +664,9 @@ func _on_play() -> void:
 		fall.caption = "LEVEL %d:  %s" % [_pawn_space, StoryLevels.get_level(_pawn_space)["title"]]
 		add_child(fall)
 		await fall.finished
+	if StoryLevels.is_orbis(_pawn_space):
+		get_tree().change_scene_to_file(ORBIS_SCENE)
+		return
 	if StoryLevels.is_slide(_pawn_space):
 		get_tree().change_scene_to_file(SLIDE_SCENE)
 		return
@@ -813,6 +828,8 @@ func _draw_content() -> void:
 	for n in range(1, count):
 		var a := _space_pos(n)
 		var b := _space_pos(n + 1)
+		if StoryLevels.is_lesson(n + 1):                     # Lessons: every road branches from the arrival
+			a = _space_pos(StoryLevels.first_of(StoryLevels.ORBIS_PART))
 		if _visible_x(a.x) or _visible_x(b.x):
 			_road(a, b, n < StoryProgress.unlocked_level, 1.0 if n < StoryProgress.unlocked_level + 1 else 0.6)
 	# Spaces (on screen only)
@@ -971,6 +988,13 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.ORBIS_PART:
+		# Orbis Terrarum: a calm island above a ring of storm clouds, the hut, a table
+		var base13 := r.position.y + r.size.y
+		for k in 16:
+			c.draw_circle(Vector2(r.position.x + r.size.x * float(k) / 15.0, base13 - 10.0), 50.0, Color(0.17, 0.18, 0.27, 0.35))
+		c.draw_colored_polygon(EnemyArt.ellipse_points(Vector2(r.get_center().x, base13 - r.size.y * 0.3), r.size.x * 0.42, 22.0, 24), Color(0.40, 0.68, 0.32, 0.45))
+		c.draw_rect(Rect2(r.end.x - r.size.x * 0.2, base13 - r.size.y * 0.3 - 60.0, 60.0, 60.0), Color(0.62, 0.58, 0.52, 0.5))
 	elif _page >= StoryLevels.ROAD_PART:
 		# The Road to Peace: a bridge of light rising into a dark storm, an island glowing at the top
 		var base12 := r.position.y + r.size.y
@@ -1210,7 +1234,11 @@ func _space(n: int) -> void:
 	# Mini enemy figure on the tile
 	var center := rect.get_center() + Vector2(0, -6)
 	if unlocked:
-		if StoryLevels.is_slide(n):
+		if StoryLevels.is_orbis(n):
+			# Orbis Terrarum: the Trainer (blue) on the tile
+			c.draw_set_transform(center + Vector2(0, s * 0.3), 0.0, Vector2(0.36, 0.36))
+			OrbisArt.trainer(c, _t, "happy" if StoryProgress.level_cleared(n) else "calm")
+		elif StoryLevels.is_slide(n):
 			# The Caves: no enemy - your hero sliding down a little slope
 			c.draw_line(center + Vector2(-s * 0.4, s * 0.18), center + Vector2(s * 0.4, s * 0.38), Color(0.05, 0.05, 0.07), 6.0)
 			c.draw_set_transform(center + Vector2(0, s * 0.27), 0.03, Vector2(0.34, 0.34))

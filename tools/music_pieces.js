@@ -677,4 +677,21 @@ PIECES.story_road = { bpm: 152, meter: 4,
     { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75], vel: 74 },
   ] };
 
+// ---------------- ORBIS TERRARUM: an island above the Storm (2026-11-15) ----------------
+// F major 3/4, calm and warm: a gentle harp, soft strings, a flute melody, a far choir.
+// Peace at last - with a little mystery (a borrowed D-flat chord).
+PIECES.story_orbis = { bpm: 70, meter: 3, rev: 0.45,
+  chords: 'F F Dm Bb F C Db C  F Am Bb Gm F Dm C F',
+  parts: [
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 4, 1]], oct: 1, vel: 54 },
+    { t: 'pad', inst: 'slowstrings', from: 0, to: 16, vel: 46 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 3]], vel: 52 },
+    { t: 'mel', inst: 'flute', bar: 0, vel: 86, dbl: [['clarinet', -1, 0.25]],
+      notes: 'C5:2 F5:1 A5:3 A5:2 F5:1 D5:3 C5:2 F5:1 E5:2 G5:1 F5:2 Ab5:1 G5:3' },
+    { t: 'pad', inst: 'oohs', from: 8, to: 16, oct: 1, vel: 50 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 84, dbl: [['celesta', 1, 0.2], ['voice', -1, 0.3]],
+      notes: 'A5:2 C6:1 C6:2 A5:1 Bb5:2 D6:1 G5:3 A5:2 F5:1 F5:2 D5:1 E5:2 G5:1 F5:3' },
+    { t: 'hit', inst: 'bells', key: 77, from: 0, to: 16, beats: [0], every: 4, vel: 46, dur: 3 },
+  ] };
+
 module.exports = { PIECES, build };
