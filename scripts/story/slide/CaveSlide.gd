@@ -46,6 +46,18 @@ const TIERS := {
 		"glow": Color(1.0, 0.4, 0.1), "music": "boss_kharleming_lord", "run": true, "fight": true,
 		"pool": ["rock", "wall", "gap", "ceil", "wall_ceil", "gap_ceil", "rock_ceil", "wall", "long_ceil"]},
 }
+## THE ROAD TO PEACE (Story part 12, levels 72-74): RUN up the bridge from Orbis Terrarum. No S.
+## The Storm throws particles: jump them or hit them (J). The Architect carries a SWORD here
+## (green blade, silver crossguard and handle) - only on the bridge.
+const ROAD_TIERS := {
+	7: {"len": 34000.0, "speed": 600.0, "sky": [Color(0.10, 0.11, 0.18), Color(0.28, 0.30, 0.42)], "rock": Color(0.85, 0.78, 0.55),
+		"glow": Color(1.0, 0.92, 0.6), "music": "story_road", "road": true, "pool": ["orb", "orb", "spark", "orb"]},
+	8: {"len": 40000.0, "speed": 650.0, "sky": [Color(0.08, 0.08, 0.15), Color(0.22, 0.24, 0.36)], "rock": Color(0.85, 0.78, 0.55),
+		"glow": Color(1.0, 0.92, 0.6), "music": "story_road", "road": true, "pool": ["orb", "spark", "pair", "spark", "orb"]},
+	9: {"len": 46000.0, "speed": 700.0, "sky": [Color(0.05, 0.05, 0.10), Color(0.18, 0.18, 0.30)], "rock": Color(0.85, 0.78, 0.55),
+		"glow": Color(1.0, 0.92, 0.6), "music": "boss_storm_finger", "road": true, "pool": ["orb", "spark", "pair", "mix", "spark", "mix"]},
+}
+const ROAD_SLOPE := 0.10
 const ATTACK_REACH := 170.0           # Smash a wall this close in front of you
 const ATTACK_CD := 0.32
 const HUNT_START := 1000.0            # The flood starts this far behind
@@ -83,6 +95,8 @@ var _shake := 0.0
 var _dust: Array = []                 # [pos, vel, life]
 var _touch_duck := {}                 # touch index -> true (left half held)
 var run := false                      # THE MAGMA RUN tier (walls + the hunt)
+var road := false                     # THE ROAD TO PEACE tier (running up the bridge, storm particles)
+var _parts: Array = []                # Road: {kind, x0, x, v, on, gone}
 var gap := HUNT_START                 # How far behind the flood is
 var caught := 0
 var smashed := 0
@@ -101,16 +115,22 @@ var _sub: Label
 func _ready() -> void:
 	StoryProgress.load_progress()
 	level_n = StoryProgress.current_level
-	if StoryLevels.colosseum_of(level_n) == StoryLevels.RUN_PART:
+	if StoryLevels.colosseum_of(level_n) == StoryLevels.ROAD_PART:
+		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.ROAD_PART) + 7, 7, 9)
+	elif StoryLevels.colosseum_of(level_n) == StoryLevels.RUN_PART:
 		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.RUN_PART) + 4, 4, 6)
 	else:
 		level_n = clampi(level_n, StoryLevels.first_of(StoryLevels.CAVES_PART), StoryLevels.last_of(StoryLevels.CAVES_PART))
 		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.CAVES_PART) + 1, 1, 3)
 	hero = StoryLevels.hero_of(level_n)
-	_cfg = TIERS[tier]
+	_cfg = ROAD_TIERS[tier] if ROAD_TIERS.has(tier) else TIERS[tier]
 	_len = float(_cfg["len"])
 	run = bool(_cfg.get("run", false))
-	_build_layout()
+	road = bool(_cfg.get("road", false))
+	if road:
+		_build_road()
+	else:
+		_build_layout()
 	if bool(_cfg.get("fight", false)):
 		_fight_x = float(_checks[1]) - 60.0
 		if resume_after_fight == level_n:               # Back from the 3 waves: the last slide
@@ -128,7 +148,49 @@ func _ready() -> void:
 # LAYOUT (seeded: the same cave every time)
 # ============================================================
 func floor_y(x: float) -> float:
+	if road:                                                     # The bridge climbs UP into the sky
+		return -x * ROAD_SLOPE + 18.0 * sin(x / 900.0)
 	return x * SLOPE + 70.0 * sin(x / 950.0) + 26.0 * sin(x / 330.0 + 1.3)
+
+
+## THE ROAD TO PEACE: no obstacles on the bridge itself - the STORM throws PARTICLES at you.
+##   "orb"     a ball of storm rolling down the bridge          jump it or hit it
+##   "spark"   a shard of lightning flying at head height       hit it (or jump high over it)
+##   "pair"    two orbs close together
+##   "mix"     a spark right after an orb
+func _build_road() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 9100 + tier * 77
+	var v := float(_cfg["speed"])
+	_checks = [_len * 0.25, _len * 0.5, _len * 0.75]
+	var pool: Array = _cfg["pool"]
+	var x := 1800.0
+	var step := 0
+	while x < _len - 1400.0:
+		var near := false
+		for c in _checks:
+			if x > c - 400.0 and x < c + 900.0:
+				near = true
+		if near:
+			x += 400.0
+			continue
+		var kind: String = pool[rng.randi() % pool.size()] if step > 1 else ["orb", "spark"][step]
+		step += 1
+		var pv := rng.randf_range(240.0, 380.0) + 30.0 * float(tier - 7)
+		match kind:
+			"orb", "spark":
+				_parts.append(_particle(kind, x, pv))
+			"pair":
+				_parts.append(_particle("orb", x, pv))
+				_parts.append(_particle("orb", x + (v + pv) * 0.75, pv))
+			"mix":
+				_parts.append(_particle("orb", x, pv))
+				_parts.append(_particle("spark", x + (v + pv) * 0.7, pv))
+		x += (v + pv) * rng.randf_range(1.05, 1.6) * (0.85 if tier == 9 else 1.0) + (v + pv) * (0.75 if kind == "pair" or kind == "mix" else 0.0)
+
+
+func _particle(kind: String, x: float, pv: float) -> Dictionary:
+	return {"kind": kind, "x0": x, "x": x, "v": pv, "on": false, "gone": false}
 
 
 func _build_layout() -> void:
@@ -214,6 +276,9 @@ func _intro() -> void:
 	var title := String(StoryLevels.get_level(level_n).get("title", "THE CAVES"))
 	var keys := "W  -  JUMP" if tier == 1 else "W  -  JUMP        S  -  DUCK / DIVE DOWN"
 	var line := "No enemies.  Just slide."
+	if road:
+		keys = "W  -  JUMP        J  -  HIT"
+		line = "Run up the bridge. The Storm throws everything it has at you."
 	if run:
 		keys += "        J  -  SMASH WALLS"
 		line = "The lava and the Kharlemings are HUNTING you.  Do not slow down."
@@ -241,10 +306,19 @@ func _finish() -> void:
 		best = "     NEW BEST TIME!" if old > 0.0 else ""
 	else:
 		best = "     BEST %s" % StoryManager.time_text(old)
-	_show("TUNNEL ESCAPED!" if run else "CAVE CLEARED!", "TIME %s     %s%s%s\nProgress saved" % [StoryManager.time_text(run_time),
+	_show("BRIDGE CLIMBED!" if road else ("TUNNEL ESCAPED!" if run else "CAVE CLEARED!"), "TIME %s     %s%s%s\nProgress saved" % [StoryManager.time_text(run_time),
 		"NOT A SCRATCH!" if flawless else "CRASHES %d" % hits, ("     CAUGHT %d" % caught) if run else "", best])
 	StoryProgress.complete_level(level_n)
-	if run:
+	if road:
+		var kr := tier - 6
+		Achievements.unlock("road_%d" % kr)
+		if flawless:
+			Achievements.unlock("road_flawless_%d" % kr)
+		if smashed >= 40:
+			Achievements.unlock("road_swordsman")
+		if level_n == StoryLevels.last_of(StoryLevels.ROAD_PART):
+			Achievements.unlock("col_%d" % StoryLevels.ROAD_PART)
+	elif run:
 		var k := tier - 3
 		Achievements.unlock("run_%d" % k)
 		if flawless and caught == 0:
@@ -306,6 +380,12 @@ func _respawn() -> void:
 	speed = float(_cfg["speed"]) * 0.5
 	ducking = false
 	_invuln = 1.0
+	if road:                                                     # The Storm throws them all again
+		for p in _parts:
+			if float(p["x0"]) > px:
+				p["x"] = p["x0"]
+				p["on"] = false
+				p["gone"] = false
 	SoundManager.play_sfx("spawn", -6.0)
 
 
@@ -322,7 +402,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var st := event as InputEventScreenTouch
 	if st != null:
 		var left := st.position.x < get_viewport_rect().size.x * 0.5
-		if st.pressed and run and st.position.y < get_viewport_rect().size.y * 0.4:
+		if st.pressed and (run or road) and st.position.y < get_viewport_rect().size.y * 0.4:
 			_attack()                                      # Touch: the top of the screen = SMASH
 		elif st.pressed:
 			if left:
@@ -340,7 +420,7 @@ func _down_held() -> bool:
 
 ## S: dive in the air, duck on the ground (only from the 2nd cave on).
 func _press_down() -> void:
-	if tier < 2 or not _started or _crash >= 0.0:
+	if tier < 2 or road or not _started or _crash >= 0.0:          # (The Road to Peace: no S)
 		return
 	if h > 0.5:
 		vy = DIVE_V
@@ -352,11 +432,26 @@ func _press_down() -> void:
 
 ## J / ATTACK (The Magma Run): smash the first cracked wall right in front of you.
 func _attack() -> void:
-	if not run or not _started or _crash >= 0.0 or _done or _atk_cd > 0.0:
+	if not (run or road) or not _started or _crash >= 0.0 or _done or _atk_cd > 0.0:
 		return
 	_atk_cd = ATTACK_CD
 	_atk_t = 0.22
-	SoundManager.play_sfx("swing", -4.0)
+	SoundManager.play_sfx("sword_slash" if road else "swing", -4.0)
+	if road:                                                     # Cut the first storm particle in reach
+		for p in _parts:
+			if bool(p["gone"]) or not bool(p["on"]):
+				continue
+			var d := float(p["x"]) - px
+			if d > -HALF_W - 20.0 and d < ATTACK_REACH:
+				p["gone"] = true
+				smashed += 1
+				_shake = 5.0
+				SoundManager.play_sfx("spark", -4.0)
+				var py := floor_y(float(p["x"])) - _part_h(p)
+				for i in 14:
+					_dust.append([Vector2(float(p["x"]), py), Vector2(randf_range(-300, 300), randf_range(-360, 160)), 0.6])
+				return
+		return
 	for o in _obs:
 		if o["kind"] != "wall" or bool(o["broken"]):
 			continue
@@ -415,6 +510,19 @@ func _stop_for_fight() -> void:
 ## Autoplay (tests only): looks ahead and presses the keys.
 func _bot() -> void:
 	var v := maxf(speed, 1.0)
+	if road:
+		for p in _parts:
+			if bool(p["gone"]) or not bool(p["on"]) or float(p["x"]) < px - HALF_W:
+				continue
+			var dist := float(p["x"]) - px
+			var closing := v + float(p["v"])
+			if p["kind"] == "spark" or int(float(p["x0"])) % 2 == 0:
+				if dist < 130.0:
+					_attack()
+			elif dist < closing * 0.2 + 30.0 and h <= 0.5:
+				_jump_buf = BUFFER
+			return
+		return
 	for o in _obs:
 		var ox := float(o["x"])
 		var ow := float(o["w"])
@@ -478,6 +586,36 @@ func _process(delta: float) -> void:
 	_hud.queue_redraw()
 
 
+## THE ROAD TO PEACE: the Storm's particles fly down the bridge at you.
+func _road_particles(delta: float, top: float) -> void:
+	for p in _parts:
+		if bool(p["gone"]):
+			continue
+		var x := float(p["x"])
+		if not bool(p["on"]):
+			if x - px < 1500.0:
+				p["on"] = true
+				SoundManager.play_sfx("whoosh", -14.0)
+			continue
+		x -= float(p["v"]) * delta
+		p["x"] = x
+		if x < px - 900.0:
+			p["gone"] = true
+			continue
+		if absf(x - px) > HALF_W + 22.0:
+			continue
+		var ph := _part_h(p)
+		var r := 24.0 if p["kind"] == "orb" else 20.0
+		if ph + r > h + 4.0 and ph - r < top - 4.0:                 # Overlaps your body
+			p["gone"] = true
+			_crash_now(String(p["kind"]))
+
+
+## Height of a particle's centre above the bridge.
+func _part_h(p: Dictionary) -> float:
+	return 26.0 if p["kind"] == "orb" else 92.0
+
+
 ## The flood behind you: it moves a little slower than a clean slide. Crashes let it close in.
 func _hunt(delta: float) -> void:
 	var top := float(_cfg["speed"]) * StoryDifficulty.cave_speed() * (1.0 + 0.10 * px / _len)
@@ -495,7 +633,7 @@ func _run(delta: float) -> void:
 	px += speed * delta
 	var grounded := h <= 0.0 and not _in_gap(px)
 	_air_t = 0.0 if grounded else _air_t + delta
-	ducking = tier >= 2 and grounded and (_duck_t > 0.0 or _down_held())
+	ducking = tier >= 2 and not road and grounded and (_duck_t > 0.0 or _down_held())
 	if _jump_buf > 0.0 and (grounded or _air_t < COYOTE) and vy <= 0.0 and h > -20.0:
 		vy = JUMP_V
 		h = maxf(h, 0.0) + 1.0
@@ -533,6 +671,8 @@ func _run(delta: float) -> void:
 			"ceil":
 				if top > float(o["h"]) + 4.0:
 					_crash_now("ceil")
+	if road:
+		_road_particles(delta, top)
 	# Crystals (checkpoints)
 	while _check_i + 1 < _checks.size() and px >= float(_checks[_check_i + 1]):
 		_check_i += 1
@@ -557,6 +697,9 @@ func _draw() -> void:
 	# Background (screen space): dark gradient + far rock columns (parallax)
 	for i in 8:                                              # Soft gradient (no hard line)
 		draw_rect(Rect2(0, vs.y * float(i) / 8.0, vs.x, vs.y / 8.0 + 1.0), (sky[0] as Color).lerp(sky[1], float(i) / 7.0))
+	if road:
+		_draw_road(vs, cam)
+		return
 	var par := fmod(cam.x * 0.25, 420.0)
 	for i in 6:
 		var bx := float(i) * 420.0 - par
@@ -590,6 +733,102 @@ func _draw() -> void:
 	if run:
 		_draw_hunters(x0)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+## THE ROAD TO PEACE: the storm all around, Orbis Terrarum glowing above, the bridge of light.
+func _draw_road(vs: Vector2, cam: Vector2) -> void:
+	var glow: Color = _cfg["glow"]
+	var prog := clampf(px / _len, 0.0, 1.0)
+	# Orbis Terrarum: an island in the sky, top right, closer the further you run
+	var ip := Vector2(vs.x * 0.78, vs.y * (0.22 - 0.06 * prog))
+	var isz := 70.0 + 170.0 * prog
+	draw_circle(ip, isz * 1.6, Color(1.0, 0.95, 0.75, 0.10 + 0.08 * prog))
+	draw_colored_polygon(PackedVector2Array([ip + Vector2(-isz, 0), ip + Vector2(isz, 0), ip + Vector2(isz * 0.3, isz * 0.7), ip + Vector2(-isz * 0.4, isz * 0.6)]), Color(0.36, 0.28, 0.24))
+	draw_colored_polygon(EnemyArt.ellipse_points(ip + Vector2(0, -isz * 0.08), isz, isz * 0.22, 18), Color(0.38, 0.65, 0.34))
+	draw_rect(Rect2(ip + Vector2(-isz * 0.12, -isz * 0.42), Vector2(isz * 0.24, isz * 0.34)), Color(0.55, 0.42, 0.28))   # The hut
+	# Storm clouds (two parallax layers) + lightning
+	for layer in 2:
+		var spd := 0.15 + 0.2 * float(layer)
+		var par := fmod(cam.x * spd, 260.0)
+		for i in 8:
+			var cx := float(i) * 260.0 - par
+			var cy := vs.y * (0.08 + 0.75 * float(layer)) + 30.0 * sin(float(i) * 1.7 + floor(cam.x * spd / 260.0))
+			draw_circle(Vector2(cx, cy), 120.0 + 30.0 * float(layer), Color(0.14, 0.15, 0.24, 0.75 - 0.15 * float(layer)))
+	if fmod(_t * 1.3, 3.0) < 0.12:
+		var lx := vs.x * fmod(_t * 0.37, 1.0)
+		draw_rect(Rect2(Vector2.ZERO, vs), Color(0.8, 0.85, 1.0, 0.10))
+		draw_polyline(PackedVector2Array([Vector2(lx, 0), Vector2(lx + 30, vs.y * 0.15), Vector2(lx - 10, vs.y * 0.3), Vector2(lx + 25, vs.y * 0.45)]), Color(0.9, 0.95, 1.0), 3.0)
+	# The world: the bridge
+	draw_set_transform(-cam, 0.0, Vector2.ONE)
+	var x0 := cam.x - 60.0
+	var x1 := cam.x + vs.x + 60.0
+	var top := PackedVector2Array()
+	var xx := floorf(x0 / 40.0) * 40.0
+	while xx <= x1 + 40.0:
+		top.append(Vector2(xx, floor_y(xx)))
+		xx += 40.0
+	var deck := top.duplicate()
+	for i in range(top.size() - 1, -1, -1):
+		deck.append(top[i] + Vector2(0, 34))
+	draw_colored_polygon(deck, Color(0.92, 0.84, 0.58))
+	draw_polyline(top, Color(1.0, 0.98, 0.85), 4.0)
+	var bx := floorf(x0 / 90.0) * 90.0                         # Planks + glowing posts of the rail
+	while bx < x1:
+		var fy := floor_y(bx)
+		draw_line(Vector2(bx, fy + 2), Vector2(bx, fy + 32), Color(0.70, 0.60, 0.38), 3.0)
+		if int(bx / 90.0) % 4 == 0:
+			draw_line(Vector2(bx, fy), Vector2(bx, fy - 46), Color(0.85, 0.75, 0.48), 5.0)
+			draw_circle(Vector2(bx, fy - 50), 6.0, Color(1.0, 0.95, 0.7, 0.8))
+		bx += 90.0
+	for i in _checks.size():
+		_draw_crystal(float(_checks[i]), i <= _check_i, glow)
+	_draw_exit()
+	for p in _parts:
+		if bool(p["gone"]) or not bool(p["on"]):
+			continue
+		var ppx := float(p["x"])
+		if ppx < x0 or ppx > x1:
+			continue
+		_draw_particle(p, Vector2(ppx, floor_y(ppx) - _part_h(p)))
+	for d in _dust:
+		draw_circle(d[0], 3.0, Color(0.85, 0.92, 1.0, clampf(float(d[2]) * 2.0, 0.0, 1.0)))
+	_draw_hero()
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _draw_particle(p: Dictionary, c: Vector2) -> void:
+	if p["kind"] == "orb":                                       # A rolling ball of storm
+		draw_circle(c, 34.0, Color(0.5, 0.6, 1.0, 0.15))
+		draw_circle(c, 24.0, Color(0, 0, 0))
+		draw_circle(c, 21.0, Color(0.20, 0.22, 0.34))
+		var a := -_t * 8.0
+		for k in 3:
+			var q := c + Vector2.from_angle(a + float(k) * 2.1) * 12.0
+			draw_line(c, q, Color(0.8, 0.9, 1.0, 0.8), 2.0)
+	else:                                                        # A shard of lightning flying at you
+		draw_circle(c, 26.0, Color(0.7, 0.85, 1.0, 0.18))
+		var pts := PackedVector2Array([c + Vector2(-26, -6), c + Vector2(-4, -12), c + Vector2(-8, -2), c + Vector2(26, 4), c + Vector2(2, 10), c + Vector2(6, 2)])
+		draw_colored_polygon(pts, Color(0.85, 0.93, 1.0))
+		draw_polyline(pts + PackedVector2Array([pts[0]]), Color(0.3, 0.45, 0.9), 2.0)
+		draw_line(c + Vector2(26, 4), c + Vector2(70, 2), Color(0.8, 0.9, 1.0, 0.35), 3.0)      # Trail
+
+
+## The Architect's sword (THE ROAD TO PEACE only): green blade, silver crossguard, silver handle.
+func _draw_road_sword(hand: Vector2, ang: float) -> void:
+	var dirv := Vector2.from_angle(ang)
+	var side := dirv.orthogonal()
+	var grip0 := hand - dirv * 12.0
+	var guard := hand + dirv * 4.0
+	var tip := guard + dirv * 62.0
+	draw_line(grip0, guard, Color(0, 0, 0), 7.0)
+	draw_line(grip0, guard, Color(0.80, 0.83, 0.88), 4.0)                    # Silver handle
+	draw_circle(grip0, 4.0, Color(0.85, 0.88, 0.92))
+	var blade := PackedVector2Array([guard + side * 5.0, tip + side * 2.0 - dirv * 10.0, tip, tip - side * 2.0 - dirv * 10.0, guard - side * 5.0])
+	draw_colored_polygon(blade, Color(0.22, 0.86, 0.28))                       # Green blade
+	draw_line(guard, tip - dirv * 6.0, Color(0.72, 1.0, 0.62), 1.5)
+	draw_polyline(blade + PackedVector2Array([blade[0]]), Color(0, 0, 0), 2.0)
+	draw_line(guard + side * 13.0, guard - side * 13.0, Color(0, 0, 0), 7.0)
+	draw_line(guard + side * 12.0, guard - side * 12.0, Color(0.85, 0.88, 0.93), 4.0)   # Silver crossguard
 
 
 ## Floor and roof: rock polygons following the tunnel, cut at the chasms.
@@ -753,6 +992,11 @@ func _draw_hero() -> void:
 	var pos := Vector2(px, fy - h)
 	var rot := slope_a - 0.22                                # Leaning back: sliding
 	var sc := Vector2(0.95, 0.95)
+	if road:                                                 # RUNNING up the bridge: lean forward, bob
+		slope_a = atan(-ROAD_SLOPE + (18.0 / 900.0) * cos(px / 900.0))
+		rot = slope_a + 0.1
+		if h <= 0.5 and _crash < 0.0:
+			pos.y -= absf(sin(_t * 13.0)) * 6.0
 	if _crash >= 0.0:
 		rot = _crash * 9.0
 		pos.y -= 30.0 * sin(clampf(_crash, 0.0, 1.0) * PI)
@@ -765,6 +1009,11 @@ func _draw_hero() -> void:
 		return                                               # Blink after a restart
 	draw_set_transform(pos - _cam, rot, sc)
 	StoryLevels.hero_art(hero).call("draw_portrait", self, _t * 0.3)
+	if road and hero == "architect":                         # His sword - only on the bridge
+		var swing := -0.9
+		if _atk_t > 0.0:
+			swing = lerpf(-2.2, 0.6, 1.0 - _atk_t / 0.22)
+		_draw_road_sword(Vector2(18, -62), swing)
 	draw_set_transform(-_cam, 0.0, Vector2.ONE)
 	if _atk_t > 0.0:                                         # The smash: a white arc in front
 		var k := 1.0 - _atk_t / 0.22

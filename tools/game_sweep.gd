@@ -159,6 +159,9 @@ func _run() -> void:
 		StoryProgress.current_level = StoryLevels.ORD_LEVEL
 		OrdLand.test_steer = true
 		await _test("ordinariorum", "res://scenes/OrdLand.tscn", 60.0)
+		for n in range(StoryLevels.first_of(StoryLevels.ROAD_PART), StoryLevels.last_of(StoryLevels.ROAD_PART) + 1):
+			StoryProgress.current_level = n
+			await _test("road %d" % n, "res://scenes/CaveSlide.tscn", 20.0)
 	await _test("menu MainMenu (end)", "res://scenes/MainMenu.tscn", 4.0)
 	print("MEM at end: %d MB" % int(OS.get_static_memory_usage() / 1048576))
 	print("SWEEP DONE")

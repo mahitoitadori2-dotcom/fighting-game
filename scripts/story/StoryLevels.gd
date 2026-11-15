@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1] # 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3] # 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -618,6 +618,20 @@ const LEVELS := {
 	71: {"title": "TERRA ORDINARIORUM", "theme": "ord_meadow", "map": "ord_meadow", "hero": "demi", "open_world": true, "ord": true,
 		"intro": "The regular land. Blue sky. And the Storm, waiting on the horizon.",
 		"waves": [], "boss": "", "tile": "storm_finger"},
+
+	# ======================= THE ROAD TO PEACE (levels 72-74) =======================
+	# Not a slide: a RUN. You are forced to run up the bridge from Orbis Terrarum while the Storm
+	# throws its particles at you: W jumps them, J hits them (no S). The Architect carries a sword
+	# here (green blade, silver crossguard + handle) - only on the bridge. Ends at a white wall.
+	72: {"title": "THE FIRST STEPS", "theme": "ord_mountain", "map": "ord_mountain", "hero": "demi", "slide": true, "road": true,
+		"intro": "The bridge from Orbis Terrarum. The Storm does not want you on it.",
+		"waves": [], "boss": "", "tile": "storm_finger"},
+	73: {"title": "THROUGH THE STORM", "theme": "ord_mountain", "map": "ord_mountain", "hero": "demi", "slide": true, "road": true,
+		"intro": "Halfway up. Lightning on every side.",
+		"waves": [], "boss": "", "tile": "storm_finger"},
+	74: {"title": "THE ROAD TO PEACE", "theme": "ord_mountain", "map": "ord_mountain", "hero": "demi", "slide": true, "road": true,
+		"intro": "The island is right above you. One last run.",
+		"waves": [], "boss": "", "tile": "storm_finger"},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -636,9 +650,13 @@ const RUN_PART := 10
 ## TERRA ORDINARIORUM: the part after The Magma Run (one open-world level, 71). OrdLand.gd.
 const ORD_PART := 11
 const ORD_LEVEL := 71
+## THE ROAD TO PEACE: the part after Terra Ordinariorum (three RUNNING levels up the bridge, 72-74).
+const ROAD_PART := 12
 
 
 static func part_name(c: int) -> String:
+	if c == ROAD_PART:
+		return "THE ROAD TO PEACE"
 	if c == ORD_PART:
 		return "TERRA ORDINARIORUM"
 	if c == RUN_PART:

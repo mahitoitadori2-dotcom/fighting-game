@@ -64,6 +64,10 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Is the Storm Finger fair (320 HP)?
   - Do the Frozen Expedition skins look right in a fight? The hood is drawn at a fixed spot, so it may slip during big moves.
   - Only scripts have played it.
+- [ ] **Play The Road to Peace (72-74) yourself:**
+  - Are the particles spaced fairly?
+  - Is J (hit) timing comfortable?
+  - Numbers are in `ROAD_TIERS` and `_build_road` in `CaveSlide.gd`.
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).

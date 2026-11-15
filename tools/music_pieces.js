@@ -658,4 +658,23 @@ PIECES.boss_storm_finger = { bpm: 140, meter: 4,
     { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 80 },
   ] };
 
+// ---------------- THE ROAD TO PEACE: running up the bridge (2026-11-15) ----------------
+// D major 4/4, fast and hopeful through the storm: driving string ostinato, snare, a soaring
+// horn theme, then violins + choir as the island comes close.
+PIECES.story_road = { bpm: 152, meter: 4,
+  chords: 'D D Bm Bm G G A A  D F#m G A Bm G A D',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 7, 12, 7, 0, 7, 12, 14], step: 0.5, vel: 82 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1], [1.5, 0.5], [2, 1], [3, 1]], vel: 90 },
+    { t: 'mel', inst: 'horn', bar: 0, vel: 106, dbl: [['euphonium', -1, 0.35], ['trumpet', 0, 0.22]],
+      notes: 'A4:1.5 D5:0.5 F#5:2 E5:1 D5:1 B4:2 B4:1.5 D5:0.5 F#5:1 B5:1 A5:4 G5:1.5 F#5:0.5 E5:1 D5:1 B4:2 D5:2 E5:3 F#5:1 E5:2 C#5:2' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 104, dbl: [['flute', 1, 0.22], ['voice', -1, 0.35]],
+      notes: 'F#5:2 A5:2 C#6:2 A5:2 B5:1 A5:1 G5:2 A5:2 E5:2 F#5:2 D5:2 B4:2 G5:2 F#5:2 E5:2 C#5:2 D5:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 66 },
+    { t: 'hit', inst: 'timpani', key: 38, from: 0, to: 16, beats: [0, 2], vel: 96 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3, 3.5], vel: 66 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 92, dur: 3 },
+    { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75], vel: 74 },
+  ] };
+
 module.exports = { PIECES, build };

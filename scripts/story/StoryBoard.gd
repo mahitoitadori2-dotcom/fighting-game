@@ -84,6 +84,8 @@ const PAGES := {
 		"board": [Color(0.22, 0.05, 0.03), Color(0.40, 0.14, 0.04)], "boss_label": Color(1.0, 0.75, 0.4)},
 	11: {"title": "STORY MODE  -  TERRA ORDINARIORUM",
 		"board": [Color(0.30, 0.52, 0.78), Color(0.36, 0.56, 0.28)], "boss_label": Color(0.8, 0.92, 1.0)},
+	12: {"title": "STORY MODE  -  THE ROAD TO PEACE",
+		"board": [Color(0.12, 0.13, 0.22), Color(0.55, 0.50, 0.38)], "boss_label": Color(1.0, 0.92, 0.6)},
 }
 const CRATER_SCENE := "res://scenes/CraterLand.tscn"      # The second open world
 const ORD_SCENE := "res://scenes/OrdLand.tscn"            # The third open world
@@ -300,11 +302,15 @@ func _refresh_ui() -> void:
 		if StoryLevels.is_slide(_pawn_space):
 			var run_part := StoryLevels.colosseum_of(_pawn_space) == StoryLevels.RUN_PART
 			var kind := "SLIDE  -  HUNTED" if run_part else "NO COMBAT  -  slide"
+			if bool(lv.get("road", false)):
+				kind = "RUN UP THE BRIDGE"
 			if bool(lv.get("slide_fight", false)):
 				kind = "SLIDE  -  3 WAVES  -  SLIDE"
 			var keys := "W: jump   S: duck / dive" + ("   J: smash walls" if run_part else "")
 			if _pawn_space == StoryLevels.first_of(StoryLevels.CAVES_PART):
 				keys = "W: jump"
+			if bool(lv.get("road", false)):
+				keys = "W: jump   J: hit"
 			_info.text = "Level %d: %s  (%s)    |    YOU: %s    |    %s%s" % [_pawn_space, lv["title"], kind,
 				StoryLevels.hero_of(_pawn_space).to_upper(), keys, _best_text()]
 			_play.text = "PLAY LEVEL %d" % _pawn_space
@@ -965,6 +971,13 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.ROAD_PART:
+		# The Road to Peace: a bridge of light rising into a dark storm, an island glowing at the top
+		var base12 := r.position.y + r.size.y
+		for k in 14:
+			c.draw_circle(Vector2(r.position.x + r.size.x * float(k) / 13.0, r.position.y + r.size.y * (0.2 + 0.1 * sin(float(k)))), 60.0, Color(0.12, 0.13, 0.22, 0.4))
+		c.draw_line(Vector2(r.position.x + r.size.x * 0.05, base12 - 10.0), Vector2(r.end.x - r.size.x * 0.12, r.position.y + r.size.y * 0.25), Color(1.0, 0.92, 0.6, 0.6), 10.0)
+		c.draw_circle(Vector2(r.end.x - r.size.x * 0.1, r.position.y + r.size.y * 0.2), 50.0 + 4.0 * sin(_t * 2.0), Color(1.0, 0.95, 0.7, 0.25))
 	elif _page >= StoryLevels.ORD_PART:
 		# Terra Ordinariorum: green hills under a blue sky, a little town, the Storm on the horizon
 		var base11 := r.position.y + r.size.y

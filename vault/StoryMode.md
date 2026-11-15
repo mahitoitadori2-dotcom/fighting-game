@@ -308,6 +308,25 @@ The Story part after Terra Craterum (page 10). It's the slide again, but you're 
   - Cave 64 still clears with the new white wall.
   - **Not played by a human:** the flood speed (`HUNT_SPEED`) may need tuning.
 
+## The Road to Peace (levels 72-74, added 2026-11-15)
+
+The Story part after Terra Ordinariorum (page 12), between Ordinariorum and Orbis Terrarum. It's not a slide but a **RUN**: you're forced to run up the bridge from Orbis Terrarum (it climbs up into the sky). Same hero as DemiLand.
+- **W** = jump, **J** = hit. **No S** (the user's rule). Touch: tap the top of the screen to hit, the right half to jump.
+- **The Storm throws particles:** storm **orbs** rolling down the bridge (jump or hit them) and **lightning shards** flying at head height (hit them, or jump high over them). Later levels add pairs, and a shard right after an orb.
+- A hit means a tumble and a restart at the last crystal, with the particles thrown again.
+- The **Architect gets a sword ONLY here** (the user's rule): green blade, silver crossguard, silver handle. He swings it when you hit. The Warrior uses his own sword.
+- 72 The First Steps (600 px/s), 73 Through the Storm (650), 74 The Road to Peace (700). Each ends at the **white wall**.
+- Orbis Terrarum (the island with the hut) glows above and gets bigger as you climb.
+- After 74 the part ends. Orbis Terrarum comes later, when it's built.
+- **Music:** a new `story_road` (fast, hopeful: driving strings, horn theme, then violins + choir) for 72-73; boss_storm_finger for 74.
+- **Achievements:** 8 new (one per level, "Untouchable" per level, The Road to Peace Conquered, Storm Cutter: cut 40 particles in one level).
+- **Code:** `scripts/story/slide/CaveSlide.gd` (`ROAD_TIERS` 7-9, `road`, `_build_road`, `_road_particles`, `_draw_road`, `_draw_road_sword`).
+- **Checked by script:**
+  - The bot cleared 72 (1 hit) and 74 (0 hits) as the Architect, cutting 22-26 particles.
+  - With no input the Storm hit 4 times in 16 s.
+  - Screenshots looked right.
+  - **Not played by a human:** the particle spacing and speed.
+
 ## Terra Ordinariorum (level 71, added 2026-11-15)
 
 Its own Story part (page 11) after The Magma Run: the third OPEN-WORLD level, with DemiLand's rules (Souls rules, CamTons, a map, the run is saved). There's no night here. Lore by the user.

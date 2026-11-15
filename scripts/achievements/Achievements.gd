@@ -264,6 +264,17 @@ static func _build() -> void:
 		{"big": "no_powers", "frame": "silver", "bg": Color(0.40, 0.60, 0.32)})
 	_add("ord_deathless", "Ordinary Day", "Leave Terra Ordinariorum without dying once.", "challenge",
 		{"big": "skull", "frame": "red", "bg": Color(0.20, 0.10, 0.10)})
+	# ---------------- THE ROAD TO PEACE (running up the bridge, levels 72-74) ----------------
+	var road_names := ["The First Steps", "Through the Storm", "The Road to Peace"]
+	for i in 3:
+		_add("road_%d" % (i + 1), road_names[i], "Run up the bridge to the white wall of %s (Level %d)." % [road_names[i], 72 + i], "story",
+			{"big": "star", "frame": "bronze", "bg": Color(0.18, 0.20, 0.32).lerp(Color(0.55, 0.50, 0.36), float(i) / 2.0)})
+		_add("road_flawless_%d" % (i + 1), "%s: Untouchable" % road_names[i], "Run %s without the Storm touching you once." % road_names[i], "challenge",
+			{"big": "no_blocks", "frame": "silver" if i < 2 else "gold", "bg": Color(0.14, 0.15, 0.24)})
+	_add("col_%d" % StoryLevels.ROAD_PART, "The Road to Peace Conquered", "Reach the end of the bridge to Orbis Terrarum.", "story",
+		{"big": "crown", "frame": "gold", "bg": Color(0.50, 0.46, 0.32)})
+	_add("road_swordsman", "Storm Cutter", "Cut 40 of the Storm's particles in one bridge level.", "challenge",
+		{"big": "star", "frame": "purple", "bg": Color(0.16, 0.30, 0.20)})
 	_add("run_caught", "Lava Between the Toes", "Get caught by the flood 5 times in one level... and still reach the white wall.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.30, 0.08, 0.04)})
 	# ---------------- THE MIMIC ----------------
