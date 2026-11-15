@@ -30,6 +30,12 @@ All 41 music tracks are played by **real instrument recordings** (orchestra, Sou
   - **Voices:** full choir (aah / ooh) + a **solo vocalist** (a real sung "ooh" voice: low register = male, high = female) on the big boss themes, the menu, The Sun, Mother Nature, the Tree Lord... The SoundFont's voices only sing vowels: real Latin / constructed-language WORDS would need recorded singers.
   - **New piece:** `story_architectium` is now a **merchant's jig** (fiddle, mandolin, guitar, crumhorns, tambourine, castanets).
   - Where: `STYLES` (old-melody tracks: `dbl` doublings, `voice` solo singer) in `tools/make_music.js`; `MORE` + the jig at the bottom of `tools/music_pieces.js`.
+- **Terra Craterum (2026-11-15), 4 new pieces** at the end of `tools/music_pieces.js`:
+  - `story_wreck` (the Kharleming Wreck): a broken music-box celesta, cold strings, a far ship bell, Kharleming clicks on xylophone and castanets; cello, then oboe.
+  - `story_magma` (the Crater Floor, the Magma Fields, the War Front): a very slow D minor; a low harp, timpani like the ground cracking, a horn theme, then a low choir, trombones and organ.
+  - `boss_melter`: pounding strings, organ, a crushing trombone and tuba theme, then the choir and horns; timpani and taiko.
+  - `boss_kharleming_lord`: a limping 7/8 with a clicking swarm, a horn theme, a frantic violin with piccolo, and a heavy "brood" middle section with organ and choir.
+  - All are about the same loudness as the other tracks (-15.4 dB RMS).
 - **Not listened to by a human yet.** Checked only by numbers (loudness, no clipping, every instrument finds its recording). Listen and say which tracks need a change.
 
 ## Sound effects: real recordings (since 2026-11-13)
