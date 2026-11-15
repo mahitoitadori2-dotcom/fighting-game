@@ -70,6 +70,12 @@ const STORY_ENEMIES := [
 	["s_cultist", "Pelt Cultist", "Pelt Cultist", "PeltCultist", Color(0.95, 0.60, 0.20), "story_demiland", "faith"],
 	["s_husk", "Husk", "Husk", "HuskTreant", Color(0.45, 0.35, 0.25), "story_demiland_night", "faith"],
 	["s_serpent", "Humane Serpent", "Humane Serpent", "HumaneSerpent", Color(0.45, 0.75, 0.35), "story_cave"],
+	# ----- Terra Craterum (2026-11-15) -----
+	["s_lavagolem", "Lava Golem", "Lava Golem", "LavaGolem", Color(1.0, 0.45, 0.10), "story_magma"],
+	["s_lavademon", "Lava Demon", "Lava Demon", "LavaDemon", Color(1.0, 0.30, 0.15), "story_magma"],
+	["s_fragmenter", "Ancient Fragmenter", "Fragmenter", "AncientFragmenter", Color(0.55, 0.85, 0.95), "story_wreck"],
+	["s_fullkharleming", "Full Kharleming", "Full Kharleming", "FullKharleming", Color(0.70, 0.85, 0.95), "story_wreck"],
+	["s_masterkharleming", "Master Kharleming", "Master Kharleming", "MasterKharleming", Color(0.55, 0.35, 0.95), "story_wreck"],
 ]
 const STORY_BOSSES := [
 	["s_blinded", "The Blinded Lord", "Blinded Lord", "BlindedLord", Color(0.45, 1.0, 0.35), "boss"],
@@ -91,6 +97,12 @@ const STORY_BOSSES := [
 	["s_tribemaster", "The Tribe Master", "Tribe Master", "TribeMaster", Color(1.0, 0.40, 0.15), "boss_tribe", "faith"],
 	["s_tiger", "The Last Tiger", "Last Tiger", "LastTiger", Color(1.0, 0.62, 0.20), "boss_tiger", "faith"],
 	["s_treelord", "The LIVING Tree Lord", "Tree Lord", "TreeLord", Color(0.50, 1.0, 0.40), "boss_treelord", "faith"],
+	# ----- Terra Craterum, Terra Ordinariorum, Orbis Terrarum (2026-11-15) -----
+	["s_lavamelter", "The Lava Melter", "Lava Melter", "LavaMelter", Color(1.0, 0.50, 0.15), "boss_melter", "faith"],
+	["s_kharlord", "The Kharleming Lord", "Kharleming Lord", "KharlemingLord", Color(0.55, 0.85, 1.0), "boss_kharleming_lord", "faith"],
+	["s_crystalswarm", "The Crystal Swarm", "Crystal Swarm", "CrystalSwarm", Color(0.70, 0.90, 1.0), "story_snow"],
+	["s_stormfinger", "The Storm Finger", "Storm Finger", "StormFinger", Color(0.60, 0.80, 1.0), "boss_storm_finger", "faith"],
+	["s_stormhand", "The Storm Hand", "Storm Hand", "StormHand", Color(0.60, 0.80, 1.0), "boss_storm_hand", "duo+faith"],
 ]
 
 

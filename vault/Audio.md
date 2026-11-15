@@ -12,6 +12,14 @@ Back to [Summary](SUMMARY.md).
 
 `scripts/audio/SoundManager.gd` plays all sound effects and music. Settings has Music and SFX sliders and a Mute button.
 
+**Web: no sound (fixed 2026-11-15).** The website played NO sound at all.
+- **Found with:** a local web export run in headless Chrome, with a level meter on the audio output. The output was exactly 0 while the menu music was "playing"; after the fix it measured 0.3-0.55.
+- **Two changes:**
+  - Music no longer fades in from -40 dB on the web: it starts at full volume. The web build plays audio as browser "samples", and a volume tween on a playing sample doesn't reach the browser.
+  - The Music and SFX buses are now declared in `default_bus_layout.tres` instead of being created while the game runs.
+- **Side effect on the web:** music changes cut instead of crossfading.
+- **Not yet confirmed** on a real phone / the user's browser.
+
 ## Music: real instruments (since 2026-11-12)
 
 All 41 music tracks are played by **real instrument recordings** (orchestra, Souls / Hollow Knight style), no more synth:

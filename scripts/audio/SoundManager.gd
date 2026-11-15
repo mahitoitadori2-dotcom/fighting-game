@@ -215,10 +215,16 @@ func play_music(music_name: String) -> void:
 		_release_music(nxt)                             # Free the track this player held before
 	nxt.stream = stream
 	nxt.pitch_scale = 1.0
-	nxt.volume_db = -40.0
-	nxt.play()
-	_music_tween = create_tween()
-	_music_tween.tween_property(nxt, "volume_db", 0.0, CROSSFADE)
+	if OS.has_feature("web"):
+		# WEB: no fade-in. The web build plays audio as browser "samples", and a volume tween on a
+		# playing sample does not reach the browser - the track stayed at -40 dB (silent).
+		nxt.volume_db = 0.0
+		nxt.play()
+	else:
+		nxt.volume_db = -40.0
+		nxt.play()
+		_music_tween = create_tween()
+		_music_tween.tween_property(nxt, "volume_db", 0.0, CROSSFADE)
 	_active_music = nxt
 
 
