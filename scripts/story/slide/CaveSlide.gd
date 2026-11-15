@@ -45,6 +45,10 @@ const TIERS := {
 	6: {"len": 46000.0, "speed": 720.0, "sky": [Color(0.14, 0.02, 0.02), Color(0.38, 0.10, 0.02)], "rock": Color(0.12, 0.08, 0.08),
 		"glow": Color(1.0, 0.4, 0.1), "music": "boss_kharleming_lord", "run": true, "fight": true,
 		"pool": ["rock", "wall", "gap", "ceil", "wall_ceil", "gap_ceil", "rock_ceil", "wall", "long_ceil"]},
+	# Level 80, phase 3: sliding down through the mountain - THE STORM chases you (like the Magma Run).
+	11: {"len": 30000.0, "speed": 660.0, "sky": [Color(0.04, 0.05, 0.09), Color(0.10, 0.12, 0.20)], "rock": Color(0.16, 0.16, 0.20),
+		"glow": Color(0.6, 0.8, 1.0), "music": "boss_storm_finger", "run": true, "storm": true,
+		"pool": ["rock", "wall", "gap", "ceil", "spikes", "rock_ceil", "wall"]},
 }
 ## THE ROAD TO PEACE (Story part 12, levels 72-74): RUN up the bridge from Orbis Terrarum. No S.
 ## The Storm throws particles: jump them or hit them (J). The Architect carries a SWORD here
@@ -56,6 +60,10 @@ const ROAD_TIERS := {
 		"glow": Color(1.0, 0.92, 0.6), "music": "story_road", "road": true, "pool": ["orb", "spark", "pair", "spark", "orb"]},
 	9: {"len": 46000.0, "speed": 700.0, "sky": [Color(0.05, 0.05, 0.10), Color(0.18, 0.18, 0.30)], "rock": Color(0.85, 0.78, 0.55),
 		"glow": Color(1.0, 0.92, 0.6), "music": "boss_storm_finger", "road": true, "pool": ["orb", "spark", "pair", "mix", "spark", "mix"]},
+	# Level 80, phase 1: RUN DOWN the bridge as it breaks apart (gaps!) - with the other two.
+	10: {"len": 26000.0, "speed": 660.0, "sky": [Color(0.03, 0.03, 0.07), Color(0.12, 0.12, 0.22)], "rock": Color(0.85, 0.78, 0.55),
+		"glow": Color(0.8, 0.9, 1.0), "music": "boss_storm_finger", "road": true, "down": true, "gaps": true,
+		"pool": ["orb", "gap", "spark", "gap", "pair", "gap"]},
 }
 const ROAD_SLOPE := 0.10
 const ATTACK_REACH := 170.0           # Smash a wall this close in front of you
@@ -101,6 +109,9 @@ var _parts: Array = []                # Road: {kind, x0, x, v, on, gone}
 ## Enlightened One; he sent them to the bridge (lore by the user). "" = alone.
 var partner := ""
 var _partner_h := 0.0
+var _reunion := false                 # Level 74: the reunion talk at the start
+var _down := false                    # Level 80: running DOWN the breaking bridge
+var _trainer_runs := false            # Level 80: the Trainer runs with you too
 var gap := HUNT_START                 # How far behind the flood is
 var caught := 0
 var smashed := 0
@@ -119,7 +130,9 @@ var _sub: Label
 func _ready() -> void:
 	StoryProgress.load_progress()
 	level_n = StoryProgress.current_level
-	if StoryLevels.colosseum_of(level_n) == StoryLevels.ROAD_PART:
+	if level_n == StoryLevels.STORM_LEVEL:                    # Level 80: the bridge (phase 1) or the cave (phase 3)
+		tier = 11 if OrbisTalk.storm_phase >= 3 else 10
+	elif StoryLevels.colosseum_of(level_n) == StoryLevels.ROAD_PART:
 		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.ROAD_PART) + 7, 7, 9)
 	elif StoryLevels.colosseum_of(level_n) == StoryLevels.RUN_PART:
 		tier = clampi(level_n - StoryLevels.first_of(StoryLevels.RUN_PART) + 4, 4, 6)
@@ -131,10 +144,15 @@ func _ready() -> void:
 	_len = float(_cfg["len"])
 	run = bool(_cfg.get("run", false))
 	road = bool(_cfg.get("road", false))
+	_down = bool(_cfg.get("down", false))
 	if road:
 		_build_road()
 		if level_n == StoryLevels.last_of(StoryLevels.ROAD_PART):
 			partner = "architect" if hero == "warrior" else "warrior"
+			_reunion = true
+		elif level_n == StoryLevels.STORM_LEVEL:
+			partner = "architect" if hero == "warrior" else "warrior"
+			_trainer_runs = true
 	else:
 		_build_layout()
 	if bool(_cfg.get("fight", false)):
@@ -154,8 +172,8 @@ func _ready() -> void:
 # LAYOUT (seeded: the same cave every time)
 # ============================================================
 func floor_y(x: float) -> float:
-	if road:                                                     # The bridge climbs UP into the sky
-		return -x * ROAD_SLOPE + 18.0 * sin(x / 900.0)
+	if road:                                                     # The bridge climbs UP into the sky (level 80: runs DOWN)
+		return (x if _down else -x) * ROAD_SLOPE + 18.0 * sin(x / 900.0)
 	return x * SLOPE + 70.0 * sin(x / 950.0) + 26.0 * sin(x / 330.0 + 1.3)
 
 
@@ -186,6 +204,8 @@ func _build_road() -> void:
 		match kind:
 			"orb", "spark":
 				_parts.append(_particle(kind, x, pv))
+			"gap":                                          # Level 80: the bridge has broken here - jump it
+				_obs.append({"kind": "gap", "x": x, "w": rng.randf_range(170.0, 230.0), "h": 0.0})
 			"pair":
 				_parts.append(_particle("orb", x, pv))
 				_parts.append(_particle("orb", x + (v + pv) * 0.75, pv))
@@ -285,16 +305,21 @@ func _intro() -> void:
 	if road:
 		keys = "W  -  JUMP        J  -  HIT"
 		line = "Run up the bridge. The Storm throws everything it has at you."
+		if _down:
+			title = "THE BREAKING BRIDGE"
+			line = "RUN! The bridge is falling apart - jump the gaps!"
+	if bool(_cfg.get("storm", false)):
+		title = "INTO THE MOUNTAIN"
 	if run:
 		keys += "        J  -  SMASH WALLS"
-		line = "The lava and the Kharlemings are HUNTING you.  Do not slow down."
+		line = "The STORM followed you into the mountain.  Do not slow down." if bool(_cfg.get("storm", false)) else "The lava and the Kharlemings are HUNTING you.  Do not slow down."
 		if _resumed:
 			title = "THE LAST SLIDE"
 			line = "They keep coming.  Reach the white wall!"
 	_show("LEVEL %d:  %s" % [level_n, title], keys + "\n" + line)
 	await get_tree().create_timer(2.8).timeout
 	_hide()
-	if partner != "":                                        # Level 74: the other hero catches up
+	if _reunion:                                             # Level 74: the other hero catches up
 		var lines: Array = StoryDialogue.ROAD_REUNION.duplicate(true)
 		for l in lines:
 			l[0] = hero if String(l[0]) == "H" else partner
@@ -310,6 +335,13 @@ func _finish() -> void:
 	var tw := create_tween()
 	tw.tween_property(self, "_white", 1.0, 0.9)
 	await tw.finished
+	if level_n == StoryLevels.STORM_LEVEL:                   # Level 80: on to the next scene
+		OrbisTalk.storm_phase = 2 if tier == 10 else 4
+		StoryProgress.current_level = level_n
+		if StoryManager.autoplay:
+			print("CAVES autoplay: level 80 -> phase %d" % OrbisTalk.storm_phase)
+		get_tree().change_scene_to_file("res://scenes/OrbisTalk.tscn" if tier == 10 else StoryManager.ARENA_SCENE)
+		return
 	SoundManager.play_sfx("count_go")
 	var flawless := hits == 0
 	var old := StoryProgress.best_time(level_n)
@@ -523,6 +555,10 @@ func _stop_for_fight() -> void:
 func _bot() -> void:
 	var v := maxf(speed, 1.0)
 	if road:
+		for o in _obs:                                       # Level 80: jump the broken parts of the bridge
+			var gd := float(o["x"]) - px
+			if o["kind"] == "gap" and gd < 40.0 and gd > -20.0 and h <= 0.5:
+				_jump_buf = BUFFER
 		for p in _parts:
 			if bool(p["gone"]) or not bool(p["on"]) or float(p["x"]) < px - HALF_W:
 				continue
@@ -774,16 +810,38 @@ func _draw_road(vs: Vector2, cam: Vector2) -> void:
 	draw_set_transform(-cam, 0.0, Vector2.ONE)
 	var x0 := cam.x - 60.0
 	var x1 := cam.x + vs.x + 60.0
-	var top := PackedVector2Array()
-	var xx := floorf(x0 / 40.0) * 40.0
-	while xx <= x1 + 40.0:
-		top.append(Vector2(xx, floor_y(xx)))
-		xx += 40.0
-	var deck := top.duplicate()
-	for i in range(top.size() - 1, -1, -1):
-		deck.append(top[i] + Vector2(0, 34))
-	draw_colored_polygon(deck, Color(0.92, 0.84, 0.58))
-	draw_polyline(top, Color(1.0, 0.98, 0.85), 4.0)
+	# The deck, in pieces between the broken gaps (level 80)
+	var cuts: Array = []
+	for o in _obs:
+		if o["kind"] == "gap" and float(o["x"]) < x1 and float(o["x"]) + float(o["w"]) > x0:
+			cuts.append([float(o["x"]), float(o["x"]) + float(o["w"])])
+	var pieces: Array = []
+	var seg := x0
+	for cc in cuts:
+		pieces.append([seg, float(cc[0])])
+		seg = float(cc[1])
+	pieces.append([seg, x1 + 40.0])
+	for pc in pieces:
+		var a := float(pc[0])
+		var b := float(pc[1])
+		if b - a < 2.0:
+			continue
+		var top := PackedVector2Array()
+		var xx := a
+		while xx < b:
+			top.append(Vector2(xx, floor_y(xx)))
+			xx += 40.0
+		top.append(Vector2(b, floor_y(b)))
+		var deck := top.duplicate()
+		for i in range(top.size() - 1, -1, -1):
+			deck.append(top[i] + Vector2(0, 34))
+		draw_colored_polygon(deck, Color(0.92, 0.84, 0.58))
+		draw_polyline(top, Color(1.0, 0.98, 0.85), 4.0)
+	for cc in cuts:                                             # Planks falling into the Storm below
+		for k in 3:
+			var fx := float(cc[0]) + (float(cc[1]) - float(cc[0])) * (0.25 + 0.25 * float(k))
+			var fy := floor_y(fx) + 60.0 + fmod(_t * 120.0 + float(k) * 70.0, 300.0)
+			draw_line(Vector2(fx - 18, fy), Vector2(fx + 18, fy + 6), Color(0.80, 0.70, 0.45, 0.8), 6.0)
 	var bx := floorf(x0 / 90.0) * 90.0                         # Planks + glowing posts of the rail
 	while bx < x1:
 		var fy := floor_y(bx)
@@ -808,11 +866,18 @@ func _draw_road(vs: Vector2, cam: Vector2) -> void:
 		_partner_h = lerpf(_partner_h, maxf(h, 0.0), minf(get_process_delta_time() * 7.0, 1.0))
 		var qx := px - 150.0
 		var qp := Vector2(qx, floor_y(qx) - _partner_h - absf(sin(_t * 13.0 + 1.0)) * 6.0)
-		draw_set_transform(qp - _cam, atan(-ROAD_SLOPE) + 0.1, Vector2(0.9, 0.9))
+		var lean := atan(ROAD_SLOPE if _down else -ROAD_SLOPE) + 0.1
+		draw_set_transform(qp - _cam, lean, Vector2(0.9, 0.9))
 		StoryLevels.hero_art(partner).call("draw_portrait", self, _t * 0.3)
 		if partner == "architect":                           # The Architect's bridge sword
 			_draw_road_sword(Vector2(18, -62), -0.9)
 		draw_set_transform(-_cam, 0.0, Vector2.ONE)
+		if _trainer_runs:                                    # Level 80: the Trainer, right behind them
+			var tx := px - 290.0
+			var tp := Vector2(tx, floor_y(tx) - _partner_h - absf(sin(_t * 12.0 + 2.0)) * 6.0)
+			draw_set_transform(tp - _cam, lean, Vector2(0.9, 0.9))
+			OrbisArt.trainer(self, _t, "upset")
+			draw_set_transform(-_cam, 0.0, Vector2.ONE)
 	_draw_hero()
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
@@ -985,8 +1050,9 @@ func _draw_hunters(x0: float) -> void:
 	var hx := px - gap
 	if hx < x0 - 400.0:
 		return
-	var lava := Color(1.0, 0.42, 0.08)
-	var hot := Color(1.0, 0.85, 0.35)
+	var storm := bool(_cfg.get("storm", false))                 # Level 80: the STORM itself, not lava
+	var lava := Color(0.16, 0.17, 0.27) if storm else Color(1.0, 0.42, 0.08)
+	var hot := Color(0.75, 0.88, 1.0) if storm else Color(1.0, 0.85, 0.35)
 	var front := PackedVector2Array()
 	var back := hx - 2600.0
 	front.append(Vector2(back, floor_y(back) + 200.0))
@@ -998,7 +1064,13 @@ func _draw_hunters(x0: float) -> void:
 	draw_colored_polygon(front, lava)
 	var edge := front.slice(1, front.size() - 1)
 	draw_polyline(edge, hot, 6.0)
-	draw_circle(Vector2(hx, floor_y(hx) - TUNNEL_H * 0.5), 300.0, Color(1.0, 0.4, 0.1, 0.10))
+	draw_circle(Vector2(hx, floor_y(hx) - TUNNEL_H * 0.5), 300.0, Color(0.6, 0.75, 1.0, 0.10) if storm else Color(1.0, 0.4, 0.1, 0.10))
+	if storm:                                                # Lightning inside the Storm's front
+		for k in 3:
+			if fmod(_t * 3.0 + float(k) * 0.7, 1.0) < 0.3:
+				var by := floor_y(hx) - 40.0 - float(k) * 120.0
+				draw_polyline(PackedVector2Array([Vector2(hx - 120, by), Vector2(hx - 60, by - 30), Vector2(hx - 80, by - 60), Vector2(hx - 10, by - 90)]), hot, 3.0)
+		return
 	for i in 3:                                              # Kharlemings riding the wave
 		var kx := hx + 10.0 - float(i) * 70.0 + 18.0 * sin(_t * 5.0 + float(i))
 		var ky := floor_y(kx) - 30.0 - float(i) * 120.0 - 20.0 * absf(sin(_t * 6.0 + float(i) * 2.0))
@@ -1014,7 +1086,7 @@ func _draw_hero() -> void:
 	var rot := slope_a - 0.22                                # Leaning back: sliding
 	var sc := Vector2(0.95, 0.95)
 	if road:                                                 # RUNNING up the bridge: lean forward, bob
-		slope_a = atan(-ROAD_SLOPE + (18.0 / 900.0) * cos(px / 900.0))
+		slope_a = atan((ROAD_SLOPE if _down else -ROAD_SLOPE) + (18.0 / 900.0) * cos(px / 900.0))
 		rot = slope_a + 0.1
 		if h <= 0.5 and _crash < 0.0:
 			pos.y -= absf(sin(_t * 13.0)) * 6.0

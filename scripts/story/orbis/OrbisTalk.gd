@@ -176,7 +176,7 @@ func _clear(title: String, sub: String) -> void:
 		if not StoryProgress.level_cleared(int(n)):
 			done = false
 	if done:
-		Achievements.unlock("col_%d" % StoryLevels.ORBIS_PART)
+		Achievements.unlock("orbis_lessons")
 	SoundManager.play_sfx("count_go")
 	_show(title, sub + "\nProgress saved")
 	if StoryManager.autoplay:
@@ -207,6 +207,76 @@ func _process(delta: float) -> void:
 # ============================================================
 func _draw() -> void:
 	var vs := get_viewport_rect().size
+	if _town:
+		_draw_town(vs)
+		_draw_overlays(vs)
+		return
+	_draw_island(vs)
+	if _dark > 0.0:                                              # The Storm breaking in
+		draw_rect(Rect2(Vector2.ZERO, vs), Color(0.05, 0.06, 0.12, 0.55 * _dark))
+		for i in 14:
+			var x := vs.x * float(i) / 13.0
+			draw_circle(Vector2(x + 30.0 * sin(_t + float(i)), vs.y * 0.08 + 30.0 * sin(float(i) * 1.7)), 110.0 * _dark, Color(0.14, 0.15, 0.24, 0.9 * _dark))
+		if fmod(_t * 1.7, 1.0) < 0.12 * _dark:
+			var lx := vs.x * fmod(_t * 0.43, 1.0)
+			draw_polyline(PackedVector2Array([Vector2(lx, 0), Vector2(lx + 40, vs.y * 0.2), Vector2(lx - 10, vs.y * 0.4), Vector2(lx + 30, vs.y * 0.62)]), Color(0.9, 0.95, 1.0), 4.0)
+	if _crack > 0.0:                                             # The spell dome over the hut cracks
+		var hc := Vector2(vs.x * 0.78, vs.y * 0.70 - 14.0 - 114.0)
+		for k in 6:
+			var a := PI + PI * float(k) / 5.0
+			var p0 := hc + Vector2.from_angle(a) * 230.0
+			var p1 := p0.lerp(hc, 0.4 * _crack)
+			draw_polyline(PackedVector2Array([p0, p0.lerp(p1, 0.5) + Vector2(10, -8), p1]), Color(0.8, 0.95, 1.0, 0.9), 3.0)
+	_draw_overlays(vs)
+
+
+func _draw_overlays(vs: Vector2) -> void:
+	if _white > 0.0:
+		draw_rect(Rect2(Vector2.ZERO, vs), Color(1, 1, 1, _white))
+
+
+## LEVEL 80, phase 2: the town of Terra Ordinariorum under the Storm - the villagers lie dead.
+func _draw_town(vs: Vector2) -> void:
+	for i in 10:
+		var k := float(i) / 9.0
+		draw_rect(Rect2(0, vs.y * 0.1 * float(i), vs.x, vs.y * 0.1 + 1.0), Color(0.08, 0.09, 0.15).lerp(Color(0.30, 0.32, 0.42), k))
+	for i in 16:
+		draw_circle(Vector2(vs.x * float(i) / 15.0, vs.y * 0.1 + 20.0 * sin(float(i) * 2.0 + _t * 0.4)), 120.0, Color(0.12, 0.13, 0.22))
+	if fmod(_t, 2.3) < 0.1:
+		draw_rect(Rect2(Vector2.ZERO, vs), Color(0.8, 0.85, 1.0, 0.12))
+	var ground := vs.y * 0.56                                   # (High enough to see over the dialogue box)
+	for k in 5:                                                  # Broken houses
+		var hx := vs.x * (0.08 + 0.2 * float(k))
+		draw_rect(Rect2(hx, ground - 120.0, 140.0, 120.0), Color(0.42, 0.38, 0.34))
+		draw_colored_polygon(PackedVector2Array([Vector2(hx - 10, ground - 120), Vector2(hx + 40, ground - 170 + float(k % 2) * 30.0), Vector2(hx + 90, ground - 120)]), Color(0.30, 0.16, 0.12))
+		draw_rect(Rect2(hx + 50, ground - 50, 34, 50), Color(0.12, 0.10, 0.09))
+	draw_rect(Rect2(0, ground, vs.x, vs.y - ground), Color(0.28, 0.27, 0.27))
+	draw_line(Vector2(0, ground), Vector2(vs.x, ground), Color(0, 0, 0), 3.0)
+	# The villagers, lying in the street (grey, still)
+	var spots := [0.18, 0.31, 0.45, 0.58, 0.70, 0.84]
+	for i in spots.size():
+		draw_set_transform(Vector2(vs.x * float(spots[i]), ground + 4.0), -PI * 0.5 * (1.0 if i % 2 == 0 else -1.0), Vector2(0.9, 0.9))
+		modulate_town_corpse(i)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	# The three of you walk in from the left
+	var k2 := clampf(_walk, 0.0, 1.0)
+	var bob := absf(sin(_t * 10.0)) * 4.0 if k2 < 1.0 else 0.0
+	var base := Vector2(vs.x * (0.02 + 0.36 * k2), ground - bob)
+	draw_set_transform(base + Vector2(-120, 0), 0.0, Vector2(1.1, 1.1))
+	OrbisArt.trainer(self, _t, "upset")
+	draw_set_transform(base + Vector2(-60, 0), 0.0, Vector2(1.1, 1.1))
+	WarriorArt.draw_portrait(self, _t)
+	draw_set_transform(base, 0.0, Vector2(1.1, 1.1))
+	ArchitectArt.draw_portrait(self, _t)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func modulate_town_corpse(i: int) -> void:
+	OrdArt.villager(self, i, 0.0)
+	draw_circle(Vector2(0, -60), 70.0, Color(0.25, 0.27, 0.35, 0.35))              # Greyed by the Storm
+
+
+func _draw_island(vs: Vector2) -> void:
 	# Sky: warm gold above a calm blue
 	for i in 10:
 		var k := float(i) / 9.0

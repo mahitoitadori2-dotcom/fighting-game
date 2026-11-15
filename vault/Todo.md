@@ -68,7 +68,11 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Are the particles spaced fairly?
   - Is J (hit) timing comfortable?
   - Numbers are in `ROAD_TIERS` and `_build_road` in `CaveSlide.gd`.
-- [ ] **Next Story part (when the user gives it):** the Storm attacks Orbis Terrarum right after the last lesson.
+- [ ] **Play level 80 (THE STORM ATTACKS) yourself:**
+  - Is the breaking bridge fair (the gaps + particles)?
+  - Is the Storm Hand (720 HP) too easy with the Trainer and the partner?
+  - Only a bot played it.
+- [ ] **Next Story part:** waits for the user's lore (who created the Storm? what happens after the Storm Hand?).
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).

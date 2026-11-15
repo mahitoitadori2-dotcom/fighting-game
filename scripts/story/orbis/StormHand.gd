@@ -11,7 +11,7 @@ extends C5Boss
 ##   Debris        6 dmg   ENRAGED: rocks rain from the cave roof
 
 func boss_forms() -> Array:
-	return [{"name": "The Storm Hand", "title": "THE STORM HAND", "hp": 480, "body": Vector2(200, 230), "speed": 170.0}]
+	return [{"name": "The Storm Hand", "title": "THE STORM HAND", "hp": 720, "body": Vector2(200, 230), "speed": 170.0}]
 
 
 func setup_boss() -> void:

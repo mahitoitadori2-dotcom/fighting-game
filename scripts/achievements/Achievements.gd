@@ -284,8 +284,10 @@ static func _build() -> void:
 	for i in 4:
 		_add("orbis_%d" % (76 + i), "Lesson: %s" % lesson_names[i], "Learn the lesson about %s." % lesson_names[i].to_lower(), "story",
 			{"big": "star", "frame": "silver", "bg": orbis_bg.lerp(Color(0.2, 0.2, 0.3), 0.15 * float(i))})
-	_add("col_%d" % StoryLevels.ORBIS_PART, "Everything He Could Tell", "Learn every lesson of the Trainer in Orbis Terrarum.", "story",
-		{"big": "crown", "frame": "gold", "bg": orbis_bg})
+	_add("orbis_lessons", "Everything He Could Tell", "Learn every lesson of the Trainer in Orbis Terrarum.", "story",
+		{"big": "star", "frame": "gold", "bg": orbis_bg})
+	_add("col_%d" % StoryLevels.ORBIS_PART, "Orbis Terrarum Conquered", "Survive THE STORM ATTACKS: the bridge, the mountain, the corpses and the Storm Hand.", "story",
+		{"big": "crown", "frame": "gold", "bg": Color(0.14, 0.16, 0.28)})
 	_add("run_caught", "Lava Between the Toes", "Get caught by the flood 5 times in one level... and still reach the white wall.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.30, 0.08, 0.04)})
 	# ---------------- THE MIMIC ----------------

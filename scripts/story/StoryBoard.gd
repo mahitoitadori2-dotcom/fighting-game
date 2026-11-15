@@ -302,6 +302,10 @@ func _refresh_ui() -> void:
 		var tag := "  (BOSS)" if boss else ""
 		if StoryLevels.is_open_world(_pawn_space):
 			tag = "  (OPEN WORLD  -  5-15 min)"
+		if StoryLevels.is_storm(_pawn_space):
+			_info.text = "Level %d: %s  (the table - the breaking bridge - the dead town - a slide - corpses + THE STORM HAND)    |    YOU + %s + THE TRAINER" % [_pawn_space, lv["title"], ("ARCHITECT" if StoryLevels.hero_of(_pawn_space) == "warrior" else "WARRIOR")]
+			_play.text = "PLAY LEVEL %d" % _pawn_space
+			return
 		if StoryLevels.is_orbis(_pawn_space):
 			var what := "DIALOGUE ONLY  -  a lesson (any order, all needed)" if StoryLevels.is_lesson(_pawn_space) else "DIALOGUE ONLY"
 			_info.text = "Level %d: %s  (%s)    |    The Architect and the Warrior, at the Trainer's table" % [_pawn_space, lv["title"], what]
@@ -648,7 +652,7 @@ func _on_play() -> void:
 		scene.hero_art = art
 		add_child(scene)
 		await scene.finished
-	elif StoryLevels.is_orbis(_pawn_space):
+	elif StoryLevels.is_orbis(_pawn_space) or StoryLevels.is_storm(_pawn_space):
 		pass                                                            # Orbis Terrarum: straight to the table
 	elif Three.enabled() and not StoryLevels.is_slide(_pawn_space):     # (The Caves: you just fall in)
 		# 3D LEVEL INTRO: walk in / fly over / fall in / gate opens / boss reveal (Scenes3D.intro_for)
@@ -664,6 +668,10 @@ func _on_play() -> void:
 		fall.caption = "LEVEL %d:  %s" % [_pawn_space, StoryLevels.get_level(_pawn_space)["title"]]
 		add_child(fall)
 		await fall.finished
+	if StoryLevels.is_storm(_pawn_space):                 # Level 80 starts at the table (phase 0)
+		OrbisTalk.storm_phase = 0
+		get_tree().change_scene_to_file(ORBIS_SCENE)
+		return
 	if StoryLevels.is_orbis(_pawn_space):
 		get_tree().change_scene_to_file(ORBIS_SCENE)
 		return

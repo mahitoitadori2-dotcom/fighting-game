@@ -790,8 +790,7 @@ func _spawn_enemy(id: String, pos: Vector2) -> BaseEnemy:
 	add_child(e)
 	_apply_void_mod(e, id)
 	if bool(level.get("possessed", false)):              # Level 80: CORPSES the Storm controls
-		e.modulate = Color(0.60, 0.66, 0.92)
-		e.data.character_name = "Possessed " + e.data.character_name
+		e.set_deferred("modulate", Color(0.55, 0.62, 0.95))     # (Deferred: after the enemy's own setup)
 		Effects.hit_sparks(e, pos + Vector2(0, -60), 10, 1.2)
 	Effects.hit_sparks(e, pos + Vector2(0, -40), 8, 1.0)
 	e.died.connect(_on_enemy_died.bind(e))

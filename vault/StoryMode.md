@@ -352,6 +352,27 @@ The Story part after Terra Craterum (page 10). It's the slide again, but you're 
 - **CHOICES** (option buttons; arrows / A-D, confirm, or click / tap).
 - The narrator has no portrait any more.
 
+## Level 80: THE STORM ATTACKS (added 2026-11-15, the end of Orbis Terrarum)
+
+Opens when all four lessons are done. **All in one level** (the user's rule), five scenes chained by `OrbisTalk.storm_phase`:
+1. **The table** (OrbisTalk): the Trainer starts to tell who CREATED the Storm ("The one who created the Storm was-") and is **cut off**. The sky goes black, the spell dome cracks, and the Storm breaks into Orbis Terrarum. "The spells are breaking! RUN!"
+2. **The breaking bridge** (CaveSlide tier 10): you RUN DOWN the bridge with the **other hero and the Trainer** running behind you. Gaps are broken out of the bridge (jump them) and storm particles fly at you (jump or hit, J). No S.
+3. **The dead town** (OrbisTalk): the town at the foot of the bridge, the villagers lying dead in the street. Then the ground opens.
+4. **Into the mountain** (CaveSlide tier 11): a cave slide with the **Storm chasing you** (the Magma Run's hunt, drawn as a storm front with lightning; walls to smash with J).
+5. **The fight** (StoryArena, the "INSIDE THE MOUNTAIN" cave):
+   - 3 waves of **possessed corpses** of regular enemies only (the user's choice): Colosseum guards, tribesmen, Kharlemings, lava creatures. They're tinted storm-blue.
+   - Then **THE STORM HAND** (720 HP): Palm Slam, Sweep, Storm Fist with shockwaves, Finger Zap, and the roof falling when enraged.
+   - **The other hero (CPU partner) AND THE TRAINER fight beside you** (the user's choice). The Trainer is a new CPU ally (`TrainerAlly.gd`: Blue Palm, Learner's Orb, Lesson stun); he takes 30% damage and gets back up.
+- RETRY in the fight repeats only the fight. Starting from the board begins at the table.
+- **Music:** a new `boss_storm_hand` (organ, choir, low brass, timpani, thunder). The scenes use boss_storm_finger and story_snow.
+- **Achievement:** "Orbis Terrarum Conquered" (the lessons one is now "Everything He Could Tell").
+- Lines are Claude's own around the user's beats (the cut-off line, "they never believed it was real").
+- **Checked by script:**
+  - The bot played the whole chain: table → bridge → town → cave → 3 waves → Storm Hand → level clear (in ~3.5 minutes).
+  - Screenshots of every scene looked right.
+  - The Storm Hand was raised from 480 to 720 HP because three fighters killed it too fast.
+  - **Not played by a human.**
+
 ## The Road to Peace (levels 72-74, added 2026-11-15)
 
 The Story part after Terra Ordinariorum (page 12), between Ordinariorum and Orbis Terrarum. It's not a slide but a **RUN**: you're forced to run up the bridge from Orbis Terrarum (it climbs up into the sky). Same hero as DemiLand.

@@ -694,4 +694,26 @@ PIECES.story_orbis = { bpm: 70, meter: 3, rev: 0.45,
     { t: 'hit', inst: 'bells', key: 77, from: 0, to: 16, beats: [0], every: 4, vel: 46, dur: 3 },
   ] };
 
+// ---------------- THE STORM HAND: the Storm reaches into the mountain (2026-11-15) ----------------
+// E minor 4/4, heavy and huge: organ, choir, low brass theme, pounding timpani + taiko, thunder.
+PIECES.boss_storm_hand = { bpm: 128, meter: 4,
+  chords: 'Em Em C C Am Am B B  Em G C D Am C B B',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 12, 0, 7, 0, 12, 10], step: 0.5, vel: 88 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2, 2]], vel: 100 },
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -1, vel: 56 },
+    { t: 'mel', inst: 'trombone', bar: 0, vel: 112, dbl: [['tuba', -1, 0.35], ['euphonium', 0, 0.4]],
+      notes: 'E4:3 B3:1 E4:2 G4:2 G4:3 E4:1 C4:4 A3:2 C4:2 E4:3 D4:1 D#4:4 F#4:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 76 },
+    { t: 'mel', inst: 'horn', bar: 8, vel: 108, dbl: [['trumpet', 0, 0.3], ['voice', -1, 0.45]],
+      notes: 'B4:2 E5:2 D5:2 B4:2 C5:2 E5:2 F#5:2 D5:2 E5:2 C5:2 E5:2 G5:2 F#5:4 D#5:4' },
+    { t: 'hit', inst: 'timpani', key: 40, from: 0, to: 16, beats: [0, 1.5, 2], vel: 112 },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [3, 3.5], vel: 98 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 104, dur: 3 },
+    { t: 'hit', inst: 'drums', key: 59, from: 0, to: 16, beats: [2], every: 2, vel: 86, dur: 3 },
+    { t: 'hit', inst: 'drums', key: 38, from: 7, to: 8, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 82 },
+    { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 82 },
+    { t: 'hit', inst: 'bells', key: 52, from: 0, to: 16, beats: [0], every: 2, vel: 76, dur: 3 },
+  ] };
+
 module.exports = { PIECES, build };
