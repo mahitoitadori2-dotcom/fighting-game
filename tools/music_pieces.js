@@ -425,4 +425,104 @@ PIECES.story_architectium = { bpm: 300, meter: 6, rev: 0.28,
     { t: 'hit', inst: 'drums', key: 35, from: 0, to: 16, beats: [0], vel: 70 },
   ] };
 
+// ==========================================================================================
+// TERRA CRATERUM (2026-11-15)
+// ==========================================================================================
+
+// ---------------- THE KHARLEMING WRECK: a dead ship still ticking ----------------
+// F# minor 4/4, slow. A broken music-box celesta loop over a cold string section, a far ship bell,
+// and the CLICK-CLICK of Kharlemings (xylophone + castanets). Cello, then oboe sing over it.
+PIECES.story_wreck = { bpm: 84, meter: 4, rev: 0.4,
+  chords: 'F#m F#m D D Bm Bm C# C#  F#m D G C# Bm D C# C#',
+  parts: [
+    { t: 'pad', inst: 'slowstrings', from: 0, to: 16, vel: 50 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 4]], vel: 58 },
+    { t: 'ost', inst: 'celesta', from: 0, to: 16, rel: [0, 7, 12, 7, 15, 12, 7, 12], step: 0.5, oct: 1, vel: 48 },
+    { t: 'hit', inst: 'xylophone', key: 84, from: 0, to: 16, beats: [0.75, 1.25, 3.75], vel: 44 },        // Kharleming clicks
+    { t: 'hit', inst: 'castanets', key: 60, from: 4, to: 16, beats: [2.5, 2.75], vel: 50 },
+    { t: 'mel', inst: 'cello', bar: 0, vel: 88, dbl: [['bassoon', 0, 0.3]],
+      notes: 'F#3:3 G#3:0.5 A3:0.5 C#4:4 D4:2 C#4:1 A3:1 F#3:4 B3:3 C#4:0.5 D4:0.5 F#4:4 F4:2 C#4:2 G#3:4' },
+    { t: 'pad', inst: 'tremolo', from: 8, to: 16, vel: 42 },
+    { t: 'mel', inst: 'oboe', bar: 8, vel: 90, dbl: [['clarinet', -1, 0.3]],
+      notes: 'C#5:3 D5:0.5 E5:0.5 F#5:4 D5:2 C#5:1 B4:1 B4:4 D5:3 E5:0.5 F#5:0.5 G5:4 F5:2 E5:1 D5:1 C#5:4' },
+    { t: 'hit', inst: 'bells', key: 66, from: 0, to: 16, beats: [0], every: 4, vel: 58, dur: 4 },       // A far ship bell
+    { t: 'hit', inst: 'drums', key: 35, from: 8, to: 16, beats: [0], every: 2, vel: 52 },
+  ] };
+
+// ---------------- THE CRATER / MAGMA FIELDS: the land that boils ----------------
+// D minor with a Phrygian E-flat, 4/4, very slow and heavy. Low dark harp, brooding strings,
+// timpani like the ground cracking; a French horn, then a low choir + trombones and a church organ.
+PIECES.story_magma = { bpm: 66, meter: 4, rev: 0.38,
+  chords: 'Dm Dm Eb Dm Bb Gm A A  Dm Eb Dm Bb Gm Eb A A',
+  parts: [
+    { t: 'pad', inst: 'slowstrings', from: 0, to: 16, vel: 56 },
+    { t: 'pad', inst: 'organ', from: 8, to: 16, oct: -1, vel: 40 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 2], [2, 2]], vel: 64 },
+    { t: 'bass', inst: 'tuba', from: 8, to: 16, pat: [[0, 4]], vel: 54 },
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 4, 1], [3, 2, 1]], vel: 52 },
+    { t: 'hit', inst: 'timpani', key: 38, from: 0, to: 16, beats: [0], vel: 84 },
+    { t: 'hit', inst: 'timpani', key: 38, from: 7, to: 8, beats: [3, 3.25, 3.5, 3.75], vel: 70 },
+    { t: 'hit', inst: 'timpani', key: 38, from: 15, to: 16, beats: [3, 3.25, 3.5, 3.75], vel: 70 },
+    { t: 'mel', inst: 'horn', bar: 0, vel: 100, dbl: [['euphonium', -1, 0.35]],
+      notes: 'D4:2 Eb4:1 D4:1 A3:4 D4:2 F4:1 G4:1 A4:4 Bb4:2 A4:1 G4:1 F4:2 D4:2 E4:4 C#4:4' },
+    { t: 'mel', inst: 'choir', bar: 8, vel: 98, dbl: [['voice', -1, 0.4]],
+      notes: 'A4:2 Bb4:1 A4:1 G4:4 F4:2 G4:1 A4:1 D5:4 C5:2 Bb4:1 A4:1 G4:2 Bb4:2 A4:4 A4:4' },
+    { t: 'mel', inst: 'trombone', bar: 8, oct: -1, vel: 88,
+      notes: 'A4:2 Bb4:1 A4:1 G4:4 F4:2 G4:1 A4:1 D5:4 C5:2 Bb4:1 A4:1 G4:2 Bb4:2 A4:4 A4:4' },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 8, vel: 70, dur: 4 },
+  ] };
+
+// ---------------- THE LAVA MELTER: a pillar that erupts ----------------
+// C# minor with a Phrygian D, 4/4. Pounding spiccato strings, organ, a crushing low-brass theme
+// (trombones + tubas), then the choir and horns roar over it. Timpani + taiko like falling rock.
+PIECES.boss_melter = { bpm: 120, meter: 4,
+  chords: 'C#m C#m D D C#m C#m G# G#  A A D D C#m G# C#m C#m',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 12, 0, 1, 0, 12, 0], step: 0.5, vel: 88 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2, 2]], vel: 100 },
+    { t: 'bass', inst: 'tuba', from: 0, to: 16, pat: [[0, 2], [2, 2]], vel: 84 },
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -1, vel: 54 },
+    { t: 'mel', inst: 'trombone', bar: 0, vel: 110, dbl: [['tuba', -1, 0.35], ['euphonium', 0, 0.4]],
+      notes: 'C#4:3 D4:1 C#4:2 G#3:2 A3:3 G#3:1 F#3:2 E3:2 C#3:3 D3:1 E3:2 G#3:2 G#3:4 B#3:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 74 },
+    { t: 'mel', inst: 'choir', bar: 8, vel: 108, dbl: [['voice', -1, 0.45]],
+      notes: 'E5:2 F#5:2 A5:4 A5:2 G#5:1 F#5:1 F#5:4 E5:4 D#5:4 C#5:8' },
+    { t: 'mel', inst: 'horn', bar: 8, oct: -1, vel: 104, dbl: [['trumpet', 1, 0.25]],
+      notes: 'E5:2 F#5:2 A5:4 A5:2 G#5:1 F#5:1 F#5:4 E5:4 D#5:4 C#5:8' },
+    { t: 'hit', inst: 'timpani', key: 37, from: 0, to: 16, beats: [0, 1.5, 2], vel: 112 },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [3, 3.5], vel: 96 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 104, dur: 3 },
+    { t: 'hit', inst: 'drums', key: 38, from: 7, to: 8, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 80 },
+    { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 80 },
+    { t: 'hit', inst: 'bells', key: 49, from: 0, to: 16, beats: [0], every: 2, vel: 76, dur: 3 },
+  ] };
+
+// ---------------- THE KHARLEMING LORD: a swarm with a crown ----------------
+// E minor with a Phrygian F, a limping 7/8 (eighth = beat, grouped 2+2+3). Clicking xylophone and
+// castanets (the swarm), spiccato strings, taiko; horns + trombones, then a frantic violin + piccolo.
+PIECES.boss_kharleming_lord = { bpm: 330, meter: 7,
+  chords: 'Em Em F Em Em Em F B  Am Am F Em C F B B  Em F Em F Am F B B',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 24, rel: [0, 12, 0, 7, 0, 1, 0], step: 1, vel: 86 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 24, pat: [[0, 2], [2, 2], [4, 3]], vel: 98 },
+    { t: 'bass', inst: 'cello', from: 0, to: 24, pat: [[0, 2], [2, 2], [4, 3]], oct: 1, vel: 76 },
+    { t: 'pad', inst: 'tremolo', from: 0, to: 8, vel: 50 },
+    { t: 'hit', inst: 'xylophone', key: 88, from: 0, to: 24, beats: [1, 3, 5, 6], vel: 60 },           // The swarm clicking
+    { t: 'hit', inst: 'castanets', key: 60, from: 8, to: 16, beats: [1, 3, 5, 6], vel: 64 },
+    { t: 'mel', inst: 'horn', bar: 0, vel: 108, dbl: [['euphonium', -1, 0.4]],
+      notes: 'E4:2 G4:2 F4:3 E4:2 B3:2 E4:3 F4:2 A4:2 C5:3 B4:2 A4:2 G4:3 E4:2 G4:2 B4:3 C5:2 B4:2 G4:3 A4:2 G4:2 F4:3 D#4:4 B3:3' },
+    { t: 'mel', inst: 'trombone', bar: 0, oct: -1, vel: 96,
+      notes: 'E4:2 G4:2 F4:3 E4:2 B3:2 E4:3 F4:2 A4:2 C5:3 B4:2 A4:2 G4:3 E4:2 G4:2 B4:3 C5:2 B4:2 G4:3 A4:2 G4:2 F4:3 D#4:4 B3:3' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 106, dbl: [['piccolo', 0, 0.2], ['xylophone', 0, 0.2]],
+      notes: 'A5:1 B5:1 C6:2 B5:1 A5:2 E5:2 A5:2 C6:3 F5:1 G5:1 A5:2 C6:3 B5:2 G5:2 E5:3 C5:1 D5:1 E5:2 G5:3 A5:2 F5:2 C5:3 B4:2 D#5:2 F#5:3 B5:4 F#5:3' },
+    { t: 'pad', inst: 'choir', from: 8, to: 24, vel: 70 },
+    { t: 'pad', inst: 'organ', from: 16, to: 24, oct: -1, vel: 56 },
+    // Bars 16-23: the BROOD - the swarm theme low and heavy, the choir chanting it
+    { t: 'mel', inst: 'trombone', bar: 16, oct: -1, vel: 108, dbl: [['tuba', -1, 0.35], ['choir', 1, 0.5]],
+      notes: 'E4:2 G4:2 F4:3 E4:2 F4:2 A4:3 E4:2 B4:2 G4:3 F4:2 E4:2 F4:3 A4:2 C5:2 E5:3 D5:2 C5:2 A4:3 B4:2 D#5:2 F#5:3 B4:7' },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 24, beats: [0, 2, 4], vel: 100 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 24, beats: [6], vel: 74 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 24, beats: [0], every: 4, vel: 96, dur: 3 },
+  ] };
+
 module.exports = { PIECES, build };

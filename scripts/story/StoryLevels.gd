@@ -159,10 +159,10 @@ const MAPS := {
 	"demi_grove":   {"bg": "demi_grove", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE DEAD GROVE"},
 	"demi_door":    {"bg": "demi_door", "ground": 27, "walls": "thorn", "half_width": 840.0, "music": "story_demiland", "zone": "THE ANCIENT DOOR"},
 	# ----- Terra Craterum (one open world, four regions) -----
-	"crater_floor":  {"bg": "crater_floor", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_cave", "zone": "THE CRATER FLOOR"},
-	"crater_wreck":  {"bg": "crater_wreck", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_hive", "zone": "THE KHARLEMING WRECK"},
-	"crater_fields": {"bg": "crater_fields", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_cave", "zone": "THE MAGMA FIELDS"},
-	"crater_front":  {"bg": "crater_front", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_cave", "zone": "THE WAR FRONT"},
+	"crater_floor":  {"bg": "crater_floor", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_magma", "zone": "THE CRATER FLOOR"},
+	"crater_wreck":  {"bg": "crater_wreck", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_wreck", "zone": "THE KHARLEMING WRECK"},
+	"crater_fields": {"bg": "crater_fields", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_magma", "zone": "THE MAGMA FIELDS"},
+	"crater_front":  {"bg": "crater_front", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_magma", "zone": "THE WAR FRONT"},
 }
 
 # ======================= BOSS EXTENSION LEVELS =======================

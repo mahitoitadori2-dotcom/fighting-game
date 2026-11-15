@@ -296,7 +296,7 @@ Its own Story part (page 9) after The Caves: the second OPEN-WORLD level, with t
   - Why freeing one kills the other (the slave's chain feeds the reactor) is Claude's own idea and can be changed.
 - **Lore items:** Melter's Eye, Lord's Feather, The Technician's Breaker.
 - **Achievements:** 11 new (both trophies, Colony Breaker, Cartographer of Cinders, Fireproof, The Slave's Story, Broken Pickaxe / Snapped Chains, Out of the Crater, Terra Craterum Conquered).
-- **Music:** reuses existing tracks (story_cave, story_hive, boss_titan, boss_massacre).
+- **Music (own, 2026-11-15):** `story_wreck` (the wreck), `story_magma` (the other three regions), `boss_melter`, `boss_kharleming_lord`. See [Audio](Audio.md).
 - **Code:** `scripts/story/crater/` (CraterLand, CraterWorld, CraterMap, CraterBackdrops, CraterArt, 6 enemies, 2 bosses), scene `scenes/CraterLand.tscn`.
 - **Checked by script, headless:**
   - Every region loads.

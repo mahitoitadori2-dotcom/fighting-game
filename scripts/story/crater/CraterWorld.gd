@@ -40,9 +40,9 @@ const CAMPS := [
 ## The two bosses. Their arena closes with walls of fog when the fight starts.
 const BOSSES := [
 	{"id": "kharleming_lord", "x": -6950.0, "half": 800.0, "region": "crater_wreck",
-		"music": "boss_massacre", "color": Color(0.55, 0.85, 1.0), "sub": "Lord of the Ancient Ship", "line": "*CLICK. CLICK. CLICK.*", "entrance": "drop"},
+		"music": "boss_kharleming_lord", "color": Color(0.55, 0.85, 1.0), "sub": "Lord of the Ancient Ship", "line": "*CLICK. CLICK. CLICK.*", "entrance": "drop"},
 	{"id": "lava_melter", "x": 6350.0, "half": 700.0, "region": "crater_front",
-		"music": "boss_titan", "color": Color(1.0, 0.5, 0.15), "sub": "The Pillar of the Crater", "line": "*two eyes of rock open in the lava*", "entrance": "rise"},
+		"music": "boss_melter", "color": Color(1.0, 0.5, 0.15), "sub": "The Pillar of the Crater", "line": "*two eyes of rock open in the lava*", "entrance": "rise"},
 ]
 const MAGMA_GATE_X := 7130.0                  # Behind the Melter: drains when it dies
 const WALL_X := 7700.0                        # The BASALT WALL (the way on)

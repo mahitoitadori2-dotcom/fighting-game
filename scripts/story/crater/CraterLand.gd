@@ -301,7 +301,7 @@ func _enter_region(reg: Dictionary, announce: bool) -> void:
 		else:
 			bg.theme = theme
 	if _fight.is_empty() and not _ending:
-		SoundManager.play_music(String(StoryLevels.MAPS[key].get("music", "story_cave")))
+		SoundManager.play_music(String(StoryLevels.MAPS[key].get("music", "story_magma")))
 	if not discovered.has(key):
 		discovered[key] = true
 		if announce:
@@ -816,7 +816,7 @@ func _end_fight() -> void:
 	_fight = {}
 	boss_bar_visible = false
 	if not _ending:
-		SoundManager.play_music(String(StoryLevels.MAPS[_region].get("music", "story_cave")) if _region != "" else "story_cave")
+		SoundManager.play_music(String(StoryLevels.MAPS[_region].get("music", "story_magma")) if _region != "" else "story_magma")
 
 
 # ============================================================
