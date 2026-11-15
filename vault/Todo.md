@@ -59,6 +59,11 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Is J for walls comfortable while also jumping and ducking?
   - Is the level 70 wave fight fair?
   - Only a bot played it so far.
+- [ ] **Play Terra Ordinariorum (71) yourself:**
+  - Is the Mountain climb doable (ledges are 90 px high; crawl tunnels need DOWN held)?
+  - Is the Storm Finger fair (320 HP)?
+  - Do the Frozen Expedition skins look right in a fight? The hood is drawn at a fixed spot, so it may slip during big moves.
+  - Only scripts have played it.
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).

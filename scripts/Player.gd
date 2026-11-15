@@ -46,7 +46,9 @@ func _ready() -> void:
 
 
 func draw_model_on(c: CanvasItem) -> void:
-	if Achievements.galaxy_for(self):
+	if FrozenSkin.worn_by(self):
+		FrozenSkin.draw_architect(c, self)       # Frozen Expedition (Story skin)
+	elif Achievements.galaxy_for(self):
 		GalaxySkin.draw_architect(c, self)       # Multiversal reward
 	else:
 		ArchitectArt.draw(c, self)

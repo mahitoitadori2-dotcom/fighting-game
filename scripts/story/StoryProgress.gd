@@ -11,8 +11,8 @@ extends RefCounted
 ## are moved to the matching level of the new layout when they load.
 
 const SAVE_PATH := "user://story.cfg"
-const TOTAL_LEVELS := 70                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN
-const AVAILABLE_LEVELS := 70             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run
+const TOTAL_LEVELS := 71                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM
+const AVAILABLE_LEVELS := 71             # Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -53,6 +53,38 @@ static var crater := {}
 ## TERRA CRATERUM's choice, KEPT FOR LATER PARTS: "slave" (freed the Volcano Slave - the
 ## Kharleming Sacrifice burned), "sacrifice" (freed the Sacrifice - the Slave was buried), "" = none.
 static var crater_choice := ""
+
+
+## TERRA ORDINARIORUM run in progress (OrdLand._save_run) - {} = none.
+static var ord := {}
+## STORY SKINS (the Story Skins catalogue): "" = normal, "galaxy", "frozen" (Frozen Expedition).
+static var story_skin := ""
+## Frozen Expedition skins earned (beat the Crystal Swarm in the Snow Desert).
+static var frozen_skins := false
+
+
+static func save_ord(state: Dictionary) -> void:
+	load_progress()
+	ord = state
+	save_progress()
+
+
+static func clear_ord() -> void:
+	load_progress()
+	ord = {}
+	save_progress()
+
+
+static func set_story_skin(id: String) -> void:
+	load_progress()
+	story_skin = id
+	save_progress()
+
+
+static func unlock_frozen_skins() -> void:
+	load_progress()
+	frozen_skins = true
+	save_progress()
 
 
 static func save_crater(state: Dictionary) -> void:
@@ -202,6 +234,9 @@ static func load_progress() -> void:
 	npc_talks = int(cfg.get_value("story", "npc_talks", 0))
 	crater = cfg.get_value("story", "crater", {})
 	crater_choice = String(cfg.get_value("story", "crater_choice", ""))
+	ord = cfg.get_value("story", "ord", {})
+	story_skin = String(cfg.get_value("story", "story_skin", "galaxy" if Achievements.galaxy_skin else ""))
+	frozen_skins = bool(cfg.get_value("story", "frozen_skins", false))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -235,6 +270,9 @@ static func save_progress() -> void:
 	cfg.set_value("story", "npc_talks", npc_talks)
 	cfg.set_value("story", "crater", crater)
 	cfg.set_value("story", "crater_choice", crater_choice)
+	cfg.set_value("story", "ord", ord)
+	cfg.set_value("story", "story_skin", story_skin)
+	cfg.set_value("story", "frozen_skins", frozen_skins)
 	cfg.save(SAVE_PATH)
 
 
@@ -361,4 +399,5 @@ static func reset() -> void:
 	demi = {}
 	crater = {}
 	crater_choice = ""
+	ord = {}
 	save_progress()

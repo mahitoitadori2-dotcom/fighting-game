@@ -308,6 +308,43 @@ The Story part after Terra Craterum (page 10). It's the slide again, but you're 
   - Cave 64 still clears with the new white wall.
   - **Not played by a human:** the flood speed (`HUNT_SPEED`) may need tuning.
 
+## Terra Ordinariorum (level 71, added 2026-11-15)
+
+Its own Story part (page 11) after The Magma Run: the third OPEN-WORLD level, with DemiLand's rules (Souls rules, CamTons, a map, the run is saved). There's no night here. Lore by the user.
+- **Start:** a cutscene. You slide down a ramp out of the sky and tumble onto a meadow. You start on the **far left**.
+- **Biomes** (20 000 px, left to right): [Snow Desert, secret] | Meadow | Forest | Town | Jungle | Desert | Mountain. Each biome has its own backdrop and ground; the Storm is always on the horizon.
+- **Animals** from real life in every biome:
+  - Meadow: rabbit, sheep, cow. Forest: deer, fox, boar. Town: chicken, dog, cat. Jungle: monkey, parrot, frog. Desert: lizard, scorpion, fennec. Mountain: goat, marmot, eagle.
+  - 2-8 HP, and they **never attack** (the user's choice). They flee when you come close and come back when you rest.
+- **The Town:** 6 townsfolk (baker, washerwoman, guard, elder, farmer, child), each with a portrait and a voice. Talk with DOWN. Your 2nd talk asks about the Storm: they think you're crazy and politely refuse. The dialogue lines are Claude's own.
+- **The Mountain:** rock ledges to jump up (each step 90 px), and 3 low **crawl tunnels**. Standing up inside pushes you back out, so hold DOWN to crawl. The **Lightning Candle** is on the summit.
+- **Main route:**
+  1. Light the candle at the **Town Square** well.
+  2. A hole opens in the Storm with an island visible behind it. The Storm's hand smashes the town and the people flee.
+  3. **THE STORM FINGER** (320 HP): Press, Tap-Tap, Sweep, Flick, and Storm Bolts when enraged.
+  4. It drops the **Ordinariorum Ticket**.
+  5. A bridge comes down from Orbis Terrarum. Walk onto it to clear the level.
+- **Secret:**
+  1. Take the candle back past the start to the **Basalt Wall**; it blows up.
+  2. **THE SNOW DESERT** has frozen Kharlemings and lava golems in ice, and a floating crystal.
+  3. Touching the crystal starts **THE CRYSTAL SWARM**. You **cannot die** (HP never drops below 12). It shoots 10 crystals and is then stance-broken; one hit shatters it. Before that, every hit is turned away. If the stagger runs out, it fires 10 more.
+  4. Reward: the **Frozen Scroll** (the Great Freezing lore, in the Codex) and the **Frozen Expedition** skins.
+- **STORY SKINS catalogue:** a new SKINS button on the Story board.
+  - Pick NORMAL / GALAXY / FROZEN EXPEDITION for the Warrior and the Architect in Story Mode (`StoryProgress.story_skin`).
+  - Frozen Expedition is an Eskimo-style outfit: a brown parka, cream fur, and a fur-lined hood around the face.
+  - Galaxy in Story is now picked here. Versus keeps its toggle in the Achievements menu.
+- **Lore items:** The Lightning Candle, The Frozen Scroll, The Ordinariorum Ticket.
+- **Achievements:** 9 new (Conquered, Storm Finger Trophy, Light in the Dark, Cartographer of the Ordinary, secret Clearly Crazy / The Snow Desert / The Great Freezing, Gentle Giant: never hurt an animal, Ordinary Day: no deaths).
+- **Music, all new (8 tracks):** story_meadow (pastoral waltz), story_forest (6/8 clarinet), story_town (market polka), story_jungle (marimba + drums), story_desert (snake-charmer tune), story_mountain (brass chorale, the mountain top), story_snow (cold celesta + violin; also the Crystal Swarm fight), boss_storm_finger.
+- **Code:** `scripts/story/ord/` (OrdLand, OrdWorld, OrdMap, OrdBackdrops, OrdArt, Animal, CrystalSwarm, StormFinger), `scripts/story/SkinCatalogue.gd`, `scripts/achievements/FrozenSkin.gd`, scene `scenes/OrdLand.tscn`.
+- **Checked by script (no sound):**
+  - Every biome loads with its ground. Standing in a crawl tunnel pushes you out.
+  - The candle is picked up. Animals never hurt you. Talks work.
+  - The wall blows up. The Crystal Swarm can't kill you, breaks after 10 crystals and dies to one hit; the skins unlock.
+  - The Storm opens; the Finger fight starts and ends; the bridge comes down; walking onto it clears level 71.
+  - Screenshots looked right.
+  - **Not played by a human:** the climb (jump heights), the Finger's balance.
+
 ## Terra Craterum (level 67, added 2026-11-15)
 
 Its own Story part (page 9) after The Caves: the second OPEN-WORLD level, with the same rules as DemiLand (Souls rules, CamTons, camps, day / night, a map, the run is saved). Lore by the user; see [Future lore](FutureLore.md).

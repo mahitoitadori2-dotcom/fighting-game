@@ -525,4 +525,137 @@ PIECES.boss_kharleming_lord = { bpm: 330, meter: 7,
     { t: 'hit', inst: 'drums', key: 57, from: 0, to: 24, beats: [0], every: 4, vel: 96, dur: 3 },
   ] };
 
+// ==========================================================================================
+// TERRA ORDINARIORUM (2026-11-15): the regular land - unique music per biome, the Town, the
+// Mountain top, the Snow Desert and the Storm Finger.
+// ==========================================================================================
+
+// ---------------- THE MEADOW: a pastoral waltz (G major 3/4) ----------------
+PIECES.story_meadow = { bpm: 92, meter: 3, rev: 0.3,
+  chords: 'G G C G Em C D D  G Bm C G Em Am D G',
+  parts: [
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1]], oct: 1, vel: 58 },
+    { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 1]], vel: 74 },
+    { t: 'pad', inst: 'slowstrings', from: 8, to: 16, vel: 44 },
+    { t: 'mel', inst: 'flute', bar: 0, vel: 92, dbl: [['clarinet', -1, 0.25]],
+      notes: 'D5:2 B4:1 G5:2 F#5:1 E5:1 D5:1 C5:1 B4:3 C5:2 E5:1 G5:2 E5:1 D5:3 A4:3' },
+    { t: 'mel', inst: 'oboe', bar: 8, vel: 90, dbl: [['flute', 1, 0.25]],
+      notes: 'B4:2 D5:1 F#5:3 E5:2 C5:1 D5:3 E5:2 G5:1 E5:2 C5:1 F#5:2 A5:1 G5:3' },
+    { t: 'hit', inst: 'glock', key: 91, from: 0, to: 16, beats: [0], every: 2, vel: 50, dur: 1 },
+    { t: 'hit', inst: 'drums', key: 81, from: 8, to: 16, beats: [1, 2], vel: 40 },
+  ] };
+
+// ---------------- THE FOREST: a mysterious 6/8 walk under tall trees (E minor) ----------------
+PIECES.story_forest = { bpm: 200, meter: 6, rev: 0.38,
+  chords: 'Em Em C D Em Em Am B  Em G C D Am Em B Em',
+  parts: [
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1], [3, 3, 1], [4, 2, 1], [5, 1, 1]], vel: 50 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 6]], vel: 56 },
+    { t: 'pad', inst: 'slowstrings', from: 0, to: 16, vel: 42 },
+    { t: 'mel', inst: 'clarinet', bar: 0, vel: 92, dbl: [['bassoon', -1, 0.25]],
+      notes: 'E4:3 G4:2 A4:1 B4:6 C5:3 B4:2 A4:1 A4:3 F#4:3 G4:2 A4:1 B4:3 E5:6 C5:3 B4:2 A4:1 B4:6' },
+    { t: 'mel', inst: 'flute', bar: 8, vel: 86, dbl: [['oboe', 0, 0.3]],
+      notes: 'B4:3 E5:3 D5:3 B4:3 C5:3 E5:3 D5:3 F#5:3 E5:3 C5:3 B4:3 G4:3 F#4:3 A4:3 G4:3 E4:3' },
+    { t: 'hit', inst: 'drums', key: 76, from: 4, to: 16, beats: [0, 3], vel: 40 },               // Woodblock
+  ] };
+
+// ---------------- THE TOWN: a friendly market polka (C major 4/4) ----------------
+PIECES.story_town = { bpm: 116, meter: 4, rev: 0.26,
+  chords: 'C C F C G G C C  F F C A Dm G C C',
+  parts: [
+    { t: 'bass', inst: 'guitar', from: 0, to: 16, pat: [[0, 1], [2, 1]], oct: 1, vel: 70 },
+    { t: 'arp', inst: 'guitar', from: 0, to: 16, pat: [[1, 1, 1], [3, 2, 1]], oct: 1, vel: 56 },
+    { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 1], [2, 1]], vel: 74 },
+    { t: 'mel', inst: 'fiddle', bar: 0, vel: 100, dbl: [['mandolin', 0, 0.4]],
+      notes: 'E5:1 G5:1 E5:1 C5:1 D5:1 E5:1 C5:2 F5:1 A5:1 F5:1 C5:1 E5:2 C5:2 D5:1 F5:1 B4:1 D5:1 G5:2 F5:1 D5:1 E5:1 D5:1 C5:1 G4:1 C5:4' },
+    { t: 'mel', inst: 'crumhorn', bar: 8, vel: 94, dbl: [['mandolin', 0, 0.35], ['fiddle', -1, 0.4]],
+      notes: 'A4:1 C5:1 F5:2 A5:2 F5:2 G5:1 E5:1 C5:2 C#5:2 E5:2 D5:1 F5:1 A5:2 B4:1 D5:1 G5:2 E5:1 G5:1 C6:2 C5:4' },
+    { t: 'hit', inst: 'drums', key: 54, from: 0, to: 16, beats: [1, 3], vel: 66 },             // Tambourine
+    { t: 'hit', inst: 'drums', key: 35, from: 0, to: 16, beats: [0, 2], vel: 62 },
+  ] };
+
+// ---------------- THE JUNGLE: marimba, flute and drums (A minor 4/4) ----------------
+PIECES.story_jungle = { bpm: 104, meter: 4, rev: 0.32,
+  chords: 'Am Am F G Am Am Dm E  Am C G F Dm Am E Am',
+  parts: [
+    { t: 'ost', inst: 'marimba', from: 0, to: 16, rel: [0, 7, 12, 7, 3, 7, 12, 15], step: 0.5, oct: 1, vel: 60 },
+    { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2.5, 1]], vel: 80 },
+    { t: 'pad', inst: 'oohs', from: 8, to: 16, vel: 48 },
+    { t: 'mel', inst: 'flute', bar: 0, vel: 94, dbl: [['piccolo', 0, 0.2]],
+      notes: 'A5:1.5 G5:0.5 E5:2 C5:1 D5:1 E5:2 F5:1.5 E5:0.5 C5:2 D5:2 B4:2 A4:1 C5:1 E5:2 A5:3 G5:1 F5:1 E5:1 D5:2 E5:2 G#4:2' },
+    { t: 'mel', inst: 'oboe', bar: 8, vel: 90, dbl: [['clarinet', -1, 0.3]],
+      notes: 'E5:2 C5:2 E5:1 G5:1 C6:2 B5:2 G5:2 A5:2 F5:2 F5:1 A5:1 D5:2 E5:2 C5:2 B4:2 G#4:2 A4:4' },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 2.5], vel: 82 },
+    { t: 'hit', inst: 'drums', key: 63, from: 0, to: 16, beats: [1, 1.5, 3, 3.5], vel: 60 },   // Conga
+    { t: 'hit', inst: 'drums', key: 70, from: 4, to: 16, beats: [0.5, 2, 3.5], vel: 46 },       // Shaker
+  ] };
+
+// ---------------- THE DESERT: a snake-charmer's tune (D Phrygian dominant 4/4) ----------------
+PIECES.story_desert = { bpm: 88, meter: 4, rev: 0.36,
+  chords: 'D D Eb D D Gm Eb D  Gm Gm D D Eb Eb D D',
+  parts: [
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 4]], vel: 62 },
+    { t: 'pad', inst: 'cello', from: 0, to: 16, oct: -1, vel: 46 },
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 0.5], [0.5, 2, 0.5], [1, 1, 1], [2.5, 0, 0.5], [3, 2, 1]], vel: 54 },
+    { t: 'mel', inst: 'englishhorn', bar: 0, vel: 96, dbl: [['oboe', 1, 0.25]],
+      notes: 'D4:1 Eb4:1 F#4:2 G4:1 F#4:1 Eb4:2 Eb4:2 G4:1 Bb4:1 A4:4 D5:2 C5:1 Bb4:1 Bb4:2 A4:1 G4:1 G4:1 F#4:1 Eb4:2 D4:4' },
+    { t: 'mel', inst: 'oboe', bar: 8, vel: 94, dbl: [['clarinet', -1, 0.3]],
+      notes: 'G4:1 A4:1 Bb4:2 D5:2 Bb4:2 A4:1 Bb4:1 A4:1 G4:1 F#4:4 Eb4:2 G4:2 Bb4:2 G4:2 F#4:1 G4:1 A4:2 D4:4' },
+    { t: 'hit', inst: 'drums', key: 54, from: 0, to: 16, beats: [1, 3], vel: 58 },
+    { t: 'hit', inst: 'castanets', key: 60, from: 8, to: 16, beats: [0.5, 2.5, 3.5], vel: 60 },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0], vel: 70 },
+  ] };
+
+// ---------------- THE MOUNTAIN TOP: a majestic brass chorale (B-flat major 3/4) ----------------
+PIECES.story_mountain = { bpm: 76, meter: 3, rev: 0.42,
+  chords: 'Bb Bb Eb Bb Gm Eb F F  Bb Dm Eb Bb Gm Cm F Bb',
+  parts: [
+    { t: 'pad', inst: 'slowstrings', from: 0, to: 16, vel: 56 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 3]], vel: 70 },
+    { t: 'arp', inst: 'harp', from: 0, to: 8, pat: [[0, 0, 1], [1, 2, 1], [2, 4, 1]], vel: 48 },
+    { t: 'mel', inst: 'horn', bar: 0, vel: 100, dbl: [['euphonium', -1, 0.35]],
+      notes: 'F4:2 Bb4:1 D5:3 Eb5:2 G5:1 F5:3 D5:2 Bb4:1 G4:2 Eb4:1 C5:2 F4:1 F4:3' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 66 },
+    { t: 'mel', inst: 'trumpet', bar: 8, vel: 98, dbl: [['voice', -1, 0.4], ['horn', -1, 0.4]],
+      notes: 'D5:2 F5:1 F5:2 D5:1 Eb5:2 G5:1 F5:3 G5:2 D5:1 C5:2 Eb5:1 C5:2 A4:1 Bb4:3' },
+    { t: 'hit', inst: 'timpani', key: 34, from: 0, to: 16, beats: [0], every: 2, vel: 84 },
+    { t: 'hit', inst: 'drums', key: 57, from: 8, to: 16, beats: [0], every: 4, vel: 80, dur: 4 },
+  ] };
+
+// ---------------- THE SNOW DESERT: cold and lonely (B minor 3/4) ----------------
+PIECES.story_snow = { bpm: 60, meter: 3, rev: 0.5,
+  chords: 'Bm Bm G G Em Em F# F#  Bm D G Em C G F# F#',
+  parts: [
+    { t: 'arp', inst: 'celesta', from: 0, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 4, 1]], oct: 1, vel: 52 },
+    { t: 'pad', inst: 'tremolo', from: 0, to: 16, oct: 1, vel: 34 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 3]], vel: 48 },
+    { t: 'mel', inst: 'violin', bar: 0, vel: 86, dbl: [['flute', 0, 0.25]],
+      notes: 'F#5:3 D5:2 B4:1 B4:3 G4:3 G4:2 B4:1 E5:3 C#5:2 A#4:1 F#4:3' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 90, dbl: [['glock', 0, 0.25], ['voice', -1, 0.3]],
+      notes: 'B5:2 A5:1 F#5:3 G5:2 B5:1 E5:3 E5:2 C6:1 B5:2 G5:1 A#5:2 C#6:1 F#5:3' },
+    { t: 'hit', inst: 'bells', key: 71, from: 0, to: 16, beats: [0], every: 4, vel: 50, dur: 3 },
+  ] };
+
+// ---------------- THE STORM FINGER: the Storm reaches down (D minor 4/4) ----------------
+// Driving tremolo strings, thunder (timpani rolls, bass drum, crashes), a low brass theme, then
+// horns + choir. Fast and heavy - but simple: one finger, one theme.
+PIECES.boss_storm_finger = { bpm: 140, meter: 4,
+  chords: 'Dm Dm Bb Bb Gm Gm A A  Dm F Bb C Gm A Dm A',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 12, 7, 12, 3, 12, 7, 12], step: 0.5, vel: 86 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2, 2]], vel: 98 },
+    { t: 'pad', inst: 'organ', from: 8, to: 16, oct: -1, vel: 50 },
+    { t: 'mel', inst: 'trombone', bar: 0, vel: 110, dbl: [['tuba', -1, 0.35], ['euphonium', 0, 0.4]],
+      notes: 'D4:3 A3:1 D4:2 F4:2 F4:3 D4:1 Bb3:4 G3:2 Bb3:2 D4:3 C4:1 A3:2 C#4:2 E4:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 72 },
+    { t: 'mel', inst: 'horn', bar: 8, vel: 106, dbl: [['trumpet', 0, 0.3], ['voice', -1, 0.4]],
+      notes: 'A4:2 D5:2 C5:2 A4:2 Bb4:2 D5:2 E5:2 C5:2 D5:2 Bb4:2 C#5:2 E5:2 F5:3 E5:1 C#5:4' },
+    { t: 'hit', inst: 'timpani', key: 38, from: 0, to: 16, beats: [0, 1.5, 2.5], vel: 110 },
+    { t: 'hit', inst: 'drums', key: 35, from: 0, to: 16, beats: [0, 2], vel: 100 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 100, dur: 3 },
+    { t: 'hit', inst: 'drums', key: 59, from: 0, to: 16, beats: [2], every: 2, vel: 84, dur: 3 },        // Thunder
+    { t: 'hit', inst: 'drums', key: 38, from: 7, to: 8, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 80 },
+    { t: 'hit', inst: 'drums', key: 38, from: 15, to: 16, beats: [2, 2.5, 3, 3.25, 3.5, 3.75], vel: 80 },
+  ] };
+
 module.exports = { PIECES, build };

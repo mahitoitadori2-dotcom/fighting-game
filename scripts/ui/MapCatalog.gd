@@ -69,6 +69,13 @@ const DESC := {
 	"crater_wreck": "Terra Craterum - the Kharleming Wreck: the broken hull of an ancient ship, cyan lights still blinking.",
 	"crater_fields": "Terra Craterum - the Magma Fields: rivers of lava winding to the horizon.",
 	"crater_front": "Terra Craterum - the War Front: fires along the rim, war banners of lava and steel.",
+	"ord_meadow": "Terra Ordinariorum - the Meadow: green hills, flowers and a blue sky. The Storm on the horizon.",
+	"ord_forest": "Terra Ordinariorum - the Forest: a wall of tall pines.",
+	"ord_town": "Terra Ordinariorum - the Town: red roofs and a church tower. Nothing ever happens here.",
+	"ord_jungle": "Terra Ordinariorum - the Jungle: a thick green canopy.",
+	"ord_desert": "Terra Ordinariorum - the Desert: golden dunes under a hot sky.",
+	"ord_mountain": "Terra Ordinariorum - the Mountain: snowy peaks.",
+	"ord_snow": "Terra Ordinariorum - the Snow Desert: white peaks and falling snow (secret).",
 }
 
 static var _cache: Array = []

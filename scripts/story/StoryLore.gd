@@ -51,6 +51,13 @@ const ITEMS := [
 		"A feather of steel from the Kharleming Lord. Horns, wings, a tail with a sting: it carried a piece of every Kharleming that ever lived.\n\nThe ship it was born in never flew again. It never stopped trying to make it fly."],
 	["technician_breaker", "The Technician's Breaker",
 		"An ancient device of the Kharlemings. One click, and every Kharleming nearby begins to glow... and then a whole colony is gone.\n\nThey built it for the day the lava wins. That day comes often in Terra Craterum."],
+	# ----- Terra Ordinariorum -----
+	["lightning_candle", "The Lightning Candle",
+		"A candle of grey stone with a flame of living lightning. It was made on the mountain by the crystals of the Great Freezing.\n\nIt has one purpose: to open an entrance to the Storm."],
+	["crystal_swarm", "The Frozen Scroll",
+		"A scroll of ice that never melts. It tells of THE GREAT FREEZING: a time when the Storm was at its highest and could not control itself. It threw crystals everywhere, and where they fell came ice and snow.\n\nThe crystals were sentient. They climbed the mountains, made the Lightning Candle, and used it on the Storm to open its main entrance. That is the candle's purpose.\n\nIt is a reminder. Go to the town. Light the candle."],
+	["storm_finger", "The Ordinariorum Ticket",
+		"An old paper ticket with a gold seal, torn from the Storm's own hand. No one leaves Terra Ordinariorum without one.\n\nThe townsfolk never needed one. They never wanted to leave. They never even looked up."],
 	# ----- Boss Extensions -----
 	["caeser_grave", "Grave-Dust of the Devourer",
 		"A pinch of dust from the Caeser's crypt. Even dead, the serpent kept its followers: they carried its bones below the arena and prayed to them.\n\nIt devoured gods. In the end it could not devour the one thing that always wins: the cure."],

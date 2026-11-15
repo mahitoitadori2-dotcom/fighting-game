@@ -18,6 +18,10 @@ const PROFILES := {
 	"architect": {"f": 150.0, "wave": "pulse", "dur": 0.055, "soft": 0.45, "noise": 0.0, "glide": -0.02, "sub": 0.15},   # Human, regular, a bit deep
 	"warrior": {"f": 92.0, "wave": "saw", "dur": 0.07, "soft": 0.75, "noise": 0.06, "glide": -0.04, "sub": 0.45},        # Dark and deep
 	"enlightened": {"f": 330.0, "wave": "tri", "dur": 0.06, "soft": 0.2, "noise": 0.0, "glide": 0.09, "sub": 0.0, "vib": 0.4},   # Feminine, proud
+	"town_m": {"f": 150.0, "wave": "saw", "dur": 0.055, "soft": 0.6, "noise": 0.05, "glide": 0.0, "sub": 0.2},       # Ordinary townsfolk
+	"town_f": {"f": 290.0, "wave": "tri", "dur": 0.05, "soft": 0.6, "noise": 0.03, "glide": 0.05, "sub": 0.0},
+	"town_old": {"f": 125.0, "wave": "saw", "dur": 0.075, "soft": 0.75, "noise": 0.12, "glide": -0.08, "sub": 0.2, "vib": 0.5},
+	"town_child": {"f": 420.0, "wave": "square", "dur": 0.04, "soft": 0.4, "noise": 0.02, "glide": 0.15, "sub": 0.0},
 	"volcano_slave": {"f": 105.0, "wave": "saw", "dur": 0.07, "soft": 0.7, "noise": 0.2, "glide": -0.05, "sub": 0.3},    # Rough, tired, smoky
 	"kharleming_sacrifice": {"f": 620.0, "wave": "square", "dur": 0.03, "soft": 0.15, "noise": 0.35, "glide": 0.25, "sub": 0.0, "vib": 1.0},   # A metal screech
 	"stranger": {"f": 118.0, "wave": "tri", "dur": 0.075, "soft": 0.55, "noise": 0.12, "glide": 0.10, "sub": 0.3, "vib": 1.0},   # Hollow, wavering, old

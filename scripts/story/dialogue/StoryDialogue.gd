@@ -170,10 +170,15 @@ const NAMES := {
 	"animal_lord": "ANIMAL LORD", "executor": "EXECUTOR", "mother_nature": "MOTHER NATURE", "false_god": "THE FALSE GOD",
 	"satan": "SATAN", "the_sun": "THE SUN", "first_prime": "THE FIRST PRIME", "narrator": "", "stranger": "THE STRANGER",
 	"volcano_slave": "VOLCANO SLAVE", "kharleming_sacrifice": "KHARLEMING SACRIFICE",
+	"baker": "THE BAKER", "washerwoman": "THE WASHERWOMAN", "guard": "THE TOWN GUARD", "elder": "THE ELDER",
+	"farmer": "THE FARMER", "child": "A CHILD",
 }
+## Townsfolk: their look (OrdArt.villager) and voice.
+const TOWN_LOOK := {"baker": 0, "washerwoman": 1, "guard": 3, "elder": 4, "farmer": 2, "child": 5}
+const TOWN_VOICE := {"baker": "town_m", "washerwoman": "town_f", "guard": "town_m", "elder": "town_old", "farmer": "town_m", "child": "town_child"}
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -281,6 +286,57 @@ const SACRIFICE := [
 ]
 
 
+## TERRA ORDINARIORUM'S TOWNSFOLK (lore by the user, 2026-11-15): ordinary people of the regular
+## land. Ask them ANYTHING about the Storm and they think you are CRAZY - and politely refuse to
+## answer. Per person: [first talk, you ask about the Storm, what they say after that].
+const TOWN := {
+	"baker": [
+		[["baker", "Morning, traveller! Fresh bread, still warm. You look like you fell out of the sky."],
+			["H", "...Something like that."]],
+		[["H", "Have you heard of the Storm?"],
+			["baker", "The... storm? It's sunny. It's been sunny all week."],
+			["H", "No - THE Storm. The one around the world."],
+			["baker", "Ha! Ha ha. ...Oh, you're serious. Here, have a roll. On the house. Rest a little, alright?"]],
+		[["baker", "Feeling better? Still thinking about storms? Eat something, dear."]],
+	],
+	"washerwoman": [
+		[["washerwoman", "Mind the puddle! I've washed half the town's shirts today."]],
+		[["H", "Do you know anything about the Storm?"],
+			["washerwoman", "*she looks at the sky, then at you, then at the sky again*"],
+			["washerwoman", "I don't gossip about weather, love. And I don't gossip with strangers who talk to the sky."]],
+		[["washerwoman", "*she hums loudly and pretends not to see you*"]],
+	],
+	"guard": [
+		[["guard", "Halt. ...Ah, you're just a traveller. Keep your weapon down in town."]],
+		[["H", "Guard - what do you know about the Storm? Is there a way inside it?"],
+			["guard", "A way inside a storm. Right."],
+			["guard", "Look, friend. I'm going to politely pretend you didn't say that. Move along before the elder hears you."]],
+		[["guard", "Still here? No storms today. Move along."]],
+	],
+	"elder": [
+		[["elder", "Welcome to our little town. Nothing ever happens here. That is how we like it."]],
+		[["H", "Elder, I need to know about the Storm."],
+			["elder", "*the old one's smile freezes for a moment*"],
+			["elder", "Child... there are no storms here. There never were. Go and rest. Things will make sense in the morning."]],
+		[["elder", "Rest, child. Please. Don't speak of it again."]],
+	],
+	"farmer": [
+		[["farmer", "Wolves? Nah. Only the rabbits steal my carrots. Nothing out here can hurt a fly."]],
+		[["H", "Have you ever seen the Storm?"],
+			["farmer", "Only storm I know is when my wife sees the mud on my boots."],
+			["farmer", "You alright up there? *taps his head* You're not from around here, are you."]],
+		[["farmer", "*he keeps a friendly distance now*"]],
+	],
+	"child": [
+		[["child", "Are you a knight?! You've got a weapon! Can I see it? Can I?!"]],
+		[["H", "Kid... have you heard about the Storm?"],
+			["child", "MAMA! The knight is talking about the scary storm again!"],
+			["child", "...Mama says the storm is a story for babies. And that I shouldn't talk to you."]],
+		[["child", "*hides behind a barrel and giggles*"]],
+	],
+}
+
+
 static func npc_talk(lines: Array, visit: int) -> Array:
 	return lines[clampi(visit, 0, lines.size() - 1)]
 
@@ -320,6 +376,8 @@ static func name_of(id: String) -> String:
 
 ## Which voice blip a speaker uses (Blips.PROFILES).
 static func blip_of(id: String) -> String:
+	if TOWN_VOICE.has(id):
+		return String(TOWN_VOICE[id])
 	return id if Blips.PROFILES.has(id) else "narrator"
 
 
@@ -341,5 +399,7 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			CraterWorld.draw_slave(c, Vector2.ZERO, t, false)
 		"kharleming_sacrifice":
 			Kharleming.draw_bot(c, {"t": t * 3.0, "pose": "idle", "moving": true})
+		"baker", "washerwoman", "guard", "elder", "farmer", "child":
+			OrdArt.villager(c, int(TOWN_LOOK[id]), t)
 		_:
 			StoryLevels.draw_portrait(c, id, t)

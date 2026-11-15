@@ -244,6 +244,26 @@ static func _build() -> void:
 			{"big": "no_blocks", "frame": "silver" if i < 2 else "gold", "bg": run_bg[i].darkened(0.3)})
 	_add("col_%d" % StoryLevels.RUN_PART, "The Magma Run Conquered", "Escape the lava and the Kharlemings: reach the last white wall.", "story",
 		{"big": "crown", "frame": "gold", "bg": Color(0.36, 0.10, 0.04)})
+	# ---------------- TERRA ORDINARIORUM (open world, level 71) ----------------
+	var ord_bg := Color(0.24, 0.42, 0.62)
+	_add("col_%d" % StoryLevels.ORD_PART, "Terra Ordinariorum Conquered", "Walk the bridge from Orbis Terrarum out of Terra Ordinariorum.", "story",
+		{"big": "crown", "frame": "gold", "bg": ord_bg})
+	_add("ord_finger", "Storm Finger Trophy", "Light the Lightning Candle in the Town and defeat the Storm Finger.", "story",
+		{"enemy": "storm_finger", "frame": "gold", "emblem": "trophy", "bg": Color(0.16, 0.18, 0.28)})
+	_add("ord_candle", "Light in the Dark", "Take the Lightning Candle from the top of the Mountain.", "story",
+		{"big": "star", "frame": "silver", "bg": Color(0.30, 0.40, 0.55)})
+	_add("ord_explorer", "Cartographer of the Ordinary", "Walk into every biome of Terra Ordinariorum (the secret one too).", "story",
+		{"big": "star", "frame": "bronze", "bg": Color(0.36, 0.55, 0.30)})
+	_add("ord_crazy", "Clearly Crazy", "Ask everyone in the Town about the Storm.", "secret",
+		{"big": "skull", "frame": "bronze", "bg": Color(0.55, 0.45, 0.32)})
+	_add("ord_snow", "The Snow Desert", "Blow up the Basalt Wall behind the Meadow with the Lightning Candle.", "secret",
+		{"big": "star", "frame": "silver", "bg": Color(0.62, 0.72, 0.85)})
+	_add("ord_crystal", "The Great Freezing", "Shatter the Crystal Swarm. Reward: the FROZEN EXPEDITION Story skins.", "secret",
+		{"enemy": "crystal_swarm", "frame": "gold", "emblem": "trophy", "bg": Color(0.50, 0.68, 0.88)})
+	_add("ord_gentle", "Gentle Giant", "Leave Terra Ordinariorum without hurting a single animal.", "challenge",
+		{"big": "no_powers", "frame": "silver", "bg": Color(0.40, 0.60, 0.32)})
+	_add("ord_deathless", "Ordinary Day", "Leave Terra Ordinariorum without dying once.", "challenge",
+		{"big": "skull", "frame": "red", "bg": Color(0.20, 0.10, 0.10)})
 	_add("run_caught", "Lava Between the Toes", "Get caught by the flood 5 times in one level... and still reach the white wall.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.30, 0.08, 0.04)})
 	# ---------------- THE MIMIC ----------------
@@ -375,10 +395,12 @@ static func set_galaxy_skin(on: bool) -> void:
 ## Draw this Architect / Warrior in GALAXY colours? (Multiversal reward, worn by YOUR
 ## heroes: the human player in Versus, you + your partner in Story Mode.)
 static func galaxy_for(f: Fighter) -> bool:
-	if not galaxy_skin or not is_unlocked(ULTIMATE) or f == null:
+	if not is_unlocked(ULTIMATE) or f == null:
 		return false
-	if StoryManager.active:
-		return f.team == 1
+	if StoryManager.active:                          # Story: picked in the STORY SKINS catalogue
+		return f.team == 1 and StoryProgress.story_skin == "galaxy"
+	if not galaxy_skin:                              # Versus: the toggle in the ACHIEVEMENTS menu
+		return false
 	return f is ControlledFighter and (f as ControlledFighter).is_human()
 
 

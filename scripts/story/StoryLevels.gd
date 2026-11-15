@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3] # 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1] # 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -163,6 +163,14 @@ const MAPS := {
 	"crater_wreck":  {"bg": "crater_wreck", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_wreck", "zone": "THE KHARLEMING WRECK"},
 	"crater_fields": {"bg": "crater_fields", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_magma", "zone": "THE MAGMA FIELDS"},
 	"crater_front":  {"bg": "crater_front", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_magma", "zone": "THE WAR FRONT"},
+	# ----- Terra Ordinariorum (one open world, seven biomes) -----
+	"ord_meadow":   {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_meadow", "zone": "THE MEADOW"},
+	"ord_forest":   {"bg": "ord_forest", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_forest", "zone": "THE FOREST"},
+	"ord_town":     {"bg": "ord_town", "ground": 11, "walls": "thorn", "half_width": 840.0, "music": "story_town", "zone": "THE TOWN"},
+	"ord_jungle":   {"bg": "ord_jungle", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_jungle", "zone": "THE JUNGLE"},
+	"ord_desert":   {"bg": "ord_desert", "ground": 26, "walls": "thorn", "half_width": 840.0, "music": "story_desert", "zone": "THE DESERT"},
+	"ord_mountain": {"bg": "ord_mountain", "ground": 23, "walls": "thorn", "half_width": 840.0, "music": "story_mountain", "zone": "THE MOUNTAIN"},
+	"ord_snow":     {"bg": "ord_snow", "ground": 24, "walls": "thorn", "half_width": 840.0, "music": "story_snow", "zone": "THE SNOW DESERT"},
 }
 
 # ======================= BOSS EXTENSION LEVELS =======================
@@ -600,6 +608,16 @@ const LEVELS := {
 		"intro": "The tunnel ends in a cavern. They caught up. Fight - then slide for your life.",
 		"waves": [["lava_goblin", "kharleming", "kharleming"], ["lava_demon", "full_kharleming", "lava_goblin"], ["fragmenter", "master_kharleming", "lava_demon"]],
 		"boss": "", "tile": "master_kharleming", "music": "boss_melter"},
+
+	# ======================= TERRA ORDINARIORUM (level 71) =======================
+	# The regular land (lore by the user). Slide down a ramp onto a meadow; start on the FAR LEFT.
+	# Weak real-life animals (they never attack), a Town of ordinary people who think you are crazy
+	# when you mention the Storm, a Mountain to climb (ledges + crawl tunnels) for the LIGHTNING
+	# CANDLE. Main route: light it in the Town -> the STORM FINGER -> the ORDINARIORUM TICKET -> the
+	# bridge from Orbis Terrarum. Secret: the candle on the Basalt Wall -> the SNOW DESERT.
+	71: {"title": "TERRA ORDINARIORUM", "theme": "ord_meadow", "map": "ord_meadow", "hero": "demi", "open_world": true, "ord": true,
+		"intro": "The regular land. Blue sky. And the Storm, waiting on the horizon.",
+		"waves": [], "boss": "", "tile": "storm_finger"},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -615,9 +633,14 @@ const CRATER_PART := 9
 const CRATER_LEVEL := 67
 ## THE MAGMA RUN: the part after Terra Craterum (three SLIDE levels with attacks, 68-70; hunted from behind).
 const RUN_PART := 10
+## TERRA ORDINARIORUM: the part after The Magma Run (one open-world level, 71). OrdLand.gd.
+const ORD_PART := 11
+const ORD_LEVEL := 71
 
 
 static func part_name(c: int) -> String:
+	if c == ORD_PART:
+		return "TERRA ORDINARIORUM"
 	if c == RUN_PART:
 		return "THE MAGMA RUN"
 	if c == CRATER_PART:
@@ -641,7 +664,14 @@ static func is_crater(n: int) -> bool:
 
 ## The world layout script of an open-world level: DemiWorld or CraterWorld (same fields).
 static func world_of(n: int) -> Script:
+	if is_ord(n):
+		return OrdWorld
 	return CraterWorld if is_crater(n) else DemiWorld
+
+
+## Is level n TERRA ORDINARIORUM (the third open world: OrdLand / OrdWorld)?
+static func is_ord(n: int) -> bool:
+	return bool(get_level(n).get("ord", false))
 
 
 ## Is level n a cave SLIDE level (The Caves: no combat)?
@@ -944,6 +974,10 @@ static func enemy_script(id: String) -> Script:
 			return LavaMelter
 		"kharleming_lord":
 			return KharlemingLord
+		"crystal_swarm":
+			return CrystalSwarm
+		"storm_finger":
+			return StormFinger
 	return Parasite
 
 
@@ -1110,7 +1144,11 @@ static func make_enemy(id: String) -> BaseEnemy:
 	if id in ["tribe_hunter", "tribe_brute", "tribe_shaman", "tiger_cub", "pelt_cultist", "husk", "sapling",
 			"tribe_master", "last_tiger", "tree_lord",
 			"lava_golem", "lava_demon", "lava_goblin", "fragmenter", "full_kharleming", "master_kharleming",
-			"lava_melter", "kharleming_lord"]:
-		return enemy_script(id).new()                    # DemiLand + Terra Craterum enemies + bosses
+			"lava_melter", "kharleming_lord", "crystal_swarm", "storm_finger"]:
+		return enemy_script(id).new()                    # DemiLand + Terra Craterum + Ordinariorum enemies + bosses
+	if Animal.KINDS.has(id):                           # Terra Ordinariorum's animals (never hostile)
+		var a := Animal.new()
+		a.kind = id
+		return a
 	push_error("StoryLevels: unknown enemy '%s'" % id)
 	return Parasite.new()

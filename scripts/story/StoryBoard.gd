@@ -82,8 +82,11 @@ const PAGES := {
 		"board": [Color(0.30, 0.09, 0.04), Color(0.14, 0.07, 0.07)], "boss_label": Color(1.0, 0.6, 0.3)},
 	10: {"title": "STORY MODE  -  THE MAGMA RUN",
 		"board": [Color(0.22, 0.05, 0.03), Color(0.40, 0.14, 0.04)], "boss_label": Color(1.0, 0.75, 0.4)},
+	11: {"title": "STORY MODE  -  TERRA ORDINARIORUM",
+		"board": [Color(0.30, 0.52, 0.78), Color(0.36, 0.56, 0.28)], "boss_label": Color(0.8, 0.92, 1.0)},
 }
 const CRATER_SCENE := "res://scenes/CraterLand.tscn"      # The second open world
+const ORD_SCENE := "res://scenes/OrdLand.tscn"            # The third open world
 const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
 const SLIDE_SCENE := "res://scenes/CaveSlide.tscn"        # The Caves: no-combat slide levels
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
@@ -200,6 +203,15 @@ func _build_ui() -> void:
 	codex.offset_bottom = 54
 	codex.pressed.connect(_open_codex)
 	add_child(codex)
+	# SKINS (next to CODEX): the Story Skins catalogue (Galaxy, Frozen Expedition)
+	var skins := UiStyle.make_button("SKINS", Vector2(120, 40), 16)
+	skins.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	skins.offset_left = -270
+	skins.offset_right = -150
+	skins.offset_top = 14
+	skins.offset_bottom = 54
+	skins.pressed.connect(_open_skins)
+	add_child(skins)
 	_info = UiStyle.label("", 17, UiStyle.TEXT, 6)
 	top.add_child(_info)
 
@@ -565,6 +577,17 @@ func _click(pos: Vector2) -> void:
 			return
 
 
+func _open_skins() -> void:
+	if _busy:
+		return
+	_busy = true
+	var sk := SkinCatalogue.new()
+	add_child(sk)
+	await sk.closed
+	_busy = false
+	_play.grab_focus.call_deferred()
+
+
 func _open_codex() -> void:
 	if _busy:
 		return
@@ -628,7 +651,7 @@ func _on_play() -> void:
 		return
 	var scene := StoryManager.ARENA_SCENE
 	if StoryLevels.is_open_world(_pawn_space):
-		scene = CRATER_SCENE if StoryLevels.is_crater(_pawn_space) else DEMI_SCENE
+		scene = ORD_SCENE if StoryLevels.is_ord(_pawn_space) else (CRATER_SCENE if StoryLevels.is_crater(_pawn_space) else DEMI_SCENE)
 	get_tree().change_scene_to_file(scene)
 
 
@@ -942,6 +965,20 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.ORD_PART:
+		# Terra Ordinariorum: green hills under a blue sky, a little town, the Storm on the horizon
+		var base11 := r.position.y + r.size.y
+		for k in 18:
+			c.draw_circle(Vector2(r.position.x + r.size.x * float(k) / 17.0, r.position.y + r.size.y * 0.35), 46.0, Color(0.16, 0.18, 0.26, 0.35))
+		var hill := PackedVector2Array([Vector2(r.position.x, base11)])
+		for k in 13:
+			hill.append(Vector2(r.position.x + r.size.x * float(k) / 12.0, base11 - r.size.y * (0.3 + 0.06 * sin(float(k) * 1.3))))
+		hill.append(Vector2(r.end.x, base11))
+		c.draw_colored_polygon(hill, Color(0.32, 0.55, 0.26, 0.55))
+		for k in 5:
+			var hx := r.position.x + r.size.x * (0.45 + 0.05 * float(k))
+			c.draw_rect(Rect2(hx, base11 - r.size.y * 0.42, 30.0, 26.0), Color(0.85, 0.78, 0.65, 0.7))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(hx - 4, base11 - r.size.y * 0.42), Vector2(hx + 15, base11 - r.size.y * 0.42 - 20.0), Vector2(hx + 34, base11 - r.size.y * 0.42)]), Color(0.65, 0.25, 0.18, 0.7))
 	elif _page >= StoryLevels.RUN_PART:
 		# The Magma Run: a tunnel sloping down to the right, a lava flood rolling after it, a white light at the end
 		var base10 := r.position.y + r.size.y
@@ -1101,7 +1138,7 @@ func _world_space(n: int) -> void:
 		if crater:                                       # The Basalt Wall at the east end
 			var wx := top.position.x + (CraterWorld.WALL_X + half) / (half * 2.0) * top.size.x
 			c.draw_rect(Rect2(wx - 5.0, gy - 30.0, 10.0, 30.0), Color(0.1, 0.1, 0.12))
-		else:
+		elif not StoryLevels.is_ord(n):
 			var dx := top.get_center().x
 			c.draw_rect(Rect2(dx - 7.0, gy - 26.0, 14.0, 26.0), Color(0.45, 0.42, 0.55))
 		for b in w.BOSSES:
@@ -1109,8 +1146,12 @@ func _world_space(n: int) -> void:
 			c.draw_set_transform(Vector2(bx, gy), 0.0, Vector2(0.09, 0.09))
 			StoryLevels.draw_portrait(c, String(b["id"]), _t)
 			c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		FighterArt.label(c, Vector2(top.get_center().x, top.position.y + 22.0), "TERRA CRATERUM" if crater else "DEMILAND", 16 if crater else 18,
-			Color(1.0, 0.7, 0.5) if crater else Color(0.85, 0.80, 0.95))
+		var land_name := "TERRA CRATERUM" if crater else "DEMILAND"
+		var land_col := Color(1.0, 0.7, 0.5) if crater else Color(0.85, 0.80, 0.95)
+		if StoryLevels.is_ord(n):
+			land_name = "ORDINARIORUM"
+			land_col = Color(0.9, 0.96, 1.0)
+		FighterArt.label(c, Vector2(top.get_center().x, top.position.y + 22.0), land_name, 16 if land_name != "DEMILAND" else 18, land_col)
 	else:
 		_lock(top.get_center())
 	c.draw_polyline(_closed(FighterArt.rrect_points(top, 8.0)), GOLD if cleared else Color(0, 0, 0), 3.5, FighterArt.AA)
