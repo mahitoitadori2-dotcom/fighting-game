@@ -68,13 +68,7 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Are the particles spaced fairly?
   - Is J (hit) timing comfortable?
   - Numbers are in `ROAD_TIERS` and `_build_road` in `CaveSlide.gd`.
-- [ ] **Orbis Terrarum lore from the user** (the lessons are simple placeholders until then):
-  - What the Organs of the Storm are, besides the all-seeing eye.
-  - The Storm's range of attack.
-  - Its real weak points.
-  - How the other hero got to Orbis Terrarum.
-  - The Master's name.
-  - What happens after the last lesson (the Storm attacks once everything is learned).
+- [ ] **Next Story part (when the user gives it):** the Storm attacks Orbis Terrarum right after the last lesson.
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).
 - [ ] Record the Needle's voice lines (`audio/voice/needle_shaw`, `needle_adino`, `needle_guarana`, `needle_getgood`).

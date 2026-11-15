@@ -79,9 +79,13 @@ func _lesson() -> void:
 	_hide()
 	var box := DialogueBox.play(self, _lines(data[1]))
 	await box.finished
+	var before := _count_done()
 	StoryProgress.complete_level(level_n)
 	var done := _count_done()
 	var total := StoryDialogue.ORBIS_LESSONS.size()
+	if done >= total and before < total:                     # The LAST lesson: the Storm stirs
+		var box2 := DialogueBox.play(self, _lines(StoryDialogue.ORBIS_ALL_LEARNED))
+		await box2.finished
 	await _clear("LESSON LEARNED", "All lessons learned!" if done >= total else "%d of %d lessons learned." % [done, total])
 
 

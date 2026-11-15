@@ -326,11 +326,13 @@ The Story part after Terra Craterum (page 10). It's the slide again, but you're 
   - 78 Its Range: wider than any land; only Orbis Terrarum is safe while the spells hold.
   - 79 Its Weak Points: every living thing has places it must protect.
   - All four done means the part is done.
-- **The lessons are kept SIMPLE on purpose** (the user will give more lore). Claude's own small additions:
-  - "It saw you long before the bridge."
-  - "Only one finger."
-  - "First you learn, then you fight."
-  - The Learner ranks put into the Trainer's words.
+- **Lesson lore from the user (2026-11-15):**
+  - The **Organs**: the all-seeing eye; the **Heart** (the main core but not the most important, and nobody has ever seen it); the **Vessel Halls**, the **Lung**, the **Stomach** and the **Acid Pit**.
+  - The **range**: half of the planet. It can send all its matter onto the ground, but it cannot take matter that does not belong to it.
+  - The **weak points**: the Organs. If all Organs die, the Storm opens its **Brain**, which you can **kill or control**.
+  - The Master is **Knowinger**, one of the strongest Learners (mentioned in 75).
+  - After the LAST lesson (in any order), a short scene: "everything learned", and the Storm stirs and the sky darkens. The user's plan is that **the Storm attacks in the next level** (not built yet).
+- Claude's own small lines: "first you learn, then you fight"; "a storm with a stomach..."; the Warrior's reaction lines.
 - Board: the 13th page, an island above storm clouds; Trainer figures on the tiles. Saved: `StoryProgress.lessons_done`.
 - **Music:** a new `story_orbis` (calm, warm: harp, soft strings, flute, far choir).
 - **Achievements:** 7 new (A Student at Last, The Free Seat, one per lesson, Everything He Could Tell).
@@ -359,7 +361,7 @@ The Story part after Terra Ordinariorum (page 12), between Ordinariorum and Orbi
 - The **Architect gets a sword ONLY here** (the user's rule): green blade, silver crossguard, silver handle. He swings it when you hit. The Warrior uses his own sword.
 - 72 The First Steps (600 px/s), 73 Through the Storm (650), 74 The Road to Peace (700). Each ends at the **white wall**.
 - Orbis Terrarum (the island with the hut) glows above and gets bigger as you climb.
-- After 74 the part ends. Orbis Terrarum comes later, when it's built.
+- **Level 74:** the **other hero** (the one who chased the Enlightened One) catches up on the bridge. A short talk at the start says the Enlightened One sent them there (the user's lore); then they run right behind you, and the Architect carries his sword too.
 - **Music:** a new `story_road` (fast, hopeful: driving strings, horn theme, then violins + choir) for 72-73; boss_storm_finger for 74.
 - **Achievements:** 8 new (one per level, "Untouchable" per level, The Road to Peace Conquered, Storm Cutter: cut 40 particles in one level).
 - **Code:** `scripts/story/slide/CaveSlide.gd` (`ROAD_TIERS` 7-9, `road`, `_build_road`, `_road_particles`, `_draw_road`, `_draw_road_sword`).

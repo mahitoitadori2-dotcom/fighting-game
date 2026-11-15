@@ -97,6 +97,10 @@ var _touch_duck := {}                 # touch index -> true (left half held)
 var run := false                      # THE MAGMA RUN tier (walls + the hunt)
 var road := false                     # THE ROAD TO PEACE tier (running up the bridge, storm particles)
 var _parts: Array = []                # Road: {kind, x0, x, v, on, gone}
+## Level 74 (the last bridge level): the OTHER hero runs with you - the one who chased the
+## Enlightened One; he sent them to the bridge (lore by the user). "" = alone.
+var partner := ""
+var _partner_h := 0.0
 var gap := HUNT_START                 # How far behind the flood is
 var caught := 0
 var smashed := 0
@@ -129,6 +133,8 @@ func _ready() -> void:
 	road = bool(_cfg.get("road", false))
 	if road:
 		_build_road()
+		if level_n == StoryLevels.last_of(StoryLevels.ROAD_PART):
+			partner = "architect" if hero == "warrior" else "warrior"
 	else:
 		_build_layout()
 	if bool(_cfg.get("fight", false)):
@@ -288,6 +294,12 @@ func _intro() -> void:
 	_show("LEVEL %d:  %s" % [level_n, title], keys + "\n" + line)
 	await get_tree().create_timer(2.8).timeout
 	_hide()
+	if partner != "":                                        # Level 74: the other hero catches up
+		var lines: Array = StoryDialogue.ROAD_REUNION.duplicate(true)
+		for l in lines:
+			l[0] = hero if String(l[0]) == "H" else partner
+		var box := DialogueBox.play(self, lines)
+		await box.finished
 	_started = true
 
 
@@ -792,6 +804,15 @@ func _draw_road(vs: Vector2, cam: Vector2) -> void:
 		_draw_particle(p, Vector2(ppx, floor_y(ppx) - _part_h(p)))
 	for d in _dust:
 		draw_circle(d[0], 3.0, Color(0.85, 0.92, 1.0, clampf(float(d[2]) * 2.0, 0.0, 1.0)))
+	if partner != "" and _started:                           # The other hero, running right behind you
+		_partner_h = lerpf(_partner_h, maxf(h, 0.0), minf(get_process_delta_time() * 7.0, 1.0))
+		var qx := px - 150.0
+		var qp := Vector2(qx, floor_y(qx) - _partner_h - absf(sin(_t * 13.0 + 1.0)) * 6.0)
+		draw_set_transform(qp - _cam, atan(-ROAD_SLOPE) + 0.1, Vector2(0.9, 0.9))
+		StoryLevels.hero_art(partner).call("draw_portrait", self, _t * 0.3)
+		if partner == "architect":                           # The Architect's bridge sword
+			_draw_road_sword(Vector2(18, -62), -0.9)
+		draw_set_transform(-_cam, 0.0, Vector2.ONE)
 	_draw_hero()
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 

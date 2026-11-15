@@ -351,7 +351,9 @@ const ORBIS_ARRIVAL := [
 	["A", "We came straight through the Storm. Why doesn't it touch this place?"],
 	["trainer", "Orbis Terrarum is highly protected from the Storm. The hut - there are ancient spells put on it."],
 	["W", "And who lives in the hut?"],
-	["trainer", "My Master. He is out at the moment."],
+	["trainer", "My Master. Knowinger. He is out at the moment."],
+	["W", "Knowinger?"],
+	["trainer", "One of the strongest of all the Learners. You would know it if you met him."],
 	["trainer", "Not many of us Learners stayed at Orbis Terrarum. They only visit it from time to time."],
 	["trainer", "*he has no eyes, yet he turns his face to the Architect - and keeps it there for a long, long time*"],
 	["trainer", "You. Architect. Will you become my Student?", ["I Agree", "I Don't Want That"]],
@@ -367,6 +369,21 @@ const ORBIS_REFUSE := [
 	["trainer", "*his blue face turns a darker blue*"],
 	["trainer", "Then I have nothing to say to you. The bridge is right behind you."],
 ]
+## After the LAST lesson (whichever it is): everything is learned - the Storm stirs (it attacks in
+## the next level, not built yet).
+const ORBIS_ALL_LEARNED := [
+	["trainer", "That is everything I can tell you. You have learned it all, Student."],
+	["W", "...Do you hear that?"],
+	["narrator", "Far below, the Storm stirs. For the first time since you came, the sky over Orbis Terrarum grows dark."],
+]
+## THE ROAD TO PEACE, level 74: the OTHER hero (the one who chased the Enlightened One) appears on
+## the bridge - the Enlightened One sent them there. "H" = you, "P" = the other hero.
+const ROAD_REUNION := [
+	["P", "WAIT! Wait for me!"],
+	["H", "...You? How did you get up here?"],
+	["P", "The Enlightened One. He sent me to the bridge. He said you would need help."],
+	["H", "Then keep up. And don't get hit."],
+]
 ## The lessons (levels 76-79, any order). [title, lines]
 const ORBIS_LESSONS := {
 	76: ["THE STORM", [
@@ -379,20 +396,31 @@ const ORBIS_LESSONS := {
 	77: ["THE ORGANS OF THE STORM", [
 		["trainer", "Lesson two. The Organs of the Storm."],
 		["trainer", "The Storm is not one thing. It is many parts, working together - like a body."],
-		["trainer", "One of them is an ALL-SEEING EYE. Wherever the Storm looks, it sees everything."],
-		["W", "So it saw us on the bridge."],
-		["trainer", "It saw you long before the bridge."],
-		["trainer", "There are other Organs. One day you will learn about them too."]]],
+		["trainer", "There is an ALL-SEEING EYE. Wherever the Storm looks, it sees everything."],
+		["trainer", "There is the HEART. Its main core."],
+		["A", "Then the Heart is the most important one."],
+		["trainer", "No. The main core - but not the most important. And nobody has ever seen it."],
+		["trainer", "Then there are the VESSEL HALLS. The LUNG. The STOMACH. And the ACID PIT."],
+		["W", "A storm with a stomach..."],
+		["trainer", "A storm with everything a body needs. Remember their names."]]],
 	78: ["THE STORM'S RANGE", [
 		["trainer", "Lesson three. How far can the Storm reach?"],
 		["A", "It reached all the way down into the town."],
-		["trainer", "And that was only one finger. Its range of attack is wider than any land you have walked."],
-		["trainer", "Here, on Orbis Terrarum, you are safe. As long as the hut's spells hold."]]],
+		["trainer", "Its range is HALF OF THE PLANET."],
+		["W", "Half... of the whole planet?"],
+		["trainer", "And it can send all of its matter down onto the ground. Rocks. Lightning. Hands. Fingers."],
+		["trainer", "But hear this: it cannot take matter that does not belong to it."],
+		["A", "So it can throw everything at us... but it can't take us."],
+		["trainer", "You learn quickly, Student."]]],
 	79: ["THE STORM'S WEAK POINTS", [
 		["trainer", "Lesson four. Its weak points."],
 		["W", "Finally. How do we hurt it?"],
-		["trainer", "Every living thing has places it must protect. The Storm is no different."],
-		["A", "Then we find those places."],
+		["trainer", "Its weak points are its ORGANS. Every Organ that dies, the Storm feels."],
+		["trainer", "And if ALL of its Organs die... the Storm itself will open its BRAIN."],
+		["A", "Its brain. And then?"],
+		["trainer", "Then you choose. You can KILL it..."],
+		["trainer", "...or you can CONTROL it."],
+		["W", "Control the Storm..."],
 		["trainer", "Slowly, Student. First you learn. Then you fight."]]],
 }
 
