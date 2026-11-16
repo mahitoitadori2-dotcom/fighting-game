@@ -40,6 +40,7 @@ static func all() -> Array[Dictionary]:
 	list.append(_enlightened_one())
 	list.append(_apha_architect())
 	list.append(_mimic())                     # Versus only (Story Mode never uses the roster heroes)
+	list.append(_technician())                # Claude's own character (2026-11-16), Versus
 	# Add future characters here, e.g.:
 	# list.append(_some_new_fighter())
 	# PvE enemies ("enemy": true) - Character Select shows them in ENEMY TEST.
@@ -279,6 +280,39 @@ static func _apha_architect() -> Dictionary:
 				"info": "CINEMATIC + Earth cutscene: 2 rods x %d dmg, %ss cd" % [d.bomb_damage, _num(d.bomb_cooldown)]},
 			{"key": "7", "name": "World Opening",
 				"info": "CINEMATIC: barrier + giant hands, %d x %d + %d dmg, %ss cd" % [d.opening_hand_hits, d.opening_hand_damage, d.opening_final_damage, _num(d.opening_cooldown)]},
+		],
+	}
+
+
+static func _technician() -> Dictionary:
+	var d := TechnicianData.new()
+	return {
+		"id": "technician",
+		"name": "The Technician",
+		"short": "Technician",
+		"selectable": true,
+		"accent": Color(0.35, 1.0, 0.95),
+		"art": TechnicianArt,
+		"fighter": Technician,
+		"ai": TechnicianAI,
+		"portrait_h": TechnicianArt.PORTRAIT_H,
+		"moves": [
+			{"key": "!", "name": "Ship Engineer",
+				"info": "A Kharleming in a scrap rig. %d HP, a zoner: strong at range, weaker up close. Can't Onslaught" % d.max_hp},
+			{"key": "LMB", "name": "Wrench",
+				"info": "%d damage" % d.punch_damage},
+			{"key": "1", "name": "Scrap Turret",
+				"info": "Drops a turret: %d-dmg bolts at the nearest foe for %ss, %ss cooldown" % [d.turret_bolt_damage, _num(d.turret_life), _num(d.turret_cooldown)]},
+			{"key": "2", "name": "Cable Hook",
+				"info": "A cable forward: %d damage and YANKS them to you, %ss cooldown" % [d.hook_damage, _num(d.hook_cooldown)]},
+			{"key": "3", "name": "Spark Coil",
+				"info": "Electric ring around him: %d damage + a short stun, %ss cooldown" % [d.coil_damage, _num(d.coil_cooldown)]},
+			{"key": "G", "name": "Repair Protocol",
+				"info": "1 Bar Ultimate: heals %d HP over %d seconds" % [d.repair_heal * d.repair_ticks, d.repair_ticks]},
+			{"key": "G", "name": "Colony Drones",
+				"info": "2 Bar Ultimate: %d homing drones, %d damage each" % [d.drone_count, d.drone_damage]},
+			{"key": "G", "name": "The Technician's Breaker",
+				"info": "3 Bar Ultimate: beeps 3 times, then a HUGE unblockable blast (%d damage) - run!" % d.breaker_damage},
 		],
 	}
 

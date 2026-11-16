@@ -295,6 +295,8 @@ static func _build() -> void:
 		{"script": MimicArt, "frame": "silver", "emblem": "star", "bg": Color(0.30, 0.06, 0.06)})
 	_add("mimic_copy_ko", "Wearing Your Face", "As the Mimic, K.O. an opponent while wearing their own skin.", "challenge",
 		{"script": MimicArt, "frame": "gold", "emblem": "skull", "bg": Color(0.36, 0.04, 0.04)})
+	_add("tech_breaker", "Colony Breaker, Personal Edition", "As the Technician, throw the Technician's Breaker.", "versus",
+		{"script": TechnicianArt, "frame": "silver", "emblem": "star", "bg": Color(0.10, 0.22, 0.26)})
 	# ---------------- SOULS ----------------
 	_add("stance_break", "Broken Stance", "Break a Story boss's stance with a flurry of hits.", "story",
 		{"big": "no_blocks", "frame": "bronze", "bg": Color(0.36, 0.26, 0.08)})
