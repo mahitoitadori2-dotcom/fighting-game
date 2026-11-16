@@ -783,7 +783,7 @@ func _save_run() -> void:
 
 
 func _load_run() -> bool:
-	var s: Dictionary = StoryProgress.ord
+	var s: Dictionary = StoryProgress.ord_run
 	if s.is_empty() or autoplay:
 		return false
 	for i in s.get("lit", []):

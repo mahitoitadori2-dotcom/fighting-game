@@ -164,14 +164,14 @@ func _cast_move(id: String) -> void:
 		"turret":
 			if _turret != null and is_instance_valid(_turret):
 				_turret.queue_free()                      # One turret at a time
-			var tr := TechGadgets.Turret.new()
-			tr.owner_f = self
-			tr.data = td
-			tr.life = td.turret_life
-			tr.hp = td.turret_hp
-			get_parent().add_child(tr)
-			tr.global_position = Vector2(global_position.x + facing * 40.0, global_position.y)
-			_turret = tr
+			var turret_node := TechGadgets.Turret.new()
+			turret_node.owner_f = self
+			turret_node.data = td
+			turret_node.life = td.turret_life
+			turret_node.hp = td.turret_hp
+			get_parent().add_child(turret_node)
+			turret_node.global_position = Vector2(global_position.x + facing * 40.0, global_position.y)
+			_turret = turret_node
 			SoundManager.play_sfx("stone", -4.0)
 			state = State.CAST
 			_state_timer = 0.25

@@ -647,11 +647,11 @@ func _on_play() -> void:
 	var art: Script = StoryLevels.hero_art(StoryLevels.hero_of(_pawn_space))
 	if cs != "":
 		# Level with its own intro cutscene (Elevator from Hell, falling into the Sewers)
-		var scene := StoryCutscene.new()
-		scene.kind = cs
-		scene.hero_art = art
-		add_child(scene)
-		await scene.finished
+		var intro_cut := StoryCutscene.new()
+		intro_cut.kind = cs
+		intro_cut.hero_art = art
+		add_child(intro_cut)
+		await intro_cut.finished
 	elif StoryLevels.is_orbis(_pawn_space) or StoryLevels.is_storm(_pawn_space):
 		pass                                                            # Orbis Terrarum: straight to the table
 	elif Three.enabled() and not StoryLevels.is_slide(_pawn_space):     # (The Caves: you just fall in)

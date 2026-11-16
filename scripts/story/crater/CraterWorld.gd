@@ -300,7 +300,7 @@ class BasaltWall extends StaticBody2D:
 			draw_line(r.position + Vector2(6, 14), r.position + Vector2(6, h - 10), CraterArt.BASALT_HI, 2.0)
 		# Corpses piled at its foot (left side)
 		for i in pile:
-			var cp := Vector2(-80.0 - float(i % 3) * 46.0, -float(i / 3) * 34.0)
+			var cp := Vector2(-80.0 - float(i % 3) * 46.0, -floorf(float(i) / 3.0) * 34.0)
 			draw_set_transform(cp, 0.3 * float(i % 2) - 0.15, Vector2(0.75, 0.75))
 			CraterArt.kharleming(self, {"t": 0.0, "pose": "idle", "dead": true}, false)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

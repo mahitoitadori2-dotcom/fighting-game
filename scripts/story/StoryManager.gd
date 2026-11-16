@@ -107,6 +107,7 @@ var _reached_boss := false                  # The waves are cleared: the boss ch
 var stats_time := 0.0
 var stats_damage := 0
 var stats_flasks := 0
+@warning_ignore("unused_private_class_variable")    # (Read + written by the StatsClock inner class)
 var _stat_hp := -1
 
 
@@ -144,7 +145,7 @@ func _place_messages() -> void:
 
 
 static func time_text(sec: float) -> String:
-	return "%d:%02d" % [int(sec) / 60, int(sec) % 60]
+	return "%d:%02d" % [floori(sec / 60.0), int(sec) % 60]
 
 
 # ============================================================
@@ -368,15 +369,15 @@ func _spawn_partner() -> void:
 
 ## Level 80 (THE STORM ATTACKS): THE TRAINER fights on your side (a CPU ally, TrainerAlly.gd).
 func _spawn_trainer_ally() -> void:
-	var tr := TrainerAlly.new()
-	tr.name = "TrainerAlly"
-	tr.slot = 3
-	tr.team = 1
-	tr.default_facing = 1
-	tr.facing = 1
-	tr.position = player_spawn + Vector2(-180, -10)
-	tr.spawn_position = tr.position
-	add_child(tr)
+	var ally := TrainerAlly.new()
+	ally.name = "TrainerAlly"
+	ally.slot = 3
+	ally.team = 1
+	ally.default_facing = 1
+	ally.facing = 1
+	ally.position = player_spawn + Vector2(-180, -10)
+	ally.spawn_position = ally.position
+	add_child(ally)
 
 
 ## Story Mode buff for the heroes (WarriorData / ArchitectData.apply_story_buff). Each
@@ -1146,8 +1147,8 @@ func _boss_death_cutscene() -> void:
 		SoundManager.play_sfx("rumble", -4.0)
 	# Souls: "GREAT ENEMY FELLED" (mini-bosses: "ENEMY FELLED"), the old title line under it
 	var title := String(level.get("boss_death_title", "%s HAS FALLEN" % boss.enemy_name.to_upper()))
-	var mini := String(level.get("boss_sub", "")).begins_with("Mini-Boss")
-	await SoulsBanner.felled(self, not mini, title.capitalize()).finished
+	var is_mini := String(level.get("boss_sub", "")).begins_with("Mini-Boss")
+	await SoulsBanner.felled(self, not is_mini, title.capitalize()).finished
 	var after := String(level.get("boss_death_sub", ""))
 	if after != "":
 		_show_banner("", after, Color(1.0, 0.85, 0.3))

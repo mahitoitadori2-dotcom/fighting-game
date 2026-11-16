@@ -58,7 +58,7 @@ static var crater_choice := ""
 
 
 ## TERRA ORDINARIORUM run in progress (OrdLand._save_run) - {} = none.
-static var ord := {}
+static var ord_run := {}
 ## STORY SKINS (the Story Skins catalogue): "" = normal, "galaxy", "frozen" (Frozen Expedition).
 static var story_skin := ""
 ## Frozen Expedition skins earned (beat the Crystal Swarm in the Snow Desert).
@@ -67,13 +67,13 @@ static var frozen_skins := false
 
 static func save_ord(state: Dictionary) -> void:
 	load_progress()
-	ord = state
+	ord_run = state
 	save_progress()
 
 
 static func clear_ord() -> void:
 	load_progress()
-	ord = {}
+	ord_run = {}
 	save_progress()
 
 
@@ -237,7 +237,7 @@ static func load_progress() -> void:
 	npc_talks = int(cfg.get_value("story", "npc_talks", 0))
 	crater = cfg.get_value("story", "crater", {})
 	crater_choice = String(cfg.get_value("story", "crater_choice", ""))
-	ord = cfg.get_value("story", "ord", {})
+	ord_run = cfg.get_value("story", "ord", {})
 	story_skin = String(cfg.get_value("story", "story_skin", "galaxy" if Achievements.galaxy_skin else ""))
 	frozen_skins = bool(cfg.get_value("story", "frozen_skins", false))
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
@@ -274,7 +274,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "npc_talks", npc_talks)
 	cfg.set_value("story", "crater", crater)
 	cfg.set_value("story", "crater_choice", crater_choice)
-	cfg.set_value("story", "ord", ord)
+	cfg.set_value("story", "ord", ord_run)
 	cfg.set_value("story", "story_skin", story_skin)
 	cfg.set_value("story", "frozen_skins", frozen_skins)
 	cfg.save(SAVE_PATH)
@@ -424,5 +424,5 @@ static func reset() -> void:
 	demi = {}
 	crater = {}
 	crater_choice = ""
-	ord = {}
+	ord_run = {}
 	save_progress()

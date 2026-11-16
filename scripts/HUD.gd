@@ -350,7 +350,7 @@ func _update_side(side: HudSide) -> void:
 func _update_timer() -> void:
 	var seconds: float = combat.fight_time if is_instance_valid(combat) else 0.0
 	var total := int(seconds)
-	timer_label.text = "%02d:%02d" % [total / 60, total % 60]
+	timer_label.text = "%02d:%02d" % [floori(total / 60.0), total % 60]
 
 
 # ============================================================

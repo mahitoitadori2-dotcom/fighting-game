@@ -63,7 +63,6 @@ static func _quad(c: CanvasItem, q: Dictionary, t: float, moving: bool) -> void:
 	var leg: float = q["leg"]
 	var col: Color = q["col"]
 	var shade := col.darkened(0.3)
-	var hi := col.lightened(0.25)
 	var ph := t * (14.0 if moving else 0.0)
 	var by := -leg - bh * 0.5                                     # Body centre
 	# Tail (behind)
