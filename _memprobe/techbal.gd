@@ -57,15 +57,15 @@ func _match(p1: String, p2: String) -> String:
 func _run() -> void:
 	ArenaManager.p1_cpu = true
 	ArenaManager.selected_arena = "test"
-	var wins := 0
-	var games := 0
-	for opp in ["warrior", "architect", "firelord", "enlightened", "mimic", "anti"]:
-		for side in 2:
-			var w := await _match("technician", opp) if side == 0 else await _match(opp, "technician")
-			games += 1
-			if w.begins_with("The Technician"):
-				wins += 1
-			print("P %s vs %s -> %s" % ["technician" if side == 0 else opp, opp if side == 0 else "technician", w])
-	print("P TECHNICIAN won %d / %d" % [wins, games])
+	for hero in ["warrior", "architect"]:
+		var wins := 0
+		for opp in ["firelord", "enlightened", "mimic", "anti"]:
+			for side in 2:
+				var w := await _match(hero, opp) if side == 0 else await _match(opp, hero)
+				var won := w.to_lower().contains(hero) or (hero == "architect" and w.begins_with("The Mighty"))
+				if won:
+					wins += 1
+				print("P %s vs %s (side %d) -> %s" % [hero, opp, side, w])
+		print("P BASELINE %s won %d / 8 vs the other four" % [hero, wins])
 	print("P damage by move: %s" % str(_moves))
 	get_tree().quit()
