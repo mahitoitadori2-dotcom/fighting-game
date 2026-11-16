@@ -38,8 +38,7 @@ extends StaticBody2D
 		ground_theme = v
 		_apply_theme()
 		queue_redraw()
-		for ch in _chunks:                                  # Wide floors: the detail chunks too
-			(ch as CanvasItem).queue_redraw()
+		_redraw_chunks_lazily()                             # Wide floors: the detail chunks too
 
 ## Underground maps (caves, sewers): solid rock fills everything under the floor instead of a
 ## floating island with a hanging underside (StoryLevels.MAPS "solid").
@@ -379,9 +378,10 @@ func _regenerate() -> void:
 			var base: Vector2 = _poly[i]
 			_drips.append({"pos": base + Vector2(0, -6), "len": rng.randf_range(18.0, 36.0), "w": rng.randf_range(7.0, 11.0)})
 
+	_detail_meshes.clear()                                  # The details changed: bake their meshes again
+	_detail_meshes["_body_stale"] = true
 	queue_redraw()
-	for ch in _chunks:
-		(ch as CanvasItem).queue_redraw()
+	_redraw_chunks_lazily()
 
 
 func _wavy_band(rng: RandomNumberGenerator, x0: float, x1: float, y: float, h: float) -> PackedVector2Array:
@@ -438,13 +438,13 @@ func _draw() -> void:
 	for p in _poly:
 		cols.append(STONE.lerp(STONE_DEEP, clampf(p.y / depth, 0.0, 1.0) * 0.8))
 	draw_polygon(_poly, cols)
-	for s in _strata:
-		draw_colored_polygon(s, STONE_DARK)
-	for s in _deep:
-		draw_colored_polygon(s, STONE_DEEP)
-	# Paved top layer
-	for cp in _cap_polys:
-		draw_colored_polygon(cp, STONE_TOP)
+	# Strata, deep bands and the paved top layer: baked into ONE mesh (they span the whole floor -
+	# in an open world that was hundreds of draw calls every frame)
+	var bm := _body_mesh()
+	if bm != null:
+		draw_mesh(bm, null)
+	for p in _body_fallback:                                    # (Shapes that could not be triangulated)
+		draw_colored_polygon(p[0], p[1])
 	var hw := width * 0.5
 	draw_rect(Rect2(-hw + 10, CAP - 7, width - 20, 7), STONE_TOP_SHADE)
 	draw_line(Vector2(-hw + 14, 4), Vector2(hw - 14, 4), STONE_TOP_HI, 4.0)
@@ -525,37 +525,60 @@ func _build_chunks() -> void:
 	queue_redraw()
 
 
+## PERFORMANCE (2026-11-16): changing the ground look in an open world (a new biome in Terra
+## Ordinariorum) used to redraw ALL 17 chunks in one frame - a 150 ms hitch. Now the chunks on
+## screen redraw at once, the rest TWO PER FRAME, nearest to the camera first.
+var _dirty_chunks: Array = []
+const CHUNKS_PER_FRAME := 2
+
+
+func _redraw_chunks_lazily() -> void:
+	if _chunks.is_empty():
+		return
+	if not is_inside_tree():
+		for ch in _chunks:
+			(ch as CanvasItem).queue_redraw()
+		return
+	_dirty_chunks = _chunks.duplicate()
+	var cam := get_viewport().get_camera_2d()
+	var cx := cam.global_position.x if cam != null else global_position.x
+	_dirty_chunks.sort_custom(func(a: Variant, b: Variant) -> bool:
+		return absf(_chunk_center(a) - cx) < absf(_chunk_center(b) - cx))
+	for i in mini(3, _dirty_chunks.size()):                   # What you can see: right now
+		(_dirty_chunks[i] as CanvasItem).queue_redraw()
+	_dirty_chunks = _dirty_chunks.slice(3)
+	set_process(not _dirty_chunks.is_empty())
+
+
+func _chunk_center(ch: Variant) -> float:
+	var i := _chunks.find(ch)
+	return global_position.x - width * 0.5 - 40.0 + (float(i) + 0.5) * CHUNK
+
+
+func _process(_delta: float) -> void:
+	if _dirty_chunks.is_empty():
+		set_process(false)
+		return
+	for i in mini(CHUNKS_PER_FRAME, _dirty_chunks.size()):
+		var ch: Variant = _dirty_chunks.pop_front()
+		if is_instance_valid(ch):
+			(ch as CanvasItem).queue_redraw()
+
+
 ## Details between x0 and x1, drawn on canvas c (the floor itself or one of its chunks).
 ## FAST / POTATO graphics skip the barely visible rock grain (hundreds of draw calls).
 func _draw_details(c: CanvasItem, x0: float, x1: float) -> void:
-	if Engine.is_editor_hint() or GraphicsSettings.level > GraphicsSettings.FAST:
-		for sp in _speckles:
-			if sp.x < x0 or sp.x >= x1:
-				continue
-			var tint := STONE_TOP_HI if sp.z > 0.0 else STONE_DEEP
-			c.draw_circle(Vector2(sp.x, sp.y), 1.2 + absf(sp.z) * 1.3, Color(tint.r, tint.g, tint.b, 0.22 * absf(sp.z) + 0.08))
-	# Pebbles: outline, fill, tiny highlight
-	for pb in _pebbles:
-		if pb.x < x0 or pb.x >= x1:
-			continue
-		var pc := Vector2(pb.x, pb.y)
-		c.draw_circle(pc, pb.z + 2.0, OUTLINE)
-		c.draw_circle(pc, pb.z, PEBBLE_LIGHT if int(pb.x) % 3 == 0 else STONE_DARK)
-		if Engine.is_editor_hint() or GraphicsSettings.level > GraphicsSettings.FAST:     # Tiny highlight: not on phones
-			c.draw_circle(pc + Vector2(-pb.z * 0.35, -pb.z * 0.35), pb.z * 0.3, STONE_TOP_HI)
-	# Cracks: dark line + light lip below it (Void theme: glowing green)
-	for cr in _cracks:
-		if cr[0].x < x0 or cr[0].x >= x1:
-			continue
-		if ground_theme >= 1:                                   # Void / Hell: glowing cracks
-			c.draw_polyline(cr, Color(CRACK.r, CRACK.g, CRACK.b, 0.25), CRACK_WIDTH * 3.0, FighterArt.AA)
-		else:
-			var lip := PackedVector2Array()
-			for q in cr:
-				lip.append(q + Vector2(1.5, 2.0))
-			c.draw_polyline(lip, Color(STONE_TOP_HI.r, STONE_TOP_HI.g, STONE_TOP_HI.b, 0.45), 1.5, FighterArt.AA)
-		c.draw_polyline(cr, CRACK, CRACK_WIDTH, FighterArt.AA)
-	# Embedded glowing hexagons
+	# PERFORMANCE (2026-11-16): the rock grain (~430 dots per 1200 px) and the pebbles (3 circles
+	# each) were one draw call EACH - about 600 per chunk, ~2700 per Versus arena. They are now
+	# baked into ONE mesh per chunk (built once, rebuilt when the theme / graphics level changes).
+	var key := "%d_%d_%d" % [int(x0) if x0 > -1e20 else -999999, ground_theme, GraphicsSettings.level]
+	var mesh: ArrayMesh = _detail_meshes.get(key)
+	if mesh == null:
+		mesh = _build_detail_mesh(x0, x1)
+		_detail_meshes[key] = mesh
+	if mesh != null:
+		c.draw_mesh(mesh, null)                                     # Grain, pebbles, cracks, joints, chips
+	# Embedded glowing hexagons (few: still drawn one by one)
 	for cy in _crystals:
 		if cy.x < x0 or cy.x >= x1:
 			continue
@@ -567,15 +590,129 @@ func _draw_details(c: CanvasItem, x0: float, x1: float) -> void:
 		var closed := hex.duplicate()
 		closed.append(hex[0])
 		c.draw_polyline(closed, OUTLINE, 3.0, FighterArt.AA)
-	# Slab joints + chipped corners on the paved top
+
+
+var _detail_meshes := {}                 # "x0_theme_level" -> ArrayMesh (grain + pebbles of one chunk)
+var _body_cache: ArrayMesh = null
+var _body_key := -1
+var _body_fallback: Array = []
+
+
+## Strata (dark), deep bands and paved-top pieces as one mesh (rebuilt when the theme changes).
+func _body_mesh() -> ArrayMesh:
+	if _body_cache != null and _body_key == ground_theme and not _detail_meshes.has("_body_stale"):
+		return _body_cache
+	_detail_meshes.erase("_body_stale")
+	_body_key = ground_theme
+	_body_fallback = []
+	var verts := PackedVector2Array()
+	var cols := PackedColorArray()
+	for group: Array in [[_strata, STONE_DARK], [_deep, STONE_DEEP], [_cap_polys, STONE_TOP]]:
+		for p in group[0]:
+			var idx := Geometry2D.triangulate_polygon(p)
+			if idx.is_empty():
+				_body_fallback.append([p, group[1]])
+				continue
+			for i in idx:
+				verts.append(p[i])
+				cols.append(group[1])
+	if verts.is_empty():
+		_body_cache = null
+		return null
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_COLOR] = cols
+	_body_cache = ArrayMesh.new()
+	_body_cache.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return _body_cache
+
+
+## The grain dots + pebbles between x0 and x1 as ONE triangle mesh with vertex colours.
+func _build_detail_mesh(x0: float, x1: float) -> ArrayMesh:
+	var verts := PackedVector2Array()
+	var cols := PackedColorArray()
+	var fine := Engine.is_editor_hint() or GraphicsSettings.level > GraphicsSettings.FAST
+	if fine:
+		for sp in _speckles:
+			if sp.x < x0 or sp.x >= x1:
+				continue
+			var tint := STONE_TOP_HI if sp.z > 0.0 else STONE_DEEP
+			_disc(verts, cols, Vector2(sp.x, sp.y), 1.2 + absf(sp.z) * 1.3, Color(tint.r, tint.g, tint.b, 0.22 * absf(sp.z) + 0.08), 6)
+	for pb in _pebbles:                                         # Pebbles: outline, fill, tiny highlight
+		if pb.x < x0 or pb.x >= x1:
+			continue
+		var pc := Vector2(pb.x, pb.y)
+		_disc(verts, cols, pc, pb.z + 2.0, OUTLINE, 12)               # (outline first, under the fill)
+		_disc(verts, cols, pc, pb.z, PEBBLE_LIGHT if int(pb.x) % 3 == 0 else STONE_DARK, 12)
+		if fine:
+			_disc(verts, cols, pc + Vector2(-pb.z * 0.35, -pb.z * 0.35), pb.z * 0.3, STONE_TOP_HI, 6)
+	# Cracks, slab joints, chipped corners (were one draw call each, too)
+	for cr in _cracks:
+		if cr[0].x < x0 or cr[0].x >= x1:
+			continue
+		if ground_theme >= 1:                                   # Void / Hell: glowing cracks
+			_strip(verts, cols, cr, CRACK_WIDTH * 3.0, Color(CRACK.r, CRACK.g, CRACK.b, 0.25))
+		else:
+			var lip := PackedVector2Array()
+			for q in cr:
+				lip.append(q + Vector2(1.5, 2.0))
+			_strip(verts, cols, lip, 1.5, Color(STONE_TOP_HI.r, STONE_TOP_HI.g, STONE_TOP_HI.b, 0.45))
+		_strip(verts, cols, cr, CRACK_WIDTH, CRACK)
 	for chp in _chips:
 		if chp[0].x < x0 or chp[0].x >= x1:
 			continue
-		c.draw_colored_polygon(chp, STONE_DARK)
+		_poly_tris(verts, cols, chp, STONE_DARK)
 	for j in _joints:
 		if j[0].x < x0 or j[0].x >= x1:
 			continue
-		c.draw_polyline(j, CRACK, 3.0, FighterArt.AA)
+		_strip(verts, cols, j, 3.0, CRACK)
+	if verts.is_empty():
+		return null
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_COLOR] = cols
+	var m := ArrayMesh.new()
+	m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return m
+
+
+## A polyline as quads of width w (appended to the mesh arrays).
+static func _strip(verts: PackedVector2Array, cols: PackedColorArray, pts: PackedVector2Array, w: float, col: Color) -> void:
+	for i in range(pts.size() - 1):
+		var a := pts[i]
+		var b := pts[i + 1]
+		if a.distance_to(b) < 0.01:
+			continue
+		var n := (b - a).normalized().orthogonal() * (w * 0.5)
+		var ext := (b - a).normalized() * (w * 0.35)                 # Small overlap: no gaps at the bends
+		var q := [a - ext + n, b + ext + n, b + ext - n, a - ext - n]
+		for k: int in [0, 1, 2, 0, 2, 3]:
+			verts.append(q[k])
+			cols.append(col)
+
+
+## A filled polygon (triangulated) appended to the mesh arrays.
+static func _poly_tris(verts: PackedVector2Array, cols: PackedColorArray, poly: PackedVector2Array, col: Color) -> void:
+	var idx := Geometry2D.triangulate_polygon(poly)
+	for i in idx:
+		verts.append(poly[i])
+		cols.append(col)
+
+
+## A filled circle as a triangle fan (appended to the mesh arrays).
+static func _disc(verts: PackedVector2Array, cols: PackedColorArray, c: Vector2, r: float, col: Color, seg: int) -> void:
+	var prev := c + Vector2(r, 0)
+	for i in range(1, seg + 1):
+		var nxt := c + Vector2.from_angle(TAU * float(i) / float(seg)) * r
+		verts.append(c)
+		verts.append(prev)
+		verts.append(nxt)
+		cols.append(col)
+		cols.append(col)
+		cols.append(col)
+		prev = nxt
 
 
 ## Solid bedrock under (and beside) the island: same palette, darker the deeper it goes,

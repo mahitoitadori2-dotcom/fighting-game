@@ -27,7 +27,9 @@ func _ready() -> void:
 	_populate()
 	_scroll.resized.connect(_update_columns)
 	_update_columns.call_deferred()
-	_back.grab_focus.call_deferred()
+	(func() -> void:                                   # (Deferred: the screen may already be gone)
+		if is_instance_valid(_back) and _back.is_inside_tree():
+			_back.grab_focus()).call_deferred()
 
 
 func _build() -> void:
