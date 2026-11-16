@@ -154,7 +154,7 @@ func _ready() -> void:
 	load_controls()
 	_build()
 	_refresh()
-	_back.grab_focus.call_deferred()
+	UiStyle.focus_later(_back)
 
 
 func _build() -> void:

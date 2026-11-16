@@ -169,7 +169,7 @@ func _ready() -> void:
 			_refresh_ui()
 	else:
 		_refresh_ui()
-	_play.grab_focus.call_deferred()
+	UiStyle.focus_later(_play)
 
 
 # ============================================================
@@ -605,7 +605,7 @@ func _open_skins() -> void:
 	add_child(sk)
 	await sk.closed
 	_busy = false
-	_play.grab_focus.call_deferred()
+	UiStyle.focus_later(_play)
 
 
 func _open_codex() -> void:
@@ -616,7 +616,7 @@ func _open_codex() -> void:
 	add_child(cx)
 	await cx.closed
 	_busy = false
-	_play.grab_focus.call_deferred()
+	UiStyle.focus_later(_play)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -718,7 +718,7 @@ func _open_extensions(focus: String) -> void:
 	menu.focus_key = focus
 	add_child(menu)
 	menu.chosen.connect(_play_ext)
-	menu.closed.connect(func() -> void: _play.grab_focus.call_deferred())
+	menu.closed.connect(func() -> void: UiStyle.focus_later(_play))
 
 
 ## Fall into a boss extension level with the hero picked in the menu.

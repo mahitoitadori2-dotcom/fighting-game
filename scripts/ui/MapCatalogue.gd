@@ -18,7 +18,7 @@ func _ready() -> void:
 	SoundManager.play_music("menu")
 	_build()
 	if _first != null:
-		_first.grab_focus.call_deferred()
+		UiStyle.focus_later(_first)
 
 
 func _build() -> void:
@@ -146,7 +146,7 @@ func _show_map(e: Dictionary) -> void:
 	var close := UiStyle.make_button("CLOSE", Vector2(160, 54), 20)
 	close.pressed.connect(_close_detail)
 	row.add_child(close)
-	fight.grab_focus.call_deferred()
+	UiStyle.focus_later(fight)
 
 
 func _close_detail() -> void:
@@ -154,7 +154,7 @@ func _close_detail() -> void:
 		_detail.queue_free()
 		_detail = null
 	if _first != null:
-		_first.grab_focus.call_deferred()
+		UiStyle.focus_later(_first)
 
 
 func _unhandled_input(event: InputEvent) -> void:

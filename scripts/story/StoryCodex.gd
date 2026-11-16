@@ -76,7 +76,7 @@ func _ready() -> void:
 			break
 	_list.select(first)
 	_show(first)
-	_list.grab_focus.call_deferred()
+	UiStyle.focus_later(_list)
 
 
 func _show(i: int) -> void:

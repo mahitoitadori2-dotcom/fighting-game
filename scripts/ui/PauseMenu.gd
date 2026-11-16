@@ -54,7 +54,7 @@ func _ready() -> void:
 	_music_db = SoundManager.get_volume("music")
 	SoundManager.set_volume("music", _music_db * 0.45)          # Quieter while paused (restored on close)
 	_build()
-	_resume_btn.grab_focus.call_deferred()
+	UiStyle.focus_later(_resume_btn)
 
 
 func _exit_tree() -> void:
@@ -204,9 +204,9 @@ func _show_controls(on: bool) -> void:
 	_ctl_box.visible = on
 	_refresh_keys()
 	if on:
-		_ctl_back.grab_focus.call_deferred()
+		UiStyle.focus_later(_ctl_back)
 	else:
-		_resume_btn.grab_focus.call_deferred()
+		UiStyle.focus_later(_resume_btn)
 
 
 ## Waiting for a new key: the next key / mouse press becomes that action's key (Esc cancels).

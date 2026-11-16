@@ -1421,7 +1421,7 @@ func _panel_button(panel: VBoxContainer, text: String, action: Callable) -> void
 	panel.add_child(b)
 	if not panel.has_meta("focused"):              # First button gets keyboard / controller focus
 		panel.set_meta("focused", true)
-		b.grab_focus.call_deferred()
+		UiStyle.focus_later(b)
 
 
 ## A wait that dies with this node (a scene change never resumes a dead coroutine).

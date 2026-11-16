@@ -94,6 +94,33 @@ Result (PC, REGULAR, uncapped):
 - **FAST (phones):** every checked scene 212-358 FPS on this PC.
 - **Still the heaviest:** DemiLand (~80 FPS REGULAR, ~210 FAST, ~3700 draw calls on REGULAR) and the C5 thorn / foothill levels (~150 FPS). Not measured on a real iPhone.
 
+## Sweep + ground baking (2026-11-16)
+
+**The full sweep: 235 tests, no crashes, memory flat** (166 → 168 MB). The newest parts were added to it: Orbis Terrarum and every scene of level 80.
+- **The only error**, a "grab_focus while not in the tree", is fixed. Every screen now uses `UiStyle.focus_later()` instead of `grab_focus.call_deferred()`.
+
+**The big cost was the GROUND** (`ArenaGround.gd`), in every arena and every open world.
+- **The problem:** its tiny details (~430 grain dots per 1200 px, 3 circles per pebble, every crack, slab joint and chip) were one draw call each. The strata and paved-top pieces spanning the whole floor were also drawn one by one.
+- **The fix:** the details are now **baked into one mesh per chunk**, and the strata + paved top into **one mesh for the whole floor**. The meshes are built once and rebuilt when the theme or graphics level changes. It looks the same (checked on screenshots).
+- **Biome changes:** changing the ground look in an open world now redraws the chunks on screen at once and the rest 2 per frame. That removed the 150 ms hitch in Terra Ordinariorum.
+
+**Before → after** (Windows PC, REGULAR graphics, CPU playing):
+
+| Scene | Avg FPS | Worst 1% | Frames > 33 ms | Draw calls |
+|---|---|---|---|---|
+| DemiLand | 72 → 115 | 30 → 60 | 34 → 0 | 4302 → 1473 |
+| Terra Craterum | 67 → 123 | 38 → 75 | 0 → 0 | 3940 → 1047 |
+| Terra Ordinariorum | 50 → 72 | 29 → 40 | 84 → 0 | 3933 → 1364 |
+| Storm Attacks fight | 79 → 144 | 27 → 34 | 37 → 2 | 3151 → 2272 |
+| Versus / Story arenas | ~80-130 → ~250-380 | | | ~2100 → ~650 |
+
+**Left as they are:**
+- **Map Catalogue:** its slow frames are the one-time thumbnail renders.
+- **Achievements menu:** a spike when it builds ~300 cards.
+- **"No frames":** the first test of every sweep run shows it; that's the tool, not the game.
+
+**Not measured yet:** on a real phone.
+
 ## Open work
 
 Some projectiles are not pooled yet. They are in the [To-do list](Todo.md).

@@ -13,7 +13,7 @@ var _arena_desc: Label
 func _ready() -> void:
 	SoundManager.play_music("menu")              # Keeps playing if it already is
 	_build()
-	_play.grab_focus.call_deferred()
+	UiStyle.focus_later(_play)
 
 
 func _build() -> void:

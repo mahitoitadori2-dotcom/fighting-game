@@ -28,6 +28,14 @@ static func box(bg: Color, border: Color = INK, border_w: int = 4, radius: int =
 	return s
 
 
+## Give a control the keyboard / pad focus on the next frame - only if it still exists and is
+## in the tree then (a screen can be left before that: "Condition !is_inside_tree()" errors).
+static func focus_later(c: Control) -> void:
+	(func() -> void:
+		if is_instance_valid(c) and c.is_inside_tree():
+			c.grab_focus()).call_deferred()
+
+
 static func make_button(text: String, min_size: Vector2 = Vector2(340, 62), font_size: int = 26) -> Button:
 	var b := Button.new()
 	b.text = text

@@ -132,7 +132,7 @@ func _fill() -> void:
 		if first == null:
 			first = b
 	if first != null:
-		first.grab_focus.call_deferred()
+		UiStyle.focus_later(first)
 	_refresh_header()
 
 

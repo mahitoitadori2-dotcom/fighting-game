@@ -52,7 +52,7 @@ func _ready() -> void:
 	back.pressed.connect(_go_back)
 	col.add_child(back)
 
-	_start.grab_focus.call_deferred()
+	UiStyle.focus_later(_start)
 
 
 func _on_start() -> void:
