@@ -162,6 +162,18 @@ func _run() -> void:
 		for n in range(StoryLevels.first_of(StoryLevels.ROAD_PART), StoryLevels.last_of(StoryLevels.ROAD_PART) + 1):
 			StoryProgress.current_level = n
 			await _test("road %d" % n, "res://scenes/CaveSlide.tscn", 20.0)
+	if only == "" or only == "demi" or only == "crater" or only == "orbis":
+		# Orbis Terrarum: the dialogue scenes + every scene of level 80 (THE STORM ATTACKS)
+		for n in range(StoryLevels.first_of(StoryLevels.ORBIS_PART), StoryLevels.STORM_LEVEL):
+			StoryProgress.current_level = n
+			await _test("orbis %d" % n, "res://scenes/OrbisTalk.tscn", 12.0)
+		StoryProgress.current_level = StoryLevels.STORM_LEVEL
+		for ph in [[0, "res://scenes/OrbisTalk.tscn", "storm table"], [1, "res://scenes/CaveSlide.tscn", "storm bridge"],
+				[2, "res://scenes/OrbisTalk.tscn", "storm town"], [3, "res://scenes/CaveSlide.tscn", "storm cave"],
+				[4, "res://scenes/StoryArena.tscn", "storm fight"]]:
+			OrbisTalk.storm_phase = int(ph[0])
+			StoryProgress.current_level = StoryLevels.STORM_LEVEL
+			await _test(String(ph[2]), String(ph[1]), 20.0)
 	await _test("menu MainMenu (end)", "res://scenes/MainMenu.tscn", 4.0)
 	print("MEM at end: %d MB" % int(OS.get_static_memory_usage() / 1048576))
 	print("SWEEP DONE")
