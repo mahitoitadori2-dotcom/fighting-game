@@ -105,6 +105,30 @@ A big SKELETON of pure steel: a metal skull with red pupils, spine, ribcage, pel
 
 Achievements: Stolen Skin (become someone), Wearing Your Face (K.O. them while wearing their skin), plus the usual Versus ones for every fighter. Checked by script: every move + ultimate hits, the skin starts, forwards damage and ends cleanly; a 20 s CPU-vs-CPU fight ran without errors (the Mimic won it clearly: watch his balance). Not played by a human.
 
+### The Technician (added 2026-11-16, Versus only, Claude's own character)
+
+The user's three rules: can't Onslaught, balanced with the others, canon to the lore.
+- **Lore (Terra Craterum):** the Kharleming Technicians were the engineers of the ancient ship (the Technician's Breaker is named after them). One survived the crash: a small Kharleming driving a walking RIG built from the wreck's scrap. It never took a side between the lava and the Kharlemings.
+- **Look:** steel rig, a glass dome head with the Kharleming inside, a cyan core, a hazard stripe, a wrench arm, a cable claw and an antenna backpack.
+- **Stats:** 100 HP, speed 320, normal body. A zoner: strong at range, weak up close.
+- **Code:** `scripts/technician/` (Technician.gd, TechnicianArt.gd, TechGadgets.gd), `scripts/ai/TechnicianAI.gd`; the numbers are in `data/TechnicianData.gd`.
+
+| Input | Move |
+|---|---|
+| Click | Wrench, 5 dmg (no Onslaught) |
+| 1 Scrap Turret | 9 s cd; a turret fires 4-dmg bolts at the nearest foe for 6 s; one at a time; foes attacking next to it smash it |
+| 2 Cable Hook | 7 s cd; a cable flies 400 px: 6 dmg and yanks the foe to him |
+| 3 Spark Coil | 10 s cd; electric ring (radius 150): 9 dmg + 0.6 s stun |
+| G1 Repair Protocol | heals 3 x 6 HP over 3 s |
+| G2 Colony Drones | 3 homing drones, 6 dmg each |
+| G3 The Technician's Breaker | thrown 260 px ahead, beeps 3 times (1.5 s), then an UNBLOCKABLE 30-dmg blast, radius 250: run out of the red circle |
+
+**Balance (CPU vs CPU, 2026-11-16):**
+- The Technician won 4 of 12: it beat the Warrior and the Architect on both sides, and lost to the Nightmare Lord, the Enlightened One, the Mimic and the Anti Architect.
+- Baseline from the same test: against those four, the Warrior won 1 of 8 and the Architect 0 of 8. So the Technician sits a bit above the two main heroes and below the strongest four.
+
+Achievement: "Colony Breaker, Personal Edition" (throw the Breaker). Not played by a human yet.
+
 ## Match extras
 
 - **Epic countdown** at the start of every Versus match: 3, 2, 1, GO!, with screen shake, flash and drum hits.
