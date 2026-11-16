@@ -13,7 +13,7 @@ Universal Beatdown is a free 2D platform fighter, made in Godot 4.7.
 
 | | |
 |---|---|
-| **Version** | v0.3.1 (latest GitHub Release, 2026-11-14: The Caves, the pause menu, difficulty, Souls features, designed sounds, the perf fixes, The Sun nerf) |
+| **Version** | v0.3.2 (latest GitHub Release, 2026-11-16: Terra Craterum, The Magma Run, Terra Ordinariorum, The Road to Peace, Orbis Terrarum + The Storm Attacks, the Mimic, Story Skins, new dialogue box, new character looks, web sound fix) |
 | **Play online** | https://mahitoitadori2-dotcom.github.io/fighting-game/ |
 | **Downloads** | Windows, macOS, Linux and Web zips on the [Releases page](https://github.com/mahitoitadori2-dotcom/fighting-game/releases) |
 | **Builds** | Automatic. Every push builds all platforms. A push to `main` updates the website. A `v*` tag makes a release. |
