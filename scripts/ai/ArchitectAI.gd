@@ -14,6 +14,11 @@ const PREFERRED_MIN := 200.0
 const PREFERRED_MAX := 380.0
 
 
+func _init() -> void:
+	super._init()
+	hunt_minions = true                           # Balance 2026-11-17: punches Helpers away
+
+
 func think() -> void:
 	if try_block(170.0):
 		return

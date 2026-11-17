@@ -67,9 +67,16 @@ func _match(p1: String, p2: String) -> String:
 func _run() -> void:
 	ArenaManager.p1_cpu = true
 	ArenaManager.selected_arena = "test"
+	var cls := {"warrior": "Warrior", "architect": "Player"}
 	for hero in ["warrior", "architect"]:
+		var wins := 0
 		for opp in ["firelord", "enlightened", "mimic", "anti"]:
-			print("P %s vs %s -> %s" % [hero, opp, await _match(hero, opp)])
+			for side in 2:
+				var r: String = await _match(hero, opp) if side == 0 else await _match(opp, hero)
+				if r.begins_with(String(cls[hero]) + " "):
+					wins += 1
+				print("P %s vs %s (side %d) -> %s" % [hero, opp, side, r])
+		print("P RESULT %s won %d / 8" % [hero, wins])
 	var keys := dmg.keys()
 	keys.sort()
 	for k in keys:

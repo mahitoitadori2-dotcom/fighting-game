@@ -25,6 +25,8 @@ var mistake_chance := 0.18       # Chance a decided press is simply dropped
 var wander_chance := 0.08        # Chance to walk the wrong way for one decision
 var block_chance := 0.25         # Chance to block when the enemy swings nearby
 var onslaught_chance := 0.5      # Chance to use Onslaught when the bar flashes
+var hunt_minions := false        # Target enemy minions (e.g. the Enlightened One's Helpers) that come close
+const MINION_RANGE := 220.0
 
 # ----- Perception (refreshed before every think()) -----
 var f: ControlledFighter
@@ -137,6 +139,17 @@ func _perceive() -> void:
 	enemy = CombatManager.find_enemy(f)
 	if enemy == null:
 		return
+	if hunt_minions:
+		# A minion slicing at us is the bigger threat: hit it first (they have little HP)
+		var best := minf(absf(enemy.global_position.x - f.global_position.x), MINION_RANGE)
+		for n in f.get_tree().get_nodes_in_group("helpers"):
+			var m := n as Fighter
+			if m == null or m.is_dead or CombatManager.are_allies(f, m):
+				continue
+			var md := absf(m.global_position.x - f.global_position.x)
+			if md < best and absf(m.global_position.y - f.global_position.y) < 120.0:
+				best = md
+				enemy = m
 	var dx := enemy.global_position.x - f.global_position.x
 	dist = absf(dx)
 	dir = 1.0 if dx >= 0.0 else -1.0

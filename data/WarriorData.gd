@@ -17,9 +17,9 @@ extends CharacterData
 @export var sword_size := Vector2(70, 114)        # -115 .. -1 px: no blind spot at the bottom
 
 @export_group("Clinging Grab (1)")
-@export var grab_cooldown := 5.0
-@export var grab_damage := 5
-@export var grab_onslaught_damage := 7           # 5 x 1.5 rounded DOWN
+@export var grab_cooldown := 3.5                 # Versus buff 2026-11-17 (was 5.0)
+@export var grab_damage := 7                     # (was 5)
+@export var grab_onslaught_damage := 10          # 7 x 1.5 rounded DOWN (was 7)
 @export var grab_range := 380.0
 @export var grab_extend_speed := 1500.0
 @export var grab_return_speed := 1800.0
@@ -32,29 +32,29 @@ extends CharacterData
 @export var grab_onslaught_blast := 90.0
 
 @export_group("Royal Destiny (2)")
-@export var royal_cooldown := 17.0
+@export var royal_cooldown := 12.0                # (was 17.0)
 @export var royal_duration := 8.0
 @export var royal_damage_reduction := 0.4        # Takes 40% less damage
 @export var royal_swing_slow := 1.6              # Sword startup/active/recovery x1.6
 
 @export_group("Eternal Grasp (3)")
-@export var eternal_cooldown := 20.0
+@export var eternal_cooldown := 13.0               # (was 20.0)
 @export var eternal_duration := 1.4
 @export var eternal_wave_interval := 0.3         # A new burst of spikes every 0.3 s
-@export var eternal_spike_damage := 4
+@export var eternal_spike_damage := 5             # (was 4)
 @export var eternal_range := 150.0               # Short range
 @export var eternal_spike_count := 12
 @export var eternal_knockback := Vector2(110, -60)
 
 @export_group("G1: Unstable Expulsion")
 @export var mini_spike_count := 6
-@export var mini_spike_damage := 3
+@export var mini_spike_damage := 4               # (was 3)
 @export var mini_spike_speed := 520.0
 @export var mini_spike_turn := 7.0
 @export var mini_spike_lifetime := 2.2
 
 @export_group("G2: Shadow Swarm")
-@export var beam_damage := 25
+@export var beam_damage := 30                    # (was 25)
 @export var beam_range := 950.0
 @export var beam_height := 50.0
 @export var beam_charge := 0.4
@@ -70,6 +70,7 @@ extends CharacterData
 
 func _init() -> void:
 	character_name = "Warrior"
+	punch_damage = 5                     # Versus buff 2026-11-17 (was 3)
 	# Sword can NOT be Onslaughted and never causes Afterburn.
 	onslaught_melee_enabled = false
 	# Clinging Grab CAN be Onslaughted (uses the projectile flash).
@@ -82,6 +83,7 @@ func _init() -> void:
 
 ## STORY MODE ONLY (StoryManager calls this on the fighter's own data copy; Versus keeps
 ## the defaults above). The 2026-11-08 Warrior buff: more damage, shorter cooldowns.
+## Since the Versus buff of 2026-11-17 the defaults already match these numbers.
 func apply_story_buff() -> void:
 	punch_damage = 5                     # Sword (Versus 3)
 	grab_cooldown = 3.5                  # (5.0)

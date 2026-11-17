@@ -6,8 +6,8 @@ extends CharacterData
 @export var cast_lock_time := 0.2
 
 @export_group("Rocket Delivery")
-@export var rocket_damage := 10
-@export var rocket_cooldown := 6.0
+@export var rocket_damage := 13                 # Versus buff 2026-11-17 (was 10)
+@export var rocket_cooldown := 4.5               # (was 6.0)
 @export var rocket_speed := 540.0
 @export var rocket_turn_rate := 4.0              # Homing strength (radians / second)
 @export var rocket_lifetime := 4.0
@@ -18,8 +18,8 @@ extends CharacterData
 @export var triple_rocket_spread_deg := 16.0
 
 @export_group("HNCT Triangle Bomb")
-@export var hnct_damage := 20
-@export var hnct_cooldown := 12.0
+@export var hnct_damage := 26                   # (was 20)
+@export var hnct_cooldown := 8.5                 # (was 12.0)
 @export var hnct_knockback := Vector2(300, -320)     # Medium
 @export var hnct_blast_radius := 120.0
 @export var hnct_arm_time := 0.4
@@ -27,16 +27,16 @@ extends CharacterData
 @export var hnct_triggers_on_owner := false
 
 @export_group("Armaggedon Drill")
-@export var drill_cooldown_hit := 15.0
-@export var drill_cooldown_miss := 20.0
+@export var drill_cooldown_hit := 10.0           # (was 15.0)
+@export var drill_cooldown_miss := 14.0          # (was 20.0)
 @export var drill_startup := 0.18
 @export var drill_lunge_time := 0.28
 @export var drill_lunge_speed := 900.0
 @export var drill_hitbox_size := Vector2(90, 44)
 @export var drill_hitbox_offset := Vector2(62, -62)
-@export var drill_grab_damage := 4
-@export var drill_tick_damage := 4
-@export var drill_tick_count := 6                # 4 + 6x4 = 28 total
+@export var drill_grab_damage := 5               # (was 4)
+@export var drill_tick_damage := 5               # (was 4)
+@export var drill_tick_count := 6                # 5 + 6x5 = 35 total
 @export var drill_tick_interval := 0.35
 @export var drill_miss_self_damage := 7
 @export var drill_miss_recovery := 0.5
@@ -50,7 +50,7 @@ extends CharacterData
 @export var goo_duration := 6.0
 @export var goo_slow_multiplier := 0.4           # Enemy speed x0.4
 @export var goo_extra_damage := 0.4              # Enemy takes +40% damage
-@export var goo_tick_damage := 1                 # Small damage while standing in it (lets Goo get the kill)
+@export var goo_tick_damage := 2                 # (was 1) Small damage while standing in it (lets Goo get the kill)
 @export var goo_tick_interval := 0.5
 
 @export_group("Full Arsenal of the Hexagon")
@@ -66,6 +66,7 @@ extends CharacterData
 
 func _init() -> void:
 	character_name = "The Mighty Architect"
+	punch_damage = 5                     # Versus buff 2026-11-17 (was 3)
 	# Onslaught flags: turn these on/off per character.
 	onslaught_melee_enabled = true
 	onslaught_projectile_enabled = true
@@ -78,6 +79,7 @@ func _init() -> void:
 
 ## STORY MODE ONLY (StoryManager calls this on the fighter's own data copy; Versus keeps
 ## the defaults above). Same idea as the Warrior's Story buff: more damage, shorter cooldowns.
+## Since the Versus buff of 2026-11-17 the defaults already match these numbers.
 func apply_story_buff() -> void:
 	punch_damage = 5                     # Punch (Versus 3)
 	rocket_damage = 13                   # Rocket Delivery + Triple Rocket (10)
