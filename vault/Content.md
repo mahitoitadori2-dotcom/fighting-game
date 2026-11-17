@@ -127,6 +127,19 @@ The user's three rules: can't Onslaught, balanced with the others, canon to the 
 - The Technician won 4 of 12: it beat the Warrior and the Architect on both sides, and lost to the Nightmare Lord, the Enlightened One, the Mimic and the Anti Architect.
 - Baseline from the same test: against those four, the Warrior won 1 of 8 and the Architect 0 of 8. So the Technician sits a bit above the two main heroes and below the strongest four.
 
+### Versus hero buff (2026-11-17)
+
+The user chose "only buff the heroes" (the other fighters stay untouched).
+- **Numbers:** the Warrior and the Architect now use their Story Mode buff numbers in Versus too. Story Mode is unchanged.
+  - Architect: punch 5, rocket 13 / 4.5 s, HNCT 26 / 8.5 s, drill 35 / 10 s, goo 2.
+  - Warrior: sword 5, grab 7 / 3.5 s, Royal Destiny 12 s, Eternal Grasp 5 per spike / 13 s, mini spikes 4, beam 30.
+- **CPU:** their CPU now attacks enemy minions within 220 px (BaseAI `hunt_minions`).
+
+**Result vs the Nightmare Lord, Enlightened One, Mimic and Anti Architect (CPU vs CPU, both sides):**
+- Warrior: 1/8 → 4/8. Architect: 0/8 → 3/8.
+- They now beat the Mimic and (mostly) the Anti Architect.
+- They still lose every match to the Enlightened One (7-9 s fights: its Helpers deal ~65 damage per match) and to the Nightmare Lord. The Technician is now probably weaker than the heroes: re-test it.
+
 Achievement: "Colony Breaker, Personal Edition" (throw the Breaker). Not played by a human yet.
 
 ## Match extras
