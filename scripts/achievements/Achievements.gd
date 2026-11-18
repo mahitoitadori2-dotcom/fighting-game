@@ -295,6 +295,12 @@ static func _build() -> void:
 		{"script": MimicArt, "frame": "silver", "emblem": "star", "bg": Color(0.30, 0.06, 0.06)})
 	_add("mimic_copy_ko", "Wearing Your Face", "As the Mimic, K.O. an opponent while wearing their own skin.", "challenge",
 		{"script": MimicArt, "frame": "gold", "emblem": "skull", "bg": Color(0.36, 0.04, 0.04)})
+	_add("rush_three", "Gauntlet Runner", "BOSS RUSH: beat 3 bosses in one run.", "challenge",
+		{"script": WarriorArt, "frame": "silver", "emblem": "skull", "bg": Color(0.3, 0.12, 0.05)})
+	_add("rush_complete", "No Rest for the Brave", "BOSS RUSH: beat every boss you have unlocked in one run.", "challenge",
+		{"script": WarriorArt, "frame": "gold", "emblem": "trophy", "bg": Color(0.35, 0.16, 0.04)})
+	_add("rush_no_flask", "Dry Throat", "BOSS RUSH: finish a full run without drinking a single flask.", "challenge",
+		{"script": ArchitectArt, "frame": "gold", "emblem": "halo", "bg": Color(0.3, 0.05, 0.05)})
 	_add("tech_breaker", "Colony Breaker, Personal Edition", "As the Technician, throw the Technician's Breaker.", "versus",
 		{"script": TechnicianArt, "frame": "silver", "emblem": "star", "bg": Color(0.10, 0.22, 0.26)})
 	# ---------------- SOULS ----------------

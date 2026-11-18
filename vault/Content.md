@@ -245,3 +245,21 @@ The alternate keys are added in `CombatManager.register_alt_keys()`. Block (F), 
 - Boss attacks now use the arena's real edges (`StoryManager.arena_left/right()`: cave walls in Story, island edges in Versus).
 - Each gets Versus trophies (Trophy + Bare Hands); Monster Hunter now needs them too.
 - **Checked:** all 33 spawn in a Versus arena with no script errors, stay on the island and get the right scaling (3 s each, by script). Full fights not played. The unlock list checked on a real save.
+## v0.3.3 additions (2026-11-18)
+
+All checked by headless CPU tests (no game window); not played by a human yet.
+
+- **Boss Rush** (Main Menu, `scripts/story/BossRush.gd`, `scripts/ui/BossRushMenu.gd`): every Story boss you have beaten (16 on a full save), back to back in Story order. One hero for the run (Warrior or Architect, Story buff), no waves / cutscenes / dialogue, HP carries over (+30% between bosses), 5 flasks for the whole run. A run timer and a local top 10 per hero (`user://bossrush.cfg`). Your Story position is restored afterwards. Achievements: Gauntlet Runner (3 bosses in a run), No Rest for the Brave (full run), Dry Throat (full run without a flask).
+- **Boss Rush ghost** (`scripts/replay/GhostRunner.gd`): a new best run is saved (`user://bossrush_ghost_<hero>.ubr`); on the next run a see-through copy of that run fights each boss next to you (it can't hit or be hit). Only used while the list of bosses is the same.
+- **Training mode** (every Dummy fight, `scripts/ui/TrainingMode.gd`): a stats panel (last hit + move + type, combo hits / damage with TRUE combo, best combo, damage per 5 s, measured startup from button press to hit). F1 hitboxes, F2 Dummy behaviour (stand / block / random block / jump / fight back with a telegraphed jab), F3 infinite cooldowns + gauge, F4 reset, F5 Dummy auto-heal, F6 hide.
+- **Replays** (`scripts/replay/`): every Versus fight is recorded as the fighters' visual state, 30x per second, changes only (~90 KB per minute). WATCH REPLAY / SAVE REPLAY on the winner screen; REPLAYS in the Main Menu lists saved ones (`user://replays/*.ubr`, watch / delete). Player: Space pause, 1-3 speed, Left / Right skip 5 s, R restart, Esc back. Projectiles, sparks and popups are NOT recorded (bodies, poses, HP bars, cooldown text are).
+- **Results screen:** the winner pops in; a stats table slides in row by row (time, damage dealt, hits, best combo, blocks + perfect blocks, ultimates).
+- **Main Menu** redesigned: big PLAY, then STORY MODE / BOSS RUSH, then SWITCH CHARACTERS / MAP CATALOGUE / REPLAYS, then ACHIEVEMENTS / SETTINGS / EXIT; floating, glowing title; rows fade in; version tag.
+- **HUD:** HP bars slide, show the chunk just lost as a white chip that drains, and pulse below 30%.
+- **Character Select:** cards fade + grow in one after another, lift on hover / focus, pop when picked. UI sounds on every menu button (Kenney interface CC0).
+- **Controller:** every menu tested with simulated D-pad / A / B: each screen opens with a button focused, the D-pad reaches the buttons, B goes back (fixed on Character Select; Map Catalogue's back no longer errors). The Main Menu has an explicit D-pad grid.
+
+### Balance pass 2 (2026-11-18, user: buff the weak fighters, don't nerf the others)
+- Warrior: 120 HP in Versus (Story keeps 100). Architect: 130 HP, Rocket 4 s, HNCT 7.5 s in Versus (Story keeps 100 HP, 4.5 s, 8.5 s). Their CPUs go for enemy minions within 340 px.
+- Technician: 125 HP, turret bolts 5 dmg every 0.7 s for 7 s, hook 8, coil 11 dmg / 8 s, Breaker 34.
+- Results vs the Nightmare Lord, Enlightened One, Mimic, Anti Architect (CPU vs CPU, both sides): see Todo (filled in when the last test finished).

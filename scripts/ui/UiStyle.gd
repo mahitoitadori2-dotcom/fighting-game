@@ -55,7 +55,39 @@ static func make_button(text: String, min_size: Vector2 = Vector2(340, 62), font
 	focus.draw_center = false
 	focus.shadow_size = 0
 	b.add_theme_stylebox_override("focus", focus)
+	ui_sounds(b)
 	return b
+
+
+## CONTROLLER: explicit D-pad neighbours for rows of buttons (rows = Array of Arrays of Controls).
+## Left / right move inside a row (wrapping), up / down jump to the nearest button of the next row.
+static func grid_focus(rows: Array) -> void:
+	var live: Array = []
+	for r in rows:
+		var rr: Array = (r as Array).filter(func(c: Variant) -> bool: return c != null and is_instance_valid(c))
+		if not rr.is_empty():
+			live.append(rr)
+	for ri in live.size():
+		var row: Array = live[ri]
+		for ci in row.size():
+			var c: Control = row[ci]
+			c.focus_neighbor_left = c.get_path_to(row[(ci - 1 + row.size()) % row.size()])
+			c.focus_neighbor_right = c.get_path_to(row[(ci + 1) % row.size()])
+			var up: Array = live[(ri - 1 + live.size()) % live.size()]
+			var down: Array = live[(ri + 1) % live.size()]
+			var k := float(ci) / maxf(float(row.size() - 1), 1.0)
+			c.focus_neighbor_top = c.get_path_to(up[roundi(k * float(up.size() - 1))])
+			c.focus_neighbor_bottom = c.get_path_to(down[roundi(k * float(down.size() - 1))])
+			c.focus_previous = c.focus_neighbor_left
+			c.focus_next = c.focus_neighbor_right
+
+
+## Soft tick when a button gets the focus / hover, a click when it is pressed.
+static func ui_sounds(c: Control) -> void:
+	c.focus_entered.connect(func() -> void: SoundManager.play_sfx("ui_move", -14.0, 0.02))
+	c.mouse_entered.connect(func() -> void: SoundManager.play_sfx("ui_move", -16.0, 0.02))
+	if c is BaseButton:
+		(c as BaseButton).pressed.connect(func() -> void: SoundManager.play_sfx("ui_select", -8.0, 0.02))
 
 
 static func label(text: String, font_size: int, color: Color = TEXT, outline: int = 8) -> Label:

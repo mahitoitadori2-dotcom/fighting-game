@@ -28,8 +28,17 @@ static func selected_arena_entry() -> Dictionary:
 func _ready() -> void:
 	add_to_group("arena_manager")
 	OptimizationManager.clear_pools()        # New match: drop the last match's pools + particle bookkeeping
+	if not Replay.pending.is_empty():
+		_play_replay()                        # WATCH REPLAY: puppets instead of a match
+		return
 	p1 = _spawn(CharacterRoster.selected(), 1, p1_spawn)
 	p2 = _spawn(CharacterRoster.opponent(), 2, p2_spawn)
+	# REPLAYS: every fight is recorded (watch / save it from the winner screen)
+	var rec := ReplayRecorder.new()
+	rec.name = "ReplayRecorder"
+	add_child(rec)
+	rec.track(p1, CharacterRoster.selected_id)
+	rec.track(p2, CharacterRoster.opponent_id if CharacterRoster.has_opponent() else CharacterRoster.DUMMY_ID)
 	# Music: boss track vs PvE enemies, fight track otherwise (speeds up when you're low on HP)
 	# (Fights-mode bosses each have their own track: boss_minos / boss_sisyphus / boss_geyron)
 	var opp := CharacterRoster.opponent()
@@ -45,11 +54,37 @@ func _ready() -> void:
 		var tc := TouchControls.new()
 		tc.name = "TouchControls"
 		add_child(tc)
+	# TRAINING MODE: every Dummy fight gets the training panel + keys (F1-F6)
+	if p2 is Dummy and p1 != null:
+		var tm := TrainingMode.new()
+		tm.name = "TrainingMode"
+		add_child(tm)
+		tm.bind(p1, p2 as Dummy)
 	# SETTINGS > FPS Counter
 	if MatchSettings.fps_counter_active():
 		var fps := FpsCounter.new()
 		fps.name = "FpsCounter"
 		add_child(fps)
+
+
+## Spawns puppet copies of the recorded fighters and a ReplayPlayer that drives them.
+func _play_replay() -> void:
+	var data := Replay.pending
+	var ids: Array = data.get("ids", [])
+	var puppets: Array[Fighter] = []
+	for i in ids.size():
+		var e := CharacterRoster.get_entry(String(ids[i]))
+		var f := _spawn(e, i + 1, p1_spawn if i == 0 else p2_spawn)
+		if f != null:
+			puppets.append(f)
+	p1 = puppets[0] if puppets.size() > 0 else null
+	p2 = puppets[1] if puppets.size() > 1 else null
+	var rp := ReplayPlayer.new()
+	rp.name = "ReplayPlayer"
+	rp.return_scene = String(data.get("return_scene", CharacterRoster.MAIN_MENU))
+	add_child(rp)
+	rp.setup(data, puppets)
+	SoundManager.play_music("menu")
 
 
 func _spawn(entry: Dictionary, slot: int, pos: Vector2) -> Fighter:

@@ -71,6 +71,7 @@ extends CharacterData
 func _init() -> void:
 	character_name = "Warrior"
 	punch_damage = 5                     # Versus buff 2026-11-17 (was 3)
+	max_hp = 120                         # Versus buff 2026-11-18 (was 100)
 	# Sword can NOT be Onslaughted and never causes Afterburn.
 	onslaught_melee_enabled = false
 	# Clinging Grab CAN be Onslaughted (uses the projectile flash).
@@ -85,6 +86,7 @@ func _init() -> void:
 ## the defaults above). The 2026-11-08 Warrior buff: more damage, shorter cooldowns.
 ## Since the Versus buff of 2026-11-17 the defaults already match these numbers.
 func apply_story_buff() -> void:
+	max_hp = 100                         # Story keeps its own HP (the Versus 120 is Versus only)
 	punch_damage = 5                     # Sword (Versus 3)
 	grab_cooldown = 3.5                  # (5.0)
 	grab_damage = 7                      # (5)

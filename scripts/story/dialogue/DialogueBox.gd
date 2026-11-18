@@ -211,7 +211,7 @@ func _on_letter(full: String, c: int) -> void:
 		if _blip_count % 2 == 1:
 			var p := _players[_player_i]
 			_player_i = (_player_i + 1) % _players.size()
-			p.stream = Blips.stream(StoryDialogue.blip_of(String(lines[_i][0])))
+			p.stream = Blips.syllable(StoryDialogue.blip_of(String(lines[_i][0])), ch)       # Babbles vowels in their voice
 			p.pitch_scale = randf_range(0.93, 1.07)
 			p.volume_db = -6.0
 			p.play()

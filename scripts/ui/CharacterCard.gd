@@ -89,11 +89,43 @@ func setup(entry: Dictionary) -> void:
 	focus_entered.connect(_set_hover.bind(true))     # Controller: the focused card is highlighted
 	focus_exited.connect(_set_hover.bind(false))
 	_apply_style()
+	if _selectable:
+		UiStyle.ui_sounds(self)
+	_entrance.call_deferred()
+
+
+## Cards fade + grow in one after another when the screen opens.
+func _entrance() -> void:
+	if not is_inside_tree():
+		return
+	pivot_offset = size * 0.5
+	var base_a := modulate.a
+	modulate.a = 0.0
+	scale = Vector2(0.9, 0.9)
+	var tw := create_tween().set_parallel()
+	var d := 0.04 * float(get_index())
+	tw.tween_property(self, "modulate:a", base_a, 0.3).set_delay(d)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.35).set_delay(d).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _set_hover(on: bool) -> void:
 	_hover = on
 	_apply_style()
+	if _selectable and is_inside_tree():
+		pivot_offset = size * 0.5
+		var tw := create_tween()
+		tw.tween_property(self, "scale", Vector2(1.035, 1.035) if on else Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE)
+
+
+## Picked: a quick pop.
+func _pop() -> void:
+	if not is_inside_tree():
+		return
+	pivot_offset = size * 0.5
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector2(1.08, 1.08), 0.07)
+	tw.tween_property(self, "scale", Vector2(1.035, 1.035) if _hover else Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK)
+	SoundManager.play_sfx("ui_confirm", -8.0, 0.02)
 
 
 func _move_row(m: Dictionary) -> Control:
@@ -120,6 +152,8 @@ func _move_row(m: Dictionary) -> Control:
 
 
 func set_selection(is_you: bool, is_opp: bool) -> void:
+	if (is_you and not _is_you) or (is_opp and not _is_opp):
+		_pop()
 	_is_you = is_you
 	_is_opp = is_opp
 	if _selectable and _entry.get("enemy", false):

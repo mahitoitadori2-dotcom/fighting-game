@@ -55,7 +55,7 @@ static func on_hit(hit: HitData, victim: Fighter) -> void:
 	var s := hit_strength(hit)
 	var pos := victim.global_position + Vector2(randf_range(-8.0, 8.0), -70.0 + randf_range(-10.0, 10.0))
 	hit_sparks(victim, pos, 4 + s * 4, 1.0 + 0.35 * s)
-	play_hit_sound(victim, ["hit_tick", "hit", "hit_heavy", "hit_ultimate"][s], pos)
+	HitSounds.play(hit, s)                          # Each attacker sounds different (HitSounds.gd)
 	if s == HIT_TICK:
 		return
 	hitstop(victim, HITSTOP[s])
@@ -67,7 +67,7 @@ static func on_hit(hit: HitData, victim: Fighter) -> void:
 ## Called by CombatManager when a hit is blocked.
 static func on_block(victim: Fighter, perfect: bool) -> void:
 	hit_sparks(victim, victim.global_position + Vector2(victim.facing * 26.0, -76.0), 6 if perfect else 4, 0.8)
-	play_hit_sound(victim, "block_perfect" if perfect else "block", victim.global_position)
+	HitSounds.play_block(perfect)
 	shake(victim, 2.0)
 	if perfect:
 		hitstop(victim, 0.08)

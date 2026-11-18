@@ -7,13 +7,14 @@ extends CharacterData
 ## Balance target: Architect / Warrior (100 HP, ~10-20 dmg moves on 6-12 s cooldowns).
 ## Tuned 2026-11-16 after 12 CPU matches (4 / 12 wins = too weak): HP 95 -> 100, wrench 4 -> 5,
 ## bolts 3 -> 4, hook 5 -> 6, coil 8 -> 9 dmg and 12 -> 10 s.
+## Pass 2 (2026-11-18, 0 / 8 vs the top four): HP 110, bolts 5, hook 8, coil 11 dmg / 8 s, Breaker 34.
 
 @export_group("Scrap Turret (1)")
 @export var turret_cooldown := 9.0
-@export var turret_life := 6.0
-@export var turret_fire_every := 0.9
+@export var turret_life := 7.0
+@export var turret_fire_every := 0.7
 @export var turret_range := 620.0
-@export var turret_bolt_damage := 4             # ~6 bolts if you stand in front of it = ~24
+@export var turret_bolt_damage := 5             # ~6 bolts if you stand in front of it = ~24
 @export var turret_bolt_speed := 720.0
 @export var turret_hp := 12                     # It can be smashed (any hit in reach breaks it)
 
@@ -22,14 +23,14 @@ extends CharacterData
 @export var hook_startup := 0.18
 @export var hook_range := 400.0
 @export var hook_speed := 1500.0
-@export var hook_damage := 6
+@export var hook_damage := 8
 @export var hook_pull := 760.0                  # Pulled TOWARD the Technician
 
 @export_group("Spark Coil (3)")
-@export var coil_cooldown := 10.0
+@export var coil_cooldown := 8.0
 @export var coil_startup := 0.3
 @export var coil_radius := 150.0
-@export var coil_damage := 9
+@export var coil_damage := 11
 @export var coil_stun := 0.6
 @export var coil_knockback := Vector2(320, -220)
 
@@ -46,7 +47,7 @@ extends CharacterData
 @export_group("G3: The Technician's Breaker")
 @export var breaker_fuse := 1.5                 # Three beeps
 @export var breaker_radius := 250.0
-@export var breaker_damage := 30
+@export var breaker_damage := 34
 @export var breaker_knockback := Vector2(820, -520)
 @export var breaker_throw := 260.0              # Lands this far in front of him
 
@@ -54,7 +55,7 @@ extends CharacterData
 func _init() -> void:
 	character_name = "The Technician"
 	body_size = Vector2(64, 128)
-	max_hp = 100
+	max_hp = 125
 	move_speed = 320.0
 	acceleration = 2300.0
 	jump_force = 720.0

@@ -14,6 +14,7 @@ extends BaseAI
 func _init() -> void:
 	super._init()
 	block_chance = 0.15                           # Rushdown: blocks less than the Architect
+	minion_range = 340.0
 	hunt_minions = true                           # Balance 2026-11-17: cuts down Helpers
 
 

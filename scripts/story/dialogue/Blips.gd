@@ -49,7 +49,79 @@ const PROFILES := {
 	"first_prime": {"f": 125.0, "wave": "pulse", "dur": 0.08, "soft": 0.4, "noise": 0.0, "glide": 0.0, "sub": 0.4, "duet": 1.5},  # A gong in the voice
 }
 
+## Speakers that are NOT voices (machines, bells, swarms, beasts): they keep the plain blip.
+const NON_VOICE := ["kharleming_sacrifice", "atomic", "forge_mother", "arch_golem", "shining", "void_massacre",
+	"animal_lord", "the_sun", "architect_chorus"]
+## Vowel formants (Hz, an adult voice): F1, F2. Scaled up for higher voices.
+const VOWELS := {"a": Vector2(730, 1090), "e": Vector2(530, 1840), "i": Vector2(300, 2250), "o": Vector2(570, 840), "u": Vector2(320, 870)}
+
 static var _cache := {}
+
+
+## SPEECH-LIKE blip: the character's tone shaped into a vowel (formants), picked from the letter
+## being typed - the dialogue babbles in that character's voice. Non-voices get the plain blip.
+static func syllable(id: String, ch: String) -> AudioStreamWAV:
+	if not PROFILES.has(id):
+		id = "narrator"
+	if id in NON_VOICE:
+		return stream(id)
+	var c := ch.to_lower()
+	var v := c if VOWELS.has(c) else String(VOWELS.keys()[c.unicode_at(0) % 5]) if c.length() > 0 else "a"
+	var key := id + ":" + v
+	if _cache.has(key):
+		return _cache[key]
+	var p: Dictionary = PROFILES[id]
+	var f0: float = p.get("f", 200.0)
+	var dur: float = float(p.get("dur", 0.06)) * 1.35
+	var noise: float = p.get("noise", 0.0)
+	var glide: float = p.get("glide", 0.0)
+	var vib: float = p.get("vib", 0.0)
+	var fm: Vector2 = VOWELS[v] * clampf(pow(f0 / 120.0, 0.3), 0.85, 1.5)
+	var n := int(dur * RATE)
+	var data := PackedByteArray()
+	data.resize(n * 2)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = key.hash()
+	# Two resonators (F1, F2) on a buzzy glottal source + a breathy consonant onset
+	var r1 := exp(-PI * 90.0 / RATE)
+	var r2 := exp(-PI * 120.0 / RATE)
+	var c1 := 2.0 * r1 * cos(TAU * fm.x / RATE)
+	var c2 := 2.0 * r2 * cos(TAU * fm.y / RATE)
+	var y1a := 0.0
+	var y1b := 0.0
+	var y2a := 0.0
+	var y2b := 0.0
+	var ph := 0.0
+	var peak := 0.0001
+	var buf := PackedFloat32Array()
+	buf.resize(n)
+	for i in n:
+		var t := float(i) / float(RATE)
+		var k := float(i) / float(n)
+		var f := f0 * (1.0 + glide * k) * (1.0 + vib * 0.03 * sin(t * 60.0))
+		ph = fmod(ph + f / RATE, 1.0)
+		var src := (ph * 2.0 - 1.0) * 0.8 + noise * 0.6 * (rng.randf() * 2.0 - 1.0)
+		if t < 0.012:
+			src += (rng.randf() * 2.0 - 1.0) * 0.9 * (1.0 - t / 0.012)     # Consonant puff
+		var o1 := src * (1.0 - r1) + c1 * y1a - r1 * r1 * y1b
+		y1b = y1a
+		y1a = o1
+		var o2 := src * (1.0 - r2) + c2 * y2a - r2 * r2 * y2b
+		y2b = y2a
+		y2a = o2
+		var env := minf(t / 0.008, 1.0) * pow(1.0 - k, 1.3)
+		var s := (o1 + o2 * 0.6) * env
+		buf[i] = s
+		peak = maxf(peak, absf(s))
+	for i in n:
+		data.encode_s16(i * 2, clampi(int(buf[i] / peak * 0.6 * 32767.0), -32767, 32767))
+	var w := AudioStreamWAV.new()
+	w.format = AudioStreamWAV.FORMAT_16_BITS
+	w.mix_rate = RATE
+	w.stereo = false
+	w.data = data
+	_cache[key] = w
+	return w
 
 
 static func stream(id: String) -> AudioStreamWAV:

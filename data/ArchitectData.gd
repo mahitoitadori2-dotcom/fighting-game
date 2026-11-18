@@ -7,7 +7,7 @@ extends CharacterData
 
 @export_group("Rocket Delivery")
 @export var rocket_damage := 13                 # Versus buff 2026-11-17 (was 10)
-@export var rocket_cooldown := 4.5               # (was 6.0)
+@export var rocket_cooldown := 4.0               # (was 6.0; 4.5 on 2026-11-17)
 @export var rocket_speed := 540.0
 @export var rocket_turn_rate := 4.0              # Homing strength (radians / second)
 @export var rocket_lifetime := 4.0
@@ -19,7 +19,7 @@ extends CharacterData
 
 @export_group("HNCT Triangle Bomb")
 @export var hnct_damage := 26                   # (was 20)
-@export var hnct_cooldown := 8.5                 # (was 12.0)
+@export var hnct_cooldown := 7.5                 # (was 12.0; 8.5 on 2026-11-17)
 @export var hnct_knockback := Vector2(300, -320)     # Medium
 @export var hnct_blast_radius := 120.0
 @export var hnct_arm_time := 0.4
@@ -67,6 +67,7 @@ extends CharacterData
 func _init() -> void:
 	character_name = "The Mighty Architect"
 	punch_damage = 5                     # Versus buff 2026-11-17 (was 3)
+	max_hp = 130                         # Versus buff 2026-11-18 (was 100)
 	# Onslaught flags: turn these on/off per character.
 	onslaught_melee_enabled = true
 	onslaught_projectile_enabled = true
@@ -81,6 +82,9 @@ func _init() -> void:
 ## the defaults above). Same idea as the Warrior's Story buff: more damage, shorter cooldowns.
 ## Since the Versus buff of 2026-11-17 the defaults already match these numbers.
 func apply_story_buff() -> void:
+	rocket_cooldown = 4.5                # Story keeps its own cooldowns
+	hnct_cooldown = 8.5
+	max_hp = 100                         # Story keeps its own HP (the Versus 120 is Versus only)
 	punch_damage = 5                     # Punch (Versus 3)
 	rocket_damage = 13                   # Rocket Delivery + Triple Rocket (10)
 	rocket_cooldown = 4.5                # (6.0)

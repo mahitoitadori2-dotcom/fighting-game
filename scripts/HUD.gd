@@ -34,27 +34,58 @@ class HudSide:
 
 
 ## Exact-size bar (ProgressBar has a theme minimum height that made bars overlap).
+## HP bars: the fill SLIDES to the new value, the chunk you just lost stays as a white CHIP for a
+## moment and then drains, and below 30% the bar PULSES.
 class HudBar extends Control:
 	var value := 100.0
 	var max_value := 100.0
 	var fill_color := Color(0.15, 0.85, 0.25)
 	var bg_color := Color(0.12, 0.12, 0.12)
+	var is_hp := false
+	var _shown := -1.0                 # The animated fill
+	var _chip := -1.0                  # The white "damage taken" chunk
+	var _chip_wait := 0.0
+	var _t := 0.0
 
 	func set_bar(v: float, m: float, col: Color) -> void:
+		if _shown < 0.0:
+			_shown = v
+			_chip = v
+		if is_hp and v < value:
+			_chip = maxf(_chip, value)
+			_chip_wait = 0.45
 		value = v
 		max_value = maxf(m, 0.001)
 		fill_color = col
 		queue_redraw()
 
+	func _process(delta: float) -> void:
+		_t += delta
+		var moving := absf(_shown - value) > 0.01 or _chip > value + 0.01
+		_shown = move_toward(_shown, value, maxf(absf(_shown - value) * 10.0, max_value * 0.4) * delta)
+		_chip_wait -= delta
+		if _chip_wait <= 0.0:
+			_chip = move_toward(_chip, value, max_value * 0.6 * delta)
+		if moving or (is_hp and value / max_value < 0.3):
+			queue_redraw()
+
 	func _draw() -> void:
 		var r := Rect2(Vector2.ZERO, size)
 		draw_rect(r, Color(0, 0, 0))
 		draw_rect(r.grow(-2.0), bg_color)
-		var k := clampf(value / max_value, 0.0, 1.0)
+		var w := size.x - 4.0
+		var shown := _shown if _shown >= 0.0 else value
+		var kc := clampf(maxf(_chip, shown) / max_value, 0.0, 1.0)
+		if is_hp and kc > 0.0:
+			draw_rect(Rect2(Vector2(2, 2), Vector2(w * kc, size.y - 4.0)), Color(1.0, 0.95, 0.85, 0.9))
+		var k := clampf(shown / max_value, 0.0, 1.0)
 		if k > 0.0:
-			var fr := Rect2(Vector2(2, 2), Vector2((size.x - 4.0) * k, size.y - 4.0))
-			draw_rect(fr, fill_color)
-			draw_rect(Rect2(fr.position, Vector2(fr.size.x, fr.size.y * 0.35)), fill_color.lightened(0.3))
+			var col := fill_color
+			if is_hp and value / max_value < 0.3:
+				col = col.lerp(Color(1, 1, 1), 0.25 + 0.25 * sin(_t * 9.0))     # Low HP: pulse
+			var fr := Rect2(Vector2(2, 2), Vector2(w * k, size.y - 4.0))
+			draw_rect(fr, col)
+			draw_rect(Rect2(fr.position, Vector2(fr.size.x, fr.size.y * 0.35)), col.lightened(0.3))
 
 
 var p1 := HudSide.new()
@@ -131,6 +162,7 @@ func _build_hud() -> void:
 	_boss_name.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 	_boss_root.add_child(_boss_name)
 	_boss_bar = HudBar.new()
+	_boss_bar.is_hp = true
 	_boss_bar.position = Vector2(0, 26)
 	_boss_bar.size = Vector2(460, 16)
 	_boss_bar.custom_minimum_size = Vector2(460, 16)
@@ -160,6 +192,7 @@ func _build_side(side: HudSide, right: bool) -> void:
 	side.hp_label.horizontal_alignment = align
 	nodes.append(side.hp_label)
 	side.hp_bar = _make_bar(Vector2(x, 46), Vector2(BAR_WIDTH, BAR_HEIGHT))
+	side.hp_bar.is_hp = true
 	nodes.append(side.hp_bar)
 	side.onslaught_bar = _make_bar(Vector2(x, 70), Vector2(BAR_WIDTH, 8))
 	side.onslaught_bar.set_bar(0.0, 1.0, Color(0.3, 0.3, 0.3))

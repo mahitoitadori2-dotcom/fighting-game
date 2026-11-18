@@ -104,6 +104,7 @@ var _from_boss := false                     # This run started at the boss (no b
 var _reached_boss := false                  # The waves are cleared: the boss checkpoint is open
 ## LEVEL STATS (shown on LEVEL CLEAR): fight time (only while fighting, not paused / in talks),
 ## damage taken, flasks drunk. Best times are saved (StoryProgress.best_times).
+var _rush_rec: ReplayRecorder = null
 var stats_time := 0.0
 var stats_damage := 0
 var stats_flasks := 0
@@ -180,6 +181,8 @@ func _ready() -> void:
 		level_number = StoryProgress.current_level          # Boss extension level (BC2...)
 	else:
 		level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
+	if BossRush.active:
+		level_number = BossRush.current_level()            # BOSS RUSH: the next boss in the run
 	level = StoryLevels.get_level(level_number)
 	SoulsRules.active = bool(level.get("open_world", false)) or SoulsRules.test_force   # Open world: roll + stamina
 	if bool(level.get("void_mod", false)):
@@ -195,10 +198,10 @@ func _ready() -> void:
 	_setup_arena()
 	_spawn_player()
 	max_attackers = MAX_ATTACKERS
-	if StoryLevels.has_partner(level_number):
+	if StoryLevels.has_partner(level_number) and not BossRush.active:
 		_spawn_partner()
 		max_attackers = MAX_ATTACKERS + 1
-	if bool(level.get("trainer_ally", false)):          # Level 80: the Trainer fights with you
+	if bool(level.get("trainer_ally", false)) and not BossRush.active:          # Level 80: the Trainer fights with you
 		_spawn_trainer_ally()
 		max_attackers += 1
 	_place_messages()
@@ -217,9 +220,16 @@ func _ready() -> void:
 	if boss_retry == level_number and String(level.get("boss", "")) != "":
 		_from_boss = true                          # RETRY FROM BOSS: straight to the boss
 	boss_retry = 0
+	if BossRush.active:
+		_from_boss = true                          # Boss Rush: straight to the boss
 	var clock := StatsClock.new()
 	clock.m = self
 	add_child(clock)
+	if BossRush.active:
+		_rush_rec = ReplayRecorder.new()                # This fight, for the ghost of a new best run
+		add_child(_rush_rec)
+		_rush_rec.track(player, hero)
+		GhostRunner.spawn_for(self, hero, BossRush.index, BossRush.order)
 	SoundManager.play_music(String(level.get("music", StoryLevels.map_of(level_number).get("music", "fight"))))   # Fits the area
 	if autoplay:
 		print("STORY autoplay: level %d start" % level_number)
@@ -295,7 +305,7 @@ func _apply_map(map: Dictionary) -> void:
 
 
 func _spawn_player() -> void:
-	hero = StoryLevels.hero_of(level_number)
+	hero = BossRush.hero if BossRush.active else StoryLevels.hero_of(level_number)
 	if hero == "architect":
 		player = Player.new()                    # The Mighty Architect: own moves, look, animations
 		player.name = "P1_Architect"
@@ -329,6 +339,13 @@ func _spawn_player() -> void:
 		player.data.punch_size = Vector2(70, 114)
 	if autoplay:
 		player.damage_taken_mult = 0.25
+	if BossRush.active:
+		# One stock of flasks for the whole run; HP carried over from the last boss
+		max_flasks = BossRush.RUSH_FLASKS
+		flasks = BossRush.flasks
+		if BossRush.hp_carry > 0:
+			player.hp = mini(BossRush.hp_carry, player.data.max_hp)
+			player.health_changed.emit(player.hp, player.data.max_hp)
 	player.died.connect(_on_player_died)
 
 
@@ -385,6 +402,9 @@ func _spawn_trainer_ally() -> void:
 func _story_buff(f: Fighter) -> void:
 	if f != null and f.data != null and f.data.has_method("apply_story_buff"):
 		f.data.call("apply_story_buff")
+		if f.hp > f.data.max_hp:                     # Spawned with the Versus HP (120): back to Story's
+			f.hp = f.data.max_hp
+			f.health_changed.emit(f.hp, f.data.max_hp)
 	StoryBuff.apply(f)                              # + the small HIDDEN buff every Story character gets
 
 
@@ -441,7 +461,7 @@ func _place_party(x: float) -> void:
 # ============================================================
 func _run() -> void:
 	await _intro()
-	if bool(level.get("altar", false)):
+	if bool(level.get("altar", false)) and not BossRush.active:
 		await _altar_stage()                       # Colosseum 4: the optional Shining
 		if _over:
 			return
@@ -479,6 +499,9 @@ func _run() -> void:
 		await _boss_intro()
 		await boss_defeated
 		if _over:
+			return
+		if BossRush.active:
+			await _rush_next()
 			return
 		if bool(level.get("finale", false)):
 			# The Sun / The Enlightened One: straight to the ending cutscene. Stop the fight first and
@@ -723,6 +746,8 @@ func _intro() -> void:
 		intro += "\nYour partner: %s (CPU)" % partner.data.character_name.to_upper()
 	if _from_boss:
 		intro = "%s\nRETRY FROM THE BOSS" % level.get("title", "")
+	if BossRush.active:
+		intro = "%s\n%s" % [BossRush.progress_text(), level.get("title", "")]
 	if bool(level.get("slide_fight", false)):
 		# THE MAGMA RUN, level 70: the slide stopped - a fresh start for the 3 waves
 		player.cooldowns.clear()
@@ -741,6 +766,8 @@ func _intro() -> void:
 
 ## Undertale-style DIALOGUE (StoryDialogue lines, DialogueBox): the game is frozen until it ends.
 func _dialogue(kind: String) -> bool:
+	if BossRush.active:
+		return false                                   # Boss Rush: no talking, just fighting
 	var pid := ""
 	if partner != null:
 		pid = "architect" if hero == "warrior" else "warrior"
@@ -949,11 +976,12 @@ func _boss_intro() -> void:
 	_hide_banner()
 	await _dialogue("boss")                            # The boss talks before the fight
 	ArenaCamera.focus_offset = Vector2(0, -110)
-	# Flasks refill after the boss intro
-	flasks = max_flasks
-	partner_flasks = max_partner_flasks
-	Effects.popup(player, player.global_position + Vector2(0, -170), "FLASKS REFILLED!", Color(0.5, 1.0, 0.5), 24)
-	SoundManager.play_sfx("heal")
+	# Flasks refill after the boss intro (not in a Boss Rush: one stock for the whole run)
+	if not BossRush.active:
+		flasks = max_flasks
+		partner_flasks = max_partner_flasks
+		Effects.popup(player, player.global_position + Vector2(0, -170), "FLASKS REFILLED!", Color(0.5, 1.0, 0.5), 24)
+		SoundManager.play_sfx("heal")
 	ArenaCamera.focus = null
 	_letterbox(false)
 	await _wait(0.6)
@@ -992,8 +1020,9 @@ func _quick_boss_intro() -> void:
 	SoundManager.play_sfx("ultimate", -4.0)
 	SoundManager.play_music(String(level.get("boss_music", "boss")))
 	var talked: bool = await _dialogue("boss")         # The First Prime / The Enlightened One / The Sun talk first
-	flasks = max_flasks
-	partner_flasks = max_partner_flasks
+	if not BossRush.active:
+		flasks = max_flasks
+		partner_flasks = max_partner_flasks
 	boss_bar_visible = true
 	var col: Color = level.get("boss_color", Color(1, 1, 1))
 	_show_banner(boss.enemy_name.to_upper(), String(level.get("boss_sub", "")), col)
@@ -1246,6 +1275,9 @@ func _on_player_died() -> void:
 		return
 	_over = true
 	boss_bar_visible = false
+	if BossRush.active:
+		await _rush_over()
+		return
 	if autoplay:
 		print("STORY autoplay: player DIED on level %d" % level_number)
 	await _wait(1.0)
@@ -1262,6 +1294,48 @@ func _on_player_died() -> void:
 			get_tree().change_scene_to_file(ARENA_SCENE))
 	_panel_button(panel, "RETRY LEVEL", func() -> void: get_tree().change_scene_to_file(ARENA_SCENE))
 	_panel_button(panel, "STORY MENU", func() -> void: get_tree().change_scene_to_file(STORY_MENU))
+	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
+
+
+# ============================================================
+# BOSS RUSH
+# ============================================================
+## A boss is down: on to the next one (HP carried + a breather), or the run is complete.
+func _rush_next() -> void:
+	CombatManager.fight_active = false
+	_clear_hazards()
+	if _rush_rec != null:
+		_rush_rec.stop()
+		BossRush.run_tracks.append(_rush_rec.frames)
+	var nxt := BossRush.boss_beaten(stats_time, player.hp, player.data.max_hp, flasks, stats_damage)
+	if nxt == 0:
+		_show_banner("BOSS RUSH COMPLETE!", "%d BOSSES     TIME %s" % [BossRush.order.size(), time_text(BossRush.total_time)], Color(1.0, 0.85, 0.35))
+		SoundManager.play_sfx("ultimate")
+		await _wait(3.2)
+		get_tree().change_scene_to_file(BossRush.MENU_SCENE)
+		return
+	_show_banner("BOSS DOWN!  %d / %d" % [BossRush.index, BossRush.order.size()], "TIME %s     FLASKS %d\nCatch your breath  (+%d%% HP)" % [time_text(BossRush.total_time), flasks, int(BossRush.BREATHER_HEAL * 100.0)], Color(0.6, 1.0, 0.6))
+	SoundManager.play_sfx("ultimate")
+	await _wait(2.4)
+	get_tree().change_scene_to_file(ARENA_SCENE)
+
+
+## You died in a Boss Rush: the run ends here.
+func _rush_over() -> void:
+	BossRush.player_died(stats_time, stats_damage)
+	await _wait(1.0)
+	CombatManager.fight_active = false
+	Engine.time_scale = 1.0
+	await SoulsBanner.died(self).finished
+	var r := BossRush.last_result
+	var panel := _panel()
+	panel.add_child(UiStyle.label("BOSS RUSH OVER", 30, Color(1.0, 0.55, 0.45), 8))
+	panel.add_child(UiStyle.label("Bosses beaten: %d / %d     Time: %s" % [int(r["beaten"]), int(r["total"]), time_text(float(r["time"]))], 20, UiStyle.TEXT_DIM, 6))
+	var h := BossRush.hero
+	_panel_button(panel, "TRY AGAIN", func() -> void:
+		if BossRush.start(h):
+			get_tree().change_scene_to_file(ARENA_SCENE))
+	_panel_button(panel, "BOSS RUSH MENU", func() -> void: get_tree().change_scene_to_file(BossRush.MENU_SCENE))
 	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
 
 
@@ -1306,6 +1380,8 @@ func use_flask() -> void:
 		return
 	flasks -= 1
 	stats_flasks += 1
+	if BossRush.active:
+		BossRush.flasks_used += 1
 	SoundManager.play_sfx("flask_drink")             # Glug glug + sparkle
 	player.heal(roundi(player.data.max_hp * FLASK_HEAL))
 	Effects.gold_burst(player, player.global_position + Vector2(0, -64), 70.0)

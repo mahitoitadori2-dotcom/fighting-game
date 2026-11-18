@@ -86,3 +86,8 @@ The list of file names is in `audio/AUDIO_FILES.txt`.
 To make the placeholder sound effects again, run `node tools/make_placeholder_audio.js` (it no longer touches the music unless you add `--synth-music`).
 
 New bosses get classical or medieval, Souls-like music, not cyber or synth (see [Roadmap](Roadmap.md)).
+
+## Hit sounds + voices (2026-11-18)
+- **Per-attacker impacts** (`scripts/audio/HitSounds.gd`, called from `Effects.on_hit / on_block`): Warrior void thuds + sword slices, Architect metal, Anti / APHA energy, Nightmare Lord heavy punches, Enlightened One bells, Mimic bone/wood, Technician tin, everyone else fist impacts. Projectiles snap, grabs rustle, heavy / ultimate hits add a plate crash, blocks clink, perfect blocks add a glass clang. 2-3 variants each (`audio/sfx/imp_*`, `blk*`), all Kenney CC0 (impact, RPG and sci-fi packs).
+- **UI sounds**: `ui_move` (focus / hover), `ui_select` (press), `ui_confirm` (character picked), `ui_back` - Kenney interface CC0. Every `UiStyle.make_button` gets them.
+- **Dialogue voices**: `Blips.syllable(id, letter)` shapes each speaker's tone into a vowel (two formant resonators + a breathy consonant puff), picked from the letter being typed, so the text "babbles" in that voice. Machines, bells, swarms and beasts (`Blips.NON_VOICE`) keep the plain blip.

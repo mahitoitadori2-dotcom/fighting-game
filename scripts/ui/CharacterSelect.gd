@@ -190,6 +190,10 @@ var _pointer := false
 
 
 func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):                 # Controller B / Esc: back (before a card eats it)
+		get_viewport().set_input_as_handled()
+		_go_back()
+		return
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
 		_pointer = true
 	elif event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion:

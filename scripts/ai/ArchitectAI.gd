@@ -16,6 +16,7 @@ const PREFERRED_MAX := 380.0
 
 func _init() -> void:
 	super._init()
+	minion_range = 340.0
 	hunt_minions = true                           # Balance 2026-11-17: punches Helpers away
 
 

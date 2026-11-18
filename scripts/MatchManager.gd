@@ -18,6 +18,11 @@ var infinite_lives := false              # Dummy fight
 var _over := false
 var _banner_layer: CanvasLayer
 var _banner: Label
+# Match stats for the results screen: Fighter -> {dealt, hits, combo, best_combo, blocks, perfect, ults}
+var stats := {}
+var _last_hit_t := {}
+var _start_ms := 0
+var _gauge_prev := {}
 
 
 func setup(a: Fighter, b: Fighter) -> void:
@@ -30,9 +35,49 @@ func setup(a: Fighter, b: Fighter) -> void:
 		if f != null:
 			lives[f] = INFINITE if infinite_lives else (MatchSettings.enemy_lives if f is BaseEnemy else max_lives)
 			f.died.connect(_on_fighter_died.bind(f))
+			stats[f] = {"dealt": 0, "hits": 0, "combo": 0, "best_combo": 0, "blocks": 0, "perfect": 0, "ults": 0}
+			f.damaged.connect(_on_damaged.bind(f))
+			f.blocked.connect(_on_blocked.bind(f))
+			if f.gauge != null:
+				_gauge_prev[f] = f.gauge.value
+				f.gauge.changed.connect(_on_gauge.bind(f))
+	_start_ms = Time.get_ticks_msec()
 	CombatManager.fight_active = false       # Frozen until "GO!"
 	_build_banner()
 	_intro()
+
+
+# ===== Stats =====
+func _other(f: Fighter) -> Fighter:
+	return p2 if f == p1 else p1
+
+
+func _on_damaged(amount: int, _hit: HitData, victim: Fighter) -> void:
+	var att := _other(victim)
+	if att == null or not stats.has(att) or _over:
+		return
+	var st: Dictionary = stats[att]
+	st["dealt"] += amount
+	st["hits"] += 1
+	var now := Time.get_ticks_msec()
+	st["combo"] = st["combo"] + 1 if now - int(_last_hit_t.get(att, -10000)) < 1100 else 1
+	st["best_combo"] = maxi(st["best_combo"], st["combo"])
+	_last_hit_t[att] = now
+
+
+func _on_blocked(_hit: HitData, perfect: bool, f: Fighter) -> void:
+	if stats.has(f) and not _over:
+		stats[f]["blocks"] += 1
+		if perfect:
+			stats[f]["perfect"] += 1
+
+
+## A whole G bar (or more) gone at once = an ultimate was used.
+func _on_gauge(value: float, f: Fighter) -> void:
+	var prev := float(_gauge_prev.get(f, value))
+	_gauge_prev[f] = value
+	if stats.has(f) and not _over and f.gauge != null and prev - value >= f.gauge.segment_size * 0.95:
+		stats[f]["ults"] += 1
 
 
 ## Lives left (INFINITE = -1 for Dummy fights).
@@ -119,7 +164,42 @@ func _on_fighter_died(f: Fighter) -> void:
 # ============================================================
 # WINNER SCREEN
 # ============================================================
+func _stats_table() -> Control:
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	grid.add_theme_constant_override("h_separation", 36)
+	grid.add_theme_constant_override("v_separation", 2)
+	var a: Dictionary = stats.get(p1, {})
+	var b: Dictionary = stats.get(p2, {})
+	var secs := float(Time.get_ticks_msec() - _start_ms) / 1000.0
+	var rows := [["TIME", StoryManager.time_text(secs), ""],
+		["DAMAGE DEALT", str(a.get("dealt", 0)), str(b.get("dealt", 0))],
+		["HITS LANDED", str(a.get("hits", 0)), str(b.get("hits", 0))],
+		["BEST COMBO", str(a.get("best_combo", 0)), str(b.get("best_combo", 0))],
+		["BLOCKS (PERFECT)", "%d (%d)" % [a.get("blocks", 0), a.get("perfect", 0)], "%d (%d)" % [b.get("blocks", 0), b.get("perfect", 0)]],
+		["ULTIMATES", str(a.get("ults", 0)), str(b.get("ults", 0))]]
+	grid.add_child(UiStyle.label("", 16, UiStyle.TEXT_DIM, 4))
+	grid.add_child(UiStyle.label("YOU", 18, CharacterCard.YOU_COLOR, 5))
+	grid.add_child(UiStyle.label("OPPONENT", 18, CharacterCard.OPP_COLOR, 5))
+	var i := 0
+	for r in rows:
+		var cells := [UiStyle.label(r[0], 18, UiStyle.TEXT_DIM, 5), UiStyle.label(r[1], 20, UiStyle.TEXT, 5), UiStyle.label(r[2], 20, UiStyle.TEXT, 5)]
+		for c: Label in cells:
+			c.modulate.a = 0.0
+			grid.add_child(c)
+			var tw := c.create_tween()
+			tw.tween_interval(0.35 + i * 0.12)
+			tw.tween_property(c, "modulate:a", 1.0, 0.25)
+		i += 1
+	return grid
+
+
 func _show_winner() -> void:
+	var rec := get_parent().get_node_or_null("ReplayRecorder") as ReplayRecorder
+	if rec != null:
+		rec.stop()
+		Replay.last = rec.result()
 	CombatManager.fight_active = false
 	CombatManager.end_time_stop()
 	_banner.text = ""
@@ -142,17 +222,43 @@ func _show_winner() -> void:
 	var name_text: String = winner.data.character_name if winner != null and winner.data != null else "?"
 	var col_win := CharacterCard.YOU_COLOR if winner == p1 else CharacterCard.OPP_COLOR
 	col.add_child(UiStyle.label("WINNER", 40, UiStyle.TEXT_DIM, 10))
-	col.add_child(UiStyle.label(name_text.to_upper(), 72, col_win, 16))
+	var name_lbl := UiStyle.label(name_text.to_upper(), 72, col_win, 16)
+	col.add_child(name_lbl)
+	name_lbl.pivot_offset = Vector2(400, 40)
+	name_lbl.scale = Vector2(0.4, 0.4)
+	name_lbl.modulate.a = 0.0
+	var pop := name_lbl.create_tween().set_parallel()
+	pop.tween_property(name_lbl, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop.tween_property(name_lbl, "modulate:a", 1.0, 0.25)
 	col.add_child(UiStyle.label("%s WINS!" % who, 32, UiStyle.TEXT, 10))
 
+	# Results: a stats table that slides in row by row
+	var table := _stats_table()
+	col.add_child(table)
 	var gap := Control.new()
-	gap.custom_minimum_size = Vector2(0, 20)
+	gap.custom_minimum_size = Vector2(0, 14)
 	col.add_child(gap)
 
 	var again := UiStyle.make_button("PLAY AGAIN")
 	again.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	again.pressed.connect(func() -> void: get_tree().reload_current_scene())
 	col.add_child(again)
+	if not Replay.last.is_empty():
+		var watch := UiStyle.make_button("WATCH REPLAY")
+		watch.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		watch.pressed.connect(func() -> void:
+			Replay.pending = Replay.last.duplicate()
+			Replay.pending["return_scene"] = CharacterRoster.MAIN_MENU
+			get_tree().change_scene_to_file(ArenaManager.arena_entry(String(Replay.last["arena"]))["scene"]))
+		col.add_child(watch)
+		var save := UiStyle.make_button("SAVE REPLAY")
+		save.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		save.pressed.connect(func() -> void:
+			var title := "%s vs %s" % [p1.data.character_name if p1 else "?", p2.data.character_name if p2 else "?"]
+			var path := Replay.save(Replay.last, title)
+			save.text = "SAVED!" if path != "" else "SAVE FAILED"
+			save.disabled = true)
+		col.add_child(save)
 	var menu := UiStyle.make_button("MAIN MENU")
 	menu.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	menu.pressed.connect(func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
