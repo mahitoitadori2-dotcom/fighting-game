@@ -22,7 +22,11 @@ static func spawn_for(manager: Node, hero: String, boss_index: int, order: Array
 	var tracks: Array = d.get("tracks", [])
 	if boss_index >= tracks.size() or (tracks[boss_index] as Array).is_empty():
 		return null
-	var f: Fighter = Player.new() if hero == "architect" else Warrior.new()
+	var f: Fighter
+	if hero == "architect":
+		f = Player.new()
+	else:
+		f = Warrior.new()
 	f.name = "Ghost"
 	f.slot = 9
 	f.team = 1
