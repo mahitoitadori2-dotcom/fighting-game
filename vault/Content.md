@@ -262,4 +262,4 @@ All checked by headless CPU tests (no game window); not played by a human yet.
 ### Balance pass 2 (2026-11-18, user: buff the weak fighters, don't nerf the others)
 - Warrior: 120 HP in Versus (Story keeps 100). Architect: 130 HP, Rocket 4 s, HNCT 7.5 s in Versus (Story keeps 100 HP, 4.5 s, 8.5 s). Their CPUs go for enemy minions within 340 px.
 - Technician: 125 HP, turret bolts 5 dmg every 0.7 s for 7 s, hook 8, coil 11 dmg / 8 s, Breaker 34.
-- Results vs the Nightmare Lord, Enlightened One, Mimic, Anti Architect (CPU vs CPU, both sides): see Todo (filled in when the last test finished).
+- Results vs the Nightmare Lord, Enlightened One, Mimic, Anti Architect (CPU vs CPU, both sides): **Warrior 6/8** (was 1/8 before any buff), **Architect 2-3/8** (was 0/8), **Technician 4/12** incl. the two heroes (was 0/8). All three still lose EVERY match to the Enlightened One (Helpers: ~14 dmg/s for 10 s, ~65 dmg per match) and nearly every one to the Anti Architect (Workflies + Anti Laser on 2.6 / 5.5 s). More buffs stopped helping: a small Helpers / Anti nerf is the open question for the user.
