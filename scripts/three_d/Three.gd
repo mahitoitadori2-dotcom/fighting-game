@@ -14,6 +14,11 @@ const OUTLINE := 0.035
 
 
 static func enabled() -> bool:
+	# PHONES (web iOS / Android) on FAST / POTATO: no 3D. Each 3D view is an extra full-screen render
+	# target + its own world, and its shaders compile on first use (a freeze on the web). The 2D
+	# versions run instead. REGULAR / REAL on a phone still get the 3D.
+	if OS.has_feature("web_ios") or OS.has_feature("web_android"):
+		return GraphicsSettings.level >= GraphicsSettings.REGULAR
 	return GraphicsSettings.level >= GraphicsSettings.FAST
 
 

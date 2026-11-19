@@ -39,6 +39,14 @@ const _PARTICLES := [40, 90, -1, 320]          # -1 = original cap (110 phones /
 
 static var level := REGULAR
 static var _loaded := false
+## PHONES: automatic lite mode. FPS under LITE_BELOW for a few seconds -> fewer sparks / particles and
+## backgrounds redrawn less often (the saved level is untouched); back to normal above LITE_ABOVE.
+const LITE_BELOW := 45.0
+const LITE_ABOVE := 56.0
+static var lite := false
+var _fps_acc := 0.0
+var _fps_n := 0
+var _fps_t := 0.0
 
 
 func _ready() -> void:
@@ -46,6 +54,10 @@ func _ready() -> void:
 	load_settings()
 	apply(get_tree())
 	CombatManager.register_inputs()                 # All controls (+ the player's saved keys) from the very start
+	if WebSoak.wanted():                            # Hidden web memory test (?soak=1 in the address)
+		var soak := WebSoak.new()
+		soak.name = "WebSoak"
+		get_tree().root.add_child.call_deferred(soak)
 
 
 ## Esc / controller Start in ANY fight scene opens the PAUSE MENU. Lives here (an autoload that runs
@@ -54,6 +66,27 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_menu") and not PauseMenu.is_open and PauseMenu.in_fight(get_tree()):
 		get_viewport().set_input_as_handled()
 		PauseMenu.toggle(get_tree())
+
+
+## PHONES: watch the frame rate (2.5 s windows) and switch the lite mode on / off.
+func _process(delta: float) -> void:
+	if not (OS.has_feature("web_ios") or OS.has_feature("web_android")) or get_tree().paused:
+		return
+	_fps_acc += Engine.get_frames_per_second()
+	_fps_n += 1
+	_fps_t += delta
+	if _fps_t < 2.5:
+		return
+	var avg := _fps_acc / maxf(float(_fps_n), 1.0)
+	_fps_acc = 0.0
+	_fps_n = 0
+	_fps_t = 0.0
+	if not lite and avg < LITE_BELOW:
+		lite = true
+		OptimizationManager.MAX_PARTICLES = maxi(30, int(OptimizationManager.MAX_PARTICLES * 0.5))
+	elif lite and avg > LITE_ABOVE:
+		lite = false
+		apply(get_tree())                          # Restores the level's particle cap
 
 
 ## AUTO-PAUSE: the window / browser tab loses focus or the phone app goes to the background in a
@@ -141,16 +174,16 @@ static func _apply_glow(root: Window) -> void:
 # HELPERS FOR EFFECTS / BACKGROUNDS
 # ============================================================
 static func fx_count(n: int) -> int:
-	return maxi(1, roundi(float(n) * _FX_MULT[level]))
+	return maxi(1, roundi(float(n) * _FX_MULT[level] * (0.5 if lite else 1.0)))
 
 
 static func trail_length(n: int) -> int:
-	return roundi(float(n) * _TRAIL_MULT[level])
+	return roundi(float(n) * _TRAIL_MULT[level] * (0.5 if lite else 1.0))
 
 
 ## Per-frame animated backgrounds: true on the frames they should redraw.
 static func bg_should_redraw() -> bool:
-	var every: int = _BG_EVERY[level]
+	var every: int = _BG_EVERY[level] + (1 if lite else 0)
 	return every <= 1 or Engine.get_process_frames() % every == 0
 
 
