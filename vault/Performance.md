@@ -124,3 +124,23 @@ Result (PC, REGULAR, uncapped):
 ## Open work
 
 Some projectiles are not pooled yet. They are in the [To-do list](Todo.md).
+
+## iPhone memory reloads FIXED (2026-11-19)
+User report: iPhone 13 50-60 FPS / iPhone 11 30-40 FPS on FAST; "the biggest problems are lags and THE MEMORY" (Safari reloads the tab).
+
+**Measured** with the real web build in headless Chrome emulating an iPhone 13 (844x390, DPR 3, iPhone UA, muted), the hidden `?soak=1` mode (`scripts/debug/WebSoak.gd`: plays menus, Versus, Story levels, the open worlds, Boss Rush by itself) and a CDP script (process memory + WebAssembly / AudioBuffer / object breakdown, audio-output level):
+
+| | before | after |
+|---|---|---|
+| page process | 637 -> 2005 MB in 6 min, climbing | 680-780 MB, flat (peak 856) over 8+ min |
+| decoded audio (AudioBuffers) | 44 -> 636 MB, climbing | 18 MB, flat |
+| JS heap after GC | climbing | 213 MB, flat after ~5 min |
+
+**Cause:** on the web, Godot plays sounds as browser "samples": every MUSIC change decoded the track into a ~20 MB stereo WebAudio buffer that was never freed (not even after unregistering).
+**Fixes:**
+- Web music players use `PLAYBACK_TYPE_STREAM` (decoded a bit at a time inside the engine; `SoundManager._make_music_player`). Web audio latency 50 -> 100 ms (`audio/driver/output_latency.web`) against crackles. Sound effects stay samples (fixed set, cached once).
+- Old music unregistered explicitly; achievement card pictures and Map Catalogue thumbnails freed when those screens close; web replays capped at 120 s.
+- Phones: `display/window/dpi/allow_hidpi.web_ios / .web_android = false` (canvas at normal resolution, ~2.8x fewer pixels than the shell's 1.66x cap) and phones draw straight at screen size (no fixed 1280x720 target).
+- Phones on FAST / POTATO: no 3D views (`Three.enabled`): no extra render targets, no shader-compile freezes.
+- Phones: automatic LITE mode (`GraphicsSettings._process`): FPS < 45 for 2.5 s -> half the sparks / particles, backgrounds redrawn less; back above 56.
+- Not yet confirmed on a real iPhone.
