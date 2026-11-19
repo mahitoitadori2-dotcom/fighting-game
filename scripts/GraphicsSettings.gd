@@ -95,7 +95,14 @@ static func apply(tree: SceneTree) -> void:
 	var root := tree.root
 	# Low presets render at the 1280x720 base size and upscale: on hi-DPI phones that is
 	# ~half the pixels to fill. Regular / Real render at full screen resolution.
-	root.content_scale_mode = Window.CONTENT_SCALE_MODE_VIEWPORT if level <= FAST else Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	# PHONES (web iOS / Android): the canvas is already at normal (not retina) resolution
+	# (project.godot: allow_hidpi.web_ios / .web_android = false), so draw straight at screen size -
+	# a fixed 1280x720 render target would be BIGGER than the phone's canvas (wasted GPU + memory).
+	var phone := OS.has_feature("web_ios") or OS.has_feature("web_android")
+	if phone:
+		root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	else:
+		root.content_scale_mode = Window.CONTENT_SCALE_MODE_VIEWPORT if level <= FAST else Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	# (2D MSAA and FXAA are not supported by the Compatibility renderer: REAL uses glow instead.)
 	_apply_glow(root)
 	Engine.max_fps = _MAX_FPS[level]

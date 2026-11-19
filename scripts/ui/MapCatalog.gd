@@ -136,6 +136,12 @@ static var _busy := false
 ## A still picture of the map. It fills in as soon as it is rendered (instantly if cached).
 ## big = the large preview: jumps the queue and is NOT kept after it closes (a big
 ## picture is ~3 MB; keeping one per map would pile up on phones).
+## MEMORY: thumbnails are freed when the Map Catalogue closes (they re-render next time).
+static func clear_shots() -> void:
+	_shots.clear()
+	_queue.clear()
+
+
 static func make_preview(e: Dictionary, size: Vector2i, big: bool = false) -> TextureRect:
 	var tex_rect := TextureRect.new()
 	tex_rect.custom_minimum_size = Vector2(size)

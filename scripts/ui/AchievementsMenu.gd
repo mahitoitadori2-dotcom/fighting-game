@@ -192,3 +192,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _go_back() -> void:
 	get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU)
+
+
+func _exit_tree() -> void:
+	AchievementCard.clear_cache()                       # Free the pictures (memory)

@@ -18,6 +18,13 @@ static var _queue: Array = []            # Cards waiting to be baked
 static var _baking := false
 
 
+## MEMORY: the baked pictures are only needed while the Achievements menu is open (AchievementsMenu
+## calls this when it closes). The toast draws live, it never needs them.
+static func clear_cache() -> void:
+	_cache.clear()
+	_queue.clear()
+
+
 func _ready() -> void:
 	clip_contents = true
 	set_process(animate)

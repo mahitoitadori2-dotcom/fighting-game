@@ -22,6 +22,8 @@ func track(f: Fighter, id: String) -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if OS.has_feature("web"):
+		max_seconds = 120.0                 # Phones: keep the in-memory recording small
 
 
 func _physics_process(delta: float) -> void:

@@ -267,6 +267,9 @@ func _release_music(p: AudioStreamPlayer) -> void:
 	for k in _cache.keys():
 		if _cache[k] == s:
 			_cache.erase(k)
+	# Don't trust the engine to drop the browser copy on its own: unregister the sample explicitly.
+	if OS.has_feature("web") and AudioServer.has_method("unregister_stream_as_sample"):
+		AudioServer.call("unregister_stream_as_sample", s)
 
 
 func current_music() -> String:
