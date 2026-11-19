@@ -99,6 +99,7 @@ punch={
 [physics]
 
 3d/physics_engine="Jolt Physics"
+common/max_physics_steps_per_frame.web=3.0
 
 [rendering]
 

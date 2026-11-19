@@ -47,6 +47,7 @@ var _phys := 0.0
 var _draws := 0.0
 var _prims := 0.0
 var _last_us := 0
+var _spikes: Array = []                 # [frame ms, proc ms, phys ms, draws] of slow frames
 
 
 func _process(_d: float) -> void:
@@ -54,7 +55,10 @@ func _process(_d: float) -> void:
 		return
 	var now := Time.get_ticks_usec()
 	if _last_us > 0:
-		_frames.append(float(now - _last_us) / 1000.0)
+		var ms := float(now - _last_us) / 1000.0
+		_frames.append(ms)
+		if ms > 50.0:
+			_spikes.append([ms, Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)])
 	_last_us = now
 	_proc += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
 	_phys += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
@@ -71,6 +75,7 @@ func _perf(path: String, secs: float, tag: String) -> void:
 	_draws = 0.0
 	_prims = 0.0
 	_last_us = 0
+	_spikes.clear()
 	_rec = true
 	await _w(secs)
 	_rec = false
@@ -87,6 +92,9 @@ func _perf(path: String, secs: float, tag: String) -> void:
 	print("PERF %-26s fps=%5.1f p95=%5.1fms max=%6.1fms >33ms=%3d >50ms=%3d proc=%5.2fms phys=%5.2fms draws=%6.0f prims=%7.0f nodes=%5d" % [tag,
 		1000.0 * float(n) / maxf(total, 1.0), sorted[int(n * 0.95)] if not sorted.is_empty() else 0.0, sorted[-1] if not sorted.is_empty() else 0.0,
 		over33, over50, _proc / n, _phys / n, _draws / n, _prims / n, Performance.get_monitor(Performance.OBJECT_NODE_COUNT)])
+	_spikes.sort_custom(func(a: Array, b: Array) -> bool: return a[0] > b[0])
+	for sp in _spikes.slice(0, 3):
+		print("PERF    spike %.0f ms: game code %.1f ms, physics %.1f ms, draws %d -> %s" % [sp[0], sp[1], sp[2], sp[3], "RENDER / browser" if sp[1] + sp[2] < sp[0] * 0.5 else "GAME CODE"])
 
 
 func _run_perf() -> void:

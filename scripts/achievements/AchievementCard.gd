@@ -58,7 +58,7 @@ static func _bake_queue(tree: SceneTree) -> void:
 	while not _queue.is_empty():
 		# Up to 12 cards per frame: each gets a hidden viewport, all are read back after one frame
 		var batch: Array = []
-		while not _queue.is_empty() and batch.size() < 12:
+		while not _queue.is_empty() and batch.size() < 6:
 			var card: AchievementCard = _queue.pop_front()
 			if card == null or not is_instance_valid(card) or not card.is_inside_tree():
 				continue
