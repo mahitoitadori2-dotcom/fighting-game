@@ -286,6 +286,14 @@ func _current_music() -> AudioStreamPlayer:
 func _make_music_player() -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
 	p.bus = "Music"
+	# WEB: MUSIC STREAMS (2026-11-19). As a browser "sample", every track was decoded into a stereo
+	# full-rate WebAudio buffer (~20 MB per track) that the engine never freed, even after
+	# unregistering: each music change added ~20 MB until iPhones killed and RELOADED the tab
+	# (measured: 44 MB -> 636 MB of audio buffers in 6 minutes). Streamed music is decoded a little at
+	# a time inside the engine's own memory instead - nothing piles up. Sound effects stay samples
+	# (a fixed set, cached once).
+	if OS.has_feature("web"):
+		p.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 	add_child(p)
 	return p
 
