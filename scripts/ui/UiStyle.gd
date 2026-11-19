@@ -32,7 +32,7 @@ static func box(bg: Color, border: Color = INK, border_w: int = 4, radius: int =
 ## in the tree then (a screen can be left before that: "Condition !is_inside_tree()" errors).
 static func focus_later(c: Control) -> void:
 	# A WEAK reference: if the screen closes before next frame, no "Lambda capture was freed" error
-	var w := weakref(c)
+	var w: WeakRef = weakref(c)
 	(func() -> void:
 		var ctl := w.get_ref() as Control
 		if ctl != null and ctl.is_inside_tree():
