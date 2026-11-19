@@ -9,6 +9,7 @@ var frames: Array = []
 var recording := true
 var max_seconds := 600.0
 var _acc := 0.0
+var _step := 1.0 / Replay.HZ
 var _prev: Array[Dictionary] = []
 
 
@@ -24,15 +25,16 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	if OS.has_feature("web"):
 		max_seconds = 120.0                 # Phones: keep the in-memory recording small
+		_step = 1.0 / 20.0                  # ...and record 20x per second instead of 30 (cheaper)
 
 
 func _physics_process(delta: float) -> void:
 	if not recording:
 		return
 	_acc += delta
-	if _acc < 1.0 / Replay.HZ:
+	if _acc < _step:
 		return
-	_acc -= 1.0 / Replay.HZ
+	_acc -= _step
 	var frame := {}
 	for i in fighters.size():
 		var f := fighters[i]
@@ -58,4 +60,4 @@ func stop() -> void:
 
 
 func result() -> Dictionary:
-	return {"version": Replay.VERSION, "hz": Replay.HZ, "arena": ArenaManager.selected_arena, "ids": ids.duplicate(), "frames": frames}
+	return {"version": Replay.VERSION, "hz": 1.0 / _step, "arena": ArenaManager.selected_arena, "ids": ids.duplicate(), "frames": frames}

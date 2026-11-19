@@ -52,6 +52,19 @@ var _layers := {}                        # kind -> Layer
 var _static_kinds := ["sky", "hex", "city", "rocks", "dim"]
 var _last_size := Vector2.ZERO
 var _last_level := -1
+## PHONES / draw calls (2026-11-19): each static layer is RECORDED once into one vertex-coloured mesh
+## (MeshCanvas). Replaying hundreds of rects / polygons / outlines cost ~800 draw calls per frame in
+## Versus and the menus (measured on iPhone emulation); one mesh per layer costs 1.
+var _meshes := {}                        # kind -> ArrayMesh
+
+
+func static_mesh(kind: String) -> ArrayMesh:
+	if not _meshes.has(kind):
+		var mc := MeshCanvas.new()
+		mc.view_size = get_viewport().get_visible_rect().size
+		paint_layer(mc, kind)
+		_meshes[kind] = mc.build()
+	return _meshes[kind]
 
 
 class Layer extends Node2D:
@@ -59,7 +72,12 @@ class Layer extends Node2D:
 	var kind := ""
 
 	func _draw() -> void:
-		bg.paint_layer(self, kind)
+		if kind in bg._static_kinds:
+			var m := bg.static_mesh(kind)              # Static layer: ONE baked mesh = one draw call
+			if m != null:
+				draw_mesh(m, null)
+		else:
+			bg.paint_layer(self, kind)
 
 
 func _ready() -> void:
@@ -100,6 +118,7 @@ func _process(delta: float) -> void:
 	if size != _last_size or GraphicsSettings.level != _last_level:
 		_last_size = size
 		_last_level = GraphicsSettings.level
+		_meshes.clear()                              # Re-bake at the new size / level
 		for k in _static_kinds:
 			(_layers[k] as Node2D).queue_redraw()
 	(_layers["sky"] as Node2D).position.y = -dy * 0.03
@@ -177,7 +196,7 @@ func _make_cloud(rng: RandomNumberGenerator, x: float, y_frac: float, s: float) 
 # ============================================================
 ## One layer. Static layers are drawn in their own space: x from 0 to `span` (whole periods), the
 ## horizon as if the camera were at y = 300; _process slides them.
-func paint_layer(c: CanvasItem, kind: String) -> void:
+func paint_layer(c, kind: String) -> void:
 	var size := get_viewport().get_visible_rect().size
 	var w := size.x
 	var h := size.y
@@ -263,7 +282,7 @@ func _starts(shift: float, period: float, w: float) -> Array[float]:
 	return out
 
 
-func _grad(c: CanvasItem, y0: float, y1: float, w: float, a: Color, b: Color) -> void:
+func _grad(c, y0: float, y1: float, w: float, a: Color, b: Color) -> void:
 	if y1 <= y0:
 		return
 	c.draw_polygon(
@@ -271,14 +290,14 @@ func _grad(c: CanvasItem, y0: float, y1: float, w: float, a: Color, b: Color) ->
 		PackedColorArray([a, a, b, b]))
 
 
-func _mist(c: CanvasItem, y: float, h: float, w: float, strength: float) -> void:
+func _mist(c, y: float, h: float, w: float, strength: float) -> void:
 	var clear := Color(MIST.r, MIST.g, MIST.b, 0.0)
 	var thick := Color(MIST.r, MIST.g, MIST.b, strength)
 	_grad(c, y, y + 60.0, w, clear, thick)
 	_grad(c, y + 60.0, h + 2.0, w, thick, Color(VALLEY_BOTTOM.r, VALLEY_BOTTOM.g, VALLEY_BOTTOM.b, strength))
 
 
-func _draw_sun(c: CanvasItem, p: Vector2) -> void:
+func _draw_sun(c, p: Vector2) -> void:
 	c.draw_circle(p, 120.0, Color(1.0, 0.95, 0.75, 0.12))
 	c.draw_circle(p, 82.0, Color(1.0, 0.93, 0.70, 0.22))
 	c.draw_circle(p, 50.0, Color(0.95, 0.62, 0.28))
@@ -286,7 +305,7 @@ func _draw_sun(c: CanvasItem, p: Vector2) -> void:
 	c.draw_circle(p + Vector2(-14, -14), 14.0, Color(1.0, 0.98, 0.85))
 
 
-func _draw_clouds(c: CanvasItem, clouds: Array[Dictionary], shift: float, w: float, h: float, alpha: float) -> void:
+func _draw_clouds(c, clouds: Array[Dictionary], shift: float, w: float, h: float, alpha: float) -> void:
 	for start in _starts(shift, CLOUD_PERIOD, w):
 		for cl in clouds:
 			var base := Vector2(start + float(cl["x"]), h * float(cl["y"]) + 60.0)
@@ -311,13 +330,13 @@ static func _hex(center: Vector2, r: float, rot: float = 0.0) -> PackedVector2Ar
 	return pts
 
 
-func _closed(c: CanvasItem, pts: PackedVector2Array, col: Color, w: float) -> void:
+func _closed(c, pts: PackedVector2Array, col: Color, w: float) -> void:
 	var closed := pts.duplicate()
 	closed.append(pts[0])
 	c.draw_polyline(closed, col, w, FighterArt.AA)
 
 
-func _draw_hex_tower(c: CanvasItem, base: Vector2, tw: Dictionary, h: float) -> void:
+func _draw_hex_tower(c, base: Vector2, tw: Dictionary, h: float) -> void:
 	if _cull and (base.x < -300.0 or base.x > c.get_viewport_rect().size.x + 300.0):
 		return
 	var w: float = tw["w"]
@@ -350,7 +369,7 @@ func _draw_hex_tower(c: CanvasItem, base: Vector2, tw: Dictionary, h: float) -> 
 
 
 ## The Hexagon emblem floating above the HQ tower, slowly rotating (the "hex_fx" layer, every frame).
-func _draw_hex_emblem(c: CanvasItem, base: Vector2, tw: Dictionary) -> void:
+func _draw_hex_emblem(c, base: Vector2, tw: Dictionary) -> void:
 	var w: float = tw["w"]
 	var top := base.y - float(tw["h"])
 	var cap_h := w * 0.45
@@ -366,7 +385,7 @@ func _draw_hex_emblem(c: CanvasItem, base: Vector2, tw: Dictionary) -> void:
 	_closed(c, core, HEX_LINE, 3.0)
 
 
-func _draw_building(c: CanvasItem, base: Vector2, b: Dictionary, h: float) -> void:
+func _draw_building(c, base: Vector2, b: Dictionary, h: float) -> void:
 	var w: float = b["w"]
 	if _cull and (base.x + w < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0):
 		return
@@ -412,7 +431,7 @@ static func _min_y(pts: PackedVector2Array) -> float:
 	return m
 
 
-func _draw_rock(c: CanvasItem, base: Vector2, pts: PackedVector2Array, h: float) -> void:
+func _draw_rock(c, base: Vector2, pts: PackedVector2Array, h: float) -> void:
 	var last: Vector2 = pts[pts.size() - 1]
 	if _cull and (base.x + last.x < -40.0 or base.x > c.get_viewport_rect().size.x + 40.0):
 		return

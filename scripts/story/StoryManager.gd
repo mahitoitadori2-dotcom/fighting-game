@@ -1307,6 +1307,7 @@ func _rush_next() -> void:
 	if _rush_rec != null:
 		_rush_rec.stop()
 		BossRush.run_tracks.append(_rush_rec.frames)
+		BossRush.run_hz = 1.0 / _rush_rec._step
 	var nxt := BossRush.boss_beaten(stats_time, player.hp, player.data.max_hp, flasks, stats_damage)
 	if nxt == 0:
 		_show_banner("BOSS RUSH COMPLETE!", "%d BOSSES     TIME %s" % [BossRush.order.size(), time_text(BossRush.total_time)], Color(1.0, 0.85, 0.35))

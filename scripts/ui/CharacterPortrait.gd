@@ -15,6 +15,13 @@ var portrait_h := 0.0
 var animate := true
 
 var _t := 0.0
+## STILL portraits are BAKED into a picture once (one draw call instead of hundreds of shapes
+## replayed every frame - Character Select had ~1800 draw calls on phones). Animating = live.
+var bake := true
+var _baked: Texture2D = null
+var _baking := false
+static var _queue: Array = []
+static var _pumping := false
 
 
 func _ready() -> void:
@@ -31,12 +38,72 @@ func set_animate(on: bool) -> void:
 	queue_redraw()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_baked = null                                # Re-bake at the new size
+
+
+## Queue this portrait for baking (a few per frame, so opening a screen doesn't stall).
+func _request_bake() -> void:
+	if _baking or size.x < 4.0 or size.y < 4.0:
+		return
+	_baking = true
+	_queue.append(self)
+	if not _pumping:
+		_pumping = true
+		_pump.call_deferred(get_tree())
+
+
+static func _pump(tree: SceneTree) -> void:
+	while not _queue.is_empty():
+		var batch: Array = []
+		while not _queue.is_empty() and batch.size() < 6:
+			var p: CharacterPortrait = _queue.pop_front()
+			if p == null or not is_instance_valid(p) or not p.is_inside_tree():
+				continue
+			var vp := SubViewport.new()
+			vp.size = Vector2i(int(p.size.x), int(p.size.y))
+			vp.transparent_bg = true
+			vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+			var painter := CharacterPortrait.new()
+			painter.art = p.art
+			painter.accent = p.accent
+			painter.art_scale = p.art_scale
+			painter.portrait_h = p.portrait_h
+			painter.animate = false
+			painter.bake = false
+			painter.size = p.size
+			vp.add_child(painter)
+			p.add_child(vp)
+			batch.append([p, vp])
+		if batch.is_empty():
+			break
+		await RenderingServer.frame_post_draw
+		for b in batch:
+			var p2: CharacterPortrait = b[0]
+			var vp2: SubViewport = b[1]
+			if is_instance_valid(p2) and is_instance_valid(vp2):
+				p2._baked = ImageTexture.create_from_image(vp2.get_texture().get_image())
+				p2._baking = false
+				p2.queue_redraw()
+			if is_instance_valid(vp2):
+				vp2.queue_free()
+		if tree == null or not is_instance_valid(tree.root):
+			break
+	_pumping = false
+
+
 func _process(delta: float) -> void:
 	_t += delta
 	queue_redraw()
 
 
 func _draw() -> void:
+	if bake and not animate:
+		if _baked != null:
+			draw_texture(_baked, Vector2.ZERO)
+			return
+		_request_bake()                              # Live this frame, baked from the next ones
 	var center := Vector2(size.x * 0.5, size.y * 0.5)
 	var r := minf(size.x, size.y) * 0.42
 

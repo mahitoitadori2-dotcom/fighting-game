@@ -8,6 +8,7 @@ const GHOST_FILE := "user://bossrush_ghost_%s.ubr"
 var puppet: Fighter
 var frames: Array = []
 var _i := 0
+var _hz := Replay.HZ
 var _acc := 0.0
 
 
@@ -42,6 +43,7 @@ static func spawn_for(manager: Node, hero: String, boss_index: int, order: Array
 	var gr := GhostRunner.new()
 	gr.puppet = f
 	gr.frames = tracks[boss_index]
+	gr._hz = float(d.get("hz", Replay.HZ))
 	manager.add_child(gr)
 	return gr
 
@@ -56,8 +58,8 @@ func _physics_process(delta: float) -> void:
 			puppet.visible = false                    # Your best run had already won this fight
 		return
 	_acc += delta
-	while _acc >= 1.0 / Replay.HZ and _i < frames.size():
-		_acc -= 1.0 / Replay.HZ
+	while _acc >= 1.0 / _hz and _i < frames.size():
+		_acc -= 1.0 / _hz
 		var fr: Dictionary = frames[_i]
 		if fr.has(0):
 			Replay.apply(puppet, fr[0])
@@ -70,5 +72,5 @@ static func save_best(hero: String, order: Array[int], tracks: Array) -> void:
 	var f := FileAccess.open_compressed(GHOST_FILE % hero, FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
 	if f == null:
 		return
-	f.store_var({"version": Replay.VERSION, "levels": Array(order), "tracks": tracks})
+	f.store_var({"version": Replay.VERSION, "levels": Array(order), "tracks": tracks, "hz": BossRush.run_hz})
 	f.close()

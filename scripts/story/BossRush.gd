@@ -25,6 +25,7 @@ static var hp_carry := -1
 static var damage_taken := 0
 static var last_result := {}            # Shown by the menu after a run
 static var _story_level := -1
+static var run_hz := 30.0                  # Snapshots per second of run_tracks
 static var run_tracks: Array = []       # One recorded fight per boss (the ghost of a new best run)            # Story's own current level, restored after the run
 
 

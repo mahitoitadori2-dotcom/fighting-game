@@ -17,16 +17,37 @@ static var last: Dictionary = {}          # The fight that just ended (Watch Rep
 static var pending: Dictionary = {}       # ArenaManager plays this instead of a match
 
 
-## Every simple script variable of a fighter + its transform / visuals (the snapshot).
-static func capture(f: Fighter) -> Dictionary:
-	var out := {}
+## Per-script list of the recordable variables: worked out ONCE (get_property_list() + the
+## plain-value check every snapshot cost ~10 ms of physics time per frame on phones).
+static var _names := {}              # Script -> [[name, is_container], ...]
+
+
+static func _recordable(f: Fighter) -> Array:
+	var sc: Script = f.get_script()
+	if _names.has(sc):
+		return _names[sc]
+	var list: Array = []
 	for p in f.get_property_list():
 		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
 			continue
 		var n := String(p["name"])
 		var v: Variant = f.get(n)
 		if _plain(v, 0):
-			out[n] = v.duplicate(true) if (v is Dictionary or v is Array) else v
+			list.append([n, v is Dictionary or v is Array])
+	_names[sc] = list
+	return list
+
+
+## Every simple script variable of a fighter + its transform / visuals (the snapshot).
+static func capture(f: Fighter) -> Dictionary:
+	var out := {}
+	for e in _recordable(f):
+		var v: Variant = f.get(e[0])
+		if e[1]:
+			if (v is Dictionary or v is Array) and _plain(v, 1):
+				out[e[0]] = v.duplicate(true)
+		else:
+			out[e[0]] = v
 	out["@pos"] = f.global_position
 	out["@vel"] = f.velocity
 	out["@vis"] = f.visible
