@@ -61,7 +61,8 @@ static func on_hit(hit: HitData, victim: Fighter) -> void:
 	hitstop(victim, HITSTOP[s])
 	shake(victim, SHAKE[s])
 	if hit.source != null and is_instance_valid(hit.source) and hit.source.visuals != null:
-		hit.source._flash(Color(6, 6, 6), 0.07)          # Impact frame: attacker flashes white
+		if not QoL.reduce_flashes:
+			hit.source._flash(Color(6, 6, 6), 0.07)      # Impact frame: attacker flashes white
 
 
 ## Called by CombatManager when a hit is blocked.

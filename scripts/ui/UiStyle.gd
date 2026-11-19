@@ -31,9 +31,12 @@ static func box(bg: Color, border: Color = INK, border_w: int = 4, radius: int =
 ## Give a control the keyboard / pad focus on the next frame - only if it still exists and is
 ## in the tree then (a screen can be left before that: "Condition !is_inside_tree()" errors).
 static func focus_later(c: Control) -> void:
+	# A WEAK reference: if the screen closes before next frame, no "Lambda capture was freed" error
+	var w := weakref(c)
 	(func() -> void:
-		if is_instance_valid(c) and c.is_inside_tree():
-			c.grab_focus()).call_deferred()
+		var ctl := w.get_ref() as Control
+		if ctl != null and ctl.is_inside_tree():
+			ctl.grab_focus()).call_deferred()
 
 
 static func make_button(text: String, min_size: Vector2 = Vector2(340, 62), font_size: int = 26) -> Button:

@@ -31,6 +31,7 @@ func _ready() -> void:
 	if not Replay.pending.is_empty():
 		_play_replay()                        # WATCH REPLAY: puppets instead of a match
 		return
+	QoL.save_picks()
 	p1 = _spawn(CharacterRoster.selected(), 1, p1_spawn)
 	p2 = _spawn(CharacterRoster.opponent(), 2, p2_spawn)
 	# REPLAYS: every fight is recorded (watch / save it from the winner screen)

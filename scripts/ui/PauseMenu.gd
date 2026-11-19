@@ -119,6 +119,10 @@ func _build() -> void:
 	_ctl_box.add_theme_constant_override("separation", 4)
 	_ctl_box.visible = false
 	stack.add_child(_ctl_box)
+	_moves_box = VBoxContainer.new()
+	_moves_box.add_theme_constant_override("separation", 6)
+	_moves_box.visible = false
+	stack.add_child(_moves_box)
 	box.add_child(UiStyle.label("PAUSED", 40, Color(1.0, 0.86, 0.5), 10))
 	var where := _where_text()
 	if where != "":
@@ -142,10 +146,68 @@ func _build() -> void:
 	ctl.pressed.connect(_show_controls.bind(true))
 	row.add_child(ctl)
 	_refresh_gfx()
+	var mv := UiStyle.make_button("MOVES", Vector2(380, 46), 18)
+	mv.pressed.connect(_show_moves.bind(true))
+	box.add_child(mv)
 	_quit_btn = UiStyle.make_button(_quit_text(), Vector2(380, 54), 20)
 	_quit_btn.pressed.connect(_on_quit)
 	box.add_child(_quit_btn)
 	_build_controls()
+	_build_moves()
+
+
+# ----- MOVES: your character's move list (keys + what each move does) -----
+var _moves_box: VBoxContainer
+var _moves_back: Button
+
+
+func _my_entry() -> Dictionary:
+	var sm := get_tree().get_first_node_in_group("story_manager")
+	if sm != null and String(sm.get("hero")) != "":
+		return CharacterRoster.get_entry(String(sm.get("hero")))
+	if STORY_SCENES.has(get_tree().current_scene.scene_file_path):
+		return CharacterRoster.get_entry(StoryLevels.hero_of(StoryProgress.current_level))
+	return CharacterRoster.selected()
+
+
+func _build_moves() -> void:
+	var e := _my_entry()
+	_moves_box.add_child(UiStyle.label("MOVES  -  %s" % String(e.get("name", "?")).to_upper(), 26, Color(1.0, 0.86, 0.5), 8))
+	if STORY_SCENES.has(get_tree().current_scene.scene_file_path):
+		_moves_box.add_child(UiStyle.label("(Versus numbers - Story makes your hero a little stronger)", 13, Color(0.8, 0.78, 0.72), 3))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(430, 330)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_moves_box.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 6)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	for m in e.get("moves", []):
+		var top := HBoxContainer.new()
+		var nl := UiStyle.label(String(m.get("name", "")), 17, Color(0.95, 0.93, 0.88), 4)
+		nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		nl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		top.add_child(nl)
+		var key := String(m.get("key", ""))
+		if key != "" and key != "!":
+			top.add_child(UiStyle.label("[%s]" % key, 15, Color(1.0, 0.8, 0.4), 4))
+		list.add_child(top)
+		var info := UiStyle.label(String(m.get("info", "")), 13, Color(0.78, 0.76, 0.7), 3)
+		info.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info.custom_minimum_size = Vector2(410, 0)
+		list.add_child(info)
+	_moves_back = UiStyle.make_button("< BACK", Vector2(184, 44), 15)
+	_moves_back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_moves_back.pressed.connect(_show_moves.bind(false))
+	_moves_box.add_child(_moves_back)
+
+
+func _show_moves(on: bool) -> void:
+	_main_box.visible = not on
+	_moves_box.visible = on
+	UiStyle.focus_later(_moves_back if on else _resume_btn)
 
 
 # ----- GRAPHICS -----

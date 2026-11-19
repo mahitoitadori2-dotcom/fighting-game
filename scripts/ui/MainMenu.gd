@@ -19,6 +19,7 @@ var _title_y := 0.0
 func _ready() -> void:
 	SoundManager.play_music("menu")              # Keeps playing if it already is
 	BossRush.cancel()                             # Left a Boss Rush through the pause menu
+	QoL.save_picks()                              # Your fighter / opponent / arena come back next time
 	_build()
 	UiStyle.focus_later(_play)
 

@@ -54,10 +54,23 @@ func _ready() -> void:
 	load_settings()
 	apply(get_tree())
 	CombatManager.register_inputs()                 # All controls (+ the player's saved keys) from the very start
+	QoL.load_settings()                             # Quality of life: shake / flashes / text speed / your last picks
+	if not OS.has_feature("web"):
+		QoL.apply_fullscreen()                      # (A web page can only go fullscreen after a tap)
 	if WebSoak.wanted():                            # Hidden web memory test (?soak=1 in the address)
 		var soak := WebSoak.new()
 		soak.name = "WebSoak"
 		get_tree().root.add_child.call_deferred(soak)
+
+
+## F11 / Alt+Enter: fullscreen on / off (desktop; in a browser F11 is the browser's own fullscreen).
+func _input(event: InputEvent) -> void:
+	var k := event as InputEventKey
+	if k == null or not k.pressed or k.echo or OS.has_feature("web"):
+		return
+	if k.physical_keycode == KEY_F11 or (k.physical_keycode == KEY_ENTER and k.alt_pressed):
+		get_viewport().set_input_as_handled()
+		QoL.set_fullscreen(DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 ## Esc / controller Start in ANY fight scene opens the PAUSE MENU. Lives here (an autoload that runs

@@ -737,7 +737,7 @@ func _run(delta: float) -> void:
 # ============================================================
 func _draw() -> void:
 	var vs := get_viewport_rect().size
-	var shake := Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake
+	var shake := Vector2(randf_range(-1, 1), randf_range(-1, 1)) * _shake * QoL.shake_mult()
 	var cam := _cam + shake
 	var sky: Array = _cfg["sky"]
 	var rock: Color = _cfg["rock"]

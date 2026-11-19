@@ -25,7 +25,7 @@ func _ready() -> void:
 
 ## Screen shake (Effects.shake). Strength in px; strongest request wins, then decays.
 func add_shake(strength: float) -> void:
-	_shake = maxf(_shake, strength)
+	_shake = maxf(_shake, strength * QoL.shake_mult())      # SETTINGS > Screen Shake (full / reduced / off)
 
 
 func _update_shake(delta: float) -> void:

@@ -14,6 +14,8 @@ extends CanvasLayer
 ## is in `box.choice` (index) once `finished` fires. Put a choice on the LAST line of a box.
 ##
 ## Controls: ATTACK / JUMP / ENTER / click / tap = finish the line, then next line.
+## HOLD it (0.8 s) = SKIP to the next choice or to the end (a choice is never skipped).
+## Typing speed: SETTINGS > Dialogue Speed (QoL.text_speed: normal / fast / instant).
 ## (2026-11-15: the look was upgraded - vignette, pedestals + speaker light, gradient box,
 ## ornate corners with gems, a light sweeping over the gold, a sliding entrance.)
 
@@ -49,6 +51,10 @@ var _shade: Control
 var _slots: Array[Control] = []
 var _players: Array[AudioStreamPlayer] = []
 var _player_i := 0
+const HOLD_SKIP := 0.8
+var _hold := 0.0
+var _touch_down := false
+var _skip_lbl: Label
 
 
 static func play(host: Node, p_lines: Array) -> DialogueBox:
@@ -84,6 +90,11 @@ func _ready() -> void:
 	_text.add_theme_constant_override("line_spacing", 6)
 	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_text)
+	_skip_lbl = Label.new()
+	_skip_lbl.add_theme_font_size_override("font_size", 15)
+	_skip_lbl.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7, 0.75))
+	_skip_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_skip_lbl)
 	for k in 3:
 		var p := AudioStreamPlayer.new()
 		p.bus = "SFX"
@@ -129,10 +140,10 @@ func _process(delta: float) -> void:
 		var full := String(lines[_i][1])
 		if _shown < float(full.length()):
 			if _wait > 0.0:
-				_wait -= delta
+				_wait -= delta * QoL.text_mult()
 			else:
 				var before := int(_shown)
-				_shown = minf(_shown + CPS * delta, float(full.length()))
+				_shown = minf(_shown + CPS * QoL.text_mult() * delta, float(full.length()))
 				for c in range(before, int(_shown)):
 					_on_letter(full, c)
 			_text.visible_characters = int(_shown)
@@ -144,6 +155,7 @@ func _process(delta: float) -> void:
 				_advance()                                  # Tests: never stop for dialogue
 	_paint.queue_redraw()
 	_shade.queue_redraw()
+	_update_hold_skip(delta, r)
 	var who := String(lines[_i][0]) if _i >= 0 and _i < lines.size() else ""
 	for side in 2:
 		var on: bool = _slot_speaker[side] == who
@@ -218,6 +230,9 @@ func _on_letter(full: String, c: int) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	var tch := event as InputEventScreenTouch
+	if tch != null:
+		_touch_down = tch.pressed                   # For HOLD TO SKIP on phones
 	if PauseMenu.is_open:
 		return                                      # The pause menu's buttons get the clicks
 	var opts := _options()
@@ -275,6 +290,37 @@ func _choice_input(event: InputEvent, opts: Array) -> void:
 	if event.is_action_pressed("punch") or event.is_action_pressed("jump") or event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled()
 		_pick()
+
+
+## HOLD the confirm button / mouse / finger for HOLD_SKIP seconds: skip to the next choice or the end.
+func _update_hold_skip(delta: float, r: Rect2) -> void:
+	_skip_lbl.position = r.position + Vector2(r.size.x - 260.0, r.size.y - 30.0)
+	_skip_lbl.size = Vector2(240, 22)
+	_skip_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_skip_lbl.modulate.a = _fade
+	var at_choice := not _options().is_empty() and _typed()
+	var held := Input.is_action_pressed("punch") or Input.is_action_pressed("jump") or Input.is_action_pressed("ui_accept") \
+		or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or _touch_down
+	if not held or at_choice or PauseMenu.is_open or StoryManager.autoplay:
+		_hold = 0.0
+		_skip_lbl.text = "" if at_choice else "Hold to skip"
+		return
+	_hold += delta
+	var k := clampf(_hold / HOLD_SKIP, 0.0, 1.0)
+	var bars := int(k * 10.0)
+	_skip_lbl.text = "SKIPPING  " + "|".repeat(bars) + ".".repeat(10 - bars)
+	if _hold >= HOLD_SKIP:
+		_hold = 0.0
+		_skip_to_choice()
+
+
+func _skip_to_choice() -> void:
+	while _i >= 0 and _i < lines.size():
+		if not _options().is_empty():
+			_shown = float(String(lines[_i][1]).length())    # Show the question; you still pick
+			_text.visible_characters = -1
+			return
+		_next()
 
 
 func _pick() -> void:

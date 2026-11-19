@@ -52,6 +52,7 @@ var _painter: Control
 var _t := 0.0
 var _len := 4.0
 var _done := false
+var _hint: Label
 
 
 func _ready() -> void:
@@ -65,6 +66,21 @@ func _ready() -> void:
 	_painter.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_painter)
 	_painter.draw.connect(_paint)
+	_hint = Label.new()                             # Tells you cutscenes can be skipped
+	_hint.text = "Press any button to skip"
+	_hint.add_theme_font_size_override("font_size", 16)
+	_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
+	_hint.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	_hint.add_theme_constant_override("outline_size", 5)
+	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_hint.offset_left = -280
+	_hint.offset_top = -40
+	_hint.offset_right = -18
+	_hint.offset_bottom = -12
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_hint.modulate.a = 0.0
+	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_hint)
 	if level <= 0:
 		level = StoryProgress.current_level
 	_build_3d()
@@ -121,6 +137,8 @@ func _process(delta: float) -> void:
 	_last_t = _t
 	_t += delta
 	_painter.queue_redraw()
+	if _hint:
+		_hint.modulate.a = clampf((_t - 0.6) * 2.0, 0.0, 1.0) * clampf((_len - _t) * 2.0, 0.0, 1.0)
 	if _stage != null:
 		_stage.update(_t * float(DURATION.get(kind, _len)) / _len)     # Story time drives the 3D scene
 	# One-shot sounds along the way

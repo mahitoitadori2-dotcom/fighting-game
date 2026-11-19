@@ -263,3 +263,12 @@ All checked by headless CPU tests (no game window); not played by a human yet.
 - Warrior: 120 HP in Versus (Story keeps 100). Architect: 130 HP, Rocket 4 s, HNCT 7.5 s in Versus (Story keeps 100 HP, 4.5 s, 8.5 s). Their CPUs go for enemy minions within 340 px.
 - Technician: 125 HP, turret bolts 5 dmg every 0.7 s for 7 s, hook 8, coil 11 dmg / 8 s, Breaker 34.
 - Results vs the Nightmare Lord, Enlightened One, Mimic, Anti Architect (CPU vs CPU, both sides): **Warrior 6/8** (was 1/8 before any buff), **Architect 2-3/8** (was 0/8), **Technician 4/12** incl. the two heroes (was 0/8). All three still lose EVERY match to the Enlightened One (Helpers: ~14 dmg/s for 10 s, ~65 dmg per match) and nearly every one to the Anti Architect (Workflies + Anti Laser on 2.6 / 5.5 s). More buffs stopped helping: a small Helpers / Anti nerf is the open question for the user.
+## Quality of Life update (2026-11-19, v0.3.4)
+All platforms (Windows / macOS / Linux / web / phones). Checked by headless tests; not played by a human yet.
+- **Remembered picks:** your fighter, opponent and arena are saved (`user://qol.cfg`, `QoL.gd`) on the Main Menu and at the start of every Versus fight, and come back next launch. CPU test runs never overwrite them.
+- **SETTINGS > COMFORT:** Screen Shake FULL / REDUCED / OFF (scales `ArenaCamera.add_shake` + the slide levels' shake), Reduce Flashes (no white impact flash), Dialogue Speed NORMAL / FAST / INSTANT, Fullscreen (not on iPhone, where Safari can't).
+- **Fullscreen keys:** F11 / Alt+Enter on desktop (saved; the browser keeps its own F11).
+- **Dialogue:** HOLD the confirm button / mouse / finger 0.8 s = skip to the next choice or the end (a "SKIPPING ||||" bar fills; a choice is never skipped or auto-picked). "Hold to skip" hint in the box.
+- **Cutscenes:** a "Press any button to skip" hint (skipping already worked, nobody knew).
+- **Pause menu > MOVES:** your character's move list with keys (Versus: your pick; Story: your hero, with a note that Story buffs it).
+- `UiStyle.focus_later` holds a weak reference (no "Lambda capture was freed" errors when a screen closes fast).
