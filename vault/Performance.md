@@ -144,3 +144,12 @@ User report: iPhone 13 50-60 FPS / iPhone 11 30-40 FPS on FAST; "the biggest pro
 - Phones on FAST / POTATO: no 3D views (`Three.enabled`): no extra render targets, no shader-compile freezes.
 - Phones: automatic LITE mode (`GraphicsSettings._process`): FPS < 45 for 2.5 s -> half the sparks / particles, backgrounds redrawn less; back above 56.
 - Not yet confirmed on a real iPhone.
+## 2026-11-20 - /nolags quick pass
+- Measured (iPhone 13 web emulation, ?soak=perf): biggest per-frame game-code cost was the Achievements screen
+  (50 ms "proc" while cards bake). Versus physics: the fighters' own scripts are only ~0.13 ms/frame (AI, actions,
+  movement, move_and_slide all tiny) - the 9-14 ms "phys" on web is engine stepping, no script hotspot.
+- Fix: AchievementCard and CharacterPortrait now bake a whole batch (12 / 8) on ONE hidden viewport with ONE
+  get_image() readback, then cut it into pieces (before: one viewport + readback per card). Cells clip_contents.
+- Achievements: proc 50.2 -> 39.3 ms, draws 208 -> 162. Its big frame spikes (~120 ms) are still there and are
+  browser/render time - not fixed. Other screens: unchanged within noise.
+- Checked: compile 0/290 failed; Character Select + Achievements render correctly (headless Chrome screenshot).

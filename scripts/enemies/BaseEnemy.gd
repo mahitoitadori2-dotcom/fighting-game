@@ -43,6 +43,7 @@ var damage_mult := 1.0                   # Story modifiers (Colosseum 4: The Shi
 ## STORY BOSS BUFF (StoryManager.buff_boss): tougher WITHOUT hitting harder. Separate from
 ## cooldown_mult / phase_speed_mult so phase 2, rage and transforms never reset it.
 var boss_hp_mult := 1.0                  # Applied to max HP (also to later forms)
+var rage_word := "ENRAGED"               # Phase 2 label (The XX0XN: "ENGAGED")
 var boss_cd_mult := 1.0                  # Attack cooldowns x this (< 1 = attacks more often)
 var boss_speed_mult := 1.0               # Move speed x this
 ## STANCE (Story bosses only, set in StoryManager.buff_boss): every hit you land fills a hidden
@@ -84,6 +85,9 @@ func _ready() -> void:
 	add_child(hud)
 	if StoryManager.active:
 		StoryDifficulty.apply_enemy(self)                # Story EASY / NORMAL / HARD (HP + damage)
+		if Madness.active() and pixel_group != null:
+			pixel_group.modulate = Madness.TINT          # MADNESS: every enemy in black and red
+			damaged.connect(func(amount: int, _hit: HitData) -> void: MadnessFX.bleed(self, amount))
 
 
 # ----- Override in each enemy -----
@@ -382,6 +386,8 @@ func _poise_tick(delta: float) -> void:
 
 
 func boss_title() -> String:
+	if Madness.active():                            # MADNESS: no names, only health
+		return rage_word if enraged else ""
 	return enemy_name.to_upper() + ("   -   PHASE 2" if enraged else "")
 
 

@@ -716,4 +716,82 @@ PIECES.boss_storm_hand = { bpm: 128, meter: 4,
     { t: 'hit', inst: 'bells', key: 52, from: 0, to: 16, beats: [0], every: 2, vel: 76, dur: 3 },
   ] };
 
+// ---------------- THE ABANDONED TOWN: 500 years behind a wooden wall (2026-11-21) ----------------
+// G major 3/4, a small-town folk waltz: nylon guitar, a flute tune, then a violin - warm, a little lonely.
+// A bell on every 4th bar: the morning prayer to the Sun.
+PIECES.story_abandoned_town = { bpm: 84, meter: 3, rev: 0.35,
+  chords: 'G Em C D G Em Am D  G Bm C G Am Em D D',
+  parts: [
+    { t: 'arp', inst: 'guitar', from: 0, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1]], vel: 60 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 3]], vel: 54 },
+    { t: 'pad', inst: 'slowstrings', from: 4, to: 16, vel: 42 },
+    { t: 'mel', inst: 'flute', bar: 0, vel: 88, dbl: [['clarinet', -1, 0.25]],
+      notes: 'D5:2 B4:1 G4:2 A4:1 B4:2 G4:1 E4:3 C5:2 E5:1 D5:2 C5:1 B4:2 A4:1 F#4:3' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 84, dbl: [['celesta', 1, 0.15]],
+      notes: 'B4:2 D5:1 G5:2 F#5:1 E5:2 D5:1 B4:3 C5:2 B4:1 A4:2 G4:1 A4:2 B4:1 A4:3' },
+    { t: 'pad', inst: 'oohs', from: 12, to: 16, oct: 1, vel: 40 },
+    { t: 'hit', inst: 'bells', key: 79, from: 0, to: 16, beats: [0], every: 4, vel: 42, dur: 3 },
+  ] };
+
+// ---------------- THE NIGHTMARE'S CAVE: he is only sleeping (2026-11-21) ----------------
+// D minor 4/4, slow dread: low strings, a cello line, a far choir, a tolling bell, and a timpani
+// HEARTBEAT (something very big, breathing in the dark). Also the burning town ("woke").
+PIECES.story_nightmare_cave = { bpm: 60, meter: 4, rev: 0.55,
+  chords: 'Dm Dm Bb Bb Gm Gm A A  Dm F Bb Gm Eb Eb A A',
+  parts: [
+    { t: 'pad', inst: 'slowstrings', from: 0, to: 16, oct: -1, vel: 52 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 4]], vel: 60 },
+    { t: 'hit', inst: 'timpani', key: 38, from: 0, to: 16, beats: [0, 0.5], vel: 72 },
+    { t: 'arp', inst: 'harp', from: 4, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 1, 1], [3, 2, 1]], vel: 40 },
+    { t: 'mel', inst: 'cello', bar: 0, oct: -1, vel: 90,
+      notes: 'D4:3 E4:1 F4:4 D4:2 C4:2 Bb3:4 G3:3 A3:1 Bb3:2 D4:2 C#4:4 r:4' },
+    { t: 'pad', inst: 'oohs', from: 8, to: 16, oct: 1, vel: 46 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 78, dbl: [['voice', -1, 0.3]],
+      notes: 'A5:4 F5:2 D5:2 D6:4 Bb5:4 G5:3 A5:1 Bb5:4 G5:2 Eb5:2 C#5:4' },
+    { t: 'hit', inst: 'bells', key: 50, from: 0, to: 16, beats: [0], every: 4, vel: 50, dur: 4 },
+  ] };
+
+// ---------------- MADNESS: hell, chains, something giggling (2026-11-21, made DARKER on request) ----------------
+// C minor 4/4, SLOW and heavy: a grinding low drone (organ + contrabass + tuba), cellos crawling
+// chromatically, a low choir in half-step clusters, a heartbeat taiko, a funeral bell, and a
+// music box playing a wrong lullaby far away. (In the game it is also slowed, muffled and dirtied.)
+PIECES.madness_level = { bpm: 66, meter: 4, rev: 0.6,
+  chords: 'Cm Cm Db Db Cm Cm Bdim Bdim  Cm Ab Db Bdim Cm Gb Db Cm',
+  parts: [
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -2, vel: 66 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 4]], oct: -1, vel: 100 },
+    { t: 'bass', inst: 'tuba', from: 0, to: 16, pat: [[0, 2], [2, 2]], oct: -1, vel: 76 },
+    { t: 'mel', inst: 'cello', bar: 0, oct: -1, vel: 96,
+      notes: 'C3:4 Db3:4 C3:3 B2:1 Db3:4 C3:2 B2:2 Bb2:4 B2:4 C3:4 Ab2:4 Db3:4 B2:2 C3:2 C3:4 Gb2:4 Db3:4 C3:8' },
+    { t: 'pad', inst: 'choir', from: 4, to: 16, oct: -1, vel: 64 },
+    { t: 'mel', inst: 'oohs', bar: 8, oct: -1, vel: 70, notes: 'G4:4 Ab4:4 G4:4 F#4:4 G4:4 Db4:4 G4:4 C4:4' },
+    { t: 'mel', inst: 'celesta', bar: 8, oct: 0, vel: 44,
+      notes: 'G5:1 Eb5:1 C5:1 r:1 Gb5:1 Eb5:1 C5:2 Ab5:1 G5:1 Db5:2 r:4 G5:1 Eb5:1 B4:2 Db5:1 C5:3 r:8' },
+    { t: 'hit', inst: 'taiko', key: 41, from: 0, to: 16, beats: [0, 0.5], vel: 96 },
+    { t: 'hit', inst: 'timpani', key: 36, from: 0, to: 16, beats: [2], vel: 84 },
+    { t: 'hit', inst: 'bells', key: 43, from: 0, to: 16, beats: [0], every: 2, vel: 72, dur: 6 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 8, vel: 70, dur: 6 },
+  ] };
+
+// ---------------- THE XX0XN: the dance party (2026-11-21, made DARKER on request) ----------------
+// C minor 4/4, heavy and low: sawing spiccato in the bass register, brass stabs a tritone apart like
+// the chainsaw, pounding drums - and the "dance party": a crooked waltz on a detuned harpsichord.
+PIECES.boss_xx0xn = { bpm: 132, meter: 4, rev: 0.35,
+  chords: 'Cm Cm Gb Gb Cm Cm Db Db  Cm Ab Gb Bdim Cm Db Gb C',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 6, 0, 1, 0, 6, 1], step: 0.5, oct: -1, vel: 96 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 0.5], [0.5, 0.5], [1.5, 0.5], [2, 0.5], [3, 0.5], [3.5, 0.5]], oct: -1, vel: 108 },
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -2, vel: 60 },
+    { t: 'mel', inst: 'trombone', bar: 0, oct: -1, vel: 118, dbl: [['tuba', -1, 0.5]],
+      notes: 'C4:0.5 r:0.5 Gb3:0.5 C4:0.5 r:2 C4:0.5 r:0.5 Gb3:0.5 Db4:0.5 C4:2 Gb4:1 F4:1 Db4:1 C4:1 Gb3:4 C4:1 Db4:1 Gb4:1 C5:1 B4:2 Gb4:2 Db4:1 C4:1 Gb3:1 Db4:1 C4:4' },
+    { t: 'mel', inst: 'harpsichord', bar: 8, oct: -1, vel: 96,
+      notes: 'C5:1 Eb5:1 Gb5:1 C5:1 Db5:2 C5:1 B4:1 C5:1 Gb5:1 Eb5:1 Db5:1 C5:3 B4:1 Gb4:1 C5:1 Db5:1 Gb5:1 G5:2 Gb5:2 Db5:1 C5:1 B4:1 Gb4:1 C5:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: -1, vel: 84 },
+    { t: 'hit', inst: 'drums', key: 35, from: 0, to: 16, beats: [0, 0.5, 1.5, 2, 2.5, 3.5], vel: 112 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3], vel: 98 },
+    { t: 'hit', inst: 'taiko', key: 41, from: 0, to: 16, beats: [0, 2], vel: 104 },
+    { t: 'hit', inst: 'timpani', key: 36, from: 0, to: 16, beats: [0, 2.5], vel: 100 },
+    { t: 'hit', inst: 'bells', key: 43, from: 0, to: 16, beats: [0], every: 4, vel: 70, dur: 5 },
+  ] };
+
 module.exports = { PIECES, build };

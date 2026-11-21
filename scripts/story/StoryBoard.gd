@@ -49,6 +49,7 @@ const MAP_TILE := {
 	"golden_dunes": Color(0.78, 0.58, 0.28), "pilgrim_road": Color(0.70, 0.62, 0.48), "glass_oasis": Color(0.35, 0.60, 0.70),
 	"prime_sanctum": Color(0.55, 0.36, 0.14), "sky_reliquary": Color(0.92, 0.80, 0.45),
 	"demi_door": Color(0.20, 0.18, 0.22),
+	"town": Color(0.56, 0.36, 0.20), "nightmare_cave": Color(0.30, 0.06, 0.05),
 }
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
 const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
@@ -88,10 +89,13 @@ const PAGES := {
 		"board": [Color(0.12, 0.13, 0.22), Color(0.55, 0.50, 0.38)], "boss_label": Color(1.0, 0.92, 0.6)},
 	13: {"title": "STORY MODE  -  ORBIS TERRARUM",
 		"board": [Color(0.95, 0.82, 0.55), Color(0.45, 0.62, 0.88)], "boss_label": Color(0.35, 0.55, 1.0)},
+	14: {"title": "STORY MODE  -  THE ABANDONED TOWN",
+		"board": [Color(0.40, 0.26, 0.14), Color(0.16, 0.08, 0.06)], "boss_label": Color(1.0, 0.86, 0.55)},
 }
 const CRATER_SCENE := "res://scenes/CraterLand.tscn"      # The second open world
 const ORD_SCENE := "res://scenes/OrdLand.tscn"            # The third open world
 const ORBIS_SCENE := "res://scenes/OrbisTalk.tscn"        # Orbis Terrarum: dialogue only
+const TOWN_SCENE := "res://scenes/TownLand.tscn"          # The Abandoned Town (level 81): lore + the cave
 const DEMI_SCENE := "res://scenes/DemiLand.tscn"          # The open-world level
 const SLIDE_SCENE := "res://scenes/CaveSlide.tscn"        # The Caves: no-combat slide levels
 const PAWN_OFFSET := Vector2(30, 4)                # Pawn stands at the space's right edge
@@ -217,6 +221,14 @@ func _build_ui() -> void:
 	skins.offset_bottom = 54
 	skins.pressed.connect(_open_skins)
 	add_child(skins)
+	# STORY | MADNESS (top left): the other map - only once MADNESS is unlocked (XANXXE code)
+	Madness.load_data()
+	if Madness.unlocked:
+		var sw := StoryModeSwitch.make(get_tree(), "story")
+		sw.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		sw.offset_left = 20
+		sw.offset_top = 14
+		add_child(sw)
 	_info = UiStyle.label("", 17, UiStyle.TEXT, 6)
 	top.add_child(_info)
 
@@ -670,18 +682,27 @@ func _on_play() -> void:
 		await fall.finished
 	if StoryLevels.is_storm(_pawn_space):                 # Level 80 starts at the table (phase 0)
 		OrbisTalk.storm_phase = 0
-		get_tree().change_scene_to_file(ORBIS_SCENE)
+		_go(ORBIS_SCENE, _pawn_space)
 		return
 	if StoryLevels.is_orbis(_pawn_space):
-		get_tree().change_scene_to_file(ORBIS_SCENE)
+		_go(ORBIS_SCENE, _pawn_space)
+		return
+	if StoryLevels.is_town(_pawn_space):
+		_go(TOWN_SCENE, _pawn_space)
 		return
 	if StoryLevels.is_slide(_pawn_space):
-		get_tree().change_scene_to_file(SLIDE_SCENE)
+		_go(SLIDE_SCENE, _pawn_space)
 		return
 	var scene := StoryManager.ARENA_SCENE
 	if StoryLevels.is_open_world(_pawn_space):
 		scene = ORD_SCENE if StoryLevels.is_ord(_pawn_space) else (CRATER_SCENE if StoryLevels.is_crater(_pawn_space) else DEMI_SCENE)
-	get_tree().change_scene_to_file(scene)
+	_go(scene, _pawn_space)
+
+
+## LOADING SCREEN into a level: "LEVEL 12: THE GEARWORKS" over the part's name.
+func _go(scene: String, n: int) -> void:
+	var head := "%s:  %s" % [StoryLevels.level_label(n), String(StoryLevels.get_level(n).get("title", ""))]
+	LoadingScreen.goto(get_tree(), scene, head, StoryLevels.part_name(StoryLevels.colosseum_of(n)))
 
 
 ## Colosseum 5: play as the other hero from now on (saved). The one you leave becomes
@@ -740,7 +761,7 @@ func _play_ext(n: int) -> void:
 		fall.caption = "%s:  %s" % [StoryLevels.ext_code(n), StoryLevels.get_level(n)["title"]]
 		add_child(fall)
 		await fall.finished
-	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+	_go(StoryManager.ARENA_SCENE, n)
 
 
 func _autoplay_next() -> void:
@@ -996,6 +1017,19 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.TOWN_PART:
+		# The Abandoned Town: a wooden wall, little roofs, the Sun on its shrine - and a dark cave to the left
+		var base14 := r.position.y + r.size.y
+		for k in 22:
+			var sx := r.position.x + r.size.x * (0.25 + 0.7 * float(k) / 21.0)
+			c.draw_colored_polygon(PackedVector2Array([Vector2(sx - 9, base14 - 10.0), Vector2(sx + 9, base14 - 10.0), Vector2(sx + 9, base14 - 70.0), Vector2(sx, base14 - 82.0), Vector2(sx - 9, base14 - 70.0)]), Color(0.42, 0.28, 0.16, 0.55))
+		for k in 5:
+			var hx := r.position.x + r.size.x * (0.35 + 0.11 * float(k))
+			c.draw_rect(Rect2(hx, base14 - r.size.y * 0.42, 34.0, 28.0), Color(0.86, 0.80, 0.68, 0.6))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(hx - 5, base14 - r.size.y * 0.42), Vector2(hx + 17, base14 - r.size.y * 0.42 - 22.0), Vector2(hx + 39, base14 - r.size.y * 0.42)]), Color(0.56, 0.22, 0.16, 0.65))
+		var sun14 := Vector2(r.end.x - r.size.x * 0.12, r.position.y + r.size.y * 0.28)
+		c.draw_circle(sun14, 34.0 + 3.0 * sin(_t * 1.5), Color(1.0, 0.8, 0.3, 0.35))
+		c.draw_colored_polygon(EnemyArt.ellipse_points(Vector2(r.position.x + r.size.x * 0.1, base14 - 30.0), 60.0, 50.0, 16), Color(0.05, 0.02, 0.02, 0.6))
 	elif _page >= StoryLevels.ORBIS_PART:
 		# Orbis Terrarum: a calm island above a ring of storm clouds, the hut, a table
 		var base13 := r.position.y + r.size.y

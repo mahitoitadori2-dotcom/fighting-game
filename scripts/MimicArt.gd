@@ -23,7 +23,9 @@ const BONE_W := 8.0                          # Thin steel bones
 
 
 static func draw(c: CanvasItem, f: Mimic) -> void:
+	f.anim_legs = true                                  # This art bends its knees (shared animation)
 	_figure(c, {
+		"anim": FighterArt.anim_of(f),
 		"t": f.anim_time, "ph": f.walk_phase, "floor": f.is_on_floor(),
 		"punch": f.punch_ext, "block": f.block_amt, "shred": f.shred_ext, "kick": f.kick_ext,
 		"wings": f.wings_k, "wrot": f.wings_rot, "stomach": f.stomach_k, "jaw": f.jaw_k, "grind": f.grind_t,
@@ -54,15 +56,9 @@ static func _figure(c: CanvasItem, s: Dictionary) -> void:
 		_wings(c, wings, s.get("wrot", 0.0))
 
 	# --- Legs (thigh + shin bones, knee joints, bony feet) ---
-	var sw := sin(ph) * 12.0
-	var lift_f := maxf(0.0, cos(ph)) * 7.0
-	var lift_b := maxf(0.0, -cos(ph)) * 7.0
-	if not on_floor:
-		sw = 6.0
-		lift_f = 12.0
-		lift_b = 5.0
-	_leg(c, Vector2(-8, -72), Vector2(-10.0 - sw, -6.0 - lift_b), 0.0)
-	var front_foot := Vector2(10.0 + sw, -6.0 - lift_f)
+	var g := FighterArt.gait(s.get("anim", {}), ph, on_floor, -10.0, 10.0, -6.0, 12.0)   # Shared walk / crouch / jump
+	_leg(c, Vector2(-8, -72), g[0], 0.0)
+	var front_foot: Vector2 = g[1]
 	if kick > 0.0:
 		front_foot = front_foot.lerp(Vector2(48, -60), kick)          # Kicks out at hip height
 	elif kick < 0.0:
@@ -128,7 +124,7 @@ static func _bone(c: CanvasItem, a: Vector2, b: Vector2, w: float = BONE_W) -> v
 
 
 static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, spike: float) -> void:
-	var knee := hip.lerp(foot, 0.5) + Vector2(4, -2)
+	var knee := FighterArt.knee(hip, foot, FighterArt.leg_seg(66.0, 4.0))   # Real knee bend
 	_bone(c, hip, knee, BONE_W + 1.0)
 	_bone(c, knee, foot)
 	if spike > 0.05:
@@ -223,25 +219,24 @@ static func _skull(c: CanvasItem, hc: Vector2, jaw: float, t: float) -> void:
 		var x := hc.x - 7 + float(i) * 4.6
 		c.draw_rect(Rect2(x, hc.y + 5, 3.4, 4.5), TOOTH)
 		c.draw_rect(Rect2(x, hc.y + 2.5 + drop, 3.4, 4.5), TOOTH)
-	# Cranium
-	var dome := PackedVector2Array()
-	for i in 18:
-		var a := PI + PI * float(i) / 17.0                    # Top half
-		dome.append(hc + Vector2(cos(a) * 18.0, sin(a) * 18.0 - 2.0))
-	dome.append(hc + Vector2(16, 6))
-	dome.append(hc + Vector2(-14, 6))
-	c.draw_colored_polygon(dome, STEEL)
-	FighterArt.outline(c, dome, 4.0)
-	c.draw_arc(hc + Vector2(-6, -10), 7.0, PI * 1.1, PI * 1.6, 6, STEEL_HI, 2.5)          # Shine
-	# Eye sockets with RED pupils
+	# PIXEL ART cranium (hand-pixelled): steel dome, shine, deep sockets with RED pupils, nose hole
 	var glow := 0.75 + 0.25 * sin(t * 6.0)
-	for ex: float in [hc.x + 1.0, hc.x + 11.0]:
-		c.draw_circle(Vector2(ex, hc.y - 2.0), 5.0, DARK)
-		c.draw_circle(Vector2(ex, hc.y - 2.0), 4.0, Color(EYE_RED.r, EYE_RED.g, EYE_RED.b, 0.22 * glow))
-		c.draw_circle(Vector2(ex + 0.8, hc.y - 2.0), 1.7, Color(EYE_RED.r, EYE_RED.g * glow, EYE_RED.b, 1.0))
-	# Nose hole
-	c.draw_colored_polygon(PackedVector2Array([Vector2(hc.x + 6, hc.y + 1), Vector2(hc.x + 9, hc.y + 1), Vector2(hc.x + 7.5, hc.y + 4.5)]), DARK)
+	PixelSprite.draw(c, PackedStringArray(_CRANIUM_PX), {
+		"K": BLACK, "S": STEEL, "H": STEEL_HI, "D": DARK, "E": Color(EYE_RED.r, EYE_RED.g * glow, EYE_RED.b, 1.0),
+	}, hc + Vector2(-18, -21))
 
+
+const _CRANIUM_PX := [
+	"....KKKKK....",
+	"..KKSSSSSKK..",
+	".KSHHSSSSSSK.",
+	".KSHSSSSSSSSK",
+	"KSSSSSSSSSSSK",
+	"KSSSSDDSSDDSK",
+	"KSSSSDESSDESK",
+	"KSSSSSSDSSSSK",
+	".KKKKKKKKKKK.",
+]
 
 ## Wings of Lies: two fans of steel blades out of the spine, spinning around him.
 static func _wings(c: CanvasItem, k: float, rot: float) -> void:

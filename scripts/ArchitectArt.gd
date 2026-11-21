@@ -68,9 +68,30 @@ static func set_palette(p: Dictionary) -> void:
 	DRILL_SHADE = p["DRILL_SHADE"]
 
 
+## PIXEL ART head (hand-pixelled, 3-unit grid, top-left -12, -132). Anti Architect = same pixels, his palette.
+const _HEAD_PX := [
+	"...KKKKK...",
+	"..KWWWWWK..",
+	".KWWWWWWWK.",
+	".KWWWKVVVVK",
+	".KCWWKEVEVK",
+	".KWWWKVVVVK",
+	".KwWWWWWWK.",
+	"..KwWWWWwK.",
+	"...KKwwKK..",
+	".....KK....",
+]
+
+## Shared animation values of the fighter being drawn ({} = standing: portraits).
+static var _anim := {}
+
+
 static func draw(c: CanvasItem, p: Player) -> void:
+	p.anim_legs = true                                  # This art bends its knees (shared animation)
+	_anim = FighterArt.anim_of(p)
 	_draw_figure(c, p.anim_time, p.walk_phase, p.is_on_floor(), p.punch_ext, p.block_amt,
 		p.drill_len, p.perfect_flash, p.arsenal_timer > 0.0, p.onslaught.flash_timer > 0.0)
+	_anim = {}
 
 
 ## Idle pose with no Player needed (Character Select / Main Menu).
@@ -87,19 +108,13 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 		c.draw_arc(Vector2(4, -78), 46.0 + 4.0 * pulse, 0.0, TAU, 40, Color(1.0, 0.55, 0.1, 0.5 + 0.5 * pulse), 6.0, FighterArt.AA)
 
 	# --- Legs (GREEN) - walk cycle / air tuck ---
-	var s := sin(ph) * 13.0
-	var lift_f := maxf(0.0, cos(ph)) * 7.0
-	var lift_b := maxf(0.0, -cos(ph)) * 7.0
-	if not on_floor:
-		s = 7.0
-		lift_f = 12.0
-		lift_b = 4.0
-	_leg(c, Vector2(-5, -53), Vector2(-7.0 - s, -5.0 - lift_b), true)
-	_leg(c, Vector2(5, -53), Vector2(7.0 + s, -5.0 - lift_f), false)
+	var g := FighterArt.gait(_anim, ph, on_floor, -7.0, 7.0, -5.0)       # Shared walk / crouch / jump cycle
+	_leg(c, Vector2(-5, -53), g[0], true)
+	_leg(c, Vector2(5, -53), g[1], false)
 
 	# --- Arm poses ---
 	var e := clampf(punch_ext, 0.0, 1.0)
-	var swing := sin(ph) * 8.0 * (1.0 - maxf(e, b))
+	var swing := sin(ph) * 8.0 * (1.0 - maxf(e, b)) * float(_anim.get("walk", 1.0))
 	var rest_el := Vector2(10.0 - swing * 0.5, -74)
 	var rest_hand := Vector2(13.0 - swing, -55)
 	var el := rest_el.lerp(Vector2(30, -91), e)
@@ -163,20 +178,12 @@ static func _draw_figure(c: CanvasItem, t: float, ph: float, on_floor: bool, pun
 	# --- Head: PURE WHITE helmet (a bit smaller: athletic proportions), black visor ---
 	c.draw_line(Vector2(2, -102), Vector2(3, -110), FighterArt.BLACK, 12.0)   # Neck
 	c.draw_line(Vector2(2, -102), Vector2(3, -110), DARK, 7.0)
-	FighterArt.ball(c, Vector2(3, -117), 12.5, WHITE, WHITE_SHADE, WHITE)
-	FighterArt.rrect(c, Rect2(4, -124, 14, 9), VISOR, VISOR, DARK, 3.0, 3.0)
-	# Concept art: two round EYES glowing behind the visor band
+	# PIXEL ART head (hand-pixelled): white helmet, visor band, two glowing eyes (blink), ear bolt
 	var blink := fmod(t, 3.7) < 0.1
-	for ex: float in [8.5, 14.5]:
-		if blink:
-			c.draw_line(Vector2(ex - 2, -119.5), Vector2(ex + 2, -119.5), CORE, 1.5)
-		else:
-			c.draw_circle(Vector2(ex, -119.5), 2.4, CORE)
-			c.draw_circle(Vector2(ex - 0.6, -120.1), 0.9, CORE_HI)
-	c.draw_line(Vector2(-9, -121), Vector2(4, -121), WHITE_SHADE, 1.5)            # Helmet seam
-	c.draw_circle(Vector2(-5, -117), 3.4, FighterArt.BLACK)                 # Ear bolt
-	c.draw_circle(Vector2(-5, -117), 2.2, CORE)
-
+	PixelSprite.draw(c, PackedStringArray(_HEAD_PX), {
+		"K": FighterArt.BLACK, "W": WHITE, "w": WHITE_SHADE, "V": VISOR, "C": CORE,
+		"E": VISOR if blink else CORE,
+	}, Vector2(-12, -132))
 	_drill(c, t, drill_len)
 	_arm(c, Vector2(4, -92), el, hand, false)             # Near arm
 
@@ -194,7 +201,7 @@ static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool) -> void:
 	var base := GREEN_FAR if far else GREEN
 	var shade := GREEN_FAR_SHADE if far else GREEN_SHADE
 	var hi := GREEN if far else GREEN_HI
-	var knee := (hip + foot) * 0.5 + Vector2(6, 0)
+	var knee := FighterArt.knee(hip, foot, FighterArt.leg_seg(48.0, 6.0))   # Real knee bend
 	FighterArt.limb(c, hip, knee, 10.0, base, shade, hi)                   # Athletic: lean thigh
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 8.0, base, shade, hi)  # Slim shin
 	# Concept art: SEGMENTED, RIVETED legs - plate seams in a zig-zag, rivets along the edge

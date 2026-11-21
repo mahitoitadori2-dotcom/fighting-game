@@ -87,7 +87,7 @@ func _refresh() -> void:
 
 func _on_start() -> void:
 	if BossRush.start(_hero):
-		get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+		LoadingScreen.goto(get_tree(), StoryManager.ARENA_SCENE, "BOSS RUSH", BossRush.progress_text())
 
 
 func _back() -> void:

@@ -653,6 +653,6 @@ func _update_visuals(delta: float) -> void:
 	stomach_k = move_toward(stomach_k, 1.0 if state in [State.FEAR_STARTUP, State.FEAR_LUNGE, State.FEAR_CHEW] else 0.0, delta * 6.0)
 	jaw_k = move_toward(jaw_k, 1.0 if state in [State.BITE_STARTUP, State.BITE_ACTIVE] else 0.0, delta * 10.0)
 	z_index = 2 if state == State.FEAR_CHEW else 0      # Eating Fear: the victim is INSIDE his open ribs
-	var cs := 0.9 if is_crouching else 1.0
+	var cs := 1.0 if anim_legs else (0.9 if is_crouching else 1.0)   # Crouch: knees bend (shared animation)
 	visuals.scale = Vector2(facing * cs, cs)
 	visuals.queue_redraw()

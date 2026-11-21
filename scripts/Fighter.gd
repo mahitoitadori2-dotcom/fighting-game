@@ -61,6 +61,29 @@ var hurtbox: Hurtbox
 var visuals: Node2D
 var _flash_tween: Tween
 
+# ===== SHARED ANIMATION LAYER (2026-11-21: better walk / crouch / jump / attack for everyone) =====
+# Fighter -> pixel_group (PixelArt) -> anim_pose (these offsets) -> visuals (the art, untouched by this).
+# anim_legs = the art bends its knees: it lifts its feet by anim_drop (FighterArt.gait), so the body
+# can sink (crouch, landing, walk bob) while the feet stay on the floor. Other art gets squash instead.
+var pixel_group: PixelArt
+var anim_pose: Node2D
+var anim_legs := false
+var anim_drop := 0.0                  # Body lowered by this many units (knees bend)
+var anim_crouch := 0.0                # 0..1, smooth
+var anim_air := 0.0                   # -1 rising fast .. +1 falling fast (0 on the floor)
+var anim_attack := 0.0                # 0 idle, < 0 wind-up, > 0 strike (shared lean / lunge)
+var anim_walk := 0.0                  # 0 standing .. 1 walking (stride size: feet settle when you stop)
+var _pose_was_floor := true
+var _pose_air_t := 0.0
+var _pose_fall_vy := 0.0
+var _pose_land := 0.0
+var _pose_takeoff := 0.0
+var _pose_atk_t := -1.0
+var _pose_bob_ph := 0.0
+var _pose_lean := 0.0
+var _pose_lunge := 0.0
+var _pose_squash := Vector2.ONE
+
 
 static func now() -> float:
 	return Time.get_ticks_msec() / 1000.0
@@ -90,9 +113,15 @@ func _ready() -> void:
 	add_child(hurtbox)
 	hurtbox.setup(self, data.body_size)
 
+	pixel_group = PixelArt.new()
+	pixel_group.name = "PixelArt"
+	add_child(pixel_group)
+	anim_pose = Node2D.new()
+	anim_pose.name = "Pose"
+	pixel_group.add_child(anim_pose)
 	visuals = Node2D.new()
 	visuals.name = "Visuals"
-	add_child(visuals)
+	anim_pose.add_child(visuals)
 	visuals.draw.connect(_draw_model)
 
 	hp = data.max_hp
@@ -101,6 +130,89 @@ func _ready() -> void:
 
 func _draw_model() -> void:
 	draw_model_on(visuals)
+
+
+## SHARED ANIMATION: call once per physics frame AFTER the subclass updated its visuals.
+## attacking = mid-attack (ControlledFighter.is_attacking). Never touches `visuals` itself (rolls,
+## death tilts and replays own visuals.position / rotation / scale).
+func update_pose(delta: float, attacking: bool) -> void:
+	if anim_pose == null:
+		return
+	var on_floor := is_on_floor()
+	var vx := velocity.x
+	# --- Crouch: smooth, real knee bend (anim_legs art) ---
+	anim_crouch = move_toward(anim_crouch, 1.0 if is_crouching and on_floor else 0.0, delta * 9.0)
+	# --- Take-off / air / landing ---
+	if on_floor:
+		if not _pose_was_floor and _pose_air_t > 0.10:
+			_pose_land = clampf(_pose_fall_vy / 900.0, 0.35, 1.0)      # Harder fall = deeper landing
+		_pose_air_t = 0.0
+		anim_air = move_toward(anim_air, 0.0, delta * 8.0)
+	else:
+		if _pose_was_floor and velocity.y < -60.0:
+			_pose_takeoff = 1.0
+		_pose_air_t += delta
+		_pose_fall_vy = maxf(velocity.y, 0.0)
+		anim_air = lerpf(anim_air, clampf(velocity.y / 520.0, -1.0, 1.0), minf(delta * 14.0, 1.0))
+	_pose_was_floor = on_floor
+	_pose_land = move_toward(_pose_land, 0.0, delta * 6.5)
+	_pose_takeoff = move_toward(_pose_takeoff, 0.0, delta * 7.0)
+	# --- Attack: a quick wind-up (lean back, dip), then the strike (lean in, small lunge) ---
+	if attacking:
+		_pose_atk_t = 0.0 if _pose_atk_t < 0.0 else _pose_atk_t + delta
+	else:
+		_pose_atk_t = -1.0
+	var atk := 0.0
+	if _pose_atk_t >= 0.0:
+		atk = -1.0 if _pose_atk_t < 0.06 else clampf(1.0 - (_pose_atk_t - 0.06) * 2.5, 0.45, 1.0)
+	anim_attack = lerpf(anim_attack, atk, minf(delta * 22.0, 1.0))
+	# --- Walk bob: the body dips as the legs spread (twice per stride) ---
+	var walking := on_floor and absf(vx) > 25.0 and anim_crouch < 0.5
+	var ph: float = float(get("walk_phase")) if "walk_phase" in self else _pose_bob_ph
+	if not ("walk_phase" in self) and on_floor:
+		_pose_bob_ph += absf(vx) * delta * 0.045
+	var bob := absf(sin(ph)) * 3.2 * clampf(absf(vx) / 260.0, 0.0, 1.0) if walking else 0.0
+	anim_walk = move_toward(anim_walk, clampf(absf(vx) / 120.0, 0.0, 1.0) if walking else 0.0, delta * 6.0)
+	# --- Combine ---
+	var land_curve := sin(_pose_land * PI * 0.5)
+	var dip := maxf(-anim_attack, 0.0) * 4.0
+	var target_drop := anim_crouch * 18.0 + land_curve * 12.0 + bob + dip
+	if not on_floor:
+		target_drop = 0.0
+	anim_drop = lerpf(anim_drop, target_drop, minf(delta * 30.0, 1.0))
+	var fwd := clampf(vx * float(facing) / 320.0, -1.0, 1.0) if on_floor else 0.0
+	var lean := 0.055 * fwd + 0.07 * maxf(anim_attack, 0.0) - 0.06 * maxf(-anim_attack, 0.0)
+	if not on_floor:
+		lean += 0.05 * clampf(vx * float(facing) / 320.0, -1.0, 1.0)
+	_pose_lean = lerpf(_pose_lean, lean, minf(delta * 14.0, 1.0))
+	_pose_lunge = lerpf(_pose_lunge, 7.0 * maxf(anim_attack, 0.0) - 3.0 * maxf(-anim_attack, 0.0), minf(delta * 20.0, 1.0))
+	# Squash & stretch: stretch on take-off and fast vertical moves; no-knee art also squashes on landing
+	var stretch := 0.07 * _pose_takeoff + 0.035 * absf(anim_air)
+	var squash := 0.0 if anim_legs else 0.10 * land_curve + 0.05 * maxf(-anim_attack, 0.0)
+	var sq := Vector2(1.0 - stretch * 0.6 + squash, 1.0 + stretch - squash)
+	_pose_squash = _pose_squash.lerp(sq, minf(delta * 20.0, 1.0))
+	anim_pose.position = Vector2(_pose_lunge * float(facing), anim_drop * absf(visuals.scale.y) if anim_legs else 0.0)
+	anim_pose.rotation = _pose_lean * float(facing)
+	anim_pose.scale = _pose_squash
+
+
+## Straight back to the neutral anim_pose (respawn, cutscenes).
+func reset_pose() -> void:
+	anim_drop = 0.0
+	anim_crouch = 0.0
+	anim_air = 0.0
+	anim_attack = 0.0
+	anim_walk = 0.0
+	_pose_land = 0.0
+	_pose_takeoff = 0.0
+	_pose_atk_t = -1.0
+	_pose_lean = 0.0
+	_pose_lunge = 0.0
+	_pose_squash = Vector2.ONE
+	if anim_pose != null:
+		anim_pose.position = Vector2.ZERO
+		anim_pose.rotation = 0.0
+		anim_pose.scale = Vector2.ONE
 
 
 ## Override in subclasses: draw the character onto ANY canvas item.

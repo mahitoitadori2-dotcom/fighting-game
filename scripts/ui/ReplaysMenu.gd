@@ -83,7 +83,7 @@ func _watch(path: String) -> void:
 		return
 	d["return_scene"] = "res://scenes/ReplaysMenu.tscn"
 	Replay.pending = d
-	get_tree().change_scene_to_file(ArenaManager.arena_entry(String(d.get("arena", "test")))["scene"])
+	LoadingScreen.goto(get_tree(), String(ArenaManager.arena_entry(String(d.get("arena", "test")))["scene"]), "REPLAY", "")
 
 
 func _back() -> void:

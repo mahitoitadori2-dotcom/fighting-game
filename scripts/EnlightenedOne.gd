@@ -360,6 +360,6 @@ func _update_visuals(delta: float) -> void:
 	light_charge = 1.0 - clampf(_state_timer / ed.light_charge, 0.0, 1.0) if state == State.LIGHT_CHARGE else 0.0
 	light_fire = clampf(_state_timer / ed.light_duration, 0.0, 1.0) if state == State.LIGHT_FIRE else 0.0
 	var sc := ed.gorilla_scale if is_gorilla() else 1.0
-	sc *= 0.88 if is_crouching else 1.0               # Uniform: never squashed
+	sc *= 1.0 if anim_legs else (0.88 if is_crouching else 1.0)   # Crouch: knees bend (shared animation)
 	visuals.scale = Vector2(facing * sc, sc)
 	visuals.queue_redraw()

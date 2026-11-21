@@ -448,6 +448,6 @@ func _update_visuals(delta: float) -> void:
 	elif state == State.SPIKE_SLAM:
 		sp = -1.0
 	spike_pose = move_toward(spike_pose, sp, delta * 10.0)
-	var cs := 0.88 if is_crouching else 1.0             # Crouch: uniform scale, never squashed
+	var cs := 1.0 if anim_legs else (0.88 if is_crouching else 1.0)   # Crouch: knees bend (shared animation)
 	visuals.scale = Vector2(facing * cs, cs)
 	visuals.queue_redraw()

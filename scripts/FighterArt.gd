@@ -12,6 +12,65 @@ const WOBBLE := 0.9              # Outline waviness in px
 static var AA := true
 
 
+# ============================================================
+# SHARED LEG ANIMATION (2026-11-21): real knees + one walk / crouch / jump cycle for every hero.
+# The art reads the fighter's anim_* values (Fighter.update_pose) and passes them here.
+# ============================================================
+
+## The animation values an art script needs from a Fighter (portraits: the defaults = standing).
+static func anim_of(f: Fighter) -> Dictionary:
+	if f == null:
+		return {}
+	return {"drop": f.anim_drop, "air": f.anim_air, "walk": f.anim_walk, "crouch": f.anim_crouch, "attack": f.anim_attack}
+
+
+## LEG IK: where the knee goes for a hip -> foot leg with two segments of length `seg`, bent
+## FORWARD (the art faces right). Shorter leg (crouch, landing, lifted foot) = deeper bend.
+static func knee(hip: Vector2, foot: Vector2, seg: float) -> Vector2:
+	var d := foot - hip
+	var l := d.length()
+	if l < 0.001:
+		return hip + Vector2(seg, 0)
+	var dir := d / l
+	l = minf(l, seg * 2.0 - 0.01)
+	var a := l * 0.5
+	var h := maxf(sqrt(maxf(seg * seg - a * a, 0.0)), 2.5)        # Never perfectly straight
+	var p := Vector2(-dir.y, dir.x)
+	if p.x < 0.0 or (absf(p.x) < 0.001 and p.y > 0.0):
+		p = -p                                                      # Knees bend forward (+x)
+	return hip + dir * a + p * h
+
+
+## Segment length that gives the art's original resting knee bend (rest_len = hip-to-ankle height).
+static func leg_seg(rest_len: float, bend: float = 7.0) -> float:
+	return sqrt(rest_len * rest_len * 0.25 + bend * bend)
+
+
+## FEET for the shared walk / crouch / jump cycle. Returns [back_foot, front_foot] (art coords,
+## origin = feet, facing right). back_x / front_x / foot_y = the art's own standing feet.
+##   walk:   stride scales with anim "walk" (feet settle when you stop), the swinging foot lifts in an arc
+##   crouch / landing / bob: feet rise by "drop" (the body sank by the same amount -> knees bend)
+##   air:    rising = front knee tucked up, back leg trailing; falling = legs reach down for the floor
+static func gait(a: Dictionary, ph: float, on_floor: bool, back_x: float, front_x: float, foot_y: float,
+		stride: float = 13.0, lift: float = 8.0) -> Array:
+	var drop: float = a.get("drop", 0.0)
+	if not on_floor:
+		var air: float = a.get("air", 0.0)
+		var up := clampf(-air, 0.0, 1.0)
+		var down := clampf(air, 0.0, 1.0)
+		var front := Vector2(front_x + 8.0, foot_y - 14.0).lerp(Vector2(front_x + 12.0, foot_y - 27.0), up)
+		front = front.lerp(Vector2(front_x + 5.0, foot_y - 5.0), down)
+		var back := Vector2(back_x - 6.0, foot_y - 7.0).lerp(Vector2(back_x - 11.0, foot_y - 13.0), up)
+		back = back.lerp(Vector2(back_x - 4.0, foot_y - 2.0), down)
+		return [back, front]
+	var w: float = a.get("walk", 1.0)
+	var s := sin(ph) * stride * w
+	var lf := pow(maxf(0.0, cos(ph)), 1.5) * lift * w
+	var lb := pow(maxf(0.0, -cos(ph)), 1.5) * lift * w
+	var spread := clampf(float(a.get("crouch", 0.0)), 0.0, 1.0) * 6.0      # Crouch: a wider, lower stance
+	return [Vector2(back_x - s - spread, foot_y - lb - drop), Vector2(front_x + s + spread, foot_y - lf - drop)]
+
+
 ## Deterministic "hand-drawn" offset for a point (stable, so lines don't jitter randomly).
 static func _noise(p: Vector2) -> float:
 	return sin(p.x * 0.37 + p.y * 0.23) * 0.6 + sin(p.x * 0.11 - p.y * 0.41) * 0.4

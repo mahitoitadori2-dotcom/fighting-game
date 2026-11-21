@@ -274,6 +274,6 @@ func _update_visuals(delta: float) -> void:
 			p = clampf(_state_timer / data.punch_recovery, 0.0, 1.0)
 	punch_ext = p
 	tool_k = move_toward(tool_k, 1.0 if state in [State.HOOK_STARTUP, State.COIL_STARTUP, State.CAST] else 0.0, delta * 8.0)
-	var cs := 0.9 if is_crouching else 1.0
+	var cs := 1.0 if anim_legs else (0.9 if is_crouching else 1.0)   # Crouch: knees bend (shared animation)
 	visuals.scale = Vector2(facing * cs, cs)
 	visuals.queue_redraw()

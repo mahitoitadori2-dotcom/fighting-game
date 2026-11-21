@@ -46,7 +46,9 @@ func _ready() -> void:
 
 
 func draw_model_on(c: CanvasItem) -> void:
-	if FrozenSkin.worn_by(self):
+	if AssassinSkin.worn_by(self):
+		AssassinSkin.draw_architect(c, self)     # Assassin (Story skin, beat The XX0XN)
+	elif FrozenSkin.worn_by(self):
 		FrozenSkin.draw_architect(c, self)       # Frozen Expedition (Story skin)
 	elif Achievements.galaxy_for(self):
 		GalaxySkin.draw_architect(c, self)       # Multiversal reward
@@ -485,6 +487,6 @@ func _update_visuals(delta: float) -> void:
 			drill_target = 1.0
 	drill_len = move_toward(drill_len, drill_target, delta * 5.0)
 	# Flip / squash only the VISUALS. The hitbox never changes.
-	var cs := 0.88 if is_crouching else 1.0             # Crouch: uniform scale, never squashed
+	var cs := 1.0 if anim_legs else (0.88 if is_crouching else 1.0)   # Crouch: knees bend (shared animation)
 	visuals.scale = Vector2(facing * cs, cs)
 	visuals.queue_redraw()

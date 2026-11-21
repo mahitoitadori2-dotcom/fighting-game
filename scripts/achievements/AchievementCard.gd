@@ -16,6 +16,7 @@ var _tex: Texture2D
 static var _cache := {}                  # key -> ImageTexture
 static var _queue: Array = []            # Cards waiting to be baked
 static var _baking := false
+const ATLAS_W := 1024                     # Width of the shared bake canvas
 
 
 ## MEMORY: the baked pictures are only needed while the Achievements menu is open (AchievementsMenu
@@ -56,9 +57,14 @@ static func _bake_queue(tree: SceneTree) -> void:
 		return
 	_baking = true
 	while not _queue.is_empty():
-		# Up to 12 cards per frame: each gets a hidden viewport, all are read back after one frame
+		# A batch of cards is drawn side by side on ONE hidden viewport and read back ONCE, then cut into
+		# per-card pictures. (One get_image() per card stalled the frame each time on the web / phones.)
 		var batch: Array = []
-		while not _queue.is_empty() and batch.size() < 6:
+		var x := 0
+		var row_h := 0
+		var y := 0
+		var w_max := 0
+		while not _queue.is_empty() and batch.size() < 12:
 			var card: AchievementCard = _queue.pop_front()
 			if card == null or not is_instance_valid(card) or not card.is_inside_tree():
 				continue
@@ -67,33 +73,43 @@ static func _bake_queue(tree: SceneTree) -> void:
 				card._tex = _cache[k]
 				card.queue_redraw()
 				continue
-			var vp := SubViewport.new()
-			vp.size = Vector2i(int(card.size.x), int(card.size.y))
-			vp.transparent_bg = true
-			vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-			var painter := Control.new()
-			painter.size = card.size
-			var d := card.def
-			var lk := card.locked
-			var r := Rect2(Vector2.ZERO, card.size).grow(-3.0)
-			painter.draw.connect(func() -> void: AchievementArt.draw(painter, d, r, 0.0, lk))
-			vp.add_child(painter)
-			tree.root.add_child(vp)
-			batch.append([card, k, vp])
+			var sz := Vector2i(int(card.size.x), int(card.size.y))
+			if x + sz.x > ATLAS_W and x > 0:
+				x = 0
+				y += row_h
+				row_h = 0
+			batch.append([card, k, Vector2i(x, y), sz, card.def, card.locked])
+			x += sz.x
+			row_h = maxi(row_h, sz.y)
+			w_max = maxi(w_max, x)
 		if batch.is_empty():
 			continue
+		var vp := SubViewport.new()
+		vp.size = Vector2i(maxi(w_max, 1), maxi(y + row_h, 1))
+		vp.transparent_bg = true
+		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+		for e in batch:
+			var painter := Control.new()
+			painter.position = Vector2(e[2])
+			painter.size = Vector2(e[3])
+			painter.clip_contents = true                    # Never bleed into the neighbour cell
+			var d: Dictionary = e[4]
+			var lk: bool = e[5]
+			var r := Rect2(Vector2.ZERO, Vector2(e[3])).grow(-3.0)
+			painter.draw.connect(func() -> void: AchievementArt.draw(painter, d, r, 0.0, lk))
+			vp.add_child(painter)
+		tree.root.add_child(vp)
 		await RenderingServer.frame_post_draw
-		for b in batch:
-			var vp2: SubViewport = b[2]
-			if is_instance_valid(vp2):
-				_cache[b[1]] = ImageTexture.create_from_image(vp2.get_texture().get_image())
-				vp2.queue_free()
-			var c: AchievementCard = b[0]
-			if is_instance_valid(c) and c._key() == b[1]:
-				c._tex = _cache.get(b[1])
-				c.queue_redraw()
+		if is_instance_valid(vp):
+			var img := vp.get_texture().get_image()               # ONE readback for the whole batch
+			for e in batch:
+				_cache[e[1]] = ImageTexture.create_from_image(img.get_region(Rect2i(e[2], e[3])))
+				var c: AchievementCard = e[0]
+				if is_instance_valid(c) and c._key() == e[1]:
+					c._tex = _cache.get(e[1])
+					c.queue_redraw()
+			vp.queue_free()
 	_baking = false
-
 
 func set_animate(on: bool) -> void:
 	animate = on

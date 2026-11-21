@@ -24,18 +24,18 @@ extends CharacterData
 @export var heal_radius := 240.0                 # Team heal radius (1v1: just himself)
 
 @export_group("Helpers! (3)")
-@export var helpers_cooldown := 20.0
+@export var helpers_cooldown := 22.0             # Nerf 2026-11-21: 20 -> 22
 @export var helper_count := 2
-@export var helper_hp := 20
-@export var helper_lifetime := 10.0
+@export var helper_hp := 14                     # Nerf 2026-11-20: 20 -> 14 (easier to clear)
+@export var helper_lifetime := 7.0              # Nerf 2026-11-20: 10 -> 7 (Helpers were 58% of his damage)
 @export var helper_speed := 250.0
-@export var helper_slash_damage := 5
+@export var helper_slash_damage := 4           # Nerf 2026-11-20: 5 -> 4
 @export var helper_slash_range := 62.0
-@export var helper_slash_interval := 0.7
+@export var helper_slash_interval := 0.75        # Nerf 2026-11-21: 0.7 -> 0.75
 @export var helper_knockback := Vector2(110, -80)
 
 @export_group("G1: Godly O' Light")
-@export var light_damage := 25
+@export var light_damage := 20                   # Nerf 2026-11-20: 25 -> 20
 @export var light_range := 1150.0
 @export var light_height := 96.0                 # Wide beam
 @export var light_charge := 0.35

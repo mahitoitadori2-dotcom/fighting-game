@@ -22,12 +22,31 @@ var _baked: Texture2D = null
 var _baking := false
 static var _queue: Array = []
 static var _pumping := false
+## PIXEL ART (2026-11-21): portraits are rendered at 1/PIX resolution and shown with hard,
+## unfiltered pixels (same 3-unit pixels as the fighters in a fight). pixel = false for the painter.
+const PIX := 3
+var pixel := true
+var _live_vp: SubViewport = null
+var _live_painter: CharacterPortrait = null
+static var _pix_shader: Shader = null
 
 
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(animate)
+	if pixel and PixelArt.active():
+		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		if _pix_shader == null:                      # Hard edges: no half-transparent pixels
+			_pix_shader = Shader.new()
+			_pix_shader.code = "shader_type canvas_item;\nvoid fragment() {\n\tvec4 c = texture(TEXTURE, UV);\n\tCOLOR = vec4(c.rgb, step(0.5, c.a)) * COLOR;\n}\n"
+		var m := ShaderMaterial.new()
+		m.shader = _pix_shader
+		material = m
+
+
+func _pixel_on() -> bool:
+	return pixel and PixelArt.active()
 
 
 func set_animate(on: bool) -> void:
@@ -35,6 +54,8 @@ func set_animate(on: bool) -> void:
 		return
 	animate = on
 	set_process(on)
+	if not on:
+		_drop_live()                                 # The small live viewport only while animating
 	queue_redraw()
 
 
@@ -56,54 +77,102 @@ func _request_bake() -> void:
 
 static func _pump(tree: SceneTree) -> void:
 	while not _queue.is_empty():
+		# A batch of portraits is drawn side by side on ONE hidden viewport and read back ONCE (one
+		# get_image() per portrait stalled a frame each time on the web / phones), then cut apart.
 		var batch: Array = []
-		while not _queue.is_empty() and batch.size() < 6:
+		var x := 0
+		var w_max := 0
+		var h_max := 0
+		while not _queue.is_empty() and batch.size() < 8:
 			var p: CharacterPortrait = _queue.pop_front()
 			if p == null or not is_instance_valid(p) or not p.is_inside_tree():
 				continue
-			var vp := SubViewport.new()
-			vp.size = Vector2i(int(p.size.x), int(p.size.y))
-			vp.transparent_bg = true
-			vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-			var painter := CharacterPortrait.new()
-			painter.art = p.art
-			painter.accent = p.accent
-			painter.art_scale = p.art_scale
-			painter.portrait_h = p.portrait_h
-			painter.animate = false
-			painter.bake = false
-			painter.size = p.size
-			vp.add_child(painter)
-			p.add_child(vp)
-			batch.append([p, vp])
+			var div := PIX if p._pixel_on() else 1
+			var sz := Vector2i(maxi(floori(p.size.x / float(div)), 1), maxi(floori(p.size.y / float(div)), 1))
+			batch.append([p, Vector2i(x, 0), sz, div])
+			x += sz.x
+			w_max = x
+			h_max = maxi(h_max, sz.y)
 		if batch.is_empty():
 			break
+		var vp := SubViewport.new()
+		vp.size = Vector2i(maxi(w_max, 1), maxi(h_max, 1))
+		vp.transparent_bg = true
+		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+		for e in batch:
+			var src: CharacterPortrait = e[0]
+			var painter := CharacterPortrait.new()
+			painter.art = src.art
+			painter.accent = src.accent
+			painter.art_scale = src.art_scale
+			painter.portrait_h = src.portrait_h
+			painter.animate = false
+			painter.bake = false
+			painter.pixel = false
+			painter.position = Vector2(e[1])
+			painter.size = Vector2(e[2] * int(e[3]))
+			painter.scale = Vector2.ONE / float(e[3])
+			vp.add_child(painter)
+		tree.root.add_child(vp)
 		await RenderingServer.frame_post_draw
-		for b in batch:
-			var p2: CharacterPortrait = b[0]
-			var vp2: SubViewport = b[1]
-			if is_instance_valid(p2) and is_instance_valid(vp2):
-				p2._baked = ImageTexture.create_from_image(vp2.get_texture().get_image())
-				p2._baking = false
-				p2.queue_redraw()
-			if is_instance_valid(vp2):
-				vp2.queue_free()
+		if is_instance_valid(vp):
+			var img := vp.get_texture().get_image()                 # ONE readback for the whole batch
+			for e in batch:
+				var p2: CharacterPortrait = e[0]
+				if is_instance_valid(p2):
+					p2._baked = ImageTexture.create_from_image(img.get_region(Rect2i(e[1], e[2])))
+					p2._baking = false
+					p2.queue_redraw()
+			vp.queue_free()
 		if tree == null or not is_instance_valid(tree.root):
 			break
 	_pumping = false
-
 
 func _process(delta: float) -> void:
 	_t += delta
 	queue_redraw()
 
 
+## Animated + pixel art: the live portrait is drawn into a small viewport (1 / PIX size) every frame.
+func _live_texture() -> Texture2D:
+	if _live_vp == null:
+		_live_vp = SubViewport.new()
+		_live_vp.transparent_bg = true
+		_live_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		add_child(_live_vp)
+		_live_painter = CharacterPortrait.new()
+		_live_painter.pixel = false
+		_live_painter.bake = false
+		_live_painter.animate = true
+		_live_painter.scale = Vector2.ONE / float(PIX)
+		_live_vp.add_child(_live_painter)
+	var want := Vector2i(maxi(floori(size.x / float(PIX)), 1), maxi(floori(size.y / float(PIX)), 1))
+	if _live_vp.size != want:
+		_live_vp.size = want
+	_live_painter.art = art
+	_live_painter.accent = accent
+	_live_painter.art_scale = art_scale
+	_live_painter.portrait_h = portrait_h
+	_live_painter.size = size
+	return _live_vp.get_texture()
+
+
+func _drop_live() -> void:
+	if _live_vp != null:
+		_live_vp.queue_free()
+		_live_vp = null
+		_live_painter = null
+
+
 func _draw() -> void:
 	if bake and not animate:
 		if _baked != null:
-			draw_texture(_baked, Vector2.ZERO)
+			draw_texture_rect(_baked, Rect2(Vector2.ZERO, size), false)
 			return
 		_request_bake()                              # Live this frame, baked from the next ones
+	elif animate and _pixel_on():
+		draw_texture_rect(_live_texture(), Rect2(Vector2.ZERO, size), false)
+		return
 	var center := Vector2(size.x * 0.5, size.y * 0.5)
 	var r := minf(size.x, size.y) * 0.42
 

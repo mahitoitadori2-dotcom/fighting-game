@@ -16,16 +16,109 @@ var _glow: Label
 var _title_y := 0.0
 
 
+## WEB: the page's loading bar (web_shell/shell.html) fills up and disappears only when this is called -
+## after the menu has drawn its first frame, so the game shows up exactly when the bar is full.
+func _tell_page_ready() -> void:
+	if not OS.has_feature("web"):
+		return
+	await RenderingServer.frame_post_draw
+	JavaScriptBridge.eval("if (window.ubReady) { window.ubReady(); }", true)
+
+
 func _ready() -> void:
 	SoundManager.play_music("menu")              # Keeps playing if it already is
 	BossRush.cancel()                             # Left a Boss Rush through the pause menu
 	QoL.save_picks()                              # Your fighter / opponent / arena come back next time
 	_build()
 	UiStyle.focus_later(_play)
+	_tell_page_ready.call_deferred()
+	_add_code_button()
+
+
+# ============================================================
+# SECRET CODES (SecretCodes.gd): phones get a CODE button, PC types arrow / WASD orders
+# ============================================================
+var _code_panel: CodePanel = null
+
+
+## Phones / tablets only: a small CODE button in the top-right corner.
+func _add_code_button() -> void:
+	if not _is_touch_device():
+		return
+	var b := UiStyle.make_button("CODE", Vector2(110, 46), 18)
+	b.anchor_left = 1.0
+	b.anchor_right = 1.0
+	b.offset_left = -126.0
+	b.offset_right = -16.0
+	b.offset_top = 14.0
+	b.offset_bottom = 60.0
+	b.focus_mode = Control.FOCUS_NONE
+	b.modulate.a = 0.75
+	b.pressed.connect(func() -> void: _open_codes(""))
+	add_child(b)
+
+
+static func _is_touch_device() -> bool:
+	return OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios") or DisplayServer.is_touchscreen_available()
+
+
+func _open_codes(preset: String) -> void:
+	if _code_panel != null and is_instance_valid(_code_panel):
+		return
+	_code_panel = CodePanel.open(self, preset)
+	_code_panel.closed.connect(func() -> void:
+		_code_panel = null
+		_refresh_after_code.call_deferred())
+
+
+## A code may change who you are (Rotor Mode) or the achievement count: rebuild the menu.
+func _refresh_after_code() -> void:
+	if is_inside_tree():
+		get_tree().reload_current_scene()
+
+
+## PC: arrow keys / WASD / D-pad on the Main Menu feed the code orders (they still move the focus too).
+func _input(event: InputEvent) -> void:
+	if _code_panel != null and is_instance_valid(_code_panel):
+		return
+	if get_tree().root.get_node_or_null("XanxxePanel") != null:
+		return
+	var d := ""
+	var k := event as InputEventKey
+	if k != null and k.pressed and not k.echo:
+		match k.physical_keycode:
+			KEY_W, KEY_UP:
+				d = "U"
+			KEY_S, KEY_DOWN:
+				d = "D"
+			KEY_A, KEY_LEFT:
+				d = "L"
+			KEY_D, KEY_RIGHT:
+				d = "R"
+	var jb := event as InputEventJoypadButton
+	if jb != null and jb.pressed:
+		match jb.button_index:
+			JOY_BUTTON_DPAD_UP:
+				d = "U"
+			JOY_BUTTON_DPAD_DOWN:
+				d = "D"
+			JOY_BUTTON_DPAD_LEFT:
+				d = "L"
+			JOY_BUTTON_DPAD_RIGHT:
+				d = "R"
+	if d == "":
+		return
+	var id := SecretCodes.feed(d)
+	if id == "xanxxe":
+		if get_tree().root.get_node_or_null("XanxxePanel") == null:
+			XanxxePanel.open(get_tree())
+	elif id != "":
+		_open_codes(id)
 
 
 func _build() -> void:
-	var you := CharacterRoster.selected()
+	SecretCodes.load_codes()
+	var you := CharacterRoster.get_entry("rotor") if SecretCodes.rotor_mode else CharacterRoster.selected()
 	var opp := CharacterRoster.opponent()
 
 	# Portraits: you bottom-left, opponent bottom-right

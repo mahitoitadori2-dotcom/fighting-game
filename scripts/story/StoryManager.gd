@@ -177,13 +177,14 @@ func _ready() -> void:
 	active = true
 	add_to_group("story_manager")
 	StoryProgress.load_progress()
-	if StoryLevels.is_ext(StoryProgress.current_level):
-		level_number = StoryProgress.current_level          # Boss extension level (BC2...)
+	if StoryLevels.is_ext(StoryProgress.current_level) or Madness.is_madness(StoryProgress.current_level):
+		level_number = StoryProgress.current_level          # Boss extension level (BC2...) / MADNESS level (501-520)
 	else:
 		level_number = clampi(StoryProgress.current_level, 1, StoryLevels.count())
 	if BossRush.active:
 		level_number = BossRush.current_level()            # BOSS RUSH: the next boss in the run
 	level = StoryLevels.get_level(level_number)
+	SoundManager.set_madness(Madness.is_madness(level_number))   # MADNESS: dark, deep-fried sound
 	SoulsRules.active = bool(level.get("open_world", false)) or SoulsRules.test_force   # Open world: roll + stamina
 	if bool(level.get("void_mod", false)):
 		# Skipping the optional Shining level counts as leaving it alive
@@ -205,6 +206,8 @@ func _ready() -> void:
 		_spawn_trainer_ally()
 		max_attackers += 1
 	_place_messages()
+	if Madness.is_madness(level_number):
+		MadnessFX.install_level(self)                    # Grey world, blood red, grain, whispers
 	_hud = StoryHUD.new()
 	_hud.manager = self
 	add_child(_hud)
@@ -237,6 +240,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	SoundManager.set_madness(false)
 	active = false
 	SoulsRules.active = false
 	has_walls = false
@@ -277,6 +281,8 @@ func _apply_map(map: Dictionary) -> void:
 		center_x = ground.global_position.x
 		ground.ground_theme = int(map.get("ground", 2))
 		ground.solid = bool(map.get("solid", false))     # Caves / sewers: no floating island
+		if String(map.get("bg", "")) == "madness":
+			ground.modulate = Color(0.62, 0.16, 0.14)        # MADNESS: blood-red rock
 	_center_x = center_x
 	# Sewers: drifting green fog in front of the floor
 	if bool(map.get("fog", false)):
@@ -309,9 +315,18 @@ func _spawn_player() -> void:
 	if hero == "architect":
 		player = Player.new()                    # The Mighty Architect: own moves, look, animations
 		player.name = "P1_Architect"
-	else:
+	elif hero == "warrior":
 		player = Warrior.new()
 		player.name = "P1_Warrior"
+	else:
+		# MADNESS: any roster fighter (not APHA) with its own Versus kit
+		var e := CharacterRoster.get_entry(hero)
+		var fs: Script = e.get("fighter", Warrior)
+		player = fs.new() as ControlledFighter
+		if player == null:
+			player = Warrior.new()
+			hero = "warrior"
+		player.name = "P1_%s" % String(e.get("short", hero)).replace(" ", "")
 	player.position = player_spawn
 	player.spawn_position = player_spawn
 	player.slot = 1
@@ -323,8 +338,11 @@ func _spawn_player() -> void:
 		match hero:
 			"architect":
 				player.ctl = ArchitectAI.new()
-			_:
+			"warrior":
 				player.ctl = WarriorAI.new()
+			_:
+				var ai: Script = CharacterRoster.get_entry(hero).get("ai", WarriorAI)
+				player.ctl = ai.new()
 	else:
 		player.ctl = FighterInput.new()
 	add_child(player)
@@ -678,6 +696,7 @@ func buff_boss(e: BaseEnemy) -> void:
 	e.hp = e.data.max_hp
 	e.poise_max = maxf(float(e.data.max_hp) * STANCE_SHARE, 40.0)   # STANCE: ~1/5 of its HP in quick hits breaks it
 	e.health_changed.emit(e.hp, e.data.max_hp)
+	StoryDifficulty.apply_super_boss(e)                  # Every 50th level: SUPER BOSS (milestone rule)
 
 
 ## Weaken / strengthen void enemies after the altar choice (Colosseum 4 only).
@@ -756,6 +775,9 @@ func _intro() -> void:
 		Effects.gold_burst(player, player.global_position + Vector2(0, -80), 120.0)
 		SoundManager.play_sfx("heal")
 		intro = "THE SLIDE STOPS!  3 WAVES OF THEM.\nCOOLDOWNS RESET  -  FLASKS REFILLED"
+	var tag := StoryDifficulty.milestone_tag(level_number)       # Milestone rule: every 10th / 25th / 50th level
+	if tag != "" and not BossRush.active:
+		intro = "%s\n%s" % [tag, intro]
 	_show_banner(StoryLevels.level_label(level_number), intro, Color(1.0, 0.7, 0.3))
 	await _wait(1.2 if bool(level.get("quick_boss", false)) or _from_boss else 2.4)
 	_hide_banner()
@@ -1057,6 +1079,8 @@ func _on_boss_died() -> void:
 		if m != null and is_instance_valid(m) and not (m as BaseEnemy).is_dead:
 			return
 	boss_bar_visible = false
+	if StoryDifficulty.milestone(level_number) == 3 and not autoplay:
+		Achievements.unlock("super_boss")                # Milestone rule: a SUPER BOSS (every 50th level) is down
 	boss_defeated.emit()
 
 
@@ -1197,6 +1221,18 @@ func _boss_death_cutscene() -> void:
 func _level_clear() -> void:
 	CombatManager.fight_active = false
 	wave_text = ""
+	if Madness.is_madness(level_number):
+		# MADNESS: its own progress, then back to the Madness board
+		Madness.complete(level_number)
+		var last := Madness.local(level_number) == Madness.COUNT
+		_show_banner("%s CLEAR!" % Madness.label(level_number), _stats_text() + ("\nTHE XX0XN IS DOWN.  ASSASSIN SKIN UNLOCKED (Story board > SKINS)" if last else "\nProgress saved"), Madness.RED_HI)
+		SoundManager.play_sfx("ultimate")
+		if autoplay:
+			print("STORY autoplay: %s CLEAR (player hp %d)" % [Madness.label(level_number), player.hp])
+		await _wait(3.0)
+		_hide_banner()
+		get_tree().change_scene_to_file(Madness.BOARD_SCENE)
+		return
 	if bool(level.get("slide_fight", false)):
 		# THE MAGMA RUN, level 70: the waves are beaten - back to the slide for the last run
 		_show_banner("THE WAVES ARE BEATEN!", "More are coming.  SLIDE!", Color(1.0, 0.6, 0.3))
@@ -1291,9 +1327,10 @@ func _on_player_died() -> void:
 		var lv := level_number
 		_panel_button(panel, "RETRY FROM BOSS", func() -> void:
 			StoryManager.boss_retry = lv
-			get_tree().change_scene_to_file(ARENA_SCENE))
-	_panel_button(panel, "RETRY LEVEL", func() -> void: get_tree().change_scene_to_file(ARENA_SCENE))
-	_panel_button(panel, "STORY MENU", func() -> void: get_tree().change_scene_to_file(STORY_MENU))
+			LoadingScreen.goto(get_tree(), ARENA_SCENE, StoryLevels.level_label(level_number), "TRY AGAIN"))
+	_panel_button(panel, "RETRY LEVEL", func() -> void: LoadingScreen.goto(get_tree(), ARENA_SCENE, StoryLevels.level_label(level_number), "TRY AGAIN"))
+	_panel_button(panel, "MADNESS BOARD" if Madness.is_madness(level_number) else "STORY MENU", func() -> void:
+		get_tree().change_scene_to_file(Madness.BOARD_SCENE if Madness.is_madness(level_number) else STORY_MENU))
 	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
 
 
@@ -1318,7 +1355,7 @@ func _rush_next() -> void:
 	_show_banner("BOSS DOWN!  %d / %d" % [BossRush.index, BossRush.order.size()], "TIME %s     FLASKS %d\nCatch your breath  (+%d%% HP)" % [time_text(BossRush.total_time), flasks, int(BossRush.BREATHER_HEAL * 100.0)], Color(0.6, 1.0, 0.6))
 	SoundManager.play_sfx("ultimate")
 	await _wait(2.4)
-	get_tree().change_scene_to_file(ARENA_SCENE)
+	LoadingScreen.goto(get_tree(), ARENA_SCENE, StoryLevels.level_label(level_number), "TRY AGAIN")
 
 
 ## You died in a Boss Rush: the run ends here.
@@ -1335,7 +1372,7 @@ func _rush_over() -> void:
 	var h := BossRush.hero
 	_panel_button(panel, "TRY AGAIN", func() -> void:
 		if BossRush.start(h):
-			get_tree().change_scene_to_file(ARENA_SCENE))
+			LoadingScreen.goto(get_tree(), ARENA_SCENE, StoryLevels.level_label(level_number), "TRY AGAIN"))
 	_panel_button(panel, "BOSS RUSH MENU", func() -> void: get_tree().change_scene_to_file(BossRush.MENU_SCENE))
 	_panel_button(panel, "MAIN MENU", func() -> void: get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU))
 

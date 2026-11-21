@@ -92,10 +92,12 @@ func _physics_process(delta: float) -> void:
 		if ctl.any_mash():
 			grab_mash()
 		_update_visuals(delta)
+		update_pose(delta, false)
 		return
 	if forced_update(delta):
 		check_fall_death()
 		_update_visuals(delta)
+		update_pose(delta, false)
 		return
 	if is_human():
 		_handle_debug_input()
@@ -108,6 +110,7 @@ func _physics_process(delta: float) -> void:
 			move_and_slide()
 			check_fall_death()
 			_update_visuals(delta)
+			update_pose(delta, false)
 			_roll_visuals()
 			return
 		_handle_roll()
@@ -121,6 +124,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	check_fall_death()
 	_update_visuals(delta)
+	update_pose(delta, is_attacking() or not _is_free())   # Shared walk / crouch / jump / attack animation
 
 
 func _tick_timers(delta: float) -> void:
@@ -393,6 +397,7 @@ func _on_death() -> void:
 	visuals.rotation = 0.0
 	visuals.position = Vector2.ZERO
 	visuals.modulate.a = 1.0
+	reset_pose()
 	_on_death_extra()
 
 

@@ -9,10 +9,10 @@ extends ArchitectData
 @export var workfly_damage := 3
 @export var workfly_speed := 560.0
 @export var workfly_life := 3.0
-@export var workfly_cooldown := 2.6
+@export var workfly_cooldown := 3.8           # Nerf 2026-11-20: 2.6 -> 3.8
 
 @export_group("2 Anti Laser")
-@export var laser_damage := 9
+@export var laser_damage := 7                   # Nerf 2026-11-20: 9 -> 7
 @export var laser_range := 920.0
 @export var laser_height := 22.0
 @export var laser_cooldown := 5.5
@@ -28,7 +28,7 @@ extends ArchitectData
 
 @export_group("G1 BattleFlies")
 @export var battlefly_count := 3
-@export var battlefly_damage := 4
+@export var battlefly_damage := 3               # Nerf 2026-11-20: 4 -> 3
 @export var battlefly_hits := 2                  # Each fly hits twice, then pops
 @export var battlefly_speed := 720.0
 

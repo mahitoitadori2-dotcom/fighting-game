@@ -120,7 +120,7 @@ func play_sfx(sfx_name: String, volume_db: float = 0.0, pitch_jitter: float = 0.
 	p.stop()
 	p.stream = stream
 	p.volume_db = volume_db
-	p.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
+	p.pitch_scale = (1.0 + randf_range(-pitch_jitter, pitch_jitter)) * (MAD_SFX_PITCH if madness else 1.0)
 	p.play()
 
 
@@ -198,7 +198,7 @@ func play_music(music_name: String) -> void:
 	if music_name == _music_name and _current_music().playing:
 		return
 	_music_name = music_name
-	_target_pitch = 1.0
+	_target_pitch = _mad_music_pitch()
 	var stream := _load(MUSIC_DIR, music_name, MUSIC_EXTS)
 	var old := _current_music()
 	var nxt := _music_b if old == _music_a else _music_a
@@ -214,7 +214,7 @@ func play_music(music_name: String) -> void:
 	if nxt.stream != null and nxt.stream != stream:
 		_release_music(nxt)                             # Free the track this player held before
 	nxt.stream = stream
-	nxt.pitch_scale = 1.0
+	nxt.pitch_scale = _mad_music_pitch()
 	if OS.has_feature("web"):
 		# WEB: no fade-in. The web build plays audio as browser "samples", and a volume tween on a
 		# playing sample does not reach the browser - the track stayed at -40 dB (silent).
@@ -314,14 +314,14 @@ func _set_loop(stream: AudioStream) -> void:
 ## Fight music speeds up when YOUR fighter (slot 1) is low on HP.
 func _check_low_hp() -> void:
 	if _music_name != "fight" and not _music_name.begins_with("boss"):
-		_target_pitch = 1.0
+		_target_pitch = _mad_music_pitch()
 	else:
 		var low := false
 		for n in get_tree().get_nodes_in_group("fighters"):
 			var f := n as Fighter
 			if f != null and f.slot == 1 and not f.is_dead and f.data != null:
 				low = float(f.hp) / maxf(float(f.data.max_hp), 1.0) <= LOW_HP_RATIO
-		_target_pitch = LOW_HP_PITCH if low else 1.0
+		_target_pitch = (LOW_HP_PITCH if low else 1.0) * _mad_music_pitch()
 	set_process(not is_equal_approx(_current_music().pitch_scale, _target_pitch))
 
 
@@ -330,6 +330,96 @@ func _process(delta: float) -> void:
 	p.pitch_scale = move_toward(p.pitch_scale, _target_pitch, delta * 0.25)   # Smooth tempo ramp
 	if is_equal_approx(p.pitch_scale, _target_pitch):
 		set_process(false)
+
+
+# ============================================================
+# MADNESS AUDIO (2026-11-21, user: "make the sound effects darker and deep fried", "the music has to
+# be more dark"). For the WHOLE Madness section (the board, its levels, the XANXXE panel):
+#   SOUND EFFECTS -> bus "MadSFX": pitched down ~30%, a big bass boost, BITCRUSH (lo-fi), hard
+#                    OVERDRIVE, then a limiter (deep fried, but never ear-splitting)
+#   MUSIC         -> bus "MadMusic": slower + lower (pitch 0.86), muffled (low-pass), gritty, a long dark reverb
+# Both buses send into SFX / Music, so the player's volume settings still apply.
+# WEB: sound effects are browser "samples" there, which skip bus effects - in Madness they are
+# played as STREAMS (like the music) so the effects work on phones too.
+# ============================================================
+const MAD_SFX_PITCH := 0.72
+const MAD_MUSIC_PITCH := 0.86
+var madness := false
+
+
+func set_madness(on: bool) -> void:
+	if on == madness:
+		return
+	madness = on
+	if on:
+		_build_madness_buses()
+	for p in _voices:
+		p.stop()
+		p.bus = "MadSFX" if on else "SFX"
+		if OS.has_feature("web"):
+			p.playback_type = AudioServer.PLAYBACK_TYPE_STREAM if on else AudioServer.PLAYBACK_TYPE_DEFAULT
+	for p in [_music_a, _music_b]:
+		(p as AudioStreamPlayer).bus = "MadMusic" if on else "Music"
+	_target_pitch = _mad_music_pitch()
+	set_process(true)
+
+
+func _mad_music_pitch() -> float:
+	return MAD_MUSIC_PITCH if madness else 1.0
+
+
+func _build_madness_buses() -> void:
+	if AudioServer.get_bus_index("MadSFX") != -1:
+		return
+	var sfx := _ensure_bus("MadSFX")
+	AudioServer.set_bus_send(sfx, "SFX")
+	var eq := AudioEffectEQ6.new()
+	eq.set_band_gain_db(0, 12.0)              # 32 Hz: deep
+	eq.set_band_gain_db(1, 10.0)              # 100 Hz
+	eq.set_band_gain_db(2, 3.0)
+	eq.set_band_gain_db(4, -4.0)
+	eq.set_band_gain_db(5, -9.0)              # 10 kHz: dull, dark
+	AudioServer.add_bus_effect(sfx, eq)
+	var crush := AudioEffectDistortion.new()   # Bitcrush
+	crush.mode = AudioEffectDistortion.MODE_LOFI
+	crush.drive = 0.72
+	crush.pre_gain = 6.0
+	crush.post_gain = -4.0
+	crush.keep_hf_hz = 3000.0
+	AudioServer.add_bus_effect(sfx, crush)
+	var fry := AudioEffectDistortion.new()     # Deep fried
+	fry.mode = AudioEffectDistortion.MODE_OVERDRIVE
+	fry.drive = 0.9
+	fry.pre_gain = 14.0
+	fry.post_gain = -12.0
+	AudioServer.add_bus_effect(sfx, fry)
+	var lim := AudioEffectHardLimiter.new()
+	lim.ceiling_db = -3.0
+	AudioServer.add_bus_effect(sfx, lim)
+	var mus := _ensure_bus("MadMusic")
+	AudioServer.set_bus_send(mus, "Music")
+	var lp := AudioEffectLowPassFilter.new()
+	lp.cutoff_hz = 2400.0
+	AudioServer.add_bus_effect(mus, lp)
+	var meq := AudioEffectEQ6.new()
+	meq.set_band_gain_db(0, 6.0)
+	meq.set_band_gain_db(1, 5.0)
+	AudioServer.add_bus_effect(mus, meq)
+	var grit := AudioEffectDistortion.new()
+	grit.mode = AudioEffectDistortion.MODE_OVERDRIVE
+	grit.drive = 0.35
+	grit.pre_gain = 3.0
+	grit.post_gain = -5.0
+	AudioServer.add_bus_effect(mus, grit)
+	var rev := AudioEffectReverb.new()
+	rev.room_size = 0.9
+	rev.damping = 0.55
+	rev.wet = 0.32
+	rev.dry = 0.85
+	AudioServer.add_bus_effect(mus, rev)
+	var mlim := AudioEffectHardLimiter.new()
+	mlim.ceiling_db = -2.0
+	AudioServer.add_bus_effect(mus, mlim)
 
 
 # ============================================================

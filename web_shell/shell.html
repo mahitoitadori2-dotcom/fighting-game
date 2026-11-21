@@ -62,15 +62,17 @@ $GODOT_HEAD_INCLUDE
 <canvas id="canvas" tabindex="0">Your browser does not support the canvas tag.</canvas>
 <noscript><div class="overlay"><div class="error"><h2>JavaScript is required to play.</h2></div></div></noscript>
 
-<!-- 1) Downloading -->
-<div id="loading" class="overlay">
+<!-- 2) Loading - AFTER the tap: the rest of the download + the engine starting. It is hidden only when
+     the game itself says its menu is up (window.ubReady), so the game appears exactly when the bar is full. -->
+<div id="loading" class="overlay" hidden>
 	<div class="logo">Universal<br><span>Beatdown</span></div>
 	<div class="bar"><i id="progress"></i></div>
-	<div class="note" id="loading-text">Loading the arena...</div>
+	<div class="note" id="loading-text">Loading...</div>
 </div>
 
-<!-- 2) Tap to Start (unlocks audio on iPhone / Safari, enters fullscreen on Android) -->
-<div id="start" class="overlay" hidden>
+<!-- 1) Tap to Start - FIRST (unlocks audio on iPhone / Safari, enters fullscreen on Android). The download
+     already runs quietly in the background, so the loading bar after the tap is short. -->
+<div id="start" class="overlay">
 	<div class="logo">Universal<br><span>Beatdown</span></div>
 	<button id="tap" type="button">TAP TO START</button>
 	<div class="note" id="start-hint"></div>
@@ -197,30 +199,85 @@ $GODOT_HEAD_INCLUDE
 	window.addEventListener('blur', function () { if (isTouch) { suspendAudio(); } });
 	window.addEventListener('focus', resumeAudio);
 
-	// ---------- Download everything BEFORE the tap, so the tap starts instantly ----------
+	// ---------- LOADING (2026-11-21): TAP TO START first, the loading bar AFTER it ----------
+	// The download starts right away in the background (so it is quick after the tap), but the bar
+	// is only shown after the tap:  0-70 % = downloading,  70-100 % = the engine starting + the menu
+	// loading. The bar reaches 100 % and the game appears when the GAME says it is ready
+	// (MainMenu calls window.ubReady()), never before.
+	let dlPct = 0;                      // Download 0..100
+	let downloaded = false;
+	let bootPct = 0;                    // Engine start 0..95 (eased while we wait)
+	let tapped = false;
+	let engineStarted = false;
+	let ready = false;
+	function setBar(pct, text) {
+		$('progress').style.width = Math.max(0, Math.min(100, pct)).toFixed(1) + '%';
+		$('loading-text').textContent = text;
+	}
+	function drawBar() {
+		if (!tapped || ready) { return; }
+		if (!downloaded) {
+			setBar(dlPct * 0.7, 'Downloading the game... ' + Math.round(dlPct * 0.7) + '%');
+		} else {
+			setBar(70 + bootPct * 0.3, 'Starting the game... ' + Math.round(70 + bootPct * 0.3) + '%');
+		}
+	}
 	const engine = new Engine(Object.assign({}, GODOT_CONFIG, {
 		onProgress: function (current, total) {
 			if (total > 0) {
-				const pct = Math.min(100, Math.round(current / total * 100));
-				$('progress').style.width = pct + '%';
-				$('loading-text').textContent = 'Loading the arena... ' + pct + '%';
+				dlPct = Math.min(100, current / total * 100);
+				drawBar();
 			}
 		},
 	}));
 	const exe = GODOT_CONFIG.executable;
 	const pack = GODOT_CONFIG.mainPack || (exe + '.pck');
+	$('start-hint').innerHTML = isTouch
+		? 'Touch controls: <b>left thumb</b> = move, <b>right buttons</b> = attack / jump / block / moves.'
+		: '<b>A / D</b> or <b>Arrows</b> move &middot; <b>W</b> / <b>Up</b> jump &middot; <b>S</b> / <b>Down</b> crouch &middot; <b>F</b> block &middot; <b>Left Click</b> / <b>Space</b> attack &middot; <b>1 2 3</b> moves &middot; <b>G</b> ultimate';
+	$('tap').focus();
 
-	Promise.all([engine.init(exe), engine.preloadFile(pack, pack)]).then(function () {
-		$('progress').style.width = '100%';
-		$('start-hint').innerHTML = isTouch
-			? 'Touch controls: <b>left thumb</b> = move, <b>right buttons</b> = attack / jump / block / moves.'
-			: '<b>A / D</b> or <b>Arrows</b> move &middot; <b>W</b> / <b>Up</b> jump &middot; <b>S</b> / <b>Down</b> crouch &middot; <b>F</b> block &middot; <b>Left Click</b> / <b>Space</b> attack &middot; <b>1 2 3</b> moves &middot; <b>G</b> ultimate';
-		show('start');
-		$('tap').focus();
-	}).catch(function (err) {
+	const downloadDone = Promise.all([engine.init(exe), engine.preloadFile(pack, pack)]).then(function () {
+		downloaded = true;
+		dlPct = 100;
+		drawBar();
+	});
+	downloadDone.catch(function (err) {
 		console.error(err);
 		fail('The game failed to load', 'Check your connection and reload the page.<br><small>' + String(err && err.message || err) + '</small>');
 	});
+
+	// The game is up: called from the game itself (MainMenu, through JavaScriptBridge)
+	window.ubReady = function () {
+		if (ready) { return; }
+		ready = true;
+		setBar(100, 'Ready!');
+		setTimeout(function () {
+			$('loading').hidden = true;
+			$('canvas').focus();
+			resumeAudio();
+		}, 250);
+	};
+
+	function startEngine() {
+		if (engineStarted) { return; }
+		engineStarted = true;
+		const t0 = performance.now();
+		// While the engine starts there is no real progress to read: ease towards 95 % (fast at
+		// first, then slower); the last 5 % only when the game says it is ready.
+		const tick = setInterval(function () {
+			if (ready) { clearInterval(tick); return; }
+			bootPct = 95 * (1 - Math.exp(-((performance.now() - t0) / 1000) / 2.2));
+			drawBar();
+		}, 100);
+		engine.start({ args: ['--main-pack', pack] }).catch(function (err) {
+			console.error(err);
+			clearInterval(tick);
+			fail('The game crashed while starting', 'Reload the page to try again.<br><small>' + String(err && err.message || err) + '</small>');
+		});
+		// Safety net: if the ready call never comes (an old cached game), show it anyway
+		setTimeout(function () { if (!ready) { window.ubReady(); } }, 30000);
+	}
 
 	// ---------- Tap to Start ----------
 	let started = false;
@@ -254,13 +311,11 @@ $GODOT_HEAD_INCLUDE
 			}
 		}
 
-		$('start').hidden = true;
-		$('loading').hidden = true;
-		$('canvas').focus();
-		engine.start({ args: ['--main-pack', pack] }).catch(function (err) {
-			console.error(err);
-			fail('The game crashed while starting', 'Reload the page to try again.<br><small>' + String(err && err.message || err) + '</small>');
-		});
+		// The loading bar comes AFTER the tap; the engine starts as soon as the download is in
+		tapped = true;
+		show('loading');
+		drawBar();
+		downloadDone.then(startEngine).catch(function () {});
 	}
 	// The phone took the GPU away (memory pressure, app switch): explain it instead of a
 	// frozen / black screen. Story progress is saved after every level.

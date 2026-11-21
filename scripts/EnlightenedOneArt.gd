@@ -26,7 +26,9 @@ const BLACK := Color(0, 0, 0)
 
 
 static func draw(c: CanvasItem, e: EnlightenedOne) -> void:
+	e.anim_legs = true                                  # This art bends its knees (shared animation)
 	_draw_figure(c, {
+		"anim": FighterArt.anim_of(e),
 		"t": e.anim_time, "ph": e.walk_phase, "floor": e.is_on_floor(),
 		"punch": e.punch_ext, "block": e.block_amt, "perfect": e.perfect_flash,
 		"cast": e.cast_pose, "gorilla": e.is_gorilla(), "heal": e.heal_t,
@@ -58,16 +60,10 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 	_halo(c, Vector2(1, -116) + u, t)
 
 	# --- Legs: cloth + gold greaves ---
-	var sw := sin(ph) * 13.0
-	var lift_f := maxf(0.0, cos(ph)) * 7.0
-	var lift_b := maxf(0.0, -cos(ph)) * 7.0
-	if not on_floor:
-		sw = 7.0
-		lift_f = 12.0
-		lift_b = 4.0
 	var wide := 6.0 if gor else 0.0                       # Wider stance
-	_leg(c, Vector2(-6, -52), Vector2(-8.0 - sw - wide, -5.0 - lift_b), true)
-	_leg(c, Vector2(6, -52), Vector2(8.0 + sw + wide, -5.0 - lift_f), false)
+	var g := FighterArt.gait(s.get("anim", {}), ph, on_floor, -8.0 - wide, 8.0 + wide, -5.0)   # Shared walk / crouch / jump
+	_leg(c, Vector2(-6, -52), g[0], true)
+	_leg(c, Vector2(6, -52), g[1], false)
 
 	# --- Arm targets ---
 	var swing := sin(ph) * 8.0 * (1.0 - maxf(e, b))
@@ -191,31 +187,30 @@ static func _head(c: CanvasItem, hc: Vector2, t: float, gor: bool) -> void:
 	# Hood (indigo cloth) behind the mask
 	c.draw_circle(hc + Vector2(-2, 0), 17.5, BLACK)
 	c.draw_circle(hc + Vector2(-2, 0), 15.0, CLOTH)
-	# Ivory face-mask: tall rounded plate
-	var mask := FighterArt.rrect_points(Rect2(hc + Vector2(-5, -13), Vector2(20, 26)), 9.0)
-	c.draw_colored_polygon(mask, IVORY)
-	c.draw_colored_polygon(FighterArt.rrect_points(Rect2(hc + Vector2(9, -10), Vector2(6, 22)), 3.0), IVORY_SHADE)
-	var mc := mask.duplicate()
-	mc.append(mask[0])
-	c.draw_polyline(mc, BLACK, 3.0, FighterArt.AA)
-	# Glowing gold eye slits
-	var glow := 0.7 + 0.3 * sin(t * 4.0)
-	if gor:
-		glow = 1.0
-	for ex in [3.0, 10.0]:
-		var r := Rect2(hc + Vector2(ex, -5), Vector2(3, 9))
-		c.draw_rect(r.grow(1.2), BLACK)
-		c.draw_rect(r, Color(LIGHT.r, LIGHT.g, LIGHT.b, glow))
-	# Gold circlet with a gem
-	c.draw_line(hc + Vector2(-6, -11), hc + Vector2(15, -11), BLACK, 5.0)
-	c.draw_line(hc + Vector2(-5, -11), hc + Vector2(14, -11), GOLD, 3.0)
-	c.draw_circle(hc + Vector2(5, -12), 3.2, BLACK)
-	c.draw_circle(hc + Vector2(5, -12), 2.2, Color(0.4, 0.9, 1.0))
+	# PIXEL ART mask (hand-pixelled): ivory plate, gold circlet + gem, glowing gold eye slits
+	var glow := 1.0 if gor else 0.7 + 0.3 * sin(t * 4.0)
+	PixelSprite.draw(c, PackedStringArray(_MASK_PX), {
+		"K": BLACK, "I": IVORY, "i": IVORY_SHADE, "G": GOLD, "C": Color(0.4, 0.9, 1.0),
+		"L": IVORY_SHADE.lerp(LIGHT, glow),
+	}, hc + Vector2(-6, -16))
 
+
+const _MASK_PX := [
+	"..KKKK..",
+	"KGGCGGGK",
+	"KIIIIIiK",
+	"KIIIIIiK",
+	"KIILILiK",
+	"KIILILiK",
+	"KIIIIIiK",
+	"KIIIIIiK",
+	".KIIIiK.",
+	"..KKKK..",
+]
 
 static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool) -> void:
 	var base := CLOTH_SHADE if far else CLOTH
-	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
+	var knee := FighterArt.knee(hip, foot, FighterArt.leg_seg(47.0, 7.0))   # Real knee bend
 	FighterArt.limb(c, hip, knee, 12.0, base, CLOTH_SHADE, CLOTH_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 12.0, GOLD_SHADE if far else GOLD, GOLD_SHADE, GOLD_HI)  # Greave
 	# Concept art: SPIRAL patterns on the legs

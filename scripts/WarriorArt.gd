@@ -50,7 +50,9 @@ const BLACK := Color(0, 0, 0)
 
 
 static func draw(c: CanvasItem, w: Warrior) -> void:
+	w.anim_legs = true                                  # This art bends its knees (shared animation)
 	_draw_figure(c, {
+		"anim": FighterArt.anim_of(w),
 		"t": w.anim_time, "ph": w.walk_phase, "floor": w.is_on_floor(),
 		"swing": w.sword_swing, "block": w.block_amt, "perfect": w.perfect_flash,
 		"grab_len": w.grab_len, "grab_h": w.wd.grab_height,
@@ -89,18 +91,13 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 		_shadow_aura(c, t, shadow)
 
 	# --- Legs ---
-	var sw := sin(ph) * 13.0
-	var lift_f := maxf(0.0, cos(ph)) * 7.0
-	var lift_b := maxf(0.0, -cos(ph)) * 7.0
-	if not on_floor:
-		sw = 7.0
-		lift_f = 12.0
-		lift_b = 4.0
-	_leg(c, Vector2(-6, -52), Vector2(-8.0 - sw, -5.0 - lift_b), true, royal)
-	_leg(c, Vector2(6, -52), Vector2(8.0 + sw, -5.0 - lift_f), false, royal)
+	var an: Dictionary = s.get("anim", {})
+	var g := FighterArt.gait(an, ph, on_floor, -8.0, 8.0, -5.0)          # Shared walk / crouch / jump cycle
+	_leg(c, Vector2(-6, -52), g[0], true, royal)
+	_leg(c, Vector2(6, -52), g[1], false, royal)
 
 	# --- Far arm (empty hand) ---
-	var arm_sw := sin(ph) * 8.0 * (1.0 - maxf(absf(swing), b))
+	var arm_sw := sin(ph) * 8.0 * (1.0 - maxf(absf(swing), b)) * float(s.get("anim", {}).get("walk", 1.0))
 	var b_el := Vector2(-10.0 + arm_sw * 0.5, -74).lerp(Vector2(10, -72), b)
 	var b_hand := Vector2(-9.0 + arm_sw, -55).lerp(Vector2(20, -80), b)
 	_arm(c, Vector2(-4, -92), b_el, b_hand, true, royal)
@@ -195,7 +192,7 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 # ============================================================
 static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool, royal: float) -> void:
 	var base := VOID_SHADE if far else VOID
-	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
+	var knee := FighterArt.knee(hip, foot, FighterArt.leg_seg(47.0, 7.0))   # Real knee bend
 	FighterArt.limb(c, hip, knee, 12.0, base, VOID_SHADE, VOID_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 11.0, base, VOID_SHADE, VOID_HI)
 	# Concept art: BANDED legs (dark stripes) and a dark patch on the knee
@@ -255,27 +252,31 @@ static func _drip(c: CanvasItem, top: Vector2, length: float) -> void:
 	c.draw_circle(tip + Vector2(-0.8, -0.8), 0.9, VOID_HI)
 
 
-static func _helmet(c: CanvasItem, t: float) -> void:
-	var hc := Vector2(3, -113)
-	FighterArt.ball(c, hc, 15.0, SILVER, SILVER_SHADE, SILVER_HI)
-	# Crest ridge + a short antenna spike (concept art)
-	c.draw_line(Vector2(-9, -124), Vector2(8, -127), SILVER_SHADE, 3.0)
-	c.draw_line(Vector2(0, -127), Vector2(4, -134), BLACK, 3.0)
-	c.draw_line(Vector2(0, -127), Vector2(4, -134), SILVER_SHADE, 1.5)
-	# Concept art: a dark VISOR BAND across the face, one glowing eye in the slit
-	var glow := 0.55 + 0.45 * sin(t * 3.0)
-	var visor := PackedVector2Array([Vector2(-6, -121), Vector2(18, -121), Vector2(18, -112), Vector2(-6, -113)])
-	c.draw_colored_polygon(visor, BLACK)
-	c.draw_colored_polygon(PackedVector2Array([Vector2(-4, -119.5), Vector2(16.5, -119.5), Vector2(16.5, -114), Vector2(-4, -114.5)]), VOID_SHADE)
-	c.draw_line(Vector2(6, -117), Vector2(16, -117), Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, 0.35 * glow), 2.0)
-	c.draw_circle(Vector2(13, -117), 2.0, Color(VOID_GLOW.r, VOID_GLOW.g, VOID_GLOW.b, glow))
-	c.draw_circle(Vector2(13, -117), 0.9, Color(1, 1, 1, glow))
-	# Jaw guard + rim + rivets
-	c.draw_rect(Rect2(10.0, -111, 7, 4), SILVER_SHADE)
-	c.draw_arc(hc, 15.0, 0.35, 2.6, 12, SILVER_SHADE, 3.0, FighterArt.AA)
-	for rv: Vector2 in [Vector2(-8, -110), Vector2(-3, -104)]:
-		c.draw_circle(rv, 1.3, SILVER_SHADE)
+## PIXEL ART helmet (hand-pixelled, 3-unit grid): silver dome, crest, antenna, black visor band,
+## one glowing void eye, jaw guard.
+const _HELMET_PX := [
+	"......K.....",
+	".....KK.....",
+	"...KKKKKKK..",
+	"..KHSDDDDSK.",
+	".KHSSSSSSSSK",
+	".KSKKKKKKKKK",
+	".KSKVVVVVGVK",
+	".KSKKKKKKKKK",
+	".KSSSSSSDDK.",
+	".KDSSSSSDDK.",
+	"..KDSSSSDK..",
+	"...KKDDDKK..",
+	".....KKK....",
+]
 
+
+static func _helmet(c: CanvasItem, t: float) -> void:
+	var glow := 0.55 + 0.45 * sin(t * 3.0)
+	PixelSprite.draw(c, PackedStringArray(_HELMET_PX), {
+		"K": BLACK, "S": SILVER, "D": SILVER_SHADE, "H": SILVER_HI, "V": VOID_SHADE,
+		"G": VOID_SHADE.lerp(VOID_GLOW.lerp(Color.WHITE, 0.3), glow),
+	}, Vector2(-15, -135))
 
 static func _void_face(c: CanvasItem, t: float, charge: float) -> void:
 	var hc := Vector2(3, -113)
@@ -360,30 +361,21 @@ static func _sword_scaled(c: CanvasItem, hand: Vector2, ang: float, sc: float) -
 	c.draw_polyline(closed, BLACK, 3.5, FighterArt.AA)
 
 
-static func _sword_base(c: CanvasItem, hand: Vector2, ang: float) -> void:
-	# Grip (wrapped, short) - straight into the blade, no guard
-	var g0 := hand + Vector2(-7, 0).rotated(ang)
-	var g1 := hand + Vector2(11, 0).rotated(ang)
-	c.draw_line(g0, g1, BLACK, 9.0, FighterArt.AA)
-	c.draw_line(g0, g1, GRIP, 5.0, FighterArt.AA)
-	for i in 3:
-		var p := hand + Vector2(-3.0 + float(i) * 5.0, 0).rotated(ang)
-		var n := Vector2(0, 3).rotated(ang)
-		c.draw_line(p - n, p + n + Vector2(2, 0).rotated(ang), Color(0.1, 0.08, 0.07), 1.5)
-	# Blade
-	var blade := _xf(_BLADE_PTS, hand, ang)
-	c.draw_colored_polygon(blade, BLADE)
-	var lower := _xf([Vector2(10, 0.5), Vector2(66, 0), Vector2(56, 3), Vector2(49, 5.5), Vector2(42, 3.5),
-		Vector2(34, 6.5), Vector2(26, 4), Vector2(18, 6), Vector2(10, 5)], hand, ang)
-	c.draw_colored_polygon(lower, BLADE_SHADE)
-	var edge := _xf([Vector2(14, -3.5), Vector2(25, -2), Vector2(33, -4.8), Vector2(47, -4.2), Vector2(60, -1)], hand, ang)
-	c.draw_polyline(edge, BLADE_EDGE, 2.0, FighterArt.AA)
-	var nick := _xf([Vector2(30, 1), Vector2(36, -1)], hand, ang)        # Scratches
-	c.draw_line(nick[0], nick[1], BLADE_SHADE, 1.5)
-	var closed := blade.duplicate()
-	closed.append(blade[0])
-	c.draw_polyline(closed, BLACK, 3.5, FighterArt.AA)
+## PIXEL ART sword (hand-pixelled): the jagged void-metal shard, wrapped grip, no guard.
+## Pivot = the hand (cell 2.5, 2.5); the whole sprite turns with the swing.
+const _SWORD_PX := [
+	"......KKKK.KKKK.KKKK.....",
+	".KKKKKEEEEKEEEEKEEEEKKK..",
+	"KggggKBBBBBBBBBBBBBBBBBKK",
+	".KKKKKbbbbbbKbbbbbbbbbK..",
+	"......KKKKKK.KKKKKKKKK...",
+]
 
+
+static func _sword_base(c: CanvasItem, hand: Vector2, ang: float) -> void:
+	PixelSprite.draw_rotated(c, PackedStringArray(_SWORD_PX), {
+		"K": BLACK, "g": GRIP, "B": BLADE, "b": BLADE_SHADE, "E": BLADE_EDGE,
+	}, hand, Vector2(2.5, 2.5), ang)
 
 static func _swing_trail(c: CanvasItem, swing: float) -> void:
 	var a := (swing - 0.6) / 0.4

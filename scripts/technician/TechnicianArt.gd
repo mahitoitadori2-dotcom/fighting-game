@@ -18,7 +18,8 @@ const BLACK := Color(0, 0, 0)
 
 
 static func draw(c: CanvasItem, f: Technician) -> void:
-	_figure(c, {"t": f.anim_time, "ph": f.walk_phase, "floor": f.is_on_floor(), "punch": f.punch_ext,
+	f.anim_legs = true                                  # This art bends its knees (shared animation)
+	_figure(c, {"anim": FighterArt.anim_of(f),"t": f.anim_time, "ph": f.walk_phase, "floor": f.is_on_floor(), "punch": f.punch_ext,
 		"block": f.block_amt, "tool": f.tool_k, "coil": f.coil_flash, "heal": f.heal_glow})
 
 
@@ -50,15 +51,9 @@ static func _figure(c: CanvasItem, s: Dictionary) -> void:
 	c.draw_circle(Vector2(-18, -80), 7.0, BLACK)
 	c.draw_circle(Vector2(-18, -80), 5.0, RUST)
 	# --- Legs: piston legs with round knee joints and flat clamp feet ---
-	var sw := sin(ph) * 12.0
-	var lf := maxf(0.0, cos(ph)) * 7.0
-	var lb := maxf(0.0, -cos(ph)) * 7.0
-	if not on_floor:
-		sw = 6.0
-		lf = 12.0
-		lb = 4.0
-	_leg(c, Vector2(-6, -54), Vector2(-8.0 - sw, -4.0 - lb), true)
-	_leg(c, Vector2(6, -54), Vector2(8.0 + sw, -4.0 - lf), false)
+	var g := FighterArt.gait(s.get("anim", {}), ph, on_floor, -8.0, 8.0, -4.0, 12.0)   # Shared walk / crouch / jump
+	_leg(c, Vector2(-6, -54), g[0], true)
+	_leg(c, Vector2(6, -54), g[1], false)
 	# --- Far arm: the CABLE-SPOOL claw ---
 	var claw_hand := Vector2(-10, -58).lerp(Vector2(26, -86), tool)
 	_arm(c, Vector2(-6, -92), (Vector2(-6, -92) + claw_hand) * 0.5 + Vector2(-4, 6), claw_hand, true)
@@ -102,7 +97,7 @@ static func _figure(c: CanvasItem, s: Dictionary) -> void:
 
 static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool) -> void:
 	var col := METAL_SHADE if far else METAL
-	var knee := (hip + foot) * 0.5 + Vector2(6, 0)
+	var knee := FighterArt.knee(hip, foot, FighterArt.leg_seg(50.0, 6.0))   # Real knee bend
 	FighterArt.limb(c, hip, knee, 10.0, col, METAL_SHADE, METAL_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 7.0, METAL_SHADE if far else RUST.lerp(METAL, 0.5), METAL_SHADE, METAL_HI)
 	FighterArt.ball(c, knee, 5.0, METAL_SHADE, BLACK, METAL)
@@ -117,17 +112,22 @@ static func _arm(c: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2
 	FighterArt.ball(c, elbow, 4.0, METAL_SHADE, BLACK, METAL)
 
 
-static func _wrench(c: CanvasItem, hand: Vector2, ang: float) -> void:
-	var d := Vector2.from_angle(ang)
-	var head := hand + d * 34.0
-	c.draw_line(hand - d * 4.0, head, BLACK, 8.0)
-	c.draw_line(hand - d * 4.0, head, METAL_HI.lerp(METAL, 0.4), 5.0)
-	c.draw_circle(head, 9.0, BLACK)
-	c.draw_circle(head, 6.5, METAL)
-	c.draw_colored_polygon(PackedVector2Array([head + d * 2.0 + d.orthogonal() * 3.5, head + d * 10.0 + d.orthogonal() * 3.5,
-		head + d * 10.0 - d.orthogonal() * 3.5, head + d * 2.0 - d.orthogonal() * 3.5]), METAL_SHADE)   # Jaw gap
-	c.draw_circle(hand, 5.0, METAL_SHADE)
+## PIXEL ART wrench (hand-pixelled): long handle, open jaw head. Pivot = the hand.
+const _WRENCH_PX := [
+	"...........KKKK.",
+	"..........KMMMMK",
+	".KKKKKKKKKMMMKKK",
+	"KhhhhhhhhhMMK...",
+	".KKKKKKKKKMMMKKK",
+	"..........KMMMMK",
+	"...........KKKK.",
+]
 
+
+static func _wrench(c: CanvasItem, hand: Vector2, ang: float) -> void:
+	PixelSprite.draw_rotated(c, PackedStringArray(_WRENCH_PX), {
+		"K": BLACK, "h": METAL_HI.lerp(METAL, 0.4), "M": METAL,
+	}, hand, Vector2(1.5, 3.5), ang)
 
 static func _claw(c: CanvasItem, hand: Vector2) -> void:
 	c.draw_circle(hand, 7.0, BLACK)

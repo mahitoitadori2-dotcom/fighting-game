@@ -88,6 +88,9 @@ func _paint() -> void:
 	if OrdBackdrops.handles(theme):                        # Terra Ordinariorum (OrdBackdrops.gd)
 		OrdBackdrops.paint(_painter, theme, sz)
 		return
+	if MadnessBackdrops.handles(theme):                    # MADNESS (secret): red chains from hell
+		MadnessBackdrops.paint(_painter, theme, sz)
+		return
 	match theme:
 		"cave":
 			_paint_cave(sz)

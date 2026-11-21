@@ -55,6 +55,7 @@ func _ready() -> void:
 	apply(get_tree())
 	CombatManager.register_inputs()                 # All controls (+ the player's saved keys) from the very start
 	QoL.load_settings()                             # Quality of life: shake / flashes / text speed / your last picks
+	SecretCodes.boot(get_tree())                    # Secret codes: the Bug Tester overlay comes back if it was on
 	if not OS.has_feature("web"):
 		QoL.apply_fullscreen()                      # (A web page can only go fullscreen after a tap)
 	if WebSoak.wanted():                            # Hidden web memory test (?soak=1 in the address)

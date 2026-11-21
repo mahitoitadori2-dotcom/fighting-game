@@ -11,6 +11,7 @@ const SKINS := [
 	{"id": "", "name": "NORMAL", "how": ""},
 	{"id": "galaxy", "name": "GALAXY", "how": "Unlock the achievement\n'Multi-Multi-Multiversal Level Of Power'"},
 	{"id": "frozen", "name": "FROZEN EXPEDITION", "how": "Find the secret of\nTerra Ordinariorum"},
+	{"id": "assassin", "name": "ASSASSIN", "how": "???"},
 ]
 
 var _cards: Array = []
@@ -41,7 +42,7 @@ func _ready() -> void:
 	col.add_child(row)
 	for s in SKINS:
 		var card := Button.new()
-		card.custom_minimum_size = Vector2(320, 420)
+		card.custom_minimum_size = Vector2(280, 420)
 		card.focus_mode = Control.FOCUS_ALL
 		card.flat = true
 		card.pressed.connect(_pick.bind(String(s["id"])))
@@ -61,6 +62,9 @@ func _unlocked(id: String) -> bool:
 			return Achievements.is_unlocked(Achievements.ULTIMATE)
 		"frozen":
 			return StoryProgress.frozen_skins
+		"assassin":
+			Madness.load_data()
+			return Madness.skin
 	return true
 
 
@@ -99,6 +103,8 @@ func _draw_card(card: Button, s: Dictionary) -> void:
 		bg = Color(0.10, 0.06, 0.22, 0.95)
 	elif id == "frozen":
 		bg = Color(0.10, 0.16, 0.24, 0.95)
+	elif id == "assassin":
+		bg = Color(0.16, 0.02, 0.02, 0.95)
 	card.draw_rect(Rect2(Vector2.ZERO, sz), bg)
 	var border := Color(1.0, 0.82, 0.38) if chosen else (Color(0.9, 0.9, 1.0) if card.has_focus() else Color(0.35, 0.35, 0.4))
 	card.draw_rect(Rect2(Vector2.ZERO, sz), border, false, 5.0 if chosen else 3.0)
@@ -121,6 +127,8 @@ func _draw_card(card: Button, s: Dictionary) -> void:
 
 func _draw_hero(c: CanvasItem, skin: String, hero: String) -> void:
 	match skin:
+		"assassin":
+			AssassinSkin.draw_portrait(c, hero, _t)
 		"frozen":
 			FrozenSkin.draw_portrait(c, hero, _t)
 		"galaxy":

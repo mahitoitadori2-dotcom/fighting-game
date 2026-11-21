@@ -172,13 +172,19 @@ const NAMES := {
 	"volcano_slave": "VOLCANO SLAVE", "kharleming_sacrifice": "KHARLEMING SACRIFICE",
 	"baker": "THE BAKER", "washerwoman": "THE WASHERWOMAN", "guard": "THE TOWN GUARD", "elder": "THE ELDER",
 	"farmer": "THE FARMER", "child": "A CHILD", "trainer": "THE TRAINER", "storm": "THE STORM",
+	"judge": "THE OLDEST JUDGE", "shopkeeper": "THE SHOPKEEPER", "young_guard": "THE YOUNGEST GUARD",
+	"tw_woman": "A TOWNSWOMAN", "tw_farmer": "A FARMER", "tw_child": "A CHILD", "tw_baker": "THE SUN-BAKER",
+	"nightmare_lord": "THE NIGHTMARE LORD",
 }
 ## Townsfolk: their look (OrdArt.villager) and voice.
-const TOWN_LOOK := {"baker": 0, "washerwoman": 1, "guard": 3, "elder": 4, "farmer": 2, "child": 5}
-const TOWN_VOICE := {"baker": "town_m", "washerwoman": "town_f", "guard": "town_m", "elder": "town_old", "farmer": "town_m", "child": "town_child"}
+const TOWN_LOOK := {"baker": 0, "washerwoman": 1, "guard": 3, "elder": 4, "farmer": 2, "child": 5,
+	"tw_baker": 0, "tw_woman": 1, "tw_farmer": 2, "tw_child": 5}
+const TOWN_VOICE := {"baker": "town_m", "washerwoman": "town_f", "guard": "town_m", "elder": "town_old", "farmer": "town_m", "child": "town_child",
+	"judge": "town_old", "shopkeeper": "town_m", "young_guard": "town_child", "tw_baker": "town_m", "tw_woman": "town_f",
+	"tw_farmer": "town_m", "tw_child": "town_child", "nightmare_lord": "satan"}
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"storm": 1.0, "trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"judge": 1.8, "shopkeeper": 1.8, "young_guard": 1.8, "tw_baker": 1.8, "tw_woman": 1.8, "tw_farmer": 1.8, "tw_child": 1.5, "nightmare_lord": 1.9, "storm": 1.0, "trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -448,6 +454,92 @@ const ORBIS_LESSONS := {
 }
 
 
+## THE ABANDONED TOWN (level 81, lore by the user 2026-11-21). A town that walled itself in to keep
+## every danger out. 500 years without danger - but 500 years ago the NIGHTMARE came (first as a
+## plain traveller; everyone sensed something was wrong) and killed half of them, then burned other
+## lands. Their religion is THE SUN: they pray to be blessed with Knowledge and Strength (they do not
+## know she is dead). Very friendly - and they never leave their borders.
+## The FIRST talk with each of the three is their part of the lore ("lore" talks); all three heard ->
+## GO TO LEFT. Per person: [first talk, second talk, what they say after that].
+const ABANDONED := {
+	"judge": [
+		[["judge", "A visitor. Goodness... a VISITOR. Sit, sit. I am the Oldest Judge. It is the only name I have left."],
+			["H", "What is this place?"],
+			["judge", "A town that chose to be forgotten. Our founders built the wall to keep every danger of the world outside."],
+			["judge", "And it worked. Five hundred years without a single danger. Not one."],
+			["H", "Then why does everyone keep looking over their shoulder?"],
+			["judge", "...Because five hundred years ago, one danger DID come. Before the wall was finished."],
+			["judge", "He came as a traveller. Plain clothes, a polite smile, a tall hat. He asked for bread and a bed."],
+			["judge", "Nobody could say what was wrong with him. But everybody FELT it. The dogs would not stop crying."],
+			["judge", "We called him the Nightmare. In one night he killed half of us. Half. My great-great-grandfather wrote down every name."],
+			["judge", "Then he simply... walked away. And we finished the wall."]],
+		[["judge", "The records are in the courthouse. Nobody reads them any more. Nobody wants to."],
+			["judge", "Speak with the Shopkeeper and the Youngest Guard, if you have not. They know the parts I would rather forget."]],
+		[["judge", "Rest your legs, visitor. Old towns are slow towns."]],
+	],
+	"shopkeeper": [
+		[["shopkeeper", "A customer! A REAL one! Welcome, welcome - everything is half price for anyone from outside. Which is no one. So: you!"],
+			["H", "Do you get many travellers?"],
+			["shopkeeper", "Not in five hundred years, friend. Nobody comes in, nobody goes out. We don't leave the borders. Ever."],
+			["shopkeeper", "My grandmother's grandmother traded with the caravans, back before the wall. The last caravans told stories..."],
+			["shopkeeper", "...about the man who walked out of here after the bad night. The Nightmare. Wherever he went, things BURNED."],
+			["shopkeeper", "Whole towns. Whole forests. Lands I don't even know the names of - burned black. Then the caravans stopped coming."],
+			["shopkeeper", "But hey! That's old news. Bread? Rope? A lovely candle? ...No? Well, the smile is free."]],
+		[["shopkeeper", "We're friendly folk, honest. We just like the wall where it is. Between us and everything else."]],
+		[["shopkeeper", "Back again! I knew you'd miss me."]],
+	],
+	"young_guard": [
+		[["young_guard", "H-halt! Who goes... oh. OH! You're real! Nobody new has EVER come into town!"],
+			["young_guard", "I'm the Youngest Guard. I guard the left gate. Nothing ever comes. But I guard it REALLY well."],
+			["H", "What do the people here believe in?"],
+			["young_guard", "The Sun, of course! She watches over us. Every morning the whole town prays to her."],
+			["young_guard", "If we are good, one day she will bless us. Knowledge and Strength - so we never have to be afraid again."],
+			["young_guard", "You've travelled... have you seen her? Up close? Is she as beautiful as they say?"],
+			["H", "*you remember the peak, and her light going out... you say nothing*"],
+			["young_guard", "...You're quiet. That's alright. She's shy too, I think. She hasn't answered our prayers in a while."],
+			["young_guard", "Oh - and don't go past my gate to the LEFT. There's an old cave out there. Nobody goes near it. Nobody."]],
+		[["young_guard", "The elders say the cave is where the bad night ended. I've never seen it. I don't want to."]],
+		[["young_guard", "Still on guard! The Sun sees everything, so I stand up straight."]],
+	],
+	"tw_woman": [
+		[["tw_woman", "Oh! A new face! I've seen the same two hundred faces my whole life."]],
+		[["tw_woman", "Is it true the world outside has mountains? BIG ones?"]],
+	],
+	"tw_farmer": [
+		[["tw_farmer", "Inside the wall the soil is good and the rain is gentle. Why would anyone ever leave?"]],
+		[["tw_farmer", "My plough is older than my grandfather. Works fine."]],
+	],
+	"tw_child": [
+		[["tw_child", "Are you from the SUN? You fell out of the sky! Mama, it fell out of the SKY!"]],
+		[["tw_child", "When I grow up I'm going to be a guard. Like the Youngest Guard. But taller."]],
+	],
+	"tw_baker": [
+		[["tw_baker", "Sun-bread! We bake it round, just like her. Take one, for the road you won't be taking."]],
+		[["tw_baker", "Every loaf is a little prayer. Don't tell the Judge, he thinks I'm silly."]],
+	],
+}
+
+## THE NIGHTMARE'S CAVE: the Nightmare Lord asleep in his chains, and the CHOICE.
+const NIGHTMARE_FOUND := [
+	["narrator", "Chains as thick as an arm hold him against the rock. He breathes slowly. Smoke curls out of his nose with every breath."],
+	["narrator", "The floor is black with old blood and burned charcoal. Whatever happened here, it happened a very long time ago."],
+	["H", "...The Nightmare. Still here. Asleep.", ["Cut him and wake him", "Unchain him, let him sleep", "Leave him be"]],
+]
+const NIGHTMARE_WOKE := [
+	["nightmare_lord", "...Mm. Light. Someone has... found me."],
+	["nightmare_lord", "Five hundred years in the dark. And a stranger with a blade is the one who wakes me."],
+	["nightmare_lord", "Thank you. Truly. I will not forget your face."],
+	["nightmare_lord", "...I am so very hungry."],
+]
+const NIGHTMARE_CARRIED := [
+	["narrator", "The chains fall. He slumps to the floor - and does not wake."],
+	["H", "...Heavier than he looks."],
+]
+const NIGHTMARE_LEFT := [
+	["H", "...Sleep. Some doors are better left shut."],
+]
+
+
 static func npc_talk(lines: Array, visit: int) -> Array:
 	return lines[clampi(visit, 0, lines.size() - 1)]
 
@@ -514,7 +606,11 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			OrbisArt.trainer(c, t, "calm")
 		"storm":
 			StormArt.draw_portrait(c, t)
-		"baker", "washerwoman", "guard", "elder", "farmer", "child":
+		"baker", "washerwoman", "guard", "elder", "farmer", "child", "tw_baker", "tw_woman", "tw_farmer", "tw_child":
 			OrdArt.villager(c, int(TOWN_LOOK[id]), t)
+		"judge", "shopkeeper", "young_guard":
+			TownArt.npc(c, id, t)
+		"nightmare_lord":
+			FireLordArt.draw_portrait(c, t)
 		_:
 			StoryLevels.draw_portrait(c, id, t)

@@ -340,6 +340,13 @@ func _update_side(side: HudSide) -> void:
 			seg.color = COLOR_SEG_EMPTY
 
 	# Cooldowns
+	var be := f as BaseEnemy
+	if cf == null and be != null and be.brain is PlayerEnemyBrain:   # Rotor Mode: his moves + keys
+		var rl := PlayerEnemyBrain.cooldown_lines(be)
+		var rtxt := "\n".join(rl)
+		if rtxt != side.cooldown_label.text:
+			side.cooldown_label.text = rtxt
+			_fit_font(side.cooldown_label, rl, COOLDOWN_W)
 	if cf != null:
 		var lines: PackedStringArray = []
 		for i in cf.move_ids.size():
@@ -352,7 +359,7 @@ func _update_side(side: HudSide) -> void:
 			_fit_font(side.cooldown_label, lines, COOLDOWN_W)
 			# More than 3 moves (APHA Architect: 7): the status line moves down under them
 			side.status_label.position.y = 196.0 + maxf(float(lines.size() - 3), 0.0) * 22.0
-	else:
+	elif not (be != null and be.brain is PlayerEnemyBrain):
 		side.cooldown_label.text = ""
 
 	# Status (Afterburn, Royal Destiny, Time Stop)

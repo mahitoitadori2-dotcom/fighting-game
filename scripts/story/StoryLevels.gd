@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6] # 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6, 1] # 14th = THE ABANDONED TOWN (81) - 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -172,6 +172,9 @@ const MAPS := {
 	"ord_mountain": {"bg": "ord_mountain", "ground": 23, "walls": "thorn", "half_width": 840.0, "music": "story_mountain", "zone": "THE MOUNTAIN"},
 	"ord_snow":     {"bg": "ord_snow", "ground": 24, "walls": "thorn", "half_width": 840.0, "music": "story_snow", "zone": "THE SNOW DESERT"},
 	"storm_cave":   {"bg": "dark_cave", "ground": 13, "walls": "dark", "half_width": 820.0, "music": "boss_storm_finger", "solid": true, "zone": "INSIDE THE MOUNTAIN"},
+	"town":         {"bg": "ord_town", "ground": 11, "walls": "thorn", "half_width": 840.0, "music": "story_abandoned_town", "zone": "THE ABANDONED TOWN"},
+	"nightmare_cave": {"bg": "dark_cave", "ground": 13, "walls": "dark", "half_width": 820.0, "music": "story_nightmare_cave", "solid": true, "zone": "THE NIGHTMARE'S CAVE"},
+	"madness":      {"bg": "madness", "ground": 13, "walls": "lava", "half_width": 860.0, "music": "madness_level", "solid": true, "zone": ""},
 	"orbis":        {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_orbis", "zone": "ORBIS TERRARUM"},
 }
 
@@ -658,6 +661,16 @@ const LEVELS := {
 		"waves": [["guard", "tribe_hunter", "kharleming"], ["warrior_a", "lava_goblin", "tribe_brute", "full_kharleming"],
 			["guard_shield", "lava_demon", "master_kharleming", "fragmenter"]],
 		"boss": "storm_hand", "boss_sub": "The Storm reaches into the mountain", "boss_music": "boss_storm_hand", "boss_color": Color(0.6, 0.8, 1.0)},
+
+	# ======================= THE ABANDONED TOWN (level 81) =======================
+	# Lore by the user (2026-11-21). After the Storm you land in a town that walled itself off from the
+	# world 500 years ago. PURE LORE (no fights): talk to the OLDEST JUDGE, the SHOPKEEPER and the
+	# YOUNGEST GUARD -> "GO TO LEFT" -> out of the town's borders to a cave -> (loading screen) the
+	# cave of old blood and charcoal -> THE NIGHTMARE LORD, asleep in chains -> a CHOICE (kept for
+	# later: StoryProgress.town_choice) -> the Strong Wind lifts you into the sky. TownLand.gd.
+	81: {"title": "THE ABANDONED TOWN", "theme": "town", "map": "town", "hero": "demi", "town": true,
+		"intro": "After the Storm: a quiet town behind a wooden wall. Nobody has left it in 500 years.",
+		"waves": [], "boss": "", "tile": "nightmare_lord"},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -680,6 +693,9 @@ const ORD_LEVEL := 71
 const ROAD_PART := 12
 ## ORBIS TERRARUM: pure lore (dialogue only). 75 = the arrival, 76-79 = the LESSONS (any order).
 const ORBIS_PART := 13
+## THE ABANDONED TOWN: the part after Orbis Terrarum (one lore level, 81). TownLand.gd.
+const TOWN_PART := 14
+const TOWN_LEVEL := 81
 ## Level 80: THE STORM ATTACKS (after all the lessons) - one level in five phases (OrbisTalk / CaveSlide /
 ## StoryArena chained by OrbisTalk.storm_phase): the table, the breaking bridge, the dead town, the cave
 ## slide with the Storm behind you, then possessed corpses + THE STORM HAND.
@@ -687,6 +703,10 @@ const STORM_LEVEL := 80
 
 
 static func part_name(c: int) -> String:
+	if c == Madness.PART:
+		return "MADNESS"
+	if c == TOWN_PART:
+		return "THE ABANDONED TOWN"
 	if c == ORBIS_PART:
 		return "ORBIS TERRARUM"
 	if c == ROAD_PART:
@@ -736,6 +756,11 @@ static func is_lesson(n: int) -> bool:
 	return bool(get_level(n).get("lesson", false))
 
 
+## Is level n THE ABANDONED TOWN (level 81: TownLand.tscn)?
+static func is_town(n: int) -> bool:
+	return bool(get_level(n).get("town", false))
+
+
 ## Is level n THE STORM ATTACKS (level 80: scenes, a run, a slide, then the fight)?
 static func is_storm(n: int) -> bool:
 	return bool(get_level(n).get("storm_attack", false))
@@ -747,6 +772,8 @@ static func is_slide(n: int) -> bool:
 
 
 static func get_level(n: int) -> Dictionary:
+	if Madness.is_madness(n):                          # MADNESS (secret): its own 20 levels
+		return Madness.level(n)
 	if EXT_LEVELS.has(n):
 		return EXT_LEVELS[n]
 	return LEVELS.get(clampi(n, 1, LEVELS.size()), LEVELS[1])
@@ -780,6 +807,8 @@ static func ext_code(n: int) -> String:
 
 ## Banner / HUD name of a level: "LEVEL 7" or "BC2".
 static func level_label(n: int) -> String:
+	if Madness.is_madness(n):
+		return Madness.label(n)
 	return ext_code(n) if is_ext(n) else "LEVEL %d" % n
 
 
@@ -808,6 +837,9 @@ static func hero_of(n: int) -> String:
 	if h == "demi":                                    # DemiLand: the one who did NOT chase him
 		var chased := StoryProgress.c5_hero if StoryProgress.c5_hero != "" else PLAYER_CHARACTER
 		return "architect" if chased == "warrior" else "warrior"
+	if h == "madness":                                # MADNESS: any roster fighter but APHA (your pick)
+		Madness.load_data()
+		return Madness.hero
 	if h == "ext":                                     # Boss extensions: Warrior OR Architect (picked in the menu)
 		return StoryProgress.ext_hero if StoryProgress.ext_hero != "" else PLAYER_CHARACTER
 	return h
@@ -818,14 +850,19 @@ static func hero_art(h: String) -> Script:
 	match h:
 		"architect":
 			return ArchitectArt
-	return WarriorArt
+		"warrior", "":
+			return WarriorArt
+	var e := CharacterRoster.get_entry(h)                 # MADNESS heroes: any roster fighter
+	return e.get("art", WarriorArt) if String(e.get("id", "")) == h else WarriorArt
 
 
 static func hero_name(h: String) -> String:
 	match h:
 		"architect":
 			return "ARCHITECT"
-	return "WARRIOR"
+		"warrior", "":
+			return "WARRIOR"
+	return String(CharacterRoster.get_entry(h).get("short", "WARRIOR")).to_upper()
 
 
 ## Does level n have a CPU partner? (Colosseum 5 - never in SOLO mode)
@@ -862,6 +899,8 @@ static func last_of(colosseum: int) -> int:
 
 
 static func colosseum_of(n: int) -> int:
+	if Madness.is_madness(n):
+		return Madness.PART
 	if is_ext(n):                                      # An extension belongs to its parent's Colosseum
 		return colosseum_of(int(EXTENSIONS[ext_of(n)]["parent"]))
 	var c := 1
@@ -1047,6 +1086,16 @@ static func enemy_script(id: String) -> Script:
 			return StormFinger
 		"storm_hand":
 			return StormHand
+		"weird":
+			return WeirdCreature
+		"skull_serpent":
+			return SkullSerpent
+		"broken_ghost":
+			return BrokenGhost
+		"xx0xn":
+			return XX0XN
+		"nightmare_lord":
+			return FireLordArt                              # The Abandoned Town's board tile
 	return Parasite
 
 
@@ -1213,7 +1262,8 @@ static func make_enemy(id: String) -> BaseEnemy:
 	if id in ["tribe_hunter", "tribe_brute", "tribe_shaman", "tiger_cub", "pelt_cultist", "husk", "sapling",
 			"tribe_master", "last_tiger", "tree_lord",
 			"lava_golem", "lava_demon", "lava_goblin", "fragmenter", "full_kharleming", "master_kharleming",
-			"lava_melter", "kharleming_lord", "crystal_swarm", "storm_finger", "storm_hand"]:
+			"lava_melter", "kharleming_lord", "crystal_swarm", "storm_finger", "storm_hand",
+			"weird", "skull_serpent", "broken_ghost", "xx0xn"]:
 		return enemy_script(id).new()                    # DemiLand + Terra Craterum + Ordinariorum enemies + bosses
 	if Animal.KINDS.has(id):                           # Terra Ordinariorum's animals (never hostile)
 		var a := Animal.new()

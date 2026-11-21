@@ -56,7 +56,8 @@ func _ready() -> void:
 
 
 func _on_start() -> void:
-	get_tree().change_scene_to_file(ArenaManager.selected_arena_entry()["scene"])
+	var ae := ArenaManager.selected_arena_entry()
+	LoadingScreen.goto(get_tree(), String(ae["scene"]), "VERSUS", String(ae.get("name", "")).to_upper())
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -157,7 +157,7 @@ func _next_phase(phase: int, scene: String) -> void:
 	StoryProgress.current_level = level_n
 	if StoryManager.autoplay:
 		print("ORBIS autoplay: level 80 -> phase %d" % phase)
-	get_tree().change_scene_to_file(scene)
+	LoadingScreen.goto(get_tree(), scene, "LEVEL 80:  THE STORM ATTACKS", "ORBIS TERRARUM")
 
 
 func _count_done() -> int:

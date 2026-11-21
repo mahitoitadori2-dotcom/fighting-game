@@ -340,7 +340,7 @@ func _finish() -> void:
 		StoryProgress.current_level = level_n
 		if StoryManager.autoplay:
 			print("CAVES autoplay: level 80 -> phase %d" % OrbisTalk.storm_phase)
-		get_tree().change_scene_to_file("res://scenes/OrbisTalk.tscn" if tier == 10 else StoryManager.ARENA_SCENE)
+		LoadingScreen.goto(get_tree(), "res://scenes/OrbisTalk.tscn" if tier == 10 else StoryManager.ARENA_SCENE, StoryLevels.level_label(level_n), StoryLevels.part_name(StoryLevels.colosseum_of(level_n)))
 		return
 	SoundManager.play_sfx("count_go")
 	var flawless := hits == 0
@@ -548,7 +548,7 @@ func _stop_for_fight() -> void:
 		print("CAVES autoplay: level %d stops for the waves" % level_n)
 	await get_tree().create_timer(2.0).timeout
 	StoryProgress.current_level = level_n
-	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+	LoadingScreen.goto(get_tree(), StoryManager.ARENA_SCENE, StoryLevels.level_label(level_n), StoryLevels.part_name(StoryLevels.colosseum_of(level_n)))
 
 
 ## Autoplay (tests only): looks ahead and presses the keys.

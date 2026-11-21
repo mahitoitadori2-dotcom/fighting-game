@@ -26,7 +26,9 @@ const BLACK := Color(0, 0, 0)
 
 
 static func draw(c: CanvasItem, f: FireLord) -> void:
+	f.anim_legs = true                                  # This art bends its knees (shared animation)
 	_draw_figure(c, {
+		"anim": FighterArt.anim_of(f),
 		"t": f.anim_time, "ph": f.walk_phase, "floor": f.is_on_floor(),
 		"punch": f.punch_ext, "block": f.block_amt, "perfect": f.perfect_flash,
 		"cast": f.cast_pose, "spike": f.spike_pose, "tear": f.bonus(),
@@ -66,19 +68,11 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 		_body_spikes(c, bs, s.get("spike_rot", 0.0), s.get("spike_range", 140.0))
 
 	# --- Legs (suit trousers) ---
-	var sw := sin(ph) * 13.0
-	var lift_f := maxf(0.0, cos(ph)) * 7.0
-	var lift_b := maxf(0.0, -cos(ph)) * 7.0
-	if not on_floor:
-		sw = 7.0
-		lift_f = 12.0
-		lift_b = 4.0
+	var g := FighterArt.gait(s.get("anim", {}), ph, on_floor, -8.0, 8.0, -5.0)   # Shared walk / crouch / jump
 	if spike < -0.3:          # Slam: legs together, landing
-		sw = 3.0
-		lift_f = 0.0
-		lift_b = 0.0
-	_leg(c, Vector2(-6, -52), Vector2(-8.0 - sw, -5.0 - lift_b), true, tear)
-	_leg(c, Vector2(6, -52), Vector2(8.0 + sw, -5.0 - lift_f), false, tear)
+		g = [Vector2(-11, -5), Vector2(11, -5)]
+	_leg(c, Vector2(-6, -52), g[0], true, tear)
+	_leg(c, Vector2(6, -52), g[1], false, tear)
 
 	# --- Arm targets ---
 	var swing := sin(ph) * 8.0 * (1.0 - maxf(e, b))
@@ -165,46 +159,39 @@ static func _draw_figure(c: CanvasItem, s: Dictionary) -> void:
 # ============================================================
 # PARTS
 # ============================================================
-static func _head(c: CanvasItem, t: float, tear: int) -> void:
-	var hc := Vector2(3, -113)
-	FighterArt.ball(c, hc, 15.0, SKIN, SKIN_SHADE, SKIN_HI)
-	# Slicked-back hair
-	var hair := PackedVector2Array([Vector2(-12, -118), Vector2(-6, -128), Vector2(6, -130), Vector2(16, -124),
-		Vector2(10, -125), Vector2(0, -124), Vector2(-8, -118)])
-	c.draw_colored_polygon(hair, SKIN_SHADE)
-	c.draw_polyline(hair, BLACK, 2.0, FighterArt.AA)
-	# Pointed ear
-	c.draw_colored_polygon(PackedVector2Array([Vector2(-10, -114), Vector2(-17, -122), Vector2(-9, -108)]), SKIN)
-	c.draw_polyline(PackedVector2Array([Vector2(-10, -114), Vector2(-17, -122), Vector2(-9, -108)]), BLACK, 2.0, FighterArt.AA)
-	# Eyes: narrow, villainous
-	var glint := 0.0 if tear < 3 else 0.5 + 0.5 * sin(t * 8.0)
-	for ex in [8.0, 15.0]:
-		var eye := PackedVector2Array([Vector2(ex - 3.0, -115), Vector2(ex + 3.0, -116.5), Vector2(ex + 2.0, -113.5), Vector2(ex - 2.5, -113.5)])
-		c.draw_colored_polygon(eye, Color(1.0, 1.0 - glint * 0.6, 1.0 - glint * 0.6))
-		c.draw_circle(Vector2(ex + 1.0, -114.6), 1.2, BLACK)
-	# Angry eyebrows
-	c.draw_line(Vector2(4, -121), Vector2(11, -118.5), BLACK, 2.5)
-	c.draw_line(Vector2(19, -121), Vector2(13, -118.5), BLACK, 2.5)
-	# Concept art (2026-11-15): a tall dark TOP HAT with a red band and a round emblem on it
-	var brim := Rect2(-12, -128, 30, 4)
-	var crown := PackedVector2Array([Vector2(-7, -128), Vector2(-6, -146), Vector2(13, -147), Vector2(13, -128)])
-	c.draw_colored_polygon(crown, SUIT)
-	c.draw_colored_polygon(PackedVector2Array([Vector2(7, -128), Vector2(7, -146.6), Vector2(13, -147), Vector2(13, -128)]), SUIT_SHADE)
-	c.draw_rect(Rect2(-7, -133, 20, 4), TIE)                             # Red band
-	c.draw_polyline(crown + PackedVector2Array([crown[0]]), BLACK, 2.5, FighterArt.AA)
-	c.draw_rect(brim, SUIT_SHADE)
-	c.draw_rect(brim, BLACK, false, 2.0)
-	c.draw_circle(Vector2(4, -140), 4.0, BLACK)                           # The round emblem
-	c.draw_circle(Vector2(4, -140), 2.8, SKIN)
-	c.draw_circle(Vector2(4, -140), 1.2, BLACK)
-	# THE SMIRK: one corner pulled up
-	c.draw_polyline(PackedVector2Array([Vector2(6, -105), Vector2(11, -104.5), Vector2(15, -105.5), Vector2(18, -108)]), BLACK, 2.5, FighterArt.AA)
-	c.draw_line(Vector2(17, -108.5), Vector2(19, -107), BLACK, 1.5)
+## PIXEL ART head (hand-pixelled, top-left -18, -150): red face, slicked hair, pointed ear, angry
+## brows, the smirk, and the tall top hat with the red band and the round emblem.
+const _HEAD_PX := [
+	".............",
+	"....KKKKKKK..",
+	"....KTTTTtK..",
+	"....KTTEttK..",
+	"....KTTTttK..",
+	"....KTTTttK..",
+	"....KBBBBBK..",
+	"....KTTTttK..",
+	"..KtttttttttK",
+	"...KrrRRRRRK.",
+	".KRRRRRRKRRK.",
+	".KRRRRRRWRRWK",
+	"..KRRRRRRRRRK",
+	"..KhRRRRRRRKK",
+	"...KRRRRKKKRK",
+	"....KrRRRRRK.",
+	"......KKKK...",
+]
 
+
+static func _head(c: CanvasItem, t: float, tear: int) -> void:
+	var glint := 0.0 if tear < 3 else 0.5 + 0.5 * sin(t * 8.0)
+	PixelSprite.draw(c, PackedStringArray(_HEAD_PX), {
+		"K": BLACK, "R": SKIN, "r": SKIN_SHADE, "h": SKIN_HI, "T": SUIT, "t": SUIT_SHADE, "B": TIE, "E": SKIN,
+		"W": Color(1.0, 1.0 - glint * 0.6, 1.0 - glint * 0.6),
+	}, Vector2(-18, -150))
 
 static func _leg(c: CanvasItem, hip: Vector2, foot: Vector2, far: bool, tear: int) -> void:
 	var base := SUIT_SHADE if far else SUIT
-	var knee := (hip + foot) * 0.5 + Vector2(7, 0)
+	var knee := FighterArt.knee(hip, foot, FighterArt.leg_seg(47.0, 7.0))   # Real knee bend
 	FighterArt.limb(c, hip, knee, 12.0, base, SUIT_SHADE, SUIT_HI)
 	FighterArt.limb(c, knee, foot + Vector2(0, -4), 11.0, base, SUIT_SHADE, SUIT_HI)
 	_shag(c, hip, knee, 11.0)                                             # Concept art: shaggy, frayed cloth

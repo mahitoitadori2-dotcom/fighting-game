@@ -40,10 +40,11 @@ func _draw() -> void:
 	var t := enemy.anim_time
 
 	# --- Name (+ ENRAGED above it) ---
-	FighterArt.label(self, Vector2(0, -16), enemy.enemy_name.to_upper(), 14, Color.WHITE)
+	if not Madness.active():                          # MADNESS: no names, only health
+		FighterArt.label(self, Vector2(0, -16), enemy.enemy_name.to_upper(), 14, Color.WHITE)
 	if enemy.enraged:
 		var p := 0.6 + 0.4 * sin(t * 8.0)
-		FighterArt.label(self, Vector2(0, -34), "ENRAGED", 13, Color(1.0, 0.25 * p, 0.2))
+		FighterArt.label(self, Vector2(0, -34), enemy.rage_word, 13, Color(1.0, 0.25 * p, 0.2))
 
 	# --- HP bar (green -> red) + numbers ---
 	var k := clampf(float(enemy.hp) / maxf(float(enemy.data.max_hp), 1.0), 0.0, 1.0)

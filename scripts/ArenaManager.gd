@@ -32,13 +32,19 @@ func _ready() -> void:
 		_play_replay()                        # WATCH REPLAY: puppets instead of a match
 		return
 	QoL.save_picks()
-	p1 = _spawn(CharacterRoster.selected(), 1, p1_spawn)
+	SecretCodes.load_codes()
+	var p1_entry := CharacterRoster.selected()
+	var p1_id := CharacterRoster.selected_id
+	if SecretCodes.rotor_mode and not p1_cpu:      # SECRET CODE R0t0rMode: you can ONLY be Rotor
+		p1_entry = CharacterRoster.get_entry("rotor")
+		p1_id = "rotor"
+	p1 = _spawn(p1_entry, 1, p1_spawn)
 	p2 = _spawn(CharacterRoster.opponent(), 2, p2_spawn)
 	# REPLAYS: every fight is recorded (watch / save it from the winner screen)
 	var rec := ReplayRecorder.new()
 	rec.name = "ReplayRecorder"
 	add_child(rec)
-	rec.track(p1, CharacterRoster.selected_id)
+	rec.track(p1, p1_id)
 	rec.track(p2, CharacterRoster.opponent_id if CharacterRoster.has_opponent() else CharacterRoster.DUMMY_ID)
 	# Music: boss track vs PvE enemies, fight track otherwise (speeds up when you're low on HP)
 	# (Fights-mode bosses each have their own track: boss_minos / boss_sisyphus / boss_geyron)
@@ -109,6 +115,8 @@ func _spawn(entry: Dictionary, slot: int, pos: Vector2) -> Fighter:
 		else:
 			(f as ControlledFighter).ctl = FighterInput.new()
 	add_child(f)
+	if slot == 1 and f is BaseEnemy and not p1_cpu and Replay.pending.is_empty():
+		(f as BaseEnemy).brain = PlayerEnemyBrain.new()   # Rotor Mode: YOUR controls drive his moves
 	if entry.has("versus_hp"):                    # Story enemies: their Versus HP
 		f.data.max_hp = int(entry["versus_hp"])
 		f.hp = f.data.max_hp

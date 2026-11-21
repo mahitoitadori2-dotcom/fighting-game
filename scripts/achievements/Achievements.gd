@@ -288,6 +288,25 @@ static func _build() -> void:
 		{"big": "star", "frame": "gold", "bg": orbis_bg})
 	_add("col_%d" % StoryLevels.ORBIS_PART, "Orbis Terrarum Conquered", "Survive THE STORM ATTACKS: the bridge, the mountain, the corpses and the Storm Hand.", "story",
 		{"big": "crown", "frame": "gold", "bg": Color(0.14, 0.16, 0.28)})
+	# ---------------- THE ABANDONED TOWN (level 81) ----------------
+	var town_bg := Color(0.36, 0.22, 0.12)
+	_add("town_lore", "Five Hundred Years", "THE ABANDONED TOWN: hear the stories of the Oldest Judge, the Shopkeeper and the Youngest Guard.", "story",
+		{"big": "badge", "frame": "silver", "bg": town_bg})
+	_add("town_woke", "Thank You, Truly", "Cut the sleeping Nightmare Lord and wake him.", "story",
+		{"script": FireLordArt, "frame": "red", "emblem": "skull", "bg": Color(0.45, 0.06, 0.04)})
+	_add("town_carried", "A Heavy Sleeper", "Unchain the Nightmare Lord without waking him - and carry him out.", "story",
+		{"script": FireLordArt, "frame": "gold", "emblem": "halo", "bg": town_bg})
+	_add("town_left", "Let Sleeping Lords Lie", "Leave the Nightmare Lord asleep in his chains.", "story",
+		{"script": FireLordArt, "frame": "silver", "emblem": "star", "bg": Color(0.16, 0.12, 0.12)})
+	_add("col_%d" % StoryLevels.TOWN_PART, "The Abandoned Town Conquered", "Ride the Strong Wind out of THE ABANDONED TOWN.", "story",
+		{"big": "crown", "frame": "gold", "bg": town_bg})
+	# ---------------- MADNESS (secret: XANXXE 1NT3GR1T13S) ----------------
+	_add("madness_unlocked", "Integrity Compromised", "Extract Reality. Ready Infection. Engage Madness.", "secret",
+		{"script": WeirdCreature, "frame": "red", "emblem": "skull", "bg": Color(0.20, 0.0, 0.0)})
+	_add("madness_10", "Halfway to Nowhere", "MADNESS: beat level 10.", "secret",
+		{"script": SkullSerpent, "frame": "red", "emblem": "skull", "bg": Color(0.25, 0.01, 0.01)})
+	_add("madness_boss", "MadMan of the Dance Party", "MADNESS: beat THE XX0XN at level 20. (Reward: the ASSASSIN Story skin.)", "secret",
+		{"script": XX0XN, "frame": "red", "emblem": "trophy", "bg": Color(0.32, 0.02, 0.02)})
 	_add("run_caught", "Lava Between the Toes", "Get caught by the flood 5 times in one level... and still reach the white wall.", "secret",
 		{"big": "skull", "frame": "bronze", "bg": Color(0.30, 0.08, 0.04)})
 	# ---------------- THE MIMIC ----------------
@@ -303,6 +322,8 @@ static func _build() -> void:
 		{"script": ArchitectArt, "frame": "gold", "emblem": "halo", "bg": Color(0.3, 0.05, 0.05)})
 	_add("tech_breaker", "Colony Breaker, Personal Edition", "As the Technician, throw the Technician's Breaker.", "versus",
 		{"script": TechnicianArt, "frame": "silver", "emblem": "star", "bg": Color(0.10, 0.22, 0.26)})
+	_add("super_boss", "Bigger Than the Sky", "STORY: defeat a SUPER BOSS (the boss of every 50th level).", "story",
+		{"big": "skull", "frame": "gold", "emblem": "trophy", "bg": Color(0.40, 0.28, 0.04)})
 	# ---------------- SOULS ----------------
 	_add("stance_break", "Broken Stance", "Break a Story boss's stance with a flurry of hits.", "story",
 		{"big": "no_blocks", "frame": "bronze", "bg": Color(0.36, 0.26, 0.08)})
