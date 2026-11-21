@@ -320,6 +320,8 @@ func grabbed_update(delta: float) -> bool:
 func take_hit(amount: int, hit: HitData) -> void:
 	if is_dead:
 		return
+	if has_meta("console_corrupt"):
+		amount = 0                                       # RED CONSOLE #s003: corrupted = IMMORTAL (all damage)
 	# Remember WHAT hit us last: DeathManager picks the death animation from it.
 	if amount > 0:
 		last_hit = hit
@@ -393,8 +395,8 @@ func on_blocked(hit: HitData, perfect: bool) -> void:
 # ===== DEATH / RESPAWN =====
 func check_fall_death() -> void:
 	if global_position.y > fall_death_y:
-		if MatchSettings.god_mode_active():
-			respawn()                        # God Mode: no death, just put us back
+		if MatchSettings.god_mode_active() or has_meta("console_corrupt"):
+			respawn()                        # God Mode / console #s003: no death, just put us back
 			return
 		die(DeathManager.FALL)
 

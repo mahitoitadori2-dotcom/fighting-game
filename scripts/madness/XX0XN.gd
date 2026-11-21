@@ -54,10 +54,41 @@ func wants_pattern(p: EnemyPattern) -> bool:
 	return p.weight(phase) > 0.0
 
 
+## VOICE LINES (2026-11-21, by the user): real recordings in res://audio/voice/ (Windows TTS, deep fried
+## with tools/deep_fry_voice.js). The words pop up above him too.
+##   the fight starts   "HAAAAAAAAAAANK!!"
+##   ENGAGED            "YOU DON'T KILL XX0XN. XX0XN KILLS YOOUU!!!!!"
+##   he hits you        "AHAHHAHAAHA" (not more than every 7 s)
+const LAUGH_GAP := 7.0
+var _laugh_cd := 0.0
+var _yelled := false
+
+
+func _yell(key: String, text: String, size: int = 30) -> void:
+	SoundManager.say(key, text, 0.4, 0.9)
+	Effects.popup(self, global_position + Vector2(0, -300), text, Color(1.0, 0.1, 0.08), size)
+
+
+func _update_visuals(delta: float) -> void:
+	_laugh_cd = maxf(_laugh_cd - delta, 0.0)
+	if not _yelled and CombatManager.fight_active:
+		_yelled = true
+		_yell("xx0xn_hank", "HAAAAAAAAAAANK!!", 38)
+	super._update_visuals(delta)
+
+
+func _on_hit_landed(victim: Fighter, _hit: HitData, _result: String) -> void:
+	if _laugh_cd <= 0.0 and victim != null and victim.team == 1:
+		_laugh_cd = LAUGH_GAP
+		_yell("xx0xn_laugh", "AHAHHAHAAHA", 26)
+
+
 func _on_phase_changed(_new_phase: int) -> void:
 	SoundManager.play_sfx("roar")
 	Effects.shake(self, 14.0)
 	Effects.popup(self, global_position + Vector2(0, -260), "ENGAGED", Color(1.0, 0.2, 0.15), 34)
+	_laugh_cd = LAUGH_GAP + 4.0                            # (Let the line finish)
+	_yell("xx0xn_kills", "YOU DON'T KILL XX0XN. XX0XN KILLS YOOUU!!!!!", 26)
 
 
 func jump(force_mult: float = 1.0) -> void:

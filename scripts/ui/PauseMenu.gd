@@ -31,7 +31,11 @@ var _waiting := ""                          # Action waiting for a new key ("" =
 
 ## Is the current scene a fight that can be paused?
 static func in_fight(tree: SceneTree) -> bool:
-	return tree.current_scene != null and FIGHT_SCENES.has(tree.current_scene.scene_file_path)
+	var cs := tree.current_scene
+	if cs == null or cs.find_child("ReplayPlayer", true, false) != null:
+		return false                                        # A replay has its own exit
+	return FIGHT_SCENES.has(cs.scene_file_path) or tree.get_first_node_in_group("arena_manager") != null \
+		or tree.get_first_node_in_group("story_manager") != null       # (Every Versus arena too, e.g. Main.tscn)
 
 
 static func toggle(tree: SceneTree) -> void:
@@ -149,6 +153,15 @@ func _build() -> void:
 	var mv := UiStyle.make_button("MOVES", Vector2(380, 46), 18)
 	mv.pressed.connect(_show_moves.bind(true))
 	box.add_child(mv)
+	if MatchSettings.touch_enabled() or TextEntry.use_prompt():
+		# PHONES: the RED CONSOLE lives here (no F12 key on a phone)
+		var con := UiStyle.make_button("CONSOLE", Vector2(380, 46), 18)
+		con.add_theme_color_override("font_color", Color(1.0, 0.25, 0.2))
+		con.pressed.connect(func() -> void:
+			var tree := get_tree()
+			close()
+			RedConsole.toggle.call_deferred(tree))
+		box.add_child(con)
 	_quit_btn = UiStyle.make_button(_quit_text(), Vector2(380, 54), 20)
 	_quit_btn.pressed.connect(_on_quit)
 	box.add_child(_quit_btn)

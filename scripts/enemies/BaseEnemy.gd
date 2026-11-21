@@ -88,6 +88,7 @@ func _ready() -> void:
 		if Madness.active() and pixel_group != null:
 			pixel_group.modulate = Madness.TINT          # MADNESS: every enemy in black and red
 			damaged.connect(func(amount: int, _hit: HitData) -> void: MadnessFX.bleed(self, amount))
+			MadnessFX.glitch_in.call_deferred(pixel_group)          # It glitches into existence
 
 
 # ----- Override in each enemy -----

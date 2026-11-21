@@ -48,6 +48,7 @@ func _ready() -> void:
 	_edit.add_theme_font_size_override("font_size", 28)
 	_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_edit.text_submitted.connect(func(_t: String) -> void: _submit())
+	TextEntry.hook(_edit, "Type a code:", func(_t: String) -> void: _submit())   # Web phones: the browser's own input
 	col.add_child(_edit)
 	_msg = UiStyle.label("", 20, UiStyle.TEXT, 5)
 	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -134,6 +135,7 @@ func _cancel_confirm() -> void:
 
 
 func _accepted(text: String) -> void:
+	print("CODE accepted: " + text)                        # (Visible in the browser console: phone tests)
 	_msg.text = text
 	_msg.add_theme_color_override("font_color", Color(0.6, 1.0, 0.6))
 	SoundManager.play_sfx("holy")

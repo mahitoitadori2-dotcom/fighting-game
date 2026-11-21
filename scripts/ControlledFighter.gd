@@ -17,6 +17,7 @@ var cooldowns := {}
 var cooldown_totals := {}
 
 var quiet_announce := false           # True = never shows big move names (Story CPU partner)
+var console_onslaught := false        # RED CONSOLE #s001: every move with an Onslaught version is upgraded (Black Ghost)
 
 var _coyote_timer := 0.0
 var _jump_buffer_timer := 0.0
@@ -283,6 +284,17 @@ func _cooldown_popup(id: String) -> void:
 ## Pressing a move: Onslaught upgrade first, then a normal cast.
 func _press_move(id: String) -> void:
 	var kind: String = data.onslaught_move_types.get(id, "")
+	if kind != "" and console_onslaught and _is_free() and cooldowns.get(id, 0.0) <= 0.0:
+		# RED CONSOLE #s001 (Black Ghost): every move that HAS an Onslaught version is always upgraded -
+		# the move goes off normally (its cooldown starts), then its Onslaught follows at once.
+		is_blocking = false
+		SoundManager.play_move_sfx(id)
+		_cast_move(id)
+		if cooldowns.get(id, 0.0) > 0.0:
+			_upgrade_move(id)
+			used["powers"] = true
+			announce_move("ONSLAUGHT " + String(move_names.get(id, id)).to_upper() + "!", Color(1.0, 0.55, 0.1))
+		return
 	if kind != "" and onslaught.consume_flash(kind, id):
 		_upgrade_move(id)
 		used["powers"] = true                    # Achievements: "no powers" challenges

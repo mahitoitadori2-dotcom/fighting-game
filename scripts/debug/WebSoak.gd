@@ -12,7 +12,7 @@ static func wanted() -> bool:
 	if not OS.has_feature("web"):
 		return false
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf"))
+	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile"))
 
 
 func _ready() -> void:
@@ -130,8 +130,114 @@ func _run_perf() -> void:
 	print("SOAK DONE")
 
 
+# ===== MOBILE UI MODE (?soak=mobile): a phone test driven from OUTSIDE by real touches =====
+# The test tool taps / swipes the screen. This only sets the scenes up and REPORTS: where to tap
+# ("MOBILE target <name> <x> <y>" in device pixels) and what the game sees ("MOBILE ..." lines).
+func _target(tag: String, base_pos: Vector2) -> void:
+	var p := get_viewport().get_final_transform() * base_pos
+	print("MOBILE target %s %d %d" % [tag, int(p.x), int(p.y)])
+
+
+func _ctl_target(tag: String, c: Control) -> void:
+	_target(tag, c.get_global_rect().get_center())
+
+
+func _find_button(root: Node, text: String) -> Button:
+	for b in root.find_children("*", "Button", true, false):
+		if (b as Button).text == text and (b as Button).is_visible_in_tree():
+			return b as Button
+	return null
+
+
+func _wait_for(cond: Callable, secs: float) -> bool:
+	var t := 0.0
+	while t < secs:
+		if cond.call():
+			return true
+		await _w(0.2)
+		t += 0.2
+	return false
+
+
+func _run_mobile() -> void:
+	await _w(2.5)
+	# 0) MAIN MENU: the CODE button -> the code window -> type B0gT3ster (the browser's input)
+	var code := _find_button(get_tree().current_scene, "CODE")
+	print("MOBILE menu ready  code_button=%s" % (code != null))
+	if code != null:
+		_ctl_target("CODE", code)
+		var opened: bool = await _wait_for(func() -> bool: return get_tree().current_scene.find_children("*", "CodePanel", true, false).size() > 0, 15.0)
+		if opened:
+			var cp := get_tree().current_scene.find_children("*", "CodePanel", true, false)[0] as CodePanel
+			_ctl_target("CODEFIELD", cp._edit)
+			await _wait_for(func() -> bool: return SecretCodes.bug_tester, 20.0)
+			print("MOBILE code typed -> bug tester %s" % ("ON" if SecretCodes.bug_tester else "OFF"))
+			if SecretCodes.bug_tester:
+				SecretCodes.toggle("bug_tester", get_tree())
+	# 1) VERSUS vs the Dummy with touch controls: tap II -> pause menu -> CONSOLE -> type 'hi'
+	ArenaManager.p1_cpu = false
+	ArenaManager.selected_arena = "test"
+	CharacterRoster.selected_id = "warrior"
+	CharacterRoster.opponent_id = ""
+	get_tree().change_scene_to_file("res://Main.tscn")
+	await _w(4.0)
+	var tc := get_tree().current_scene.find_child("TouchControls", true, false)
+	print("MOBILE fight ready  touch_controls=%s" % (tc != null))
+	if tc != null:
+		for btn in tc.get("_buttons"):
+			if String(btn["id"]) == "menu":
+				print("MOBILE pause button radius=%.0f" % float(btn["r"]))
+				_target("PAUSE", btn["center"])
+		if await _wait_for(func() -> bool: return PauseMenu.is_open, 15.0):
+			print("MOBILE pause menu open")
+			await _w(0.6)
+			var con := _find_button(get_tree().root, "CONSOLE")
+			print("MOBILE console button=%s" % (con != null))
+			if con != null:
+				_ctl_target("CONSOLEBTN", con)
+				if await _wait_for(func() -> bool: return get_tree().root.get_node_or_null("RedConsole") != null, 15.0):
+					print("MOBILE console open")
+					await _w(0.4)
+					var rc := get_tree().root.get_node_or_null("RedConsole") as RedConsole
+					_ctl_target("CONSOLEFIELD", rc._edit)
+					await _wait_for(func() -> bool: return is_instance_valid(rc) and rc._log.get_parsed_text().contains("> hi"), 20.0)
+					if is_instance_valid(rc):
+						print("MOBILE console log: " + rc._log.get_parsed_text().strip_edges().replace("\n", " | "))
+						rc.close()
+	# 2) THE RESULTS SCREEN: CPU vs CPU, the opponent knocked out -> swipe up -> does it scroll?
+	ArenaManager.p1_cpu = true
+	CharacterRoster.opponent_id = "architect"
+	get_tree().change_scene_to_file("res://Main.tscn")
+	await _w(3.0)
+	for i in 30:
+		for f in get_tree().get_nodes_in_group("fighters"):
+			if f is Fighter and (f as Fighter).slot == 2 and not (f as Fighter).is_dead:
+				(f as Fighter).take_damage(9999)
+		await _w(0.5)
+		if get_tree().current_scene.find_child("ResultsScroll", true, false) != null:
+			break
+	ArenaManager.p1_cpu = false
+	var sc := get_tree().current_scene.find_child("ResultsScroll", true, false) as ScrollContainer
+	if sc == null:
+		print("MOBILE results: NONE")
+		return
+	await _w(1.5)
+	var bar := sc.get_v_scroll_bar()
+	print("MOBILE results ready  max_scroll=%d" % int(bar.max_value - bar.page))
+	_target("SWIPE", sc.get_global_rect().get_center())
+	await _w(8.0)
+	print("MOBILE results scroll after swipe=%d" % sc.scroll_vertical)
+	var mm := _find_button(get_tree().current_scene, "MAIN MENU")
+	if mm != null:
+		var r := mm.get_global_rect()
+		print("MOBILE main menu button visible=%s" % (r.end.y - float(sc.scroll_vertical) <= get_viewport().get_visible_rect().size.y + 1.0 or r.end.y <= get_viewport().get_visible_rect().size.y))
+	print("MOBILE done")
+
 func _run() -> void:
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
+	if q is String and String(q).contains("soak=mobile"):
+		await _run_mobile()
+		return
 	if q is String and String(q).contains("soak=perf"):
 		await _run_perf()
 		return

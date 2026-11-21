@@ -97,8 +97,9 @@ func _layout() -> void:
 			_add_button("m%d" % (i + 1), "move_%d" % (i + 1), str(i + 1), a + Vector2.from_angle(deg_to_rad(angs[i - 3])) * third, 22.0 * s)
 		if InputMap.has_action("flight"):
 			_add_button("fly", "flight", "FLY", Vector2(64.0 * s, size.y - 240.0 * s), 24.0 * s)
-	# Small menu button at the top, left of the fight timer (only the screen scale: it is tiny on purpose)
-	_add_button("menu", "", "II", Vector2(size.x * 0.5 - 92.0 * screen, 32.0 * screen), 17.0 * screen)
+	# PAUSE button at the top, left of the fight timer (2026-11-21: made BIG - it opens the pause menu,
+	# which also holds the red CONSOLE on phones)
+	_add_button("menu", "", "II", Vector2(size.x * 0.5 - 110.0 * screen, 42.0 * screen), 32.0 * screen)
 	# Story Mode: healing FLASK button above the joystick (same as the R key)
 	if StoryManager.active and InputMap.has_action("use_flask"):
 		_add_button("flask", "use_flask", "+", Vector2(64.0 * s, size.y - 240.0 * s), 24.0 * s)

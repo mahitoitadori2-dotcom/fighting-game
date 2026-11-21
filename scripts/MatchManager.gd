@@ -212,11 +212,23 @@ func _show_winner() -> void:
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(dim)
 
+	# SCROLLS (2026-11-21): on phones the results + 4 buttons are taller than the screen - drag to scroll
+	var scroll := ScrollContainer.new()
+	scroll.name = "ResultsScroll"
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.follow_focus = true                              # Controller / keys: the focused button stays in view
+	layer.add_child(scroll)
+	DragScroll.attach(scroll)                              # A finger swipe anywhere scrolls it
 	var col := VBoxContainer.new()
-	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.add_theme_constant_override("separation", 14)
-	layer.add_child(col)
+	scroll.add_child(col)
+	var top_pad := Control.new()
+	top_pad.custom_minimum_size = Vector2(0, 24)
+	col.add_child(top_pad)
 
 	var who := "P1" if winner == p1 else ("THE BOSS" if winner is BaseEnemy else ("CPU" if winner is ControlledFighter else "DUMMY"))
 	var name_text: String = winner.data.character_name if winner != null and winner.data != null else "?"

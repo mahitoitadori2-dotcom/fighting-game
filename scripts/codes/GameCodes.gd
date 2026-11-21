@@ -89,6 +89,8 @@ static func toggle(id: String, tree: SceneTree) -> String:
 
 
 ## FU11 LOO PERCEN7: every achievement, every enemy met, every Story level beaten. Saved.
+## SKINS: only GALAXY comes with it (it is an achievement reward). Frozen Expedition (the Crystal Swarm)
+## and Assassin (The XX0XN) must still be earned in the game - this code never sets them.
 static func unlock_everything() -> void:
 	# Achievements (silently: no 300 toasts)
 	Achievements.load_data()

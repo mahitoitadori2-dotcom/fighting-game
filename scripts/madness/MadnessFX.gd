@@ -6,6 +6,12 @@ extends RefCounted
 ##             VIGNETTE, a projector FLICKER and now and then a one-frame jolt (under the HUD)
 ##   Blood     red droplets on every hit + SPLATS that stay on the floor (capped)
 ##   Whispers  a line flashes faintly on the screen every so often
+## CORRUPTED / HACKED (2026-11-21, user: "more Corrupted/Hack style effects"):
+##   Glitch    RGB split all the time; GLITCH BURSTS (every 4-10 s, and hard when you are hit): torn
+##             horizontal bands, displaced + inverted blocks, colour channels sliding apart
+##   Hack      a red terminal feed (hex + system errors) in the corner, INTEGRITY = your health,
+##             "C O R R U P T E D" stamped across the screen on big bursts
+##   Spawns    creatures glitch into existence (flicker + jitter)
 ## Installed by StoryManager for Madness levels and by the Madness board (filter + whispers only).
 
 const SPLAT_MAX := 48
@@ -19,6 +25,8 @@ render_mode unshaded;
 
 uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;
 uniform float jolt = 0.0;
+uniform float burst = 0.0;                                           // 0..1 glitch burst
+uniform float seed = 0.0;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -26,7 +34,24 @@ float hash(vec2 p) {
 
 void fragment() {
 	vec2 uv = SCREEN_UV + vec2(jolt * 0.006, 0.0);
-	vec3 c = textureLod(screen_texture, uv, 0.0).rgb;
+	float inv = 0.0;
+	if (burst > 0.0) {
+		vec2 blk = floor(SCREEN_UV * vec2(14.0, 24.0));                  // Displaced blocks
+		if (hash(blk + seed) < 0.16 * burst) {
+			uv.x += (hash(blk + seed + 3.1) - 0.5) * 0.14 * burst;
+			uv.y += (hash(blk + seed + 7.7) - 0.5) * 0.03 * burst;
+		}
+		inv = step(1.0 - 0.05 * burst, hash(blk + seed + 1.3));         // A few inverted blocks
+		float row = floor(SCREEN_UV.y * 48.0);                            // Torn horizontal bands
+		if (hash(vec2(row, seed)) > 1.0 - 0.12 * burst) {
+			uv.x += (hash(vec2(seed, row)) - 0.5) * 0.10 * burst;
+		}
+	}
+	float ca = 0.0018 + 0.014 * burst + abs(jolt) * 0.004;              // RGB split
+	vec3 c;
+	c.r = textureLod(screen_texture, uv + vec2(ca, 0.0), 0.0).r;
+	c.g = textureLod(screen_texture, uv, 0.0).g;
+	c.b = textureLod(screen_texture, uv - vec2(ca, ca * 0.4), 0.0).b;
 	float l = dot(c, vec3(0.299, 0.587, 0.114));
 	float red = clamp((c.r - max(c.g, c.b)) * 2.6, 0.0, 1.0);          // How RED this pixel is
 	vec3 grey = vec3(clamp((l - 0.5) * 1.45 + 0.46, 0.0, 1.0));        // Hard-contrast grey
@@ -40,6 +65,7 @@ void fragment() {
 	if (fract(SCREEN_UV.y * 3.0 + TIME * 0.31) < 0.004) {
 		o *= 0.6;                                                         // A scratch line rolling down
 	}
+	o = mix(o, vec3(1.0) - o, inv);
 	COLOR = vec4(o, 1.0);
 }
 """
@@ -52,8 +78,32 @@ static func install_level(m: StoryManager) -> void:
 	if not GraphicsSettings.level == GraphicsSettings.POTATO:
 		m.add_child(Filter.new())
 	m.add_child(Whispers.new())
+	var hack := Hack.new()
+	hack.who = m.player
+	m.add_child(hack)
 	if m.player != null:
-		m.player.damaged.connect(func(amount: int, _hit: HitData) -> void: bleed(m.player, amount))
+		m.player.damaged.connect(func(amount: int, _hit: HitData) -> void:
+			bleed(m.player, amount)
+			glitch(m.get_tree(), clampf(0.5 + float(amount) * 0.05, 0.5, 1.0)))
+
+
+## A glitch burst on the screen now (0..1). Also stamps CORRUPTED on strong ones.
+static func glitch(tree: SceneTree, strength: float) -> void:
+	for f in tree.get_nodes_in_group("madness_filter"):
+		(f as Filter).burst = maxf((f as Filter).burst, strength)
+	if strength >= 0.8:
+		for h in tree.get_nodes_in_group("madness_hack"):
+			(h as Hack).stamp()
+
+
+## A creature glitches into existence: flickers + jitters for a moment.
+static func glitch_in(n: Node2D) -> void:
+	if n == null or not n.is_inside_tree():
+		return
+	var tw := n.create_tween()
+	for i in 6:
+		tw.tween_property(n, "modulate:a", 0.15 if i % 2 == 0 else 1.0, 0.05)
+	tw.tween_property(n, "modulate:a", 1.0, 0.05)
 
 
 ## The Madness board: the filter + whispers (no blood).
@@ -61,6 +111,7 @@ static func install_board(n: Node) -> void:
 	if not GraphicsSettings.level == GraphicsSettings.POTATO:
 		n.add_child(Filter.new())
 	n.add_child(Whispers.new())
+	n.add_child(Hack.new())                                  # (No hero here: no INTEGRITY line)
 
 
 ## Blood on a hit: droplets flying + a splat on the floor below.
@@ -99,7 +150,11 @@ class Filter extends CanvasLayer:
 	var _next_jolt := 3.0
 	var _t := 0.0
 
+	var burst := 0.0
+	var _next_burst := 5.0
+
 	func _ready() -> void:
+		add_to_group("madness_filter")
 		layer = 5
 		_rect = ColorRect.new()
 		_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -117,6 +172,13 @@ class Filter extends CanvasLayer:
 			if _t > _next_jolt + 0.06:
 				_next_jolt = _t + randf_range(2.5, 7.0)
 		_mat.set_shader_parameter("jolt", j)
+		if _t > _next_burst:                                  # A random glitch burst every 4-10 s
+			_next_burst = _t + randf_range(4.0, 10.0)
+			burst = maxf(burst, randf_range(0.4, 0.9))
+			SoundManager.play_sfx("spark", -12.0)
+		_mat.set_shader_parameter("burst", burst)
+		_mat.set_shader_parameter("seed", floorf(_t * 30.0))
+		burst = maxf(burst - delta * 2.4, 0.0)
 
 
 ## Whispers: a line fades in faintly somewhere on the screen, then away.
@@ -199,3 +261,77 @@ class Splat extends Node2D:
 		draw_colored_polygon(pts, Color(0.55, 0.0, 0.0, 0.9))
 		for k in 3:
 			draw_circle(Vector2(rng.randf_range(-r * 1.6, r * 1.6), rng.randf_range(-3.0, 3.0)), rng.randf_range(2.0, 5.0), Color(0.55, 0.0, 0.0, 0.85))
+
+
+## HACK: a red terminal feed in the bottom-left corner, INTEGRITY (= the hero's health) in the
+## top-right, and "C O R R U P T E D" stamped across the screen on big glitch bursts.
+class Hack extends CanvasLayer:
+	const FEED := ["XANXXE://reality.sys  ACCESS DENIED", "ERR 0x00DEAD: REALITY_NOT_FOUND", "inject  >>  /halo/broken  [OK]",
+		"SEGFAULT at 0x%04X", "mem.dump  %s", "user.integrity --set 0", "WARNING: sanity buffer overflow",
+		"chain.len = INF", "kill -9 sun.exe   (process not found)", "XX0XN.dance_party()  [RUNNING]",
+		"reading /dev/screams ...", "checksum FAILED  %s", "rewriting world.map ... 47%", "ERR: you are not supposed to be here"]
+	var who: Fighter
+	var _feed: Label
+	var _integ: Label
+	var _stamp: Label
+	var _lines: Array[String] = []
+	var _next := 0.0
+	var _t := 0.0
+
+	func _ready() -> void:
+		add_to_group("madness_hack")
+		layer = 9
+		_feed = _mk(14, Color(0.85, 0.05, 0.04, 0.6))
+		_feed.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+		_feed.offset_left = 16.0
+		_feed.offset_top = -170.0
+		_feed.offset_bottom = -12.0
+		_feed.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		_integ = _mk(18, Color(0.95, 0.1, 0.08, 0.85))
+		_integ.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+		_integ.offset_left = -330.0
+		_integ.offset_right = -20.0
+		_integ.offset_top = 110.0
+		_integ.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		_stamp = _mk(64, Color(1.0, 0.08, 0.05))
+		_stamp.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+		_stamp.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		_stamp.text = "C O R R U P T E D"
+		_stamp.modulate.a = 0.0
+
+	func _mk(size: int, col: Color) -> Label:
+		var l := Label.new()
+		l.add_theme_font_size_override("font_size", size)
+		l.add_theme_color_override("font_color", col)
+		l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+		l.add_theme_constant_override("outline_size", 4)
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(l)
+		return l
+
+	func stamp() -> void:
+		_stamp.modulate.a = 0.9
+		_stamp.position.x += randf_range(-12.0, 12.0)
+		var tw := create_tween()
+		tw.tween_property(_stamp, "modulate:a", 0.0, 0.6).set_delay(0.25)
+
+	func _process(delta: float) -> void:
+		_t += delta
+		_next -= delta
+		if _next <= 0.0:
+			_next = randf_range(0.12, 0.5)
+			var line := String(FEED[randi() % FEED.size()])
+			if line.contains("%04X"):
+				line = line % (randi() % 65536)
+			elif line.contains("%s"):
+				line = line % ("%08x %08x" % [randi(), randi()])
+			_lines.append(line)
+			while _lines.size() > 7:
+				_lines.pop_front()
+			_feed.text = "\n".join(_lines)
+		if who != null and is_instance_valid(who) and who.data != null:
+			var k := float(who.hp) / maxf(float(who.data.max_hp), 1.0)
+			var bar := "#".repeat(roundi(k * 12.0)) + ".".repeat(12 - roundi(k * 12.0))
+			_integ.text = "INTEGRITY  [%s]  %d%%" % [bar, roundi(k * 100.0)]
+			_integ.modulate.a = 1.0 if k > 0.3 or fmod(_t * 4.0, 1.0) < 0.6 else 0.3
+		_stamp.position.y = sin(_t * 41.0) * 2.0

@@ -67,6 +67,10 @@ func _ready() -> void:
 ## F11 / Alt+Enter: fullscreen on / off (desktop; in a browser F11 is the browser's own fullscreen).
 func _input(event: InputEvent) -> void:
 	var k := event as InputEventKey
+	if k != null and k.pressed and not k.echo and k.physical_keycode == KEY_F12:
+		if RedConsole.toggle(get_tree()):                 # F12 in a level: THE RED CONSOLE (web too, all builds)
+			get_viewport().set_input_as_handled()
+		return
 	if k == null or not k.pressed or k.echo or OS.has_feature("web"):
 		return
 	if k.physical_keycode == KEY_F11 or (k.physical_keycode == KEY_ENTER and k.alt_pressed):
