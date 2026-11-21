@@ -36,7 +36,7 @@ func _ready() -> void:
 
 
 # ============================================================
-# SECRET CODES (SecretCodes.gd): phones get a CODE button, PC types arrow / WASD orders
+# SECRET CODES (class SecretCodes, scripts/codes/GameCodes.gd): phones get a CODE button, PC types arrow / WASD orders
 # ============================================================
 var _code_panel: CodePanel = null
 
