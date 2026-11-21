@@ -254,7 +254,7 @@ func _cmd_s001(_args: PackedStringArray) -> void:
 	if f.pixel_group != null:
 		f.pixel_group.modulate = Color(0.05, 0.04, 0.06, 0.85) if on else Color.WHITE
 	say("  #s001  BLACK GHOST: " + ("ON. every move with an Onslaught goes off as one." if on else "OFF."))
-	SoundManager.play_sfx("void_goo", -2.0)
+	SoundManager.play_sfx("console_pierce", 0.0, 0.0)          # Deep-fried PIERCING stab (tools/make_console_sfx.js)
 
 
 func _cmd_s002(_args: PackedStringArray) -> void:
@@ -282,6 +282,7 @@ func _cmd_s002(_args: PackedStringArray) -> void:
 	f.get_parent().add_child(clone)
 	Effects.gold_burst(clone, clone.global_position + Vector2(0, -60), 80.0)
 	say("  #s002  a clone of you joins the fight. (CPU)")
+	SoundManager.play_sfx("console_gunshot", 0.0, 0.0)         # Deep-fried GUNSHOT
 
 
 func _cmd_s003(_args: PackedStringArray) -> void:
@@ -298,6 +299,7 @@ func _cmd_s003(_args: PackedStringArray) -> void:
 		b.name = "ConsoleBlind"
 		get_tree().root.add_child(b)
 	say("  #s003  CORRUPTED. IMMORTAL. ...where did the screen go?")
+	SoundManager.say("xx0xn_hank", "HAAAANK")                   # The deep-fried XX0XN yell
 	say("  (type 'normalize' to see again)")
 
 
