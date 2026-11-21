@@ -160,6 +160,139 @@ func _wait_for(cond: Callable, secs: float) -> bool:
 
 
 func _run_mobile() -> void:
+	await _run_mobile_inner()
+
+
+## The XANXXE code typed in the CODE box -> the red panel: tap its 3 items -> corruption -> Madness.
+func _mobile_xanxxe() -> void:
+	await _w(2.0)
+	var code := _find_button(get_tree().current_scene, "CODE")
+	if code == null:
+		print("MOBILE xanxxe: no CODE button")
+		return
+	_ctl_target("CODE", code)
+	if not await _wait_for(func() -> bool: return get_tree().current_scene.find_children("*", "CodePanel", true, false).size() > 0, 15.0):
+		return
+	var cp := get_tree().current_scene.find_children("*", "CodePanel", true, false)[0] as CodePanel
+	_ctl_target("CODEFIELD", cp._edit)
+	if not await _wait_for(func() -> bool: return get_tree().root.get_node_or_null("XanxxePanel") != null, 20.0):
+		print("MOBILE xanxxe panel: NOT OPENED")
+		return
+	await _w(0.8)
+	print("MOBILE shot xanxxe")
+	var xp := get_tree().root.get_node_or_null("XanxxePanel") as XanxxePanel
+	for b in xp._buttons:
+		_ctl_target("XITEM", b)
+		await _w(1.2)
+	await _w(1.0)
+	print("MOBILE shot xanxxe_corrupt")
+	await _wait_for(func() -> bool: return Madness.unlocked, 15.0)
+	print("MOBILE xanxxe -> madness unlocked=%s" % Madness.unlocked)
+
+
+## The Story board's STORY | MADNESS switch -> the Madness board -> tap level 1 -> it plays.
+func _mobile_madness() -> void:
+	get_tree().change_scene_to_file(StoryManager.STORY_MENU)
+	await _w(3.0)
+	var sw := _find_button(get_tree().current_scene, "MADNESS")
+	print("MOBILE madness switch on the Story board=%s" % (sw != null))
+	if sw == null:
+		return
+	_ctl_target("MADSWITCH", sw)
+	if not await _wait_for(func() -> bool: return get_tree().current_scene != null and get_tree().current_scene.scene_file_path == Madness.BOARD_SCENE, 15.0):
+		print("MOBILE madness board: NOT OPENED")
+		return
+	await _w(1.5)
+	print("MOBILE shot madness_board")
+	var tiles: Array = get_tree().current_scene.get("_tiles")
+	_ctl_target("MADLEVEL1", tiles[0])
+	var ok: bool = await _wait_for(func() -> bool:
+		var sm := get_tree().get_first_node_in_group("story_manager") as StoryManager
+		return sm != null and sm.level_number == Madness.FIRST, 20.0)
+	await _w(5.0)
+	var tinted := false
+	for f in get_tree().get_nodes_in_group("fighters"):
+		if f is BaseEnemy and (f as BaseEnemy).pixel_group != null and (f as BaseEnemy).pixel_group.modulate == Madness.TINT:
+			tinted = true
+	print("MOBILE madness level 1 playing=%s  enemies black+red=%s  dark sound=%s  glitch filter=%s" % [ok, tinted,
+		SoundManager.madness, get_tree().get_nodes_in_group("madness_filter").size() > 0])
+	print("MOBILE shot madness_level")
+	await _w(1.0)
+
+
+## More console commands, each typed through the phone's input box.
+func _mobile_console_cmds(rc: RedConsole) -> void:
+	var me: Fighter = null
+	for f in get_tree().get_nodes_in_group("fighters"):
+		if (f as Fighter).slot == 1:
+			me = f
+	for cmd in ["#s001", "#s002", "#s003", "normalize"]:
+		if not is_instance_valid(rc):
+			return
+		_ctl_target("CONSOLEFIELD", rc._edit)
+		await _wait_for(func() -> bool: return is_instance_valid(rc) and rc._log.get_parsed_text().contains("> " + cmd), 20.0)
+		await _w(0.5)
+		match cmd:
+			"#s001":
+				print("MOBILE #s001 black ghost=%s" % (me is ControlledFighter and (me as ControlledFighter).console_onslaught))
+			"#s002":
+				print("MOBILE #s002 clones=%d" % get_tree().get_nodes_in_group("console_clone").size())
+			"#s003":
+				print("MOBILE #s003 blind=%s" % (get_tree().root.get_node_or_null("ConsoleBlind") != null))
+				print("MOBILE shot blind")
+			"normalize":
+				print("MOBILE after typing 5 commands: pause menu popped up by itself=%s" % PauseMenu.is_open)
+				print("MOBILE normalize: clones=%d blind=%s madness=%s" % [get_tree().get_nodes_in_group("console_clone").size(),
+					get_tree().root.get_node_or_null("ConsoleBlind") != null, Madness.unlocked])
+	if is_instance_valid(rc):
+		_ctl_target("CONSOLEFIELD", rc._edit)                     # 'rotor': the picture
+		if await _wait_for(func() -> bool: return get_tree().root.get_node_or_null("RotorPicture") != null, 20.0):
+			await _w(1.0)
+			print("MOBILE rotor picture up=true")
+			print("MOBILE shot rotor")
+			await _w(3.0)
+
+
+## Rotor Mode on a phone: P1 is Rotor, the touch ATTACK button = Bite.
+func _mobile_rotor_mode() -> void:
+	SecretCodes.toggle("rotor_mode", get_tree())
+	ArenaManager.p1_cpu = false
+	CharacterRoster.opponent_id = ""
+	get_tree().change_scene_to_file("res://Main.tscn")
+	await _w(4.0)
+	var am := get_tree().get_first_node_in_group("arena_manager") as ArenaManager
+	var tc := get_tree().current_scene.find_child("TouchControls", true, false)
+	print("MOBILE rotor mode: P1 is Rotor=%s" % (am != null and am.p1 is Rotor))
+	if tc != null and am != null and am.p1 is Rotor:
+		for btn in tc.get("_buttons"):
+			if String(btn["action"]) == "punch":
+				_target("ATTACKBTN", btn["center"])
+		var bit: bool = await _wait_for(func() -> bool: return (am.p1 as BaseEnemy).current != null and (am.p1 as BaseEnemy).current == (am.p1 as BaseEnemy).patterns[0], 10.0)
+		print("MOBILE rotor mode: touch ATTACK -> Bite=%s" % bit)
+	SecretCodes.toggle("rotor_mode", get_tree())
+
+
+## The Abandoned Town (level 81) loads on a phone, through the loading screen.
+func _mobile_town() -> void:
+	StoryProgress.current_level = 81
+	LoadingScreen.goto(get_tree(), "res://scenes/TownLand.tscn", "LEVEL 81", "THE ABANDONED TOWN")
+	var ok: bool = await _wait_for(func() -> bool: return get_tree().current_scene != null and get_tree().current_scene.scene_file_path.ends_with("TownLand.tscn"), 30.0)
+	await _w(6.0)
+	var people := 0
+	if ok:
+		for n in [get_tree().current_scene] + get_tree().current_scene.find_children("*", "", true, false):
+			var pp: Variant = n.get("_people")
+			if pp is Dictionary:
+				people = (pp as Dictionary).size()
+				break
+	print("MOBILE abandoned town loaded=%s  people=%d  pause menu popped up by itself=%s" % [ok, people, PauseMenu.is_open])
+	if not ok:
+		return
+	print("MOBILE shot town")
+	await _w(1.0)
+
+
+func _run_mobile_inner() -> void:
 	await _w(2.5)
 	# 0) MAIN MENU: the CODE button -> the code window -> type B0gT3ster (the browser's input)
 	var code := _find_button(get_tree().current_scene, "CODE")
@@ -172,8 +305,15 @@ func _run_mobile() -> void:
 			_ctl_target("CODEFIELD", cp._edit)
 			await _wait_for(func() -> bool: return SecretCodes.bug_tester, 20.0)
 			print("MOBILE code typed -> bug tester %s" % ("ON" if SecretCodes.bug_tester else "OFF"))
+			await _w(1.0)
+			if is_instance_valid(cp) and cp._close.visible:
+				_ctl_target("CLOSE", cp._close)                        # The player taps CLOSE (a tap, not a key)
+				var shut: bool = await _wait_for(func() -> bool: return get_tree().current_scene.find_children("*", "CodePanel", true, false).is_empty(), 10.0)
+				print("MOBILE code window CLOSE tapped -> closed=%s" % shut)
 			if SecretCodes.bug_tester:
 				SecretCodes.toggle("bug_tester", get_tree())
+	await _mobile_xanxxe()
+	await _mobile_madness()
 	# 1) VERSUS vs the Dummy with touch controls: tap II -> pause menu -> CONSOLE -> type 'hi'
 	ArenaManager.p1_cpu = false
 	ArenaManager.selected_arena = "test"
@@ -201,9 +341,12 @@ func _run_mobile() -> void:
 					var rc := get_tree().root.get_node_or_null("RedConsole") as RedConsole
 					_ctl_target("CONSOLEFIELD", rc._edit)
 					await _wait_for(func() -> bool: return is_instance_valid(rc) and rc._log.get_parsed_text().contains("> hi"), 20.0)
+					await _mobile_console_cmds(rc)
 					if is_instance_valid(rc):
 						print("MOBILE console log: " + rc._log.get_parsed_text().strip_edges().replace("\n", " | "))
 						rc.close()
+	await _mobile_rotor_mode()
+	await _mobile_town()
 	# 2) THE RESULTS SCREEN: CPU vs CPU, the opponent knocked out -> swipe up -> does it scroll?
 	ArenaManager.p1_cpu = true
 	CharacterRoster.opponent_id = "architect"

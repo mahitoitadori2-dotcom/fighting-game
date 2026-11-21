@@ -15,12 +15,20 @@ static func use_prompt() -> bool:
 static var _last_ask := -10000                           # One tap = a touch AND a mouse click: ask once
 
 
+## True while / just after the browser's input box was up: it takes the focus from the game, and that
+## must NOT count as "the player left" (the auto-pause in GraphicsSettings would open the pause menu).
+static func just_asked() -> bool:
+	return Time.get_ticks_msec() - _last_ask < 2000
+
+
 ## Ask for a line of text (blocks until the player answers). "" = cancelled / empty.
 static func ask(question: String, current: String = "") -> String:
 	if not OS.has_feature("web"):
 		return ""
 	var js := "(function(){ var r = window.prompt(%s, %s); return r === null ? '' : String(r); })()" % [JSON.stringify(question), JSON.stringify(current)]
+	_last_ask = Time.get_ticks_msec()
 	var r: Variant = JavaScriptBridge.eval(js, true)
+	_last_ask = Time.get_ticks_msec()
 	return String(r) if r != null else ""
 
 

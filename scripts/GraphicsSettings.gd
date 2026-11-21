@@ -111,6 +111,8 @@ func _process(delta: float) -> void:
 ## fight -> the pause menu opens, so you never come back to a lost fight. (Not in CPU test runs.)
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		if TextEntry.just_asked():
+			return                                            # (Only the phone's text box took the focus)
 		if is_inside_tree() and not PauseMenu.is_open and not StoryManager.autoplay and PauseMenu.in_fight(get_tree()):
 			PauseMenu.toggle(get_tree())
 
