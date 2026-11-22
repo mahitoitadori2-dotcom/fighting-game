@@ -72,6 +72,11 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
   - Is the breaking bridge fair (the gaps + particles)?
   - Is the Storm Hand (720 HP) too easy with the Trainer and the partner?
   - Only a bot played it.
+- [ ] **Play The Abandoned Town (81) yourself:** all 3 Nightmare Lord choices, the lore talks, the music. Only scripts played it.
+- [ ] **Play MADNESS yourself** (20 levels): is The XX0XN fair (the flying phase, the dive window)? Are the deep-fried sounds too harsh or too quiet? Numbers in `scripts/madness/`.
+- [ ] **Milestone levels:** check that the 10th / 25th / 50th-level buffs and super bosses feel right (`StoryDifficulty.gd`).
+- [ ] **Listen** to the console sounds (`audio/sfx/console_pierce.wav`, `console_gunshot.wav`, made by `tools/make_console_sfx.js`) and the XX0XN voice lines (`audio/voice/xx0xn_*`).
+- [ ] **On a real phone:** the CODE box and the console use the browser's own input box - check it feels OK on an iPhone and Android.
 - [ ] **Next Story part:** waits for the user's lore (who created the Storm? what happens after the Storm Hand?).
 - [ ] **Read the new Story dialogue in play:** the C1-5 openings and boss talks, and the Enlightened Chase lines from the lore (incl. the Storm talk after the last fight). Lines in `scripts/story/dialogue/StoryDialogue.gd`.
 - [ ] **Listen to the audio yourself:** the 41 music tracks, the 24 new Kenney sound effects and the dialogue voice blips. Say which tracks or volumes need a change. See [Audio](Audio.md).

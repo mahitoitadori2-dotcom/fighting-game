@@ -34,7 +34,6 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 14)
 	add_child(col)
 	col.add_child(UiStyle.label("STORY SKINS", 34, Color(1.0, 0.86, 0.5), 8))
-	col.add_child(UiStyle.label("What the Warrior and the Architect wear in Story Mode", 17, UiStyle.TEXT, 4))
 	var row := HBoxContainer.new()
 	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	row.alignment = BoxContainer.ALIGNMENT_CENTER

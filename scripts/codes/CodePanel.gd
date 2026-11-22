@@ -43,7 +43,7 @@ func _ready() -> void:
 	_title = UiStyle.label("SECRET CODE", 34, Color(1.0, 0.86, 0.4), 8)
 	col.add_child(_title)
 	_edit = LineEdit.new()
-	_edit.placeholder_text = "type a code..."
+	_edit.placeholder_text = ""
 	_edit.custom_minimum_size = Vector2(480, 60)
 	_edit.add_theme_font_size_override("font_size", 28)
 	_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER

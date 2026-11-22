@@ -67,7 +67,7 @@ func _ready() -> void:
 	add_child(_painter)
 	_painter.draw.connect(_paint)
 	_hint = Label.new()                             # Tells you cutscenes can be skipped
-	_hint.text = "Press any button to skip"
+	_hint.text = ""
 	_hint.add_theme_font_size_override("font_size", 16)
 	_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 	_hint.add_theme_color_override("font_outline_color", Color(0, 0, 0))

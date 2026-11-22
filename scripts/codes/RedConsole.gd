@@ -134,7 +134,6 @@ func _ready() -> void:
 	TextEntry.hook(_edit, "XANXXE://>", _submit)                    # Web phones: the browser's own input
 	row.add_child(_edit)
 	say("XANXXE 1NT3GR1T13S :: RED CONSOLE")
-	say("type 'help' for the commands.  F12 / Esc = close")
 	_edit.grab_focus.call_deferred()
 	SoundManager.play_sfx("ui_confirm", -6.0)
 
@@ -195,7 +194,7 @@ func _submit(line: String) -> void:
 		cmd = whole
 		args = PackedStringArray()
 	if not COMMANDS.has(cmd):
-		say("  unknown command '%s'. type 'help'." % cmd)
+		say("  unknown command '%s'." % cmd)
 		SoundManager.play_sfx("ui_back", -6.0)
 		return
 	call(String(COMMANDS[cmd][0]), args)

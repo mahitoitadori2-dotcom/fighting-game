@@ -166,5 +166,3 @@ func _draw_screen() -> void:
 	var dots := ".".repeat(1 + int(_t * 3.0) % 3)
 	c.draw_string(font, Vector2(bar.position.x, bar.end.y + 30.0), "LOADING" + dots, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.85, 0.80, 0.72, 0.85 * a))
 	# The tip
-	var tw := font.get_string_size("TIP:  " + _tip, HORIZONTAL_ALIGNMENT_LEFT, -1, 18).x
-	c.draw_string(font, Vector2(mid.x - tw * 0.5, sz.y - 46.0), "TIP:  " + _tip, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.75, 0.72, 0.66, 0.9 * a))

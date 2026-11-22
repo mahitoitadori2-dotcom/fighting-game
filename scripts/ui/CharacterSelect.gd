@@ -54,14 +54,6 @@ func _build() -> void:
 	spacer.custom_minimum_size = Vector2(150, 0)
 	header.add_child(spacer)
 
-	# Instructions
-	var how := HBoxContainer.new()
-	how.alignment = BoxContainer.ALIGNMENT_CENTER
-	how.add_theme_constant_override("separation", 30)
-	how.add_child(UiStyle.label("LEFT CLICK / TAP / (A) = YOU", 18, CharacterCard.YOU_COLOR, 6))
-	how.add_child(UiStyle.label("RIGHT CLICK / HOLD / (Y) = OPPONENT", 18, CharacterCard.OPP_COLOR, 6))
-	col.add_child(how)
-
 	# Selection bar: YOU / OPPONENT / clear
 	var sel := HBoxContainer.new()
 	sel.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -73,7 +65,6 @@ func _build() -> void:
 	_opp_label = UiStyle.label("", 24, CharacterCard.OPP_COLOR, 8)
 	sel.add_child(_opp_label)
 	var clear := UiStyle.make_button("FIGHT DUMMY", Vector2(170, 40), 16)
-	clear.tooltip_text = "Clear the opponent: you will face the training Dummy"
 	clear.pressed.connect(_clear_opponent)
 	sel.add_child(clear)
 
@@ -100,9 +91,8 @@ func _build() -> void:
 	_grid.add_theme_constant_override("v_separation", GRID_GAP)
 	center.add_child(_grid)
 
-	# ENEMY TEST: PvE enemies / bosses (opponent only)
-	sections.add_child(UiStyle.label("ENEMY TEST  -  PvE BOSSES", 30, Color(0.45, 0.70, 1.0), 8))
-	sections.add_child(UiStyle.label("Click an enemy to fight it (enemies can only be the OPPONENT)", 15, UiStyle.TEXT_DIM, 5))
+	# Enemies / bosses (opponent only)
+	sections.add_child(UiStyle.label("BOSSES", 30, Color(0.45, 0.70, 1.0), 8))
 	# Quick-pick list: any playable character vs ANY enemy, one tap
 	var pick := HFlowContainer.new()
 	pick.alignment = FlowContainer.ALIGNMENT_CENTER
@@ -124,7 +114,6 @@ func _build() -> void:
 	_enemy_grid.add_theme_constant_override("v_separation", GRID_GAP)
 	ecenter.add_child(_enemy_grid)
 
-	col.add_child(UiStyle.label("Right-click the opponent again (or FIGHT DUMMY) to face the Dummy     |     Esc = back", 15, UiStyle.TEXT_DIM, 6))
 
 
 func _populate() -> void:

@@ -303,7 +303,7 @@ func _update_hold_skip(delta: float, r: Rect2) -> void:
 		or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or _touch_down
 	if not held or at_choice or PauseMenu.is_open or StoryManager.autoplay:
 		_hold = 0.0
-		_skip_lbl.text = "" if at_choice else "Hold to skip"
+		_skip_lbl.text = ""
 		return
 	_hold += delta
 	var k := clampf(_hold / HOLD_SKIP, 0.0, 1.0)

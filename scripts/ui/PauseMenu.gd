@@ -186,8 +186,6 @@ func _my_entry() -> Dictionary:
 func _build_moves() -> void:
 	var e := _my_entry()
 	_moves_box.add_child(UiStyle.label("MOVES  -  %s" % String(e.get("name", "?")).to_upper(), 26, Color(1.0, 0.86, 0.5), 8))
-	if STORY_SCENES.has(get_tree().current_scene.scene_file_path):
-		_moves_box.add_child(UiStyle.label("(Versus numbers - Story makes your hero a little stronger)", 13, Color(0.8, 0.78, 0.72), 3))
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(430, 330)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -236,7 +234,6 @@ func _on_graphics() -> void:
 # ----- CONTROLS (the same keys as Settings > CONTROLS; a change is saved) -----
 func _build_controls() -> void:
 	_ctl_box.add_child(UiStyle.label("CONTROLS", 30, Color(1.0, 0.86, 0.5), 8))
-	_ctl_box.add_child(UiStyle.label("Click a key, then press the new key or mouse button.", 14, Color(0.8, 0.78, 0.72), 3))
 	for a in KeyBindings.ACTIONS:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 10)
@@ -358,8 +355,8 @@ func _on_quit() -> void:
 
 func _ask(what: String) -> void:
 	_confirm = what
-	_restart_btn.text = "SURE? PRESS AGAIN TO RESTART" if what == "restart" else "RESTART"
-	_quit_btn.text = "SURE? PRESS AGAIN TO QUIT" if what == "quit" else _quit_text()
+	_restart_btn.text = "RESTART?" if what == "restart" else "RESTART"
+	_quit_btn.text = "QUIT?" if what == "quit" else _quit_text()
 
 
 ## Leave the fight: scene = "" restarts it, otherwise that scene opens. The calls go to the

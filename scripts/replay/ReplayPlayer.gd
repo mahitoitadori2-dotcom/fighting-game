@@ -73,7 +73,7 @@ func _physics_process(delta: float) -> void:
 			frame += 1
 	_bar.max_value = maxi(total(), 1)
 	_bar.value = frame
-	_lbl.text = "%s / %s   %s  x%s     [Space] pause  [1-3] speed  [<- ->] 5 s  [R] restart  [Esc] back" % [
+	_lbl.text = "%s / %s   %s  x%s" % [
 		StoryManager.time_text(frame / Replay.HZ), StoryManager.time_text(total() / Replay.HZ),
 		"PAUSED" if paused else ("END" if frame >= total() else "PLAYING"), str(speed)]
 

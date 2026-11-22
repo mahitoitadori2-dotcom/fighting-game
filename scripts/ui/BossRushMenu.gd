@@ -20,9 +20,7 @@ func _ready() -> void:
 	col.add_child(UiStyle.label("BOSS RUSH", 64, Color(1.0, 0.55, 0.3), 14))
 	var bosses := BossRush.boss_levels()
 	var all := BossRush.boss_levels(false)
-	col.add_child(UiStyle.label("Every Story boss you have beaten, back to back.  %d of %d bosses unlocked." % [bosses.size(), all.size()], 18, UiStyle.TEXT_DIM, 6))
-	col.add_child(UiStyle.label("Your best run comes back as a see-through GHOST to race against.", 16, Color(0.6, 0.85, 1.0), 5))
-	col.add_child(UiStyle.label("HP carries over (+%d%% between bosses)   |   %d flasks for the whole run   |   no cutscenes" % [int(BossRush.BREATHER_HEAL * 100.0), BossRush.RUSH_FLASKS], 16, UiStyle.TEXT_DIM, 5))
+	col.add_child(UiStyle.label("%d / %d BOSSES" % [bosses.size(), all.size()], 18, UiStyle.TEXT_DIM, 6))
 	var split := HBoxContainer.new()
 	split.alignment = BoxContainer.ALIGNMENT_CENTER
 	split.add_theme_constant_override("separation", 40)

@@ -35,10 +35,10 @@ func _update() -> void:
 	var ms := Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
 	var col := Color(0.4, 1.0, 0.45) if fps >= 58 else (Color(1.0, 0.85, 0.3) if fps >= 45 else Color(1.0, 0.35, 0.3))
 	_label.add_theme_color_override("font_color", col)
-	_label.text = "FPS %d  (%.1f ms)\nnodes %d   particles %d / %d   pooled %d  (reused %d / new %d)\nF4 = +%d test projectiles" % [
+	_label.text = "FPS %d  (%.1f ms)\nnodes %d   particles %d / %d   pooled %d  (reused %d / new %d)" % [
 		fps, ms, int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)),
 		OptimizationManager.live_particles, OptimizationManager.MAX_PARTICLES,
-		OptimizationManager.pooled_count(), OptimizationManager.reused, OptimizationManager.created, STRESS_COUNT]
+		OptimizationManager.pooled_count(), OptimizationManager.reused, OptimizationManager.created]
 
 
 func _unhandled_input(event: InputEvent) -> void:

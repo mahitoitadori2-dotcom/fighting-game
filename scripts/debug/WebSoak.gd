@@ -231,7 +231,9 @@ func _mobile_console_cmds(rc: RedConsole) -> void:
 			return
 		_ctl_target("CONSOLEFIELD", rc._edit)
 		await _wait_for(func() -> bool: return is_instance_valid(rc) and rc._log.get_parsed_text().contains("> " + cmd), 20.0)
-		await _w(0.5)
+		await _w(0.15)
+		print("MOBILE %s sounds playing: %s" % [cmd, ", ".join(_playing_sounds())])
+		await _w(0.35)
 		match cmd:
 			"#s001":
 				print("MOBILE #s001 black ghost=%s" % (me is ControlledFighter and (me as ControlledFighter).console_onslaught))
@@ -251,6 +253,16 @@ func _mobile_console_cmds(rc: RedConsole) -> void:
 			print("MOBILE rotor picture up=true")
 			print("MOBILE shot rotor")
 			await _w(3.0)
+
+
+## Names of the sound files playing right now (SoundManager's players), e.g. "console_gunshot".
+func _playing_sounds() -> PackedStringArray:
+	var out: PackedStringArray = []
+	for n in SoundManager.find_children("*", "AudioStreamPlayer", true, false):
+		var ap := n as AudioStreamPlayer
+		if ap.playing and ap.stream != null and ap.stream.resource_path != "":
+			out.append(ap.stream.resource_path.get_file().get_basename())
+	return out
 
 
 ## Rotor Mode on a phone: P1 is Rotor, the touch ATTACK button = Bite.

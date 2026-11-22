@@ -37,7 +37,7 @@ static func hook(edit: LineEdit, question: String, on_done: Callable) -> void:
 	if not use_prompt():
 		return
 	edit.editable = false                                    # (So Godot does not try its own keyboard)
-	edit.placeholder_text = "tap here to type"
+	edit.placeholder_text = ""
 	edit.gui_input.connect(func(ev: InputEvent) -> void:
 		var tap := (ev is InputEventMouseButton and (ev as InputEventMouseButton).pressed) or (ev is InputEventScreenTouch and (ev as InputEventScreenTouch).pressed)
 		if not tap:

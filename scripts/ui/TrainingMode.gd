@@ -57,6 +57,7 @@ func _ready() -> void:
 	_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	v.add_child(_lbl)
 	_keys = UiStyle.label("", 13, UiStyle.TEXT_DIM, 4)
+	_keys.visible = false                                  # (No key list on screen; the F-keys still work)
 	_keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	v.add_child(_keys)
 

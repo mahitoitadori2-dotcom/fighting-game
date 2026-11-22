@@ -272,10 +272,6 @@ func _build_qol_section(rows: VBoxContainer) -> void:
 		rows.add_child(_toggle_row("Fullscreen  (F11)" if not OS.has_feature("web") else "Fullscreen", "full", func(on: bool) -> void:
 			QoL.set_fullscreen(on)
 			_refresh()))
-	var note := UiStyle.label("Your fighter, opponent and arena are remembered for next time.", 14, UiStyle.TEXT_DIM, 4)
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rows.add_child(note)
 
 
 func _toggle_row(text: String, which: String, on_toggle: Callable) -> Control:
@@ -480,8 +476,6 @@ func _build_sandbox_section(rows: VBoxContainer) -> void:
 	reset.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	reset.pressed.connect(_on_reset)
 	_sandbox_box.add_child(reset)
-	var note := UiStyle.label("Applies to BOTH players and the CPU.", 14, UiStyle.TEXT_DIM, 4)
-	_sandbox_box.add_child(note)
 
 
 # ----- Widgets -----
@@ -581,7 +575,7 @@ func _refresh() -> void:
 			var fs := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 			_full_toggle.set_pressed_no_signal(fs)
 			_full_toggle.text = "ON" if fs else "OFF"
-		_summary.text = "Graphics, comfort, controls and sound for this device.  (Lives, Enemy Lives and Sandbox are in MATCH SETTINGS before a fight.)"
+		_summary.text = ""
 		return
 	_values["lives"].text = str(lives)
 	_values["enemy_lives"].text = str(enemy_lives)

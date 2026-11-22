@@ -264,7 +264,6 @@ func _build_ui() -> void:
 	row.add_child(_ext_btn)
 	# Story DIFFICULTY (EASY / NORMAL / HARD): enemy HP + damage, cave speed. Saved.
 	_diff_btn = UiStyle.make_button("DIFFICULTY: NORMAL", Vector2(230, 56), 15)
-	_diff_btn.tooltip_text = "Difficulty: EASY = enemies 70% HP / 65% damage, HARD = 130% HP / 125% damage"
 	_diff_btn.pressed.connect(func() -> void:
 		StoryProgress.set_difficulty((StoryDifficulty.level() + 1) % 3)
 		SoundManager.play_sfx("count_tick")

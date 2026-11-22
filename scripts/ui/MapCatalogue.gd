@@ -42,9 +42,6 @@ func _build() -> void:
 	var count := UiStyle.label("%d MAPS" % MapCatalog.entries().size(), 18, UiStyle.TEXT_DIM, 4)
 	count.custom_minimum_size = Vector2(150, 0)
 	header.add_child(count)
-	var sub := UiStyle.label("Every map from Versus and Story Mode (Colosseums 1-5). Click a map to see it - and fight on it.", 16, UiStyle.TEXT_DIM, 4)
-	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	col.add_child(sub)
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL

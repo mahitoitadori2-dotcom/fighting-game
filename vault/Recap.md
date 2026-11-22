@@ -4,9 +4,22 @@ validity: current
 type: recap
 ---
 
-# Recap: the last 10 requests (up to 2026-11-13)
+# Recap: the last 10 requests (up to 2026-11-21)
 
 Back to [Summary](SUMMARY.md).
+
+1. **The Abandoned Town (level 81)** with lore NPCs, the Nightmare Lord's cave (woke / carried / left), the Strong Wind ending, own music, and **loading screens** across levels. Web start fixed: TAP TO START first, then the loading bar.
+2. **Hybrid pixel art** (3 px) on the important sprite parts + better walk, crouch, jump and attack animations.
+3. **Milestone rule:** every 10th level harder, every 25th harder still, every 50th a super boss (`StoryDifficulty.gd`).
+4. **Secret codes:** B0gT3ster (Bug Tester), R0t0rMode (play only as Rotor), Fu11 lOO percen7 (100%, only the Galaxy skin), XANXXE 1NT3GR1T13S (Madness). `/codes` lists them.
+5. **MADNESS mode:** 20 levels, corrupted black / red look, hack effects, deep-fried music and sounds, The XX0XN (flying phase, 2 chainsaws, deep-fried voice lines), Assassin skin reward.
+6. **The red console** (F12 / phones: pause > CONSOLE): #s001 Black Ghost, #s002 CPU clone, #s003 corrupted + blind, normalize, rotor (9 Rotor photos), jumpscare, small talk. Deep-fried sounds for #s001-#s003.
+7. **Phone fixes:** big pause button, pause in Versus, typing via the phone's input box, scrolling results screen, no stray pause menu after typing.
+8. **New skills:** `/updtatation` (push), `/nolags`, `/speedtest`, `/codes`, `/phonowebo` (phone test of what's new on GitHub).
+9. **Balance:** Enlightened One and Anti Architect nerfed (87% -> 67%, 57% win rates in CPU tests).
+10. **Warnings** from the editor's debugger fixed.
+
+**Waiting on you:** play the new parts yourself (town, Madness, console), listen to the deep-fried sounds and XX0XN voice, and an iPhone test. Older recap (up to 2026-11-13) below.
 
 1. **Optimize for iPhone 11.** DemiLand went from 28 to 231 FPS on the PC test (FAST graphics), Story fights from 121 to 209 FPS, and the web download from 22.6 to 16.2 MB. The "memory refresh" problem is still not confirmed on a real phone.
 2. **Bug fixes + nerf The Sun.** Her HP is now 540 / 620 and she deals 30% less damage.

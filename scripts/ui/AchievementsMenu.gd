@@ -85,7 +85,7 @@ func _build() -> void:
 	var ic := VBoxContainer.new()
 	ic.add_theme_constant_override("separation", 2)
 	info.add_child(ic)
-	_info_name = UiStyle.label("Hover an achievement to see how to get it.", 22, UiStyle.TEXT, 6)
+	_info_name = UiStyle.label("", 22, UiStyle.TEXT, 6)
 	ic.add_child(_info_name)
 	_info_desc = UiStyle.label("", 16, UiStyle.TEXT_DIM, 4)
 	_info_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -107,7 +107,6 @@ func _fill() -> void:
 		b.custom_minimum_size = Vector2(CARD, CARD)
 		b.focus_mode = Control.FOCUS_ALL
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		b.tooltip_text = "%s\n%s" % [d["name"], d["desc"]]
 		var none := StyleBoxEmpty.new()
 		for st in ["normal", "pressed", "disabled"]:
 			b.add_theme_stylebox_override(st, none)

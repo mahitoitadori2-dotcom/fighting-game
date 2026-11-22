@@ -36,7 +36,6 @@ func setup(entry: Dictionary) -> void:
 	focus_mode = Control.FOCUS_ALL if _selectable else Control.FOCUS_NONE
 	if _selectable:
 		mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		tooltip_text = ("Click: fight %s (boss)" % entry["name"]) if entry.get("enemy", false) else ("Left click: play as %s\nRight click: fight against %s" % [entry["name"], entry["name"]])
 
 	_style_normal = UiStyle.box(UiStyle.PANEL, UiStyle.INK, 5, 18, 16.0)
 	_style_hover = UiStyle.box(UiStyle.PANEL_LIGHT, UiStyle.INK, 5, 18, 16.0)
@@ -71,14 +70,6 @@ func setup(entry: Dictionary) -> void:
 	v.add_child(bar)
 	_badge = UiStyle.label("", 16, UiStyle.TEXT_DIM, 5)
 	v.add_child(_badge)
-
-	# --- Moves list ---
-	var moves := VBoxContainer.new()
-	moves.add_theme_constant_override("separation", 7)
-	moves.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(moves)
-	for m in entry.get("moves", []):
-		moves.add_child(_move_row(m))
 
 	if not _selectable:
 		modulate = Color(0.55, 0.55, 0.6)
@@ -128,40 +119,17 @@ func _pop() -> void:
 	SoundManager.play_sfx("ui_confirm", -8.0, 0.02)
 
 
-func _move_row(m: Dictionary) -> Control:
-	var row := VBoxContainer.new()
-	row.add_theme_constant_override("separation", 0)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var top := HBoxContainer.new()
-	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var name_label := UiStyle.label(m.get("name", ""), 18, UiStyle.TEXT, 5)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(name_label)
-	var key := String(m.get("key", ""))
-	if key != "":
-		top.add_child(UiStyle.label("[%s]" % key, 15, _accent, 5))
-	row.add_child(top)
-
-	var info := UiStyle.label(m.get("info", ""), 14, UiStyle.TEXT_DIM, 4)
-	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	row.add_child(info)
-	return row
-
-
 func set_selection(is_you: bool, is_opp: bool) -> void:
 	if (is_you and not _is_you) or (is_opp and not _is_opp):
 		_pop()
 	_is_you = is_you
 	_is_opp = is_opp
 	if _selectable and _entry.get("enemy", false):
-		_badge.text = "OPPONENT (BOSS)" if is_opp else "BOSS - click to fight"
+		_badge.text = "OPPONENT" if is_opp else "BOSS"
 		_badge.add_theme_color_override("font_color", OPP_COLOR if is_opp else Color(0.45, 0.70, 1.0))
 	elif _selectable:
 		if is_you and is_opp:
-			_badge.text = "YOU + OPPONENT (mirror match)"
+			_badge.text = "YOU + OPPONENT"
 			_badge.add_theme_color_override("font_color", BOTH_COLOR)
 		elif is_you:
 			_badge.text = "YOU"

@@ -37,7 +37,6 @@ func _ready() -> void:
 	add_child(col)
 	col.add_child(StoryModeSwitch.make(get_tree(), "madness"))
 	col.add_child(UiStyle.label("M A D N E S S", 46, Madness.RED_HI, 12))
-	col.add_child(UiStyle.label("Black and red. No names - only health. Every 10th level is harder.", 16, Color(0.85, 0.6, 0.55), 5))
 	# Hero picker
 	var hero_row := HBoxContainer.new()
 	hero_row.alignment = BoxContainer.ALIGNMENT_CENTER

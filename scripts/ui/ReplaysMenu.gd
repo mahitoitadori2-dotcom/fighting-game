@@ -18,7 +18,6 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 10)
 	add_child(col)
 	col.add_child(UiStyle.label("REPLAYS", 60, UiStyle.ACCENT_BLUE, 12))
-	col.add_child(UiStyle.label("Save a replay from the winner screen after a Versus fight.", 17, UiStyle.TEXT_DIM, 5))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

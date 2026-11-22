@@ -38,8 +38,6 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 10)
 	center.add_child(col)
 	col.add_child(UiStyle.label("BOSS EXTENSIONS", 40, Color(1.0, 0.75, 0.35), 10))
-	var sub := UiStyle.label("Beat a boss to open its extension: 2 enemy levels + 1 final boss.  Solo - pick your hero below.", 16, UiStyle.TEXT_DIM, 4)
-	col.add_child(sub)
 
 	for k in keys:
 		var e: Dictionary = StoryLevels.EXTENSIONS[k]

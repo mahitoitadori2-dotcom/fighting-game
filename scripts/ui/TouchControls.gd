@@ -176,8 +176,6 @@ func _press(b: Dictionary) -> void:
 			CombatManager.quit_to_menu(get_tree())
 		else:
 			_menu_tap_time = now
-			if _player != null:
-				Effects.popup(_player, _player.global_position + Vector2(0, -190), "TAP AGAIN FOR MENU", Color(1, 1, 1), 18)
 		return
 	Input.action_press(b["action"])
 
