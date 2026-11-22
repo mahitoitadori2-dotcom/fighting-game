@@ -89,6 +89,8 @@ const PAGES := {
 		"board": [Color(0.12, 0.13, 0.22), Color(0.55, 0.50, 0.38)], "boss_label": Color(1.0, 0.92, 0.6)},
 	13: {"title": "STORY MODE  -  ORBIS TERRARUM",
 		"board": [Color(0.95, 0.82, 0.55), Color(0.45, 0.62, 0.88)], "boss_label": Color(0.35, 0.55, 1.0)},
+	15: {"title": "STORY MODE  -  THE HUNT OF A NIGHTMARE",
+		"board": [Color(0.30, 0.06, 0.06), Color(0.12, 0.02, 0.03)], "boss_label": Color(1.0, 0.45, 0.4)},
 	14: {"title": "STORY MODE  -  THE ABANDONED TOWN",
 		"board": [Color(0.40, 0.26, 0.14), Color(0.16, 0.08, 0.06)], "boss_label": Color(1.0, 0.86, 0.55)},
 }
@@ -1016,6 +1018,16 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.HUNT_PART:
+		# The Hunt of a Nightmare: red tents on dark rocks, strings of red lanterns
+		var base15 := r.position.y + r.size.y
+		for k in 4:
+			var tx := r.position.x + r.size.x * (0.2 + 0.2 * float(k))
+			var th := r.size.y * (0.30 + 0.06 * float(k % 2))
+			c.draw_colored_polygon(PackedVector2Array([Vector2(tx - th * 0.6, base15 - 8.0), Vector2(tx + th * 0.6, base15 - 8.0), Vector2(tx, base15 - 8.0 - th)]), Color(0.62, 0.05, 0.07, 0.55))
+		for k in 9:
+			var lx := r.position.x + r.size.x * (0.1 + 0.1 * float(k))
+			c.draw_circle(Vector2(lx, r.position.y + r.size.y * 0.3 + sin(float(k) * 1.3) * 14.0), 7.0, Color(1.0, 0.18, 0.1, 0.55 + 0.25 * sin(_t * 2.0 + float(k))))
 	elif _page >= StoryLevels.TOWN_PART:
 		# The Abandoned Town: a wooden wall, little roofs, the Sun on its shrine - and a dark cave to the left
 		var base14 := r.position.y + r.size.y

@@ -216,7 +216,7 @@ function reverb(x, room = 0.86, damp = 0.35, wet = 0.32, dry = 0.85, predelay = 
 // ============================================================
 const I = {
   piano: { bank: 0, prog: 0, gain: 0.9 }, harpsichord: { bank: 0, prog: 6, gain: 0.55 }, celesta: { bank: 0, prog: 8, gain: 0.6 },
-  bells: { bank: 0, prog: 14, gain: 0.5 }, organ: { bank: 0, prog: 19, gain: 0.42 }, guitar: { bank: 0, prog: 24, gain: 1.0 },
+  bells: { bank: 0, prog: 14, gain: 0.5 }, organ: { bank: 0, prog: 19, gain: 0.42 }, accordion: { bank: 0, prog: 21, gain: 0.55 }, guitar: { bank: 0, prog: 24, gain: 1.0 },
   violin: { bank: 0, prog: 40, gain: 0.9 }, viola: { bank: 0, prog: 41, gain: 0.8 }, cello: { bank: 0, prog: 42, gain: 0.9 },
   contrabass: { bank: 0, prog: 43, gain: 0.9 }, tremolo: { bank: 0, prog: 44, gain: 0.6 }, pizz: { bank: 0, prog: 45, gain: 0.9 },
   harp: { bank: 0, prog: 46, gain: 0.85 }, timpani: { bank: 0, prog: 47, gain: 1.0 }, strings: { bank: 0, prog: 48, gain: 0.55 },

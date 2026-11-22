@@ -12,7 +12,7 @@ extends RefCounted
 
 const SAVE_PATH := "user://story.cfg"
 const TOTAL_LEVELS := 80                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE, 75-80 = ORBIS TERRARUM (80 = THE STORM ATTACKS)
-const AVAILABLE_LEVELS := 81             # + The Abandoned Town (81). Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
+const AVAILABLE_LEVELS := 110             # + The Hunt of a Nightmare (82-110). + The Abandoned Town (81). Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -253,6 +253,8 @@ static func load_progress() -> void:
 	story_skin = String(cfg.get_value("story", "story_skin", "galaxy" if Achievements.galaxy_skin else ""))
 	frozen_skins = bool(cfg.get_value("story", "frozen_skins", false))
 	town_choice = String(cfg.get_value("story", "town_choice", ""))
+	if not bool(cfg.get_value("story", "ext_301", false)):
+		_move_ext_keys()                                 # (Once: Boss Extensions moved from 101-115 to 301-315)
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
 		# Old save: the next level after the last one beaten, in the new numbering
 		var last_beaten: int = OLD_TO_NEW[clampi(unlocked_level - 1, 0, OLD_TO_NEW.size() - 1)]
@@ -265,9 +267,20 @@ static func load_progress() -> void:
 	save_progress()
 
 
+## 2026-11-22: The Hunt of a Nightmare took level numbers 82-110, so the Boss Extensions moved from
+## 101-115 to 301-315. Old saves keep their extension badges + best times (keyed by level number).
+static func _move_ext_keys() -> void:
+	for d: Dictionary in [badges, best_times]:
+		for n in range(101, 116):
+			if d.has(str(n)):
+				d[str(n + 200)] = d[str(n)]
+				d.erase(str(n))
+
+
 static func save_progress() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("story", "layout", LAYOUT)
+	cfg.set_value("story", "ext_301", true)
 	cfg.set_value("story", "unlocked_level", unlocked_level)
 	cfg.set_value("story", "colosseums_done", colosseums_done)
 	cfg.set_value("story", "shining_choice", shining_choice)

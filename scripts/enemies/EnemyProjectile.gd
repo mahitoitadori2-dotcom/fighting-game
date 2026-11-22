@@ -46,6 +46,8 @@ var exclude: Array = []                # Fighters this one must NOT hit (shared 
 var on_hit: Callable = Callable()      # Extra effect per victim, called with (victim: Fighter)
 var arc_velocity := Vector2.ZERO       # ARC: launch velocity
 var on_land: Callable = Callable()     # ARC: called with (world_pos: Vector2) when it lands
+var art_id := ""                       # "nm_weapon": which weapon (HuntArt.WEAPONS name or family)
+var burning := true                    # "nm_weapon": on fire
 
 # ----- Runtime -----
 var _age := 0.0
@@ -120,6 +122,8 @@ func _reset_config() -> void:
 	on_hit = Callable()
 	arc_velocity = Vector2.ZERO
 	on_land = Callable()
+	art_id = ""
+	burning = true
 	scale = Vector2.ONE
 	rotation = 0.0
 
@@ -333,6 +337,10 @@ func _draw() -> void:
 			_draw_drop()
 		"chem_glob":
 			_draw_glob()
+		"nm_weapon":                                      # The Hunt: a thrown (burning) weapon, spinning
+			draw_set_transform(Vector2.ZERO, -rotation, Vector2.ONE)
+			var spin := _age * 13.0 * dir
+			HuntArt.weapon(self, art_id if art_id != "" else "dagger", -Vector2.from_angle(spin) * 30.0, spin, 1.0, _age, burning)
 		"boulder":                                        # Sisyphus' Boulder Throw (spins in flight)
 			draw_set_transform(Vector2.ZERO, -rotation, Vector2.ONE)
 			Sisyphus.draw_boulder(self, Vector2.ZERO, 34.0, _age * 8.0 * dir)

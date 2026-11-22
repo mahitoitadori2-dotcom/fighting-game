@@ -174,6 +174,15 @@ func _run() -> void:
 			OrbisTalk.storm_phase = int(ph[0])
 			StoryProgress.current_level = StoryLevels.STORM_LEVEL
 			await _test(String(ph[2]), String(ph[1]), 20.0)
+	if only == "" or only == "hunt":
+		# THE HUNT OF A NIGHTMARE (82-110): every level, boss levels also from the checkpoint
+		for n in range(StoryLevels.HUNT_FIRST, StoryLevels.HUNT_LAST + 1):
+			StoryProgress.current_level = n
+			StoryManager.boss_retry = 0
+			await _test("hunt %d %s" % [n, String(StoryLevels.get_level(n).get("title", ""))], "res://scenes/StoryArena.tscn", 16.0)
+			if String(StoryLevels.get_level(n).get("boss", "")) != "" and not (StoryLevels.get_level(n).get("waves", []) as Array).is_empty():
+				StoryManager.boss_retry = n
+				await _test("hunt boss %d" % n, "res://scenes/StoryArena.tscn", 16.0)
 	await _test("menu MainMenu (end)", "res://scenes/MainMenu.tscn", 4.0)
 	print("MEM at end: %d MB" % int(OS.get_static_memory_usage() / 1048576))
 	print("SWEEP DONE")

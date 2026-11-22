@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6, 1] # 14th = THE ABANDONED TOWN (81) - 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6, 1, 29] # 15th = THE HUNT OF A NIGHTMARE (82-110) - 14th = THE ABANDONED TOWN (81) - 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -175,6 +175,12 @@ const MAPS := {
 	"town":         {"bg": "ord_town", "ground": 11, "walls": "thorn", "half_width": 840.0, "music": "story_abandoned_town", "zone": "THE ABANDONED TOWN"},
 	"nightmare_cave": {"bg": "dark_cave", "ground": 13, "walls": "dark", "half_width": 820.0, "music": "story_nightmare_cave", "solid": true, "zone": "THE NIGHTMARE'S CAVE"},
 	"madness":      {"bg": "madness", "ground": 13, "walls": "lava", "half_width": 860.0, "music": "madness_level", "solid": true, "zone": ""},
+	# ----- THE HUNT OF A NIGHTMARE (HuntBackdrops.gd): rocky lands, red lanterns, the Troupe's tents -----
+	"hunt_rocks":    {"bg": "hunt_rocks", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_hunt", "zone": "THE ROCKY LANDS"},
+	"hunt_tents":    {"bg": "hunt_tents", "ground": 20, "walls": "hellrock", "half_width": 840.0, "music": "story_hunt", "zone": "THE TROUPE'S TENTS"},
+	"hunt_hollow":   {"bg": "hunt_hollow", "ground": 13, "walls": "dark", "half_width": 820.0, "music": "story_hunt", "solid": true, "zone": "THE STONE HOLLOW"},
+	# Inside the tents - UNIQUE to the 3 final fights: a cave with a big red crucible
+	"hunt_crucible": {"bg": "hunt_crucible", "ground": 20, "walls": "hellrock", "half_width": 860.0, "music": "none", "solid": true, "zone": "THE CRUCIBLE"},
 	"orbis":        {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_orbis", "zone": "ORBIS TERRARUM"},
 }
 
@@ -185,30 +191,30 @@ const MAPS := {
 ## Internal level numbers start at EXT_BASE so they never collide with Colosseum levels.
 ##   parent   the Colosseum level whose boss unlocks it      page   board page it is shown on
 ##   dir      "down" / "up" / "beyond" (where it leads)       first  internal number of the 1st level
-const EXT_BASE := 101
+const EXT_BASE := 301                           # (Was 101 until 2026-11-22: The Hunt of a Nightmare needs 101-110)
 const EXT_ORDER := ["BC", "AC", "FM", "AG", "VM"]
 const EXTENSIONS := {
-	"BC": {"name": "BLASPHEMY CAESER", "parent": 15, "page": 2, "dir": "down", "first": 101,
+	"BC": {"name": "BLASPHEMY CAESER", "parent": 15, "page": 2, "dir": "down", "first": 301,
 		"place": "Down into the Caeser's crypts", "boss": "THE CAESER'S GRAVE"},
-	"AG": {"name": "ARCHITECT'S GOLEM", "parent": 26, "page": 3, "dir": "up", "first": 104,
+	"AG": {"name": "ARCHITECT'S GOLEM", "parent": 26, "page": 3, "dir": "up", "first": 304,
 		"place": "Up into the Saint Rocks sanctuary", "boss": "SAINT ARCHITECT'S GOLEM"},
-	"VM": {"name": "VOID MASSACRE", "parent": 34, "page": 4, "dir": "down", "first": 107,
+	"VM": {"name": "VOID MASSACRE", "parent": 34, "page": 4, "dir": "down", "first": 307,
 		"place": "Deeper into the Void", "boss": "THE VOID HORRIDS"},
-	"AC": {"name": "ATOMIC CREATION", "parent": 17, "page": 3, "dir": "down", "first": 110,
+	"AC": {"name": "ATOMIC CREATION", "parent": 17, "page": 3, "dir": "down", "first": 310,
 		"place": "The nuclear reactor, after the explosion", "boss": "RADIOACTIVE CHORUS"},
-	"FM": {"name": "FORGE MOTHER", "parent": 24, "page": 3, "dir": "beyond", "first": 113,
+	"FM": {"name": "FORGE MOTHER", "parent": 24, "page": 3, "dir": "beyond", "first": 313,
 		"place": "Into The Forge, beyond the Blast Workshop", "boss": "THE FORGE FATHER"},
 }
 
 const EXT_LEVELS := {
 	# ----- BC: BLASPHEMY CAESER - the Caeser's crypts -----
-	101: {"title": "THE SERPENT CULT", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
+	301: {"title": "THE SERPENT CULT", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
 		"intro": "Below the Blasphemy Arena: the Caeser's crypts. His followers still pray down here.",
 		"waves": [["bf_sword", "bf_wizard", "bf_sword"], ["bf_sword", "bf_sword", "bf_wizard", "bf_wizard"]], "boss": ""},
-	102: {"title": "THE NEST OF SERPENTS", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
+	302: {"title": "THE NEST OF SERPENTS", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
 		"intro": "Deeper down. The walls are moving - serpents, hundreds of them.",
 		"waves": [["serpent_small", "serpent_small", "serpent_small", "serpent_humane"], ["serpent_humane", "serpent_small", "serpent_humane", "serpent_small", "serpent_small"]], "boss": ""},
-	103: {"title": "THE CAESER'S GRAVE", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
+	303: {"title": "THE CAESER'S GRAVE", "theme": "caeser_crypts", "map": "crypts", "hero": "ext",
 		"intro": "The last door. Something old is still breathing behind it.",
 		"waves": [["bf_wizard", "serpent_small", "serpent_small", "bf_sword"]], "boss": "caeser_grave",
 		"boss_map": "caeser_tomb", "boss_map_title": "THE CAESER'S TOMB", "boss_map_sub": "A broken coffin... and it is not empty.",
@@ -216,13 +222,13 @@ const EXT_LEVELS := {
 		"boss_sub": "BC4  -  What is left of the God-Devourer", "boss_line": "I... devoured... GODS...  I will devour... YOU...",
 		"boss_death_title": "THE CAESER'S GRAVE IS SEALED", "boss_death_sub": "The serpents go still. The Blasphemy Caeser extension is complete."},
 	# ----- AG: ARCHITECT'S GOLEM - the Saint Rocks sanctuary -----
-	104: {"title": "THE SAINT ROCKS", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
+	304: {"title": "THE SAINT ROCKS", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
 		"intro": "A stair behind the Golem's Hall leads UP, into a sanctuary of living saint-rock.",
 		"waves": [["saint_roller", "saint_warrior", "saint_roller"], ["saint_watcher", "saint_warrior", "saint_roller"]], "boss": ""},
-	105: {"title": "THE WATCHERS' STAIR", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
+	305: {"title": "THE WATCHERS' STAIR", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
 		"intro": "Tall shapes watch from every ledge. Their eyes follow you.",
 		"waves": [["saint_watcher", "saint_watcher", "saint_warrior"], ["saint_warrior", "saint_roller", "saint_watcher", "saint_warrior"]], "boss": ""},
-	106: {"title": "THE SAINT ARCHITECT'S GOLEM", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
+	306: {"title": "THE SAINT ARCHITECT'S GOLEM", "theme": "saint_rocks", "map": "saint_rocks", "hero": "ext",
 		"intro": "The top of the sanctuary. Runes and Architect metal hum in the stone.",
 		"waves": [["saint_roller", "saint_warrior", "saint_watcher"]], "boss": "saint_golem", "boss_intro": "rise",
 		"boss_map": "saint_sanctum", "boss_map_title": "THE SAINT SANCTUM", "boss_map_sub": "The Golem was REBUILT... with the Architect's own metal.",
@@ -231,13 +237,13 @@ const EXT_LEVELS := {
 		"boss_death": "sink", "boss_death_title": "THE SAINT GOLEM CRUMBLES",
 		"boss_death_sub": "The runes fade. The Architect's Golem extension is complete."},
 	# ----- VM: VOID MASSACRE - deeper into the Void -----
-	107: {"title": "THE CRAWLING VICTIMS", "theme": "deep_void", "map": "deep_void", "hero": "ext",
+	307: {"title": "THE CRAWLING VICTIMS", "theme": "deep_void", "map": "deep_void", "hero": "ext",
 		"intro": "Below the Spider Lair the Void goes on. The ones it swallowed are still crawling.",
 		"waves": [["victim", "victim", "victim"], ["victim", "victim", "victim", "victim", "victim"]], "boss": ""},
-	108: {"title": "THE SPIDER DEEP", "theme": "deep_void", "map": "deep_void", "hero": "ext",
+	308: {"title": "THE SPIDER DEEP", "theme": "deep_void", "map": "deep_void", "hero": "ext",
 		"intro": "Webs again. Smaller spiders... but so many more of them.",
 		"waves": [["spider_biter", "spider_shooter", "spider_biter"], ["spider_venom", "spider_shooter", "spider_biter", "spider_venom"]], "boss": ""},
-	109: {"title": "THE VOID HORRIDS", "theme": "deep_void", "map": "deep_void", "hero": "ext",
+	309: {"title": "THE VOID HORRIDS", "theme": "deep_void", "map": "deep_void", "hero": "ext",
 		"intro": "Something clicks in three places at once.",
 		"waves": [["victim", "spider_biter", "victim"]], "boss": "void_horrid", "boss_pos": "center",
 		"boss_map": "horrid_nest", "boss_map_title": "THE HORRID NEST", "boss_map_sub": "The Massacre had children.",
@@ -245,13 +251,13 @@ const EXT_LEVELS := {
 		"boss_sub": "VM4  -  Three Void Horrids at once", "boss_line": "*three sets of white eyes open*",
 		"boss_death_title": "THE VOID HORRIDS ARE DEAD", "boss_death_sub": "The Void goes quiet. The Void Massacre extension is complete."},
 	# ----- AC: ATOMIC CREATION - the reactor after the explosion -----
-	110: {"title": "THE REACTOR WASTE", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
+	310: {"title": "THE REACTOR WASTE", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
 		"intro": "Where the Atomic Creation came from: a reactor that blew apart. Nothing here is human anymore.",
 		"waves": [["mutant", "mutant"], ["mutant", "mutant", "mutant"]], "boss": ""},
-	111: {"title": "THE ATOMIC FIELD", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
+	311: {"title": "THE ATOMIC FIELD", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
 		"intro": "The rocks glow. The rocks MOVE. Don't stand next to them when they break.",
 		"waves": [["atomic_rock", "atomic_rock", "mutant"], ["atomic_rock", "mutant", "atomic_rock", "atomic_rock"]], "boss": ""},
-	112: {"title": "THE RADIOACTIVE CHORUS", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
+	312: {"title": "THE RADIOACTIVE CHORUS", "theme": "reactor_waste", "map": "reactor_waste", "hero": "ext",
 		"intro": "Singing. From inside the reactor. Many voices, all metal.",
 		"waves": [["mutant", "atomic_rock", "mutant"]], "boss": "rad_chorus", "boss_intro": "rise", "boss_pos": "center",
 		"boss_map": "reactor_core", "boss_map_title": "THE REACTOR CORE", "boss_map_sub": "The Architect Chorus... melted into the reactor.",
@@ -260,13 +266,13 @@ const EXT_LEVELS := {
 		"boss_death": "sink", "boss_death_title": "THE CHORUS FALLS SILENT",
 		"boss_death_sub": "The core goes dark. The Atomic Creation extension is complete."},
 	# ----- FM: FORGE MOTHER - The Forge -----
-	113: {"title": "THE FORGE", "theme": "the_forge", "map": "the_forge", "hero": "ext",
+	313: {"title": "THE FORGE", "theme": "the_forge", "map": "the_forge", "hero": "ext",
 		"intro": "Behind the Blast Workshop: The Forge itself. Its workers never stopped.",
 		"waves": [["forge_worker", "forge_worker"], ["forge_worker", "forge_worker", "forge_worker"]], "boss": ""},
-	114: {"title": "COAL AND OVENS", "theme": "the_forge", "map": "the_forge", "hero": "ext",
+	314: {"title": "COAL AND OVENS", "theme": "the_forge", "map": "the_forge", "hero": "ext",
 		"intro": "Burning coal rains from the catwalks. Something carries an oven on its back.",
 		"waves": [["coal_thrower", "forge_worker", "coal_thrower"], ["oven_owner", "coal_thrower", "forge_worker", "coal_thrower"]], "boss": ""},
-	115: {"title": "THE FORGE FATHER", "theme": "the_forge", "map": "the_forge", "hero": "ext",
+	315: {"title": "THE FORGE FATHER", "theme": "the_forge", "map": "the_forge", "hero": "ext",
 		"intro": "The Forge Mother was only the beginning. Her maker waits in the heart of the fire.",
 		"waves": [["forge_worker", "coal_thrower", "oven_owner"]], "boss": "forge_father",
 		"boss_map": "forge_heart", "boss_map_title": "THE HEART OF THE FORGE", "boss_map_sub": "Molten metal, coal and fire. And HIM.",
@@ -671,6 +677,120 @@ const LEVELS := {
 	81: {"title": "THE ABANDONED TOWN", "theme": "town", "map": "town", "hero": "demi", "town": true,
 		"intro": "After the Storm: a quiet town behind a wooden wall. Nobody has left it in 500 years.",
 		"waves": [], "boss": "", "tile": "nightmare_lord"},
+
+	# ======================= THE HUNT OF A NIGHTMARE (levels 82-110) =======================
+	# By the user (2026-11-22). Nightmare versions of the three open worlds' weakest enemies, the Troupe
+	# (Followers in almost every level, Traders in about 70%, Aristocrats after the Head Guards), and six
+	# bosses in this order: the Jester, the Musician, the Head Heavy Guards, the Nightmare Lord, the
+	# Nightmare's Lord, the Troupe's Heart. No NPCs (the lore comes later). The three final fights are
+	# inside the tents, in a cave with a big red crucible. Milestones: 90 harder, 100 SUPER boss, 110 harder.
+	82: {"title": "THE HUNT BEGINS", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_kharleming",
+		"intro": "Red lanterns in the rocks. Something in a mask is watching.",
+		"waves": [["nm_kharleming", "nm_kharleming", "troupe_follower"], ["nm_kharleming", "troupe_follower", "nm_kharleming", "nm_kharleming"]], "boss": ""},
+	83: {"title": "KHARLEMINGS IN RED", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_kharleming",
+		"intro": "The Kharlemings came here too. They are red now.",
+		"waves": [["nm_kharleming", "nm_lava_goblin", "troupe_follower"], ["nm_lava_demon", "nm_kharleming", "troupe_follower", "nm_trader"]], "boss": ""},
+	84: {"title": "THE BURNING HORNS", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_lava_demon",
+		"intro": "Lava Demons, burning red instead of orange.",
+		"waves": [["nm_lava_demon", "nm_lava_demon", "troupe_follower"], ["nm_lava_demon", "nm_lava_goblin", "nm_trader", "troupe_follower"]], "boss": ""},
+	85: {"title": "THE RED HUNTERS", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "nm_tribe_hunter",
+		"intro": "Big red tents. The hunters of DemiLand stand guard in front of them.",
+		"waves": [["nm_tribe_hunter", "nm_tribe_hunter", "troupe_follower"], ["nm_tiger_cub", "nm_tribe_hunter", "nm_sapling", "nm_trader"]], "boss": ""},
+	86: {"title": "THE TROUPE'S JESTER", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi",
+		"intro": "Bells. Laughter without a voice.",
+		"waves": [["troupe_follower", "troupe_follower", "nm_tiger_cub"]], "boss": "troupe_jester",
+		"boss_music": "boss_jester", "boss_color": Color(1.0, 0.35, 0.25),
+		"boss_sub": "Juggler of red flame", "boss_line": "*jingle... jingle...*",
+		"boss_death_title": "THE JESTER FALLS", "boss_death_sub": "His three red balls roll away and go out."},
+	87: {"title": "THE RED HERD", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_boar",
+		"intro": "Animals from the regular land. These ones bite.",
+		"waves": [["nm_boar", "nm_dog", "troupe_follower"], ["nm_goat", "nm_boar", "troupe_follower", "nm_trader"]], "boss": ""},
+	88: {"title": "ONLY MASKS", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "troupe_follower",
+		"intro": "Circles, triangles, squares. No faces.",
+		"waves": [["troupe_follower", "troupe_follower", "troupe_follower"], ["troupe_follower", "troupe_follower", "nm_trader", "nm_sapling", "nm_dog"]], "boss": ""},
+	89: {"title": "THE LANTERN ROAD", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_lava_demon",
+		"intro": "Every lantern lit. Someone is expecting you.",
+		"waves": [["nm_kharleming", "nm_tribe_hunter", "troupe_follower"], ["nm_lava_demon", "nm_goat", "troupe_follower", "troupe_follower"]], "boss": ""},
+	90: {"title": "MUSICIAN OF NIGHTMARES", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi",
+		"intro": "An accordion, somewhere between the tents.",
+		"waves": [["troupe_follower", "nm_trader", "troupe_follower"]], "boss": "nightmare_musician",
+		"boss_music": "boss_musician", "boss_color": Color(1.0, 0.55, 0.4),
+		"boss_sub": "The Troupe's band, in one body", "boss_line": "*a long, wheezing chord*",
+		"boss_death_title": "THE MUSIC STOPS", "boss_death_sub": "Every instrument falls silent at once."},
+	91: {"title": "THE MARCH", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_trader",
+		"intro": "Footsteps in time with a drum nobody is playing.",
+		"waves": [["troupe_follower", "nm_trader", "nm_boar"], ["nm_lava_demon", "troupe_follower", "nm_trader", "nm_tiger_cub"]], "boss": ""},
+	92: {"title": "THE TROUPE'S CAMP", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "nm_trader",
+		"intro": "Fires still warm. The camp was left in a hurry.",
+		"waves": [["troupe_follower", "troupe_follower", "nm_lava_goblin"], ["nm_trader", "troupe_follower", "nm_tribe_hunter", "nm_dog"]], "boss": ""},
+	93: {"title": "THE STONE HOLLOW", "theme": "hunt_hollow", "map": "hunt_hollow", "hero": "demi", "tile": "troupe_follower",
+		"intro": "Under the rock. Lanterns hang from chains overhead.",
+		"waves": [["nm_kharleming", "nm_kharleming", "troupe_follower"], ["troupe_follower", "nm_lava_demon", "troupe_follower"]], "boss": ""},
+	94: {"title": "HEAVY FOOTSTEPS", "theme": "hunt_hollow", "map": "hunt_hollow", "hero": "demi", "tile": "nm_trader",
+		"intro": "Something heavy walks on the ceiling.",
+		"waves": [["troupe_follower", "nm_trader"], ["nm_trader", "troupe_follower", "nm_goat", "nm_kharleming"]], "boss": ""},
+	95: {"title": "HEAD HEAVY NIGHTMARE GUARDS", "theme": "hunt_hollow", "map": "hunt_hollow", "hero": "demi",
+		"intro": "Six of them. One at a time... at first.",
+		"waves": [["troupe_follower", "troupe_follower", "nm_trader"]], "boss": "head_guard",
+		"boss_music": "boss_head_guards", "boss_color": Color(0.95, 0.75, 0.6),
+		"boss_sub": "Six guards, one life between them", "boss_line": "*iron scrapes on stone above you*",
+		"boss_death_title": "THE GUARDS ARE DOWN", "boss_death_sub": "All six. The way into the tents is open."},
+	96: {"title": "THE ARISTOCRATS", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "aristocrat",
+		"intro": "Bright red. Floating. They look down on you.",
+		"waves": [["aristocrat", "troupe_follower"], ["aristocrat", "troupe_follower", "nm_trader", "nm_tiger_cub"]], "boss": ""},
+	97: {"title": "THE RED COURT", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "aristocrat",
+		"intro": "A court of masks, holding court over nothing.",
+		"waves": [["aristocrat", "aristocrat", "troupe_follower"], ["aristocrat", "nm_trader", "troupe_follower", "nm_boar"]], "boss": ""},
+	98: {"title": "FLOATING RED", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "aristocrat",
+		"intro": "The lanterns go out one by one.",
+		"waves": [["aristocrat", "troupe_follower", "nm_lava_demon"], ["aristocrat", "aristocrat", "troupe_follower", "nm_tribe_hunter"]], "boss": ""},
+	99: {"title": "THE LAST TENT", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "aristocrat",
+		"intro": "The biggest tent. Its flap is open.",
+		"waves": [["aristocrat", "nm_trader", "troupe_follower"], ["aristocrat", "aristocrat", "nm_trader", "troupe_follower", "troupe_follower"]], "boss": ""},
+	100: {"title": "THE NIGHTMARE LORD", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi",
+		"intro": "Inside the tent there is a cave. Inside the cave, a crucible. In front of it, him.",
+		"waves": [["aristocrat", "troupe_follower", "troupe_follower"]], "boss": "nightmare_lord",
+		"boss_map": "hunt_crucible", "boss_map_title": "THE CRUCIBLE", "boss_map_sub": "A cave inside the tent, and a crucible of red.",
+		"boss_music": "boss_nightmare_lord", "boss_color": Color(1.0, 0.1, 0.08),
+		"boss_sub": "In his red tie", "boss_line": "*he straightens his tie*",
+		"boss_death_title": "THE NIGHTMARE LORD FALLS", "boss_death_sub": "...for now."},
+	101: {"title": "THE NIGHTMARE'S LORD", "theme": "hunt_crucible", "map": "hunt_crucible", "hero": "demi", "arrive": "stand",
+		"intro": "He gets up. Bigger. The suit tears.",
+		"waves": [], "boss": "nightmares_lord",
+		"boss_music": "boss_nightmares_lord", "boss_color": Color(1.0, 0.2, 0.12),
+		"boss_sub": "No suit. No mercy.", "boss_line": "*the suit tears off*",
+		"boss_death_title": "THE NIGHTMARE'S LORD FALLS", "boss_death_sub": "The crucible keeps glowing."},
+	102: {"title": "AFTER THE LORDS", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "aristocrat",
+		"intro": "The Troupe did not stop. It got louder.",
+		"waves": [["aristocrat", "nm_trader", "troupe_follower"], ["nm_lava_demon", "aristocrat", "troupe_follower", "troupe_follower"]], "boss": ""},
+	103: {"title": "THE TROUPE SCATTERS", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "nm_trader",
+		"intro": "Masks running between the tents.",
+		"waves": [["troupe_follower", "troupe_follower", "nm_trader"], ["nm_trader", "nm_trader", "troupe_follower", "nm_dog"]], "boss": ""},
+	104: {"title": "NIGHTMARE HERD", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "nm_boar",
+		"intro": "Every animal from the regular land, all red.",
+		"waves": [["nm_boar", "nm_goat", "nm_dog", "troupe_follower"], ["nm_boar", "nm_boar", "nm_tiger_cub", "aristocrat"]], "boss": ""},
+	105: {"title": "LANTERNS OUT", "theme": "hunt_hollow", "map": "hunt_hollow", "hero": "demi", "tile": "aristocrat",
+		"intro": "Dark under the rock. Only their masks shine.",
+		"waves": [["troupe_follower", "troupe_follower", "aristocrat"], ["nm_trader", "aristocrat", "troupe_follower", "nm_kharleming"]], "boss": ""},
+	106: {"title": "THE HUNTERS HUNTED", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "nm_tribe_hunter",
+		"intro": "DemiLand's hunters, hunting for the Troupe now.",
+		"waves": [["nm_tribe_hunter", "nm_tribe_hunter", "troupe_follower"], ["nm_sapling", "nm_tiger_cub", "nm_trader", "aristocrat"]], "boss": ""},
+	107: {"title": "THE TROUPE GATHERS", "theme": "hunt_rocks", "map": "hunt_rocks", "hero": "demi", "tile": "aristocrat",
+		"intro": "They are all walking the same way.",
+		"waves": [["troupe_follower", "troupe_follower", "troupe_follower", "nm_trader"], ["aristocrat", "aristocrat", "nm_trader", "troupe_follower"]], "boss": ""},
+	108: {"title": "THE LAST PROCESSION", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi", "tile": "aristocrat",
+		"intro": "A parade of masks into the biggest tent.",
+		"waves": [["aristocrat", "troupe_follower", "troupe_follower", "nm_lava_demon"], ["aristocrat", "aristocrat", "nm_trader", "nm_trader", "troupe_follower"]], "boss": ""},
+	109: {"title": "THE HEARTBEAT", "theme": "hunt_hollow", "map": "hunt_hollow", "hero": "demi", "tile": "aristocrat",
+		"intro": "You can hear it now. Under everything. Beating.",
+		"waves": [["troupe_follower", "nm_trader", "aristocrat"], ["aristocrat", "aristocrat", "nm_trader", "troupe_follower", "nm_kharleming"]], "boss": ""},
+	110: {"title": "THE TROUPE'S HEART", "theme": "hunt_tents", "map": "hunt_tents", "hero": "demi",
+		"intro": "Back to the crucible. Something in it is beating.",
+		"waves": [["aristocrat", "troupe_follower", "nm_trader"]], "boss": "troupe_heart", "boss_pos": "center",
+		"boss_map": "hunt_crucible", "boss_map_title": "THE CRUCIBLE", "boss_map_sub": "It climbs out of the red.",
+		"boss_music": "boss_troupe_heart", "boss_color": Color(1.0, 0.15, 0.2),
+		"boss_sub": "What the whole Troupe lives for", "boss_line": "*BA-DUM.*",
+		"boss_death_title": "THE TROUPE'S HEART STOPS", "boss_death_sub": "The Hunt of a Nightmare is over."},
 }
 
 ## Display name of a Story PART (board titles, HUD, captions): "COLOSSEUM 3" ... and
@@ -696,6 +816,10 @@ const ORBIS_PART := 13
 ## THE ABANDONED TOWN: the part after Orbis Terrarum (one lore level, 81). TownLand.gd.
 const TOWN_PART := 14
 const TOWN_LEVEL := 81
+## THE HUNT OF A NIGHTMARE: the part after The Abandoned Town (29 arena levels, 82-110; HuntBackdrops, scripts/story/hunt/).
+const HUNT_PART := 15
+const HUNT_FIRST := 82
+const HUNT_LAST := 110
 ## Level 80: THE STORM ATTACKS (after all the lessons) - one level in five phases (OrbisTalk / CaveSlide /
 ## StoryArena chained by OrbisTalk.storm_phase): the table, the breaking bridge, the dead town, the cave
 ## slide with the Storm behind you, then possessed corpses + THE STORM HAND.
@@ -705,6 +829,8 @@ const STORM_LEVEL := 80
 static func part_name(c: int) -> String:
 	if c == Madness.PART:
 		return "MADNESS"
+	if c == HUNT_PART:
+		return "THE HUNT OF A NIGHTMARE"
 	if c == TOWN_PART:
 		return "THE ABANDONED TOWN"
 	if c == ORBIS_PART:
@@ -911,7 +1037,17 @@ static func colosseum_of(n: int) -> int:
 
 ## Base enemy id of a weapon variant ("guard_bow" -> "guard"); other ids unchanged.
 static func base_id(id: String) -> String:
+	if NIGHTMARES.has(id):
+		return String(NIGHTMARES[id])
 	return String(VARIANTS[id][0]) if VARIANTS.has(id) else id
+
+
+## THE HUNT OF A NIGHTMARE: Nightmare versions of the three open worlds' weakest enemies (id -> base).
+## (The animals - nm_boar / nm_dog / nm_goat - are NightmareAnimal: the real ones never attack.)
+const NIGHTMARES := {
+	"nm_kharleming": "full_kharleming", "nm_lava_demon": "lava_demon", "nm_lava_goblin": "lava_goblin",
+	"nm_tribe_hunter": "tribe_hunter", "nm_tiger_cub": "tiger_cub", "nm_sapling": "sapling",
+}
 
 
 ## Weapon of a variant id ("guard_bow" -> "bow"), "" for everything else.
@@ -1095,7 +1231,26 @@ static func enemy_script(id: String) -> Script:
 		"xx0xn":
 			return XX0XN
 		"nightmare_lord":
-			return FireLordArt                              # The Abandoned Town's board tile
+			return NightmareLordBoss                        # (The Abandoned Town's tile too: draws the Nightmare Lord)
+		# ----- The Hunt of a Nightmare -----
+		"troupe_follower":
+			return TroupeFollower
+		"nm_trader":
+			return NightmareTrader
+		"aristocrat":
+			return AristocraticNightmare
+		"troupe_jester":
+			return TroupeJester
+		"nightmare_musician":
+			return NightmareMusician
+		"head_guard":
+			return HeadGuard
+		"nightmares_lord":
+			return NightmaresLord
+		"troupe_heart":
+			return TroupeHeart
+		"nm_boar", "nm_dog", "nm_goat":
+			return NightmareAnimal
 	return Parasite
 
 
@@ -1265,6 +1420,23 @@ static func make_enemy(id: String) -> BaseEnemy:
 			"lava_melter", "kharleming_lord", "crystal_swarm", "storm_finger", "storm_hand",
 			"weird", "skull_serpent", "broken_ghost", "xx0xn"]:
 		return enemy_script(id).new()                    # DemiLand + Terra Craterum + Ordinariorum enemies + bosses
+	# ----- THE HUNT OF A NIGHTMARE -----
+	if id in ["troupe_follower", "nm_trader", "aristocrat", "troupe_jester", "nightmare_musician", "head_guard",
+			"nightmares_lord", "troupe_heart", "nightmare_lord"]:
+		return enemy_script(id).new()
+	if id.begins_with("nm_"):                         # NIGHTMARE VERSIONS of the open worlds' weakest enemies
+		var nm: BaseEnemy
+		var animal := id.trim_prefix("nm_")
+		if Animal.KINDS.has(animal):
+			var na := NightmareAnimal.new()
+			na.kind = animal
+			nm = na
+		else:
+			nm = make_enemy(base_id(id))
+		nm.nightmare = true
+		if id == "nm_kharleming":
+			nm.nightmare_name = "Kharleming"
+		return nm
 	if Animal.KINDS.has(id):                           # Terra Ordinariorum's animals (never hostile)
 		var a := Animal.new()
 		a.kind = id

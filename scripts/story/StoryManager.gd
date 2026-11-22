@@ -1078,6 +1078,8 @@ func _on_boss_died() -> void:
 	for m in boss_group:                                # Group boss (Void Horrids): ALL must die
 		if m != null and is_instance_valid(m) and not (m as BaseEnemy).is_dead:
 			return
+	if String(level.get("boss", "")) == "head_guard" and HeadGuard.spawned < HeadGuard.TOTAL:
+		return                                          # More Head Guards are still coming through the ceiling
 	boss_bar_visible = false
 	if StoryDifficulty.milestone(level_number) == 3 and not autoplay:
 		Achievements.unlock("super_boss")                # Milestone rule: a SUPER BOSS (every 50th level) is down

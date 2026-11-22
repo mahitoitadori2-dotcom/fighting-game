@@ -87,7 +87,15 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## PHONES: watch the frame rate (2.5 s windows) and switch the lite mode on / off.
+var _madness_check := 0.0
+
+
 func _process(delta: float) -> void:
+	_madness_check -= delta
+	if _madness_check <= 0.0:                         # MADNESS on -> its presence over every screen
+		_madness_check = 1.0
+		Madness.load_data()
+		MadnessPresence.sync(get_tree())
 	if not (OS.has_feature("web_ios") or OS.has_feature("web_android")) or get_tree().paused:
 		return
 	_fps_acc += Engine.get_frames_per_second()

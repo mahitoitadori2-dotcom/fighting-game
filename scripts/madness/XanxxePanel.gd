@@ -4,14 +4,18 @@ extends CanvasLayer
 ## A CONTROL PANEL over the WHOLE screen, in pixel art (3-px grid, like the fighters): red lines
 ## instead of green, scanlines, a stepped pixel frame. Three things to select:
 ##     EXTRACT REALITY     READY INFECTION     ENGAGE MADNESS
-## Selecting one starts a percent bar next to it. All three at 100% -> the WHOLE SCREEN CORRUPTS
-## (glitch blocks, torn slices, noise) -> MADNESS is unlocked -> back to the game.
+## Selecting one opens its PUZZLE (XanxxePuzzle, 2026-11-22); only a solved puzzle starts the percent bar
+## next to it. All three at 100% -> the WHOLE SCREEN CORRUPTS (glitch blocks, torn slices, noise) ->
+## "MADNESS UNLOCKED" stays on a black screen for a few seconds -> MADNESS is unlocked -> back to the game.
 
 const PX := 3.0
 const RED := Color(0.95, 0.08, 0.06)
 const RED_DIM := Color(0.40, 0.03, 0.03)
 const ITEMS := ["EXTRACT REALITY", "READY INFECTION", "ENGAGE MADNESS"]
 const FILL_TIME := 2.4
+const PUZZLES := ["sequence", "infect", "align"]
+const END_TIME := 7.5                                # The corruption + "MADNESS UNLOCKED" on black (was 2.8 s)
+var _puzzle: XanxxePuzzle = null
 
 var _canvas: Control
 var _buttons: Array[Button] = []
@@ -75,17 +79,28 @@ func _ready() -> void:
 
 
 func _select(i: int) -> void:
-	if _running[i] or _corrupt >= 0.0:
+	if _running[i] or _corrupt >= 0.0 or _puzzle != null:
 		return
-	_running[i] = true
 	SoundManager.play_sfx("ui_confirm")
+	_puzzle = XanxxePuzzle.make(String(PUZZLES[i]))
+	for b in _buttons:
+		b.focus_mode = Control.FOCUS_NONE                    # (Keys / pad stay inside the puzzle)
+	_puzzle.solved.connect(func() -> void:
+		_running[i] = true)
+	_puzzle.tree_exited.connect(func() -> void:
+		_puzzle = null
+		for b in _buttons:
+			b.focus_mode = Control.FOCUS_ALL
+		if is_inside_tree() and _corrupt < 0.0:
+			_buttons[i].grab_focus())
+	add_child(_puzzle)
 
 
 func _process(delta: float) -> void:
 	_t += delta
 	if _corrupt >= 0.0:
 		_corrupt += delta
-		if _corrupt > 2.8:
+		if _corrupt > END_TIME:
 			_finish()
 		_canvas.queue_redraw()
 		return
@@ -121,7 +136,7 @@ func _finish() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()                    # Nothing behind it reacts
-	if event.is_action_pressed("ui_cancel") and _corrupt < 0.0 and not (true in _running):
+	if event.is_action_pressed("ui_cancel") and _corrupt < 0.0 and not (true in _running) and _puzzle == null:
 		queue_free()
 
 
@@ -190,7 +205,17 @@ func _draw_panel() -> void:
 		if fmod(_corrupt * 9.0, 1.0) < 0.12:
 			c.draw_rect(Rect2(Vector2.ZERO, sz), Color(1.0, 0.1, 0.05, 0.5))
 		if _corrupt > 2.2:
-			c.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, (_corrupt - 2.2) / 0.6))
+			c.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, minf((_corrupt - 2.2) / 0.6, 1.0)))
 		var msg := "M A D N E S S   U N L O C K E D"
 		var mw := font.get_string_size(msg, HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x
-		c.draw_string(font, Vector2((sz.x - mw) * 0.5 + _rng.randf_range(-8.0, 8.0), sz.y * 0.5), msg, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, Color(1.0, 0.2, 0.15))
+		var held := _corrupt > 2.8                                # On black: it stays, breathing, barely shaking
+		var jit := _rng.randf_range(-8.0, 8.0) if not held else _rng.randf_range(-1.5, 1.5)
+		var pulse := 1.0 if not held else 0.75 + 0.25 * sin(_corrupt * 3.0)
+		c.draw_string(font, Vector2((sz.x - mw) * 0.5 + jit, sz.y * 0.5), msg, HORIZONTAL_ALIGNMENT_LEFT, -1, 40, Color(1.0, 0.2, 0.15, pulse))
+		for line in [[3.6, "IT HAS THE CONTROL NOW", 22], [5.0, "XANXXE 1NT3GR1T13S :  % 100.00", 18]]:
+			if _corrupt > float(line[0]):
+				var lw := font.get_string_size(String(line[1]), HORIZONTAL_ALIGNMENT_LEFT, -1, int(line[2])).x
+				var la := clampf((_corrupt - float(line[0])) / 0.8, 0.0, 1.0)
+				c.draw_string(font, Vector2((sz.x - lw) * 0.5, sz.y * 0.5 + 50.0 + (34.0 if int(line[2]) == 18 else 0.0)), String(line[1]), HORIZONTAL_ALIGNMENT_LEFT, -1, int(line[2]), Color(0.75, 0.08, 0.06, la))
+		if _corrupt > END_TIME - 0.5 and fmod(_corrupt * 11.0, 1.0) < 0.3:    # A last tear before it lets go
+			c.draw_rect(Rect2(0, _rng.randf_range(0.0, sz.y), sz.x, _rng.randf_range(6.0, 30.0)), Color(0.7, 0.0, 0.0, 0.7))

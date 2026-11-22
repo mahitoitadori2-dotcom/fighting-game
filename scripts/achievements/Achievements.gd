@@ -50,11 +50,17 @@ const BOSSES := [
 	[50, "the_sun", "The Sun", "boss"],
 	[56, "first_prime", "The Enlightened First Prime", "mini"],
 	[62, "enlightened_one", "The Enlightened One", "boss"],
-	[103, "caeser_grave", "The Caeser's Grave", "ext"],
-	[106, "saint_golem", "The Saint Architect's Golem", "ext"],
-	[109, "void_horrid", "The Void Horrids", "ext"],
-	[112, "rad_chorus", "The Radioactive Chorus", "ext"],
-	[115, "forge_father", "The Forge Father", "ext"],
+	[86, "troupe_jester", "The Troupe's Jester", "boss"],
+	[90, "nightmare_musician", "The Musician of Nightmares", "boss"],
+	[95, "head_guard", "The Head Heavy Nightmare Guards", "boss"],
+	[100, "nightmare_lord", "The Nightmare Lord", "boss"],
+	[101, "nightmares_lord", "The Nightmare's Lord", "boss"],
+	[110, "troupe_heart", "The Troupe's Heart", "boss"],
+	[303, "caeser_grave", "The Caeser's Grave", "ext"],
+	[306, "saint_golem", "The Saint Architect's Golem", "ext"],
+	[309, "void_horrid", "The Void Horrids", "ext"],
+	[312, "rad_chorus", "The Radioactive Chorus", "ext"],
+	[315, "forge_father", "The Forge Father", "ext"],
 ]
 ## Harder normal levels: [level, achievement name]
 const HARD_LEVELS := [
@@ -300,6 +306,14 @@ static func _build() -> void:
 		{"script": FireLordArt, "frame": "silver", "emblem": "star", "bg": Color(0.16, 0.12, 0.12)})
 	_add("col_%d" % StoryLevels.TOWN_PART, "The Abandoned Town Conquered", "Ride the Strong Wind out of THE ABANDONED TOWN.", "story",
 		{"big": "crown", "frame": "gold", "bg": town_bg})
+	# ---------------- THE HUNT OF A NIGHTMARE (levels 82-110) ----------------
+	var hunt_bg := Color(0.34, 0.04, 0.05)
+	_add("hunt_aristocrat", "Not So Noble", "THE HUNT OF A NIGHTMARE: defeat an Aristocratic Nightmare.", "story",
+		{"script": AristocraticNightmare, "frame": "silver", "emblem": "skull", "bg": hunt_bg})
+	_add("hunt_disarmed", "Disarmed", "Hit a Head Heavy Nightmare Guard while it has nothing in its hands.", "challenge",
+		{"script": HeadGuard, "frame": "bronze", "emblem": "sword", "bg": hunt_bg.darkened(0.3)})
+	_add("col_%d" % StoryLevels.HUNT_PART, "The Hunt of a Nightmare Conquered", "Stop THE TROUPE'S HEART (Level 110).", "story",
+		{"big": "crown", "frame": "gold", "bg": hunt_bg})
 	# ---------------- MADNESS (secret: XANXXE 1NT3GR1T13S) ----------------
 	_add("madness_unlocked", "Integrity Compromised", "Extract Reality. Ready Infection. Engage Madness.", "secret",
 		{"script": WeirdCreature, "frame": "red", "emblem": "skull", "bg": Color(0.20, 0.0, 0.0)})
@@ -406,6 +420,11 @@ static func load_data() -> void:
 	if cfg.load(SAVE_PATH) != OK:
 		return
 	unlocked = cfg.get_value("achievements", "unlocked", {})
+	for n in [103, 106, 109, 112, 115]:                  # 2026-11-22: extension bosses moved to 303-315
+		for pre in ["trophy_", "pure_"]:
+			if unlocked.has(pre + str(n)):
+				unlocked[pre + str(n + 200)] = unlocked[pre + str(n)]
+				unlocked.erase(pre + str(n))
 	galaxy_skin = bool(cfg.get_value("achievements", "galaxy_skin", true))
 
 

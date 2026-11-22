@@ -127,7 +127,14 @@ func _paint() -> void:
 
 	# ---------------- Boss bar (boss fight only) ----------------
 	var boss := manager.boss
-	if not manager.boss_group.is_empty() and manager.boss_bar_visible:
+	if String(StoryLevels.get_level(manager.level_number).get("boss", "")) == "head_guard" and manager.boss_bar_visible and HeadGuard.spawned > 0:
+		# THE HEAD HEAVY GUARDS: six of them, ONE shared bar (they split their health)
+		var bwg := clampf(sz.x - 720.0, 300.0, 560.0)
+		var rg := Rect2(cx - bwg * 0.5, 86, bwg, 20)
+		FighterArt.label(_painter, Vector2(cx, 76), "HEAD HEAVY NIGHTMARE GUARDS  x%d" % (HeadGuard.TOTAL - HeadGuard.spawned + HeadGuard.alive_count()), 20, Color.WHITE)
+		_bar(rg, HeadGuard.bar_k(), Color(0.55, 0.95, 0.2))
+		boss = null
+	elif not manager.boss_group.is_empty() and manager.boss_bar_visible:
 		# GROUP BOSS (Void Horrids): one big bar per member, side by side
 		var n := manager.boss_group.size()
 		var bw2 := minf(300.0, (sz.x - 80.0) / float(n) - 16.0)

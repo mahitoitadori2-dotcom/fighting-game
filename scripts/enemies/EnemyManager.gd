@@ -76,6 +76,10 @@ const STORY_ENEMIES := [
 	["s_fragmenter", "Ancient Fragmenter", "Fragmenter", "AncientFragmenter", Color(0.55, 0.85, 0.95), "story_wreck"],
 	["s_fullkharleming", "Full Kharleming", "Full Kharleming", "FullKharleming", Color(0.70, 0.85, 0.95), "story_wreck"],
 	["s_masterkharleming", "Master Kharleming", "Master Kharleming", "MasterKharleming", Color(0.55, 0.35, 0.95), "story_wreck"],
+	# ----- The Hunt of a Nightmare (2026-11-22) -----
+	["s_follower_t", "Troupe Follower", "Troupe Follower", "TroupeFollower", Color(0.85, 0.15, 0.12), "story_hunt", "faith"],
+	["s_trader", "Nightmare Trader", "Trader", "NightmareTrader", Color(0.85, 0.55, 0.25), "story_hunt", "faith"],
+	["s_aristocrat", "Aristocratic Nightmare", "Aristocrat", "AristocraticNightmare", Color(1.0, 0.12, 0.10), "story_hunt", "faith"],
 ]
 const STORY_BOSSES := [
 	["s_blinded", "The Blinded Lord", "Blinded Lord", "BlindedLord", Color(0.45, 1.0, 0.35), "boss"],
@@ -103,6 +107,12 @@ const STORY_BOSSES := [
 	["s_crystalswarm", "The Crystal Swarm", "Crystal Swarm", "CrystalSwarm", Color(0.70, 0.90, 1.0), "story_snow"],
 	["s_stormfinger", "The Storm Finger", "Storm Finger", "StormFinger", Color(0.60, 0.80, 1.0), "boss_storm_finger", "faith"],
 	["s_stormhand", "The Storm Hand", "Storm Hand", "StormHand", Color(0.60, 0.80, 1.0), "boss_storm_hand", "duo+faith"],
+	# ----- The Hunt of a Nightmare (2026-11-22; the six Head Guards stay in Story: they need its ceiling + director) -----
+	["s_jester", "The Troupe's Jester", "Jester", "TroupeJester", Color(1.0, 0.35, 0.25), "boss_jester", "faith"],
+	["s_musician", "Musician of Nightmares", "Musician", "NightmareMusician", Color(1.0, 0.55, 0.40), "boss_musician", "faith"],
+	["s_nlord", "The Nightmare Lord", "Nightmare Lord", "NightmareLordBoss", Color(1.0, 0.10, 0.08), "boss_nightmare_lord", "faith"],
+	["s_nslord", "The Nightmare's Lord", "Nightmare's Lord", "NightmaresLord", Color(1.0, 0.20, 0.12), "boss_nightmares_lord", "faith"],
+	["s_heart", "The Troupe's Heart", "Troupe's Heart", "TroupeHeart", Color(1.0, 0.15, 0.20), "boss_troupe_heart", "faith"],
 ]
 
 

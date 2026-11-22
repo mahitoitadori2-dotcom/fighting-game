@@ -794,4 +794,114 @@ PIECES.boss_xx0xn = { bpm: 132, meter: 4, rev: 0.35,
     { t: 'hit', inst: 'bells', key: 43, from: 0, to: 16, beats: [0], every: 4, vel: 70, dur: 5 },
   ] };
 
+// ================= THE HUNT OF A NIGHTMARE (levels 82-110, 2026-11-22): "custom music, lots of violins" =================
+// THE ROCKY LANDS / THE TENTS: a minor circus waltz - violin over tremolo strings, harp, pizzicato; the Troupe's accordion joins.
+PIECES.story_hunt = { bpm: 96, meter: 3, rev: 0.4,
+  chords: 'Dm Dm Gm Gm A A Dm Dm  Bb Bb Gm Gm Dm A Dm Dm',
+  parts: [
+    { t: 'pad', inst: 'tremolo', from: 0, to: 16, oct: -1, vel: 48 },
+    { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 1], [2, 1]], vel: 70 },
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1]], vel: 40 },
+    { t: 'mel', inst: 'violin', bar: 0, vel: 96,
+      notes: 'D5:1 F5:1 A5:1 A5:2 G5:1 G5:1 Bb5:1 D6:1 D6:2 C6:1 C#6:1 E6:1 A5:1 G5:1 F5:1 E5:1 D5:2 A4:1 D5:3' },
+    { t: 'pad', inst: 'accordion', from: 8, to: 16, vel: 40 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 100, dbl: [['fiddle', -1, 0.3]],
+      notes: 'F5:1 Bb5:1 D6:1 D6:1 C6:1 Bb5:1 Bb5:1 G5:1 D5:1 G5:2 A5:1 F5:1 E5:1 D5:1 E5:1 C#5:1 A4:1 D5:2 F5:1 D5:3' },
+    { t: 'hit', inst: 'timpani', key: 38, from: 0, to: 16, beats: [0], every: 2, vel: 58 },
+  ] };
+
+// THE TROUPE'S JESTER: a fast circus galop gone wrong - violin + xylophone, spiccato strings, snare + cymbals.
+PIECES.boss_jester = { bpm: 160, meter: 4,
+  chords: 'Dm A Dm A Gm Dm A Dm  Bb F Gm Dm Gm A Dm A',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 7, 12, 7], step: 0.5, vel: 84 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1], [2, 1]], vel: 96 },
+    { t: 'mel', inst: 'violin', bar: 0, vel: 108, dbl: [['piccolo', 1, 0.25]],
+      notes: 'A5:0.5 G#5:0.5 A5:0.5 D6:0.5 A5:1 F5:1 E5:0.5 F5:0.5 G5:0.5 A5:0.5 E5:2 A5:0.5 G#5:0.5 A5:0.5 D6:0.5 A5:1 F5:1 C#6:1 B5:0.5 A5:0.5 G5:1 E5:1 G5:0.5 A5:0.5 Bb5:1 D6:1 Bb5:1 A5:1 F5:1 D5:2 E5:0.5 F5:0.5 G5:0.5 E5:0.5 C#5:1 A4:1 D5:2 r:2' },
+    { t: 'mel', inst: 'xylophone', bar: 8, vel: 100, dbl: [['violin', 0, 0.6]],
+      notes: 'D6:0.5 F6:0.5 D6:0.5 Bb5:0.5 F5:2 C6:0.5 A5:0.5 F5:0.5 A5:0.5 C6:2 Bb5:0.5 G5:0.5 D5:0.5 G5:0.5 Bb5:2 A5:1 F5:1 D5:2 G5:1 Bb5:1 D6:1 G5:1 A5:1 C#6:1 E6:2 D6:1 A5:1 F5:1 D5:1 E5:1 C#5:1 A4:2' },
+    { t: 'hit', inst: 'timpani', key: 40, from: 0, to: 16, beats: [0, 2], vel: 100 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3], vel: 80 },
+    { t: 'hit', inst: 'drums', key: 49, from: 0, to: 16, beats: [0], every: 4, vel: 90, dur: 3 },
+  ] };
+
+// MUSICIAN OF NIGHTMARES: a menacing tango - the ACCORDION leads, then the violins take it from him.
+PIECES.boss_musician = { bpm: 112, meter: 4,
+  chords: 'Am Am Dm Dm E E Am Am  F F Dm Dm E E Am E',
+  parts: [
+    { t: 'pad', inst: 'tremolo', from: 0, to: 16, oct: -1, vel: 54 },
+    { t: 'bass', inst: 'pizz', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2, 1], [3, 1]], vel: 92 },
+    { t: 'mel', inst: 'accordion', bar: 0, vel: 104,
+      notes: 'A4:1.5 B4:0.5 C5:1 E5:1 E5:2 D5:1 C5:1 D5:1.5 E5:0.5 F5:1 A5:1 A5:2 G5:1 F5:1 G#5:1 B5:1 E5:1 D5:1 C5:1 B4:1 G#4:2 A4:1 C5:1 E5:1 A5:1 A5:4' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 108, dbl: [['accordion', -1, 0.45], ['violin', 1, 0.25]],
+      notes: 'C6:1.5 B5:0.5 A5:1 F5:1 A5:2 C6:2 F5:1.5 E5:0.5 D5:1 F5:1 A5:4 G#5:1 A5:1 B5:1 D6:1 E6:2 B5:2 A5:1 E5:1 C5:1 E5:1 G#5:4' },
+    { t: 'hit', inst: 'timpani', key: 40, from: 0, to: 16, beats: [0, 1.5], vel: 96 },
+    { t: 'hit', inst: 'castanets', key: 85, from: 8, to: 16, beats: [0, 0.5, 1.5, 2, 3], vel: 70 },
+  ] };
+
+// HEAD HEAVY NIGHTMARE GUARDS: a heavy march - low brass and taiko, then the violins scream above it.
+PIECES.boss_head_guards = { bpm: 100, meter: 4,
+  chords: 'Cm Cm Ab Ab Fm Fm G G  Cm Eb Ab G Fm Ab G G',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 0, 12, 0, 0, 7, 0], step: 0.5, oct: -1, vel: 90 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 2], [2, 2]], vel: 100 },
+    { t: 'mel', inst: 'trombone', bar: 0, vel: 112, dbl: [['tuba', -1, 0.4], ['horn', 0, 0.35]],
+      notes: 'C4:2 G3:1 C4:1 Eb4:3 D4:1 C4:2 Ab3:2 C4:4 F4:2 Eb4:1 D4:1 C4:2 Ab3:2 B3:2 D4:2 G3:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, vel: 60 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 112, dbl: [['violin', -1, 0.5], ['fiddle', 0, 0.25]],
+      notes: 'G5:1 C6:1 Eb6:1 D6:1 Bb5:2 G5:2 C6:1 Eb6:1 Ab6:1 G6:1 G6:2 D6:2 F6:1 Eb6:1 D6:1 C6:1 Eb6:2 Ab5:2 B5:1 D6:1 G6:1 F6:1 D6:4' },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 2], vel: 110 },
+    { t: 'hit', inst: 'timpani', key: 36, from: 0, to: 16, beats: [0, 1.5, 2], vel: 104 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3], vel: 76 },
+  ] };
+
+// THE NIGHTMARE LORD: an elegant, fast villain's waltz - a virtuoso violin, harpsichord, strings, a choir later.
+PIECES.boss_nightmare_lord = { bpm: 150, meter: 3,
+  chords: 'Em Em Am Am B B Em Em  C C Am Am D B Em B',
+  parts: [
+    { t: 'pad', inst: 'strings', from: 0, to: 16, oct: -1, vel: 62 },
+    { t: 'bass', inst: 'cello', from: 0, to: 16, pat: [[0, 1]], vel: 92 },
+    { t: 'arp', inst: 'harpsichord', from: 0, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1]], vel: 54 },
+    { t: 'mel', inst: 'violin', bar: 0, vel: 110,
+      notes: 'B5:1 E6:1 G6:1 F#6:2 E6:1 C6:1 E6:1 A6:1 G6:2 F#6:1 D#6:1 F#6:1 B6:1 A6:1 G6:1 F#6:1 E6:2 B5:1 E6:3' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 0, vel: 58 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 112, dbl: [['violin', -1, 0.45], ['fiddle', 0, 0.2]],
+      notes: 'G6:1 E6:1 C6:1 E6:2 G6:1 A6:1 E6:1 C6:1 A5:2 C6:1 A5:1 D6:1 F#6:1 D#6:2 B5:1 E6:1 G6:1 B6:1 B6:3' },
+    { t: 'hit', inst: 'timpani', key: 40, from: 0, to: 16, beats: [0], vel: 92 },
+    { t: 'hit', inst: 'bells', key: 64, from: 0, to: 16, beats: [0], every: 4, vel: 56, dur: 3 },
+  ] };
+
+// THE NIGHTMARE'S LORD: the suit is off - brutal brass, hammering strings, drums, shrieking violins.
+PIECES.boss_nightmares_lord = { bpm: 138, meter: 4,
+  chords: 'Em Em C C D D B B  Em Em C C Am B Em B',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 12, 0, 0, 0, 12, 7], step: 0.5, vel: 92 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2, 2]], vel: 104 },
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -1, vel: 50 },
+    { t: 'mel', inst: 'horn', bar: 0, vel: 112, dbl: [['trombone', -1, 0.5], ['tuba', -2, 0.3]],
+      notes: 'E4:2 E4:1 G4:1 B4:3 A4:1 G4:2 E4:1 C4:1 E4:4 F#4:2 D4:1 F#4:1 A4:3 G4:1 F#4:2 D#4:2 B3:4' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 116, dbl: [['violin', -1, 0.5], ['fiddle', 0, 0.3]],
+      notes: 'B5:0.5 E6:0.5 G6:1 F#6:1 E6:1 B6:4 C6:0.5 E6:0.5 G6:1 E6:1 C6:1 G5:4 A5:1 C6:1 E6:1 A6:1 F#6:2 D#6:2 E6:1 B5:1 G5:1 E5:1 D#5:4' },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 1.5, 2], vel: 112 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3], vel: 90 },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 100, dur: 3 },
+  ] };
+
+// THE TROUPE'S HEART: the finale - a HEARTBEAT on the timpani (ba-dum), organ, choir, and every violin at once.
+PIECES.boss_troupe_heart = { bpm: 120, meter: 4, rev: 0.45,
+  chords: 'Cm Cm Ab Ab Bb Bb G G  Cm Ab Fm Bb Eb Ab G G',
+  parts: [
+    { t: 'pad', inst: 'tremolo', from: 0, to: 16, oct: -1, vel: 58 },
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -1, vel: 54 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 2], [2, 2]], vel: 96 },
+    { t: 'hit', inst: 'timpani', key: 36, from: 0, to: 16, beats: [0, 0.5, 2, 2.5], vel: 116 },
+    { t: 'mel', inst: 'violin', bar: 0, vel: 108, dbl: [['voice', -1, 0.35], ['violin', -1, 0.4]],
+      notes: 'G5:2 C6:2 Eb6:3 D6:1 C6:2 Ab5:2 Eb5:4 F5:2 Bb5:2 D6:3 C6:1 B5:2 D6:2 G5:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 68 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 116, dbl: [['trumpet', -1, 0.3], ['violin', -1, 0.5], ['fiddle', 0, 0.25]],
+      notes: 'C6:1 Eb6:1 G6:1 Eb6:1 Ab6:2 G6:2 F6:1 Ab6:1 C7:1 Ab6:1 Bb6:4 G6:1 Eb6:1 Bb5:1 G6:1 Ab6:2 C6:2 B5:1 D6:1 G6:1 F6:1 D6:4' },
+    { t: 'hit', inst: 'drums', key: 57, from: 8, to: 16, beats: [0], every: 2, vel: 96, dur: 3 },
+    { t: 'hit', inst: 'bells', key: 60, from: 0, to: 16, beats: [0], every: 4, vel: 60, dur: 4 },
+  ] };
+
 module.exports = { PIECES, build };

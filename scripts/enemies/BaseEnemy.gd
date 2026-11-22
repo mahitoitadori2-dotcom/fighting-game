@@ -61,6 +61,13 @@ var _poise_lock := 0.0                    # No poise build-up right after a brea
 
 var anim_time := 0.0
 var walk_phase := 0.0
+## NIGHTMARE VERSION (The Hunt of a Nightmare, levels 82-110: ids "nm_<enemy>"): a weak enemy of the
+## three open worlds, dark red, tougher and meaner, named "Nightmare ...". Set before it enters the tree.
+var nightmare := false
+var nightmare_name := ""                 # "" = "Nightmare " + its normal name
+const NIGHTMARE_TINT := Color(0.95, 0.30, 0.28)
+const NIGHTMARE_HP := 1.6
+const NIGHTMARE_DMG := 1.3
 
 
 # ============================================================
@@ -68,6 +75,10 @@ var walk_phase := 0.0
 # ============================================================
 func _ready() -> void:
 	data = _make_data()
+	if nightmare:
+		data.max_hp = roundi(float(data.max_hp) * NIGHTMARE_HP)
+		data.character_name = "Nightmare " + (nightmare_name if nightmare_name != "" else data.character_name)
+		damage_mult *= NIGHTMARE_DMG
 	enemy_name = data.character_name
 	if StoryManager.active:                           # Met in Story Mode -> it may now appear in Versus
 		StoryProgress.mark_seen(String(get_script().get_global_name()))
@@ -83,6 +94,8 @@ func _ready() -> void:
 	hud = EnemyHUD.new()
 	hud.enemy = self
 	add_child(hud)
+	if nightmare and pixel_group != null:
+		pixel_group.modulate = NIGHTMARE_TINT
 	if StoryManager.active:
 		StoryDifficulty.apply_enemy(self)                # Story EASY / NORMAL / HARD (HP + damage)
 		if Madness.active() and pixel_group != null:

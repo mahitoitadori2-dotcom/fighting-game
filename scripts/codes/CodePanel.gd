@@ -101,6 +101,11 @@ func _submit() -> void:
 
 func _run(id: String) -> void:
 	if id == "xanxxe":                                  # The biggest one: its own full-screen panel
+		Madness.load_data()
+		if Madness.unlocked:                                 # Again? The black ghost refuses (GhostRefusal)
+			GhostRefusal.open(get_tree())
+			_done()
+			return
 		XanxxePanel.open(get_tree())
 		_done()
 		return

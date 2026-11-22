@@ -34,6 +34,8 @@ extends CanvasLayer
 			_painter.queue_redraw()
 
 var _painter: Control
+var _mesh: ArrayMesh                       # Baked static landscape (MeshCanvas), see _paint
+var _mesh_key := ""
 var _embers: Node2D
 var _ember_data: Array[Vector3] = []       # x (0..1), speed, size
 var _t := 0.0
@@ -87,6 +89,16 @@ func _paint() -> void:
 		return
 	if OrdBackdrops.handles(theme):                        # Terra Ordinariorum (OrdBackdrops.gd)
 		OrdBackdrops.paint(_painter, theme, sz)
+		return
+	if HuntBackdrops.handles(theme):                       # The Hunt of a Nightmare (HuntBackdrops.gd)
+		var key := "%s %d %d" % [theme, int(sz.x), int(sz.y)]
+		if _mesh_key != key:                                 # ONE mesh = one draw call (was ~900 per frame)
+			var mc := MeshCanvas.new()
+			mc.view_size = sz
+			HuntBackdrops.paint(mc, theme, sz)
+			_mesh = mc.build()
+			_mesh_key = key
+		_painter.draw_mesh(_mesh, null)
 		return
 	if MadnessBackdrops.handles(theme):                    # MADNESS (secret): red chains from hell
 		MadnessBackdrops.paint(_painter, theme, sz)

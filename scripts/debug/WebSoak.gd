@@ -12,7 +12,7 @@ static func wanted() -> bool:
 	if not OS.has_feature("web"):
 		return false
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile"))
+	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui"))
 
 
 func _ready() -> void:
@@ -116,6 +116,10 @@ func _run_perf() -> void:
 		StoryProgress.current_level = lv
 		StoryManager.boss_retry = lv                 # Straight to the boss
 		await _perf(StoryManager.ARENA_SCENE, 12.0, "boss level %d" % lv)
+	for lv in [82, 86, 95, 100, 110]:                    # The Hunt of a Nightmare
+		StoryProgress.current_level = lv
+		StoryManager.boss_retry = lv if lv != 82 else 0
+		await _perf(StoryManager.ARENA_SCENE, 12.0, "hunt %d" % lv)
 	StoryManager.autoplay = false
 	StoryProgress.current_level = 63
 	await _perf("res://scenes/DemiLand.tscn", 10.0, "DemiLand")
@@ -161,6 +165,59 @@ func _wait_for(cond: Callable, secs: float) -> bool:
 
 func _run_mobile() -> void:
 	await _run_mobile_inner()
+
+
+## ?soak=madui: the XANXXE puzzles, the ghost and Madness' presence on screen (screenshots by the driver).
+func _run_madui() -> void:
+	await _w(2.5)
+	var xp := XanxxePanel.open(get_tree())
+	await _w(1.0)
+	for i in 3:
+		xp._select(i)
+		await _w(2.0 if i == 0 else 1.0)
+		print("MOBILE shot puzzle_%d" % i)
+		await _w(0.3)
+		for c in xp.get_children():
+			if c is XanxxePuzzle:
+				c.queue_free()
+		await _w(0.4)
+	xp.queue_free()
+	Madness.unlock()
+	await _w(2.0)
+	var mp := get_tree().root.get_node_or_null("MadnessPresence") as MadnessPresence
+	if mp != null:
+		mp._next_msg = 0.0
+		mp._next_ctl = 0.0
+		await _w(1.5)
+		print("MOBILE shot presence")
+	GhostRefusal.open(get_tree())
+	await _w(3.6)
+	print("MOBILE shot ghost")
+	await _w(4.0)
+	Madness.unlocked = false
+	Madness.save_data()
+	print("MOBILE done")
+
+
+## ?soak=hunt: THE HUNT OF A NIGHTMARE picture check - each map + each boss on screen (screenshots by the driver).
+func _run_hunt() -> void:
+	await _w(2.0)
+	StoryProgress.load_progress()
+	StoryManager.autoplay = true
+	for n in [82, 93, 86, 90, 95, 96, 100, 101, 110]:
+		StoryProgress.unlocked_level = maxi(StoryProgress.unlocked_level, n)
+		StoryProgress.current_level = n
+		var has_boss := String(StoryLevels.get_level(n).get("boss", "")) != ""
+		StoryManager.boss_retry = n if has_boss and not (StoryLevels.get_level(n).get("waves", []) as Array).is_empty() else 0
+		get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+		await _w(9.0 if has_boss else 6.0)
+		print("MOBILE shot hunt_%d" % n)
+		await _w(4.0 if n == 95 else 1.0)
+		if n == 95:
+			print("MOBILE shot hunt_95b")
+		await _w(1.0)
+	StoryManager.autoplay = false
+	print("MOBILE done")
 
 
 ## The XANXXE code typed in the CODE box -> the red panel: tap its 3 items -> corruption -> Madness.
@@ -392,6 +449,12 @@ func _run() -> void:
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
 	if q is String and String(q).contains("soak=mobile"):
 		await _run_mobile()
+		return
+	if q is String and String(q).contains("soak=madui"):
+		await _run_madui()
+		return
+	if q is String and String(q).contains("soak=hunt"):
+		await _run_hunt()
 		return
 	if q is String and String(q).contains("soak=perf"):
 		await _run_perf()

@@ -153,3 +153,19 @@ User report: iPhone 13 50-60 FPS / iPhone 11 30-40 FPS on FAST; "the biggest pro
 - Achievements: proc 50.2 -> 39.3 ms, draws 208 -> 162. Its big frame spikes (~120 ms) are still there and are
   browser/render time - not fixed. Other screens: unchanged within noise.
 - Checked: compile 0/290 failed; Character Select + Achievements render correctly (headless Chrome screenshot).
+## /nolags 2026-11-22: The Hunt of a Nightmare backdrops baked into one mesh
+
+The Hunt's backdrops (`HuntBackdrops.gd`: ~70 red lanterns, each 6 shapes, plus tents and ridges) were replayed as
+hundreds of canvas commands every frame. `HellBackground` now records them ONCE per theme + screen size into a
+`MeshCanvas` and draws one mesh. Same look (checked by screenshot). Web build, emulated iPhone 13 (headless Chrome):
+
+| Scene | Draw calls | Game code | FPS |
+|---|---|---|---|
+| hunt 82 (waves) | 909 -> 350 | 23.6 -> 12.5 ms | 35 -> 48 |
+| hunt 86 (Jester) | 839 -> 357 | 21.9 -> 12.2 ms | 49 -> 60 |
+| hunt 95 (Guards) | 576 -> 509 | 14.3 -> 10.6 ms | 48 -> 48 |
+| hunt 100 (Nightmare Lord) | 832 -> 350 | 21.9 -> 9.2 ms | 38 -> 48 |
+| hunt 110 (Troupe's Heart) | 835 -> 354 | 22.8 -> 8.6 ms | 49 -> 57 |
+
+Other backdrops (`HellBackground` themes, C5 / Ext / Demi / Crater / Ord) still replay their shapes each frame: the
+same trick would help them too (e.g. DemiLand 658 draw calls, boss level 6 752).
