@@ -79,7 +79,7 @@ func _fade() -> float:
 
 func _draw_back() -> void:
 	var sz := _canvas.size
-	_canvas.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, 0.88 * _fade()))
+	_canvas.draw_rect(Rect2(Vector2.ZERO, sz), Color(0, 0, 0, 0.97 * _fade()))
 	_canvas.draw_circle(_feet() + Vector2(0, -180), 300.0, Color(0.5, 0.0, 0.0, 0.10 * _fade()))
 
 

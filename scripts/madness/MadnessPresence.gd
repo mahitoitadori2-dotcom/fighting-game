@@ -36,7 +36,17 @@ var _next_hitch := 90.0
 var _msg := ""
 var _msg_t := 0.0
 var _scene: Node = null
+var _calm := 0.0                                         # > 0: SCARED (rotor / jumpscare): it hides, no effects
+var _scare_in := -1.0                                    # >= 0: the scare reaction starts after this
 var _rng := RandomNumberGenerator.new()
+
+
+## ROTOR scares XANXXE (the console's rotor / jumpscare). It reacts once the picture is gone, then
+## HIDES for a while: the red fades, no tears, no words, no stolen buttons.
+static func scare(tree: SceneTree, delay: float) -> void:
+	var p := tree.root.get_node_or_null("MadnessPresence") as MadnessPresence
+	if p != null:
+		p._scare_in = delay
 
 
 static func sync(tree: SceneTree) -> void:
@@ -70,6 +80,24 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	var real := delta / maxf(Engine.time_scale, 0.01)            # (Keeps its own clock through hitstops)
 	_t += real
+	if _scare_in >= 0.0:
+		_scare_in -= real
+		if _scare_in < 0.0:
+			_say("XANXXE> NO. NOT THE DOG. KEEP IT AWAY.")
+			_burst = 0.8
+			MadnessFX.glitch(get_tree(), 1.0)
+			SoundManager.play_sfx("roar", -6.0)
+			_calm = 10.0                                       # Hides for 10 s (by the user)
+	if _calm > 0.0:                                                # Hiding: almost gone
+		_calm -= real
+		_vig.modulate.a = move_toward(_vig.modulate.a, 0.12, real * 0.5)
+		if _calm <= 0.0:
+			_say("XANXXE> ...is it gone?")
+			_burst = 0.3
+		_msg_t = maxf(_msg_t - real, 0.0)
+		_burst = maxf(_burst - real, 0.0)
+		_fx.queue_redraw()
+		return
 	_vig.modulate.a = 0.75 + 0.25 * sin(_t * 0.9)                 # It breathes
 	var tree := get_tree()
 	if tree.current_scene != _scene:                               # It follows you to every screen

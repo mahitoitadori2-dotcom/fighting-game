@@ -3,9 +3,9 @@ extends Control
 ## THE PUZZLES BEHIND THE XANXXE 1NT3GR1T13S BARS (2026-11-22, by the user). Selecting a line on the
 ## panel opens its puzzle; only a SOLVED puzzle starts that line's percent bar. Red pixel style like the
 ## panel. Taps, mouse, keys and controller all work (every piece is a Button). Esc / Back closes it.
-##   "sequence"  EXTRACT REALITY   four red glyphs flash a sequence - repeat it (mistake = a new one)
-##   "infect"    READY INFECTION   a 3x3 grid: a tap flips a cell AND its neighbours - infect all nine
-##   "align"     ENGAGE MADNESS    three dials; turning one also turns the one after it - point all up
+##   "sequence"  EXTRACT REALITY   four red glyphs flash a sequence of 3 - repeat it (mistake = see it again)
+##   "infect"    READY INFECTION   a 3x3 grid: a tap flips a cell AND its neighbours - infect all nine (1-2 taps)
+##   "align"     ENGAGE MADNESS    three dials (tap = a quarter turn) - point all three up
 
 signal solved
 signal closed
@@ -14,7 +14,8 @@ const RED := Color(0.95, 0.08, 0.06)
 const RED_DIM := Color(0.40, 0.03, 0.03)
 const DARK := Color(0.06, 0.0, 0.0, 0.96)
 const GLYPHS := ["X", "A", "N", "E"]
-const SEQ_LEN := 5
+const SEQ_LEN := 3                                   # (Easier, 2026-11-22: was 5)
+const FLASH := 0.95                                  # Seconds per flash (was 0.7)
 
 var kind := "sequence"
 var _t := 0.0
@@ -71,8 +72,11 @@ func _ready() -> void:
 				var b := _button("", Vector2(100, 100), 30)
 				b.pressed.connect(_infect_press.bind(i))
 				grid.add_child(b)
-			for k in 4:                                         # Scramble with real presses: always solvable
-				_flip_around(_rng.randi() % 9)
+			var a := _rng.randi() % 9                        # (Easier: only 1-2 taps away from solved)
+			_flip_around(a)
+			if _rng.randf() < 0.6:
+				var b := (a + 1 + _rng.randi() % 8) % 9
+				_flip_around(b)
 			if not (false in _cells):
 				_flip_around(4)
 		"align":
@@ -83,9 +87,10 @@ func _ready() -> void:
 				var b := _button("", Vector2(150, 150), 30)
 				b.pressed.connect(_align_press.bind(i))
 				row2.add_child(b)
-			while _aligned():
-				for i in 3:
-					_dial[i] = _rng.randi() % 4
+			while _aligned():                                  # (Easier: at most two dials start turned)
+				_dial = [0, 0, 0]
+				for k in 2:
+					_dial[_rng.randi() % 3] = 1 + _rng.randi() % 3
 	_btns[0].grab_focus.call_deferred()
 
 
@@ -116,8 +121,8 @@ func _process(delta: float) -> void:
 	_msg_t = maxf(_msg_t - delta, 0.0)
 	if kind == "sequence" and _show_i >= 0:
 		_show_t += delta
-		_lit = _seq[_show_i] if fmod(_show_t, 0.7) < 0.45 else -1
-		if _show_t >= 0.7:
+		_lit = _seq[_show_i] if fmod(_show_t, FLASH) < FLASH * 0.65 else -1
+		if _show_t >= FLASH:
 			_show_t = 0.0
 			_show_i += 1
 			if _show_i >= _seq.size():
@@ -171,13 +176,19 @@ func _new_sequence() -> void:
 	_say("WATCH")
 
 
+func _replay() -> void:
+	_pos = 0
+	_show_i = 0
+	_show_t = -0.6
+
+
 func _seq_press(i: int) -> void:
 	if _show_i >= 0 or _done:
 		return
 	_lit = i
 	if i != _seq[_pos]:
 		_wrong()
-		_new_sequence()
+		_replay()                                           # The SAME sequence again (easier)
 		return
 	SoundManager.play_sfx("ui_confirm", -6.0)
 	_pos += 1
@@ -213,9 +224,7 @@ func _aligned() -> bool:
 func _align_press(i: int) -> void:
 	if _done:
 		return
-	_dial[i] = (_dial[i] + 1) % 4
-	if i < 2:
-		_dial[i + 1] = (_dial[i + 1] + 1) % 4               # It drags the next one with it
+	_dial[i] = (_dial[i] + 1) % 4                       # (Easier: each dial turns on its own now)
 	SoundManager.play_sfx("ui_move", -4.0)
 	if _aligned():
 		_win()

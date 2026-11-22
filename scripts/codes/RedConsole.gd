@@ -19,6 +19,11 @@ extends CanvasLayer
 ##   boo         closes the panel (same as exit)
 ##   hi / what time is it (a random country) / + small talk: ping, coin, dice, joke, whoami, date...
 
+## While MADNESS is on (2026-11-22, by the user) the console refuses most commands. Only these get through -
+## normalize (the way out), rotor + jumpscare (they SCARE XANXXE: MadnessPresence.scare), and closing.
+const MADNESS_ALLOWS := ["normalize", "rotor", "jumpscare", "exit", "boo", "clear"]
+const REFUSALS := ["XANXXE> no.", "XANXXE> I don't take orders.", "XANXXE> access denied, mortal.",
+	"XANXXE> that command belongs to me now.", "XANXXE> try again. it won't help.", "XANXXE> ...no."]
 const COMMANDS := {
 	"help": ["_cmd_help", "list the commands"],
 	"#s001": ["_cmd_s001", "BLACK GHOST: every move with an Onslaught goes off as its Onslaught"],
@@ -193,10 +198,18 @@ func _submit(line: String) -> void:
 	if COMMANDS.has(whole):                              # Multi-word commands ("what time is it")
 		cmd = whole
 		args = PackedStringArray()
+	Madness.load_data()
+	if Madness.unlocked and not MADNESS_ALLOWS.has(cmd):    # MADNESS has the console now: it refuses
+		say("  " + String(REFUSALS[randi() % REFUSALS.size()]))
+		MadnessFX.glitch(get_tree(), 0.7)
+		SoundManager.play_sfx("rumble", -8.0)
+		return
 	if not COMMANDS.has(cmd):
 		say("  unknown command '%s'." % cmd)
 		SoundManager.play_sfx("ui_back", -6.0)
 		return
+	if Madness.unlocked and cmd == "normalize":
+		say("  XANXXE> ...fine. sleep. for now.")
 	call(String(COMMANDS[cmd][0]), args)
 
 
@@ -340,11 +353,13 @@ func _cmd_normalize(_args: PackedStringArray) -> void:
 
 func _cmd_rotor(_args: PackedStringArray) -> void:
 	RotorPicture.show_picture(get_tree(), false)
+	MadnessPresence.scare(get_tree(), 3.3)                # XANXXE is afraid of him
 	close()
 
 
 func _cmd_jumpscare(_args: PackedStringArray) -> void:
 	RotorPicture.show_picture(get_tree(), true)
+	MadnessPresence.scare(get_tree(), 1.6)
 	close()
 
 
