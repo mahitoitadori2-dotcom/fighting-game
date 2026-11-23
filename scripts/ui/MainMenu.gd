@@ -172,12 +172,15 @@ func _build() -> void:
 	col.add_child(gap2)
 
 	# Buttons, by importance: PLAY / the modes / extras / system - each row fades in
-	_play = UiStyle.make_button("PLAY", Vector2(440, 74), 34)
-	_play.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var top := _row(col, 18)                                    # PLAY + PLAY ONLINE: the two big ones
+	_play = UiStyle.make_button("PLAY", Vector2(360, 74), 34)
 	_play.add_theme_color_override("font_color", Color(0.75, 1.0, 0.7))
 	_play.pressed.connect(_on_play)
-	col.add_child(_play)
-	_rows.append(_play)
+	top.add_child(_play)
+	var online_btn := UiStyle.make_button("PLAY ONLINE", Vector2(360, 74), 32)   # 2026-11-23: rooms by code (NetLink)
+	online_btn.add_theme_color_override("font_color", Color(0.5, 0.9, 1.0))
+	online_btn.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://scenes/OnlineMenu.tscn"))
+	top.add_child(online_btn)
 
 	var modes := _row(col, 16)
 	var story_btn := UiStyle.make_button("STORY MODE", Vector2(300, 58), 24)
@@ -205,10 +208,6 @@ func _build() -> void:
 	ach_btn.add_theme_color_override("font_color", Color(1.0, 0.82, 0.3))
 	ach_btn.pressed.connect(func() -> void: get_tree().change_scene_to_file(CharacterRoster.ACHIEVEMENTS))
 	sys.add_child(ach_btn)
-	var online_btn := UiStyle.make_button("ONLINE", Vector2(200, 46), 17)    # 2026-11-23: rooms by code (NetLink)
-	online_btn.add_theme_color_override("font_color", Color(0.5, 0.9, 1.0))
-	online_btn.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://scenes/OnlineMenu.tscn"))
-	sys.add_child(online_btn)
 	var daily_btn := UiStyle.make_button("DAILY", Vector2(200, 46), 17)      # 2026-11-23: challenges + shop
 	daily_btn.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
 	daily_btn.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://scenes/DailyMenu.tscn"))
@@ -233,10 +232,8 @@ func _build() -> void:
 	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(ver)
 	_animate_in()
-	var sys_row: Array = [ach_btn, settings_btn]
-	if sys.get_child_count() > 2:
-		sys_row.append(sys.get_child(2))
-	UiStyle.grid_focus.call_deferred([[change], [_play], [story_btn, rush_btn], [switch_btn, cat_btn, rep_btn], sys_row])
+	var sys_row: Array = sys.get_children().filter(func(c: Node) -> bool: return c is Button)   # (Every button of that row: DAILY + EXIT too)
+	UiStyle.grid_focus.call_deferred([[change], [_play, online_btn], [story_btn, rush_btn], [switch_btn, cat_btn, rep_btn], sys_row])
 
 
 func _row(parent: Control, sep: int) -> HBoxContainer:
