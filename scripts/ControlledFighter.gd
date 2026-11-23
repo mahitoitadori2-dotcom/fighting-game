@@ -115,11 +115,12 @@ func _physics_process(delta: float) -> void:
 			_roll_visuals()
 			return
 		_handle_roll()
-		if _souls_can_act():
+		if _souls_can_act() and not WeaponDrops.try_attack(self):
 			_handle_actions()
 	else:
 		_handle_block()
-		_handle_actions()
+		if not WeaponDrops.try_attack(self):           # A WEAPON PICKUP takes the ATTACK press (Versus)
+			_handle_actions()
 	_handle_state(delta)
 	_handle_movement(delta)
 	move_and_slide()

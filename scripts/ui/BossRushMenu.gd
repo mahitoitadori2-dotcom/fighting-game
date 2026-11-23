@@ -47,6 +47,11 @@ func _ready() -> void:
 	_start.pressed.connect(_on_start)
 	_start.disabled = bosses.is_empty()
 	left.add_child(_start)
+	var daily := UiStyle.make_button("DAILY RUN", Vector2(340, 58), 24)    # 2026-11-23: one seeded run a day
+	daily.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
+	daily.pressed.connect(_on_daily)
+	daily.disabled = (BossRush.daily_plan()[0] as Array).size() < 3
+	left.add_child(daily)
 	var back := UiStyle.make_button("BACK", Vector2(340, 52), 22)
 	back.pressed.connect(_back)
 	left.add_child(back)
@@ -68,12 +73,29 @@ func _refresh() -> void:
 	var r := BossRush.last_result
 	if not r.is_empty() and String(r.get("hero", "")) == _hero:
 		var done: bool = r.get("completed", false)
-		var txt := "LAST RUN:  %s   %d / %d bosses   %s" % ["COMPLETE" if done else "FELL", int(r["beaten"]), int(r["total"]), StoryManager.time_text(float(r["time"]))]
+		var txt := "%s  %s   %d / %d bosses   %s" % [("DAILY (" + String(r.get("mod", "")) + "):") if r.get("daily", false) else "LAST RUN:",
+			"COMPLETE" if done else "FELL", int(r["beaten"]), int(r["total"]), StoryManager.time_text(float(r["time"]))]
+		if r.get("daily_best", false):
+			txt += "\nTODAY'S BEST - it is now today's GHOST"
 		if int(r.get("rank", -1)) >= 0:
 			txt += "   #%d" % (int(r["rank"]) + 1)
 		if r.get("ghost", false):
 			txt += "\nNEW BEST - it is now your GHOST on the next run"
 		_right.add_child(UiStyle.label(txt, 18, Color(0.6, 1.0, 0.6) if done else Color(1.0, 0.6, 0.5), 6))
+	var plan := BossRush.daily_plan()
+	var dl: Array = plan[0]
+	if dl.size() >= 3:
+		var names: PackedStringArray = []
+		for n in dl:
+			names.append(String(StoryLevels.get_level(int(n)).get("title", "?")))
+		var best := BossRush.daily_best(_hero)
+		_right.add_child(UiStyle.label("DAILY  %s  -  %s" % [BossRush.today(), String(plan[1])], 22, Color(0.6, 0.85, 1.0), 6))
+		_right.add_child(UiStyle.label(String(BossRush.DAILY_MOD_TEXT.get(String(plan[1]), "")), 16, UiStyle.TEXT_DIM, 4))
+		var nl := UiStyle.label(", ".join(names), 15, UiStyle.TEXT, 4)
+		nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		nl.custom_minimum_size = Vector2(440, 0)
+		_right.add_child(nl)
+		_right.add_child(UiStyle.label("TODAY'S BEST:  " + (StoryManager.time_text(best) if best > 0.0 else "-"), 18, Color(1.0, 0.82, 0.3), 5))
 	_right.add_child(UiStyle.label("TOP %d  -  %s" % [BossRush.TOP_N, "WARRIOR" if _hero == "warrior" else "ARCHITECT"], 22, Color(1.0, 0.82, 0.3), 6))
 	var list := BossRush.top(_hero)
 	if list.is_empty():
@@ -81,6 +103,11 @@ func _refresh() -> void:
 	for i in list.size():
 		var e: Dictionary = list[i]
 		_right.add_child(UiStyle.label("%2d.   %s     %d bosses     %s" % [i + 1, StoryManager.time_text(float(e["time"])), int(e["bosses"]), String(e.get("date", ""))], 18, UiStyle.TEXT, 5))
+
+
+func _on_daily() -> void:
+	if BossRush.start_daily(_hero):
+		LoadingScreen.goto(get_tree(), StoryManager.ARENA_SCENE, "DAILY RUN  -  " + BossRush.daily_mod, BossRush.progress_text())
 
 
 func _on_start() -> void:

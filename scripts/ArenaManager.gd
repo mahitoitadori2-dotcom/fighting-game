@@ -31,6 +31,20 @@ func _ready() -> void:
 	if not Replay.pending.is_empty():
 		_play_replay()                        # WATCH REPLAY: puppets instead of a match
 		return
+	if NetLink.is_guest():                    # ONLINE GUEST: the host runs the fight, this only shows it
+		add_to_group("net_world")
+		var ng := NetGuest.new()
+		ng.name = "NetGuest"
+		add_child(ng)
+		if MatchSettings.touch_enabled():
+			var tcg := TouchControls.new()
+			tcg.name = "TouchControls"
+			add_child(tcg)
+		SoundManager.play_music("fight")
+		return
+	if NetLink.is_host() and NetLink.mode == "versus":
+		p1_cpu = false
+		CharacterRoster.opponent_id = NetLink.guest_fighter      # P2 = the guest's pick, the guest's buttons
 	QoL.save_picks()
 	SecretCodes.load_codes()
 	var p1_entry := CharacterRoster.selected()
@@ -40,6 +54,8 @@ func _ready() -> void:
 		p1_id = "rotor"
 	p1 = _spawn(p1_entry, 1, p1_spawn)
 	p2 = _spawn(CharacterRoster.opponent(), 2, p2_spawn)
+	if not p1_cpu:
+		Daily.apply_palette(p1)                              # SHOP palette on your fighter
 	# REPLAYS: every fight is recorded (watch / save it from the winner screen)
 	var rec := ReplayRecorder.new()
 	rec.name = "ReplayRecorder"
@@ -72,6 +88,18 @@ func _ready() -> void:
 		var fps := FpsCounter.new()
 		fps.name = "FpsCounter"
 		add_child(fps)
+	if NetLink.is_host() and NetLink.mode == "versus":           # ONLINE: stream this fight to the guest
+		add_to_group("net_world")
+		var nh := NetHost.new()
+		nh.name = "NetHost"
+		nh.start_msg = {"k": "start", "kind": "versus", "scene": get_tree().current_scene.scene_file_path if get_tree().current_scene else "res://Main.tscn",
+			"arena": selected_arena, "p1": CharacterRoster.selected_id, "p2": CharacterRoster.opponent_id}
+		add_child(nh)
+	# WEAPON PICKUPS (2026-11-23): medieval weapons drop into the arena (not vs the training Dummy)
+	if MatchSettings.weapon_drops and not p2 is Dummy:
+		var wd := WeaponDrops.new()
+		wd.name = "WeaponDrops"
+		add_child(wd)
 
 
 ## Spawns puppet copies of the recorded fighters and a ReplayPlayer that drives them.
@@ -109,7 +137,9 @@ func _spawn(entry: Dictionary, slot: int, pos: Vector2) -> Fighter:
 	if f is ControlledFighter:
 		# P1 = you on the keyboard, P2 = CPU (that character's own AI brain).
 		var cpu := slot == 2 or p1_cpu
-		if cpu:
+		if slot == 2 and NetLink.is_host() and NetLink.mode == "versus":
+			(f as ControlledFighter).ctl = NetLink.net_input          # ONLINE: the guest plays P2
+		elif cpu:
 			var ai_script: Script = entry.get("ai", BaseAI)
 			(f as ControlledFighter).ctl = ai_script.new()
 		else:

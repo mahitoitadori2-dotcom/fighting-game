@@ -153,6 +153,12 @@ func _build() -> void:
 	var mv := UiStyle.make_button("MOVES", Vector2(380, 46), 18)
 	mv.pressed.connect(_show_moves.bind(true))
 	box.add_child(mv)
+	var ph := UiStyle.make_button("PHOTO", Vector2(380, 46), 18)  # PHOTO MODE (2026-11-23)
+	ph.pressed.connect(func() -> void:
+		var tree := get_tree()
+		close()
+		PhotoMode.open.call_deferred(tree))
+	box.add_child(ph)
 	if MatchSettings.touch_enabled() or TextEntry.use_prompt():
 		# PHONES: the RED CONSOLE lives here (no F12 key on a phone)
 		var con := UiStyle.make_button("CONSOLE", Vector2(380, 46), 18)

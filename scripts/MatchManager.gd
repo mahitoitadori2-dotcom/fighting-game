@@ -154,8 +154,13 @@ func _on_fighter_died(f: Fighter) -> void:
 	f.respawn_enabled = false
 	_over = true
 	winner = p2 if f == p1 else p1
+	NetHost.event({"k": "end", "text": "YOU WIN!" if winner == p2 else "THE HOST WINS"})   # ONLINE
 	if winner == p1 and p1 != null:
 		Achievements.on_versus_win(CharacterRoster.selected_id, CharacterRoster.opponent_id, p1.used)
+		if not ArenaManager.p1_cpu:                                  # DAILY challenges (you, not a CPU P1)
+			Daily.progress("vs_win")
+			if CharacterRoster.selected_id == String(Daily.target_fighter().get("id", "")):
+				Daily.progress("vs_win_as")
 	await get_tree().create_timer(WINNER_DELAY).timeout
 	if is_inside_tree():
 		_show_winner()

@@ -71,6 +71,14 @@ func _input(event: InputEvent) -> void:
 		if RedConsole.toggle(get_tree()):                 # F12 in a level: THE RED CONSOLE (web too, all builds)
 			get_viewport().set_input_as_handled()
 		return
+	if k != null and k.pressed and not k.echo and k.physical_keycode == KEY_F9 and get_tree().root.get_node_or_null("PhotoMode") == null:
+		var cs := get_tree().current_scene                 # F9 in a fight or a replay: PHOTO MODE
+		if PauseMenu.in_fight(get_tree()) or (cs != null and cs.find_child("ReplayPlayer", true, false) != null):
+			if PauseMenu.is_open:
+				PauseMenu.toggle(get_tree())
+			PhotoMode.open.call_deferred(get_tree())
+			get_viewport().set_input_as_handled()
+		return
 	if k == null or not k.pressed or k.echo or OS.has_feature("web"):
 		return
 	if k.physical_keycode == KEY_F11 or (k.physical_keycode == KEY_ENTER and k.alt_pressed):

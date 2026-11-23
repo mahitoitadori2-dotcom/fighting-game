@@ -12,7 +12,7 @@ static func wanted() -> bool:
 	if not OS.has_feature("web"):
 		return false
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui"))
+	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest"))
 
 
 func _ready() -> void:
@@ -167,6 +167,39 @@ func _run_mobile() -> void:
 	await _run_mobile_inner()
 
 
+## ?soak=netguest&code=XXXXX&server=ws://...: the WEB build joins an online room as the guest (cross-play test).
+func _run_netguest(q: String) -> void:
+	await _w(2.0)
+	var code := ""
+	var server := NetLink.DEFAULT_URL
+	for part in q.trim_prefix("?").split("&"):
+		if part.begins_with("code="):
+			code = part.trim_prefix("code=")
+		elif part.begins_with("server="):
+			server = part.trim_prefix("server=").uri_decode()
+	CharacterRoster.selected_id = "architect"
+	var link := NetLink.get_link()
+	link.connect_and(server, func() -> void: link.join_room(code))
+	await _wait_for(func() -> bool: return NetLink.peer_here, 15.0)
+	print("MOBILE web guest joined=%s mode=%s" % [NetLink.peer_here, NetLink.mode])
+	await _wait_for(func() -> bool: return get_tree().get_first_node_in_group("net_guest") != null, 20.0)
+	print("MOBILE web guest sees the host's fight=%s" % (get_tree().get_first_node_in_group("net_guest") != null))
+	await _w(3.0)
+	Input.action_press("move_left")
+	await _w(1.2)
+	Input.action_release("move_left")
+	for i in 8:
+		Input.action_press("punch")
+		await _w(0.25)
+		Input.action_release("punch")
+		await _w(0.25)
+	print("MOBILE shot netguest")
+	await _w(1.0)
+	var am := get_tree().get_first_node_in_group("arena_manager") as ArenaManager
+	print("MOBILE web guest: P2 puppet at %s  P1 hp %s" % [str(am.p2.global_position.round()) if am and am.p2 else "?", str(am.p1.hp) if am and am.p1 else "?"])
+	print("MOBILE done")
+
+
 ## ?soak=madui: the XANXXE puzzles, the ghost and Madness' presence on screen (screenshots by the driver).
 func _run_madui() -> void:
 	await _w(2.5)
@@ -220,6 +253,40 @@ func _run_hunt() -> void:
 	print("MOBILE done")
 
 
+## Solves a XANXXE puzzle the way a player does: real taps on its pieces.
+func _solve_by_taps(pz: XanxxePuzzle) -> void:
+	match pz.kind:
+		"sequence":
+			while is_instance_valid(pz) and pz._show_i >= 0:
+				await _w(0.3)
+			for g in pz._seq.duplicate():
+				_ctl_target("PIECE", pz._btns[g])
+				await _w(1.0)
+		"infect":
+			var start: Array[bool] = pz._cells.duplicate()
+			for mask in 512:
+				var cells: Array[bool] = start.duplicate()
+				for i in 9:
+					if mask & (1 << i):
+						var r := floori(i / 3.0)
+						var c := i % 3
+						for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+							if r + d.y >= 0 and r + d.y < 3 and c + d.x >= 0 and c + d.x < 3:
+								cells[(r + d.y) * 3 + c + d.x] = not cells[(r + d.y) * 3 + c + d.x]
+				if not (false in cells):
+					for i in 9:
+						if mask & (1 << i):
+							_ctl_target("PIECE", pz._btns[i])
+							await _w(1.0)
+					return
+		"align":
+			for i in 3:
+				var n := (4 - pz._dial[i]) % 4
+				for k in n:
+					_ctl_target("PIECE", pz._btns[i])
+					await _w(1.0)
+
+
 ## The XANXXE code typed in the CODE box -> the red panel: tap its 3 items -> corruption -> Madness.
 func _mobile_xanxxe() -> void:
 	await _w(2.0)
@@ -238,10 +305,22 @@ func _mobile_xanxxe() -> void:
 	await _w(0.8)
 	print("MOBILE shot xanxxe")
 	var xp := get_tree().root.get_node_or_null("XanxxePanel") as XanxxePanel
-	for b in xp._buttons:
+	for b in xp._buttons:                                       # Each line opens a PUZZLE: solve it with taps
 		_ctl_target("XITEM", b)
-		await _w(1.2)
-	await _w(1.0)
+		await _w(1.4)
+		var pz: XanxxePuzzle = null
+		for c in xp.get_children():
+			if c is XanxxePuzzle:
+				pz = c
+		if pz == null:
+			print("MOBILE xanxxe: no puzzle opened")
+			continue
+		var kind := pz.kind
+		print("MOBILE puzzle %s open" % kind)
+		await _solve_by_taps(pz)
+		await _w(1.5)
+		print("MOBILE puzzle %s solved=%s" % [kind, not is_instance_valid(pz)])
+	await _w(4.0)
 	print("MOBILE shot xanxxe_corrupt")
 	await _wait_for(func() -> bool: return Madness.unlocked, 15.0)
 	print("MOBILE xanxxe -> madness unlocked=%s" % Madness.unlocked)
@@ -283,11 +362,13 @@ func _mobile_console_cmds(rc: RedConsole) -> void:
 	for f in get_tree().get_nodes_in_group("fighters"):
 		if (f as Fighter).slot == 1:
 			me = f
-	for cmd in ["#s001", "#s002", "#s003", "normalize"]:
+	print("MOBILE console under Madness refused 'hi'=%s" % (is_instance_valid(rc) and rc._log.get_parsed_text().contains("XANXXE>")))
+	for cmd in ["normalize", "#s001", "#s002", "#s003", "normalize"]:
 		if not is_instance_valid(rc):
 			return
+		var seen := rc._log.get_parsed_text().count("> " + cmd)          # (Wait for THIS one: normalize runs twice)
 		_ctl_target("CONSOLEFIELD", rc._edit)
-		await _wait_for(func() -> bool: return is_instance_valid(rc) and rc._log.get_parsed_text().contains("> " + cmd), 20.0)
+		await _wait_for(func() -> bool: return is_instance_valid(rc) and rc._log.get_parsed_text().count("> " + cmd) > seen, 20.0)
 		await _w(0.15)
 		print("MOBILE %s sounds playing: %s" % [cmd, ", ".join(_playing_sounds())])
 		await _w(0.35)
@@ -449,6 +530,9 @@ func _run() -> void:
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
 	if q is String and String(q).contains("soak=mobile"):
 		await _run_mobile()
+		return
+	if q is String and String(q).contains("soak=netguest"):
+		await _run_netguest(String(q))
 		return
 	if q is String and String(q).contains("soak=madui"):
 		await _run_madui()

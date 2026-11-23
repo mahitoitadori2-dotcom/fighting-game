@@ -55,6 +55,7 @@ static func save_controls() -> void:
 static var enemy_lives := 1           # PvE enemies / bosses (Rotor...): 1 = one HP bar
 
 static var sandbox := false
+static var weapon_drops := true       # Versus: weapons drop into the arena (WeaponDrops)
 static var damage_idx := DEFAULT_INDEX
 static var gauge_idx := DEFAULT_INDEX
 static var cooldown_idx := DEFAULT_INDEX
@@ -223,6 +224,12 @@ func _build_match_section(rows: VBoxContainer) -> void:
 	rows.add_child(_section_title("MATCH"))
 	rows.add_child(_stepper("lives", "Lives (per player)", _change_lives))
 	rows.add_child(_stepper("enemy_lives", "Enemy Lives (PvE bosses)", _change_enemy_lives))
+	var wd := UiStyle.make_button("WEAPON DROPS: " + ("ON" if weapon_drops else "OFF"), Vector2(360, 46), 18)
+	wd.pressed.connect(func() -> void:
+		weapon_drops = not weapon_drops
+		wd.text = "WEAPON DROPS: " + ("ON" if weapon_drops else "OFF")
+		SoundManager.play_sfx("ui_confirm"))
+	rows.add_child(wd)
 
 
 ## GRAPHICS: Potato / Fast / Regular / Real (GraphicsSettings, saved to user://graphics.cfg).

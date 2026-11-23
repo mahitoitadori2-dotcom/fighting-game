@@ -306,6 +306,14 @@ static func _build() -> void:
 		{"script": FireLordArt, "frame": "silver", "emblem": "star", "bg": Color(0.16, 0.12, 0.12)})
 	_add("col_%d" % StoryLevels.TOWN_PART, "The Abandoned Town Conquered", "Ride the Strong Wind out of THE ABANDONED TOWN.", "story",
 		{"big": "crown", "frame": "gold", "bg": town_bg})
+	_add("rush_daily", "Daily Grind", "Finish a BOSS RUSH daily run.", "challenge",
+		{"big": "trophy", "frame": "silver", "bg": Color(0.14, 0.22, 0.32)})
+	_add("daily_all", "Busy Day", "Finish all three daily challenges in one day.", "challenge",
+		{"big": "star", "frame": "gold", "bg": Color(0.14, 0.22, 0.32)})
+	_add("palette_first", "New Coat", "Buy a palette in the DAILY shop.", "challenge",
+		{"big": "badge", "frame": "bronze", "bg": Color(0.22, 0.16, 0.28)})
+	_add("photo_first", "Say Cheese", "Save a picture in PHOTO MODE (F9 / pause > PHOTO).", "challenge",
+		{"big": "star", "frame": "silver", "bg": Color(0.2, 0.24, 0.32)})
 	# ---------------- THE HUNT OF A NIGHTMARE (levels 82-110) ----------------
 	var hunt_bg := Color(0.34, 0.04, 0.05)
 	_add("hunt_aristocrat", "Not So Noble", "THE HUNT OF A NIGHTMARE: defeat an Aristocratic Nightmare.", "story",

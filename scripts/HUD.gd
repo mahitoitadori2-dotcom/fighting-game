@@ -306,7 +306,8 @@ func _update_side(side: HudSide) -> void:
 		return
 
 	# HP
-	var who := "P1" if side == p1 else ("CPU" if f is ControlledFighter else "")
+	var online := NetLink.role != "" and NetLink.mode == "versus"
+	var who := "P1" if side == p1 else (("P2" if online else "CPU") if f is ControlledFighter else "")   # ONLINE: P2 is a person
 	var hp := float(f.hp)
 	var max_hp := maxf(float(f.data.max_hp), 1.0)
 	side.hp_label.text = ("%s  %s   %d / %d" % [who, f.data.character_name.to_upper(), int(hp), int(max_hp)]).strip_edges()

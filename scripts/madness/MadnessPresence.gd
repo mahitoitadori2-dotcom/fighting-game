@@ -135,6 +135,8 @@ func _say(text: String) -> void:
 
 ## A button in the current menu shows ITS words for a moment (and sometimes it takes the focus).
 func _take_a_button() -> void:
+	if OS.has_feature("web") and WebSoak.wanted():
+		return                                                # (Not in the automatic phone tests: they find buttons by name)
 	var cs := get_tree().current_scene
 	if cs == null or PauseMenu.in_fight(get_tree()):
 		return

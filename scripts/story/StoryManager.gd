@@ -197,11 +197,25 @@ func _ready() -> void:
 	ArenaCamera.focus = null
 	_register_input()
 	_setup_arena()
+	if NetLink.is_guest():                         # ONLINE GUEST: the map only - the host plays the level
+		add_to_group("net_world")
+		var ng := NetGuest.new()
+		ng.name = "NetGuest"
+		add_child(ng)
+		if MatchSettings.touch_enabled():
+			var tcg := TouchControls.new()
+			tcg.name = "TouchControls"
+			add_child(tcg)
+		SoundManager.play_music(String(level.get("music", StoryLevels.map_of(level_number).get("music", "fight"))))
+		return
 	_spawn_player()
 	max_attackers = MAX_ATTACKERS
-	if StoryLevels.has_partner(level_number) and not BossRush.active:
+	var online := NetLink.is_host() and NetLink.mode == "story" and not BossRush.active
+	if (StoryLevels.has_partner(level_number) or online) and not BossRush.active:
 		_spawn_partner()
 		max_attackers = MAX_ATTACKERS + 1
+		if online:
+			partner.ctl = NetLink.net_input                 # ONLINE: the guest plays the other hero
 	if bool(level.get("trainer_ally", false)) and not BossRush.active:          # Level 80: the Trainer fights with you
 		_spawn_trainer_ally()
 		max_attackers += 1
@@ -232,10 +246,17 @@ func _ready() -> void:
 		_rush_rec = ReplayRecorder.new()                # This fight, for the ghost of a new best run
 		add_child(_rush_rec)
 		_rush_rec.track(player, hero)
-		GhostRunner.spawn_for(self, hero, BossRush.index, BossRush.order)
+		GhostRunner.spawn_for(self, hero, BossRush.index, BossRush.order, BossRush.ghost_key())
 	SoundManager.play_music(String(level.get("music", StoryLevels.map_of(level_number).get("music", "fight"))))   # Fits the area
 	if autoplay:
 		print("STORY autoplay: level %d start" % level_number)
+	if online:                                         # ONLINE: stream this level to the guest
+		add_to_group("net_world")
+		var nh := NetHost.new()
+		nh.name = "NetHost"
+		nh.start_msg = {"k": "start", "kind": "story", "scene": get_tree().current_scene.scene_file_path if get_tree().current_scene else ARENA_SCENE,
+			"level": level_number, "end_text": "THE HOST IS ON THE STORY BOARD"}
+		add_child(nh)
 	_run.call_deferred()
 
 
@@ -271,6 +292,9 @@ func _setup_arena() -> void:
 
 
 func _apply_map(map: Dictionary) -> void:
+	NetHost.event({"k": "map", "m": map})            # ONLINE: the guest switches its map too (and builds it itself)
+	NetHost.mute = true
+	(func() -> void: NetHost.mute = false).call_deferred()
 	var bg := get_parent().get_node_or_null("Background") as HellBackground
 	if bg != null:
 		bg.theme = map.get("bg", "surface")
@@ -364,6 +388,7 @@ func _spawn_player() -> void:
 		if BossRush.hp_carry > 0:
 			player.hp = mini(BossRush.hp_carry, player.data.max_hp)
 			player.health_changed.emit(player.hp, player.data.max_hp)
+		BossRush.daily_player(player)                    # DAILY RUN modifier (GLASS CANNON / HALF HEALTH)
 	player.died.connect(_on_player_died)
 
 
@@ -693,6 +718,7 @@ func buff_boss(e: BaseEnemy) -> void:
 	e.boss_cd_mult = BOSS_CD_MULT
 	e.boss_speed_mult = BOSS_SPEED_MULT
 	e.data.max_hp = roundi(float(e.data.max_hp) * BOSS_HP_MULT)
+	BossRush.daily_boss(e)                               # DAILY RUN modifier (GLASS CANNON / FAST BOSSES)
 	e.hp = e.data.max_hp
 	e.poise_max = maxf(float(e.data.max_hp) * STANCE_SHARE, 40.0)   # STANCE: ~1/5 of its HP in quick hits breaks it
 	e.health_changed.emit(e.hp, e.data.max_hp)
@@ -1276,6 +1302,10 @@ func _level_clear() -> void:
 		get_tree().change_scene_to_file(STORY_MENU)
 		return
 	StoryProgress.complete_level(level_number)     # SAVED here
+	if not autoplay:
+		Daily.progress("story_clear")                   # DAILY challenges
+		if flasks >= max_flasks:
+			Daily.progress("no_flask")
 	if autoplay:
 		print("STORY autoplay: level %d CLEAR (player hp %d, flasks %d)" % [level_number, player.hp, flasks])
 	_show_banner("LEVEL CLEAR!", _stats_text() + "\nProgress saved" + badge_text, Color(0.6, 1.0, 0.6))
@@ -1475,6 +1505,7 @@ func ground_y() -> float:
 
 
 func _show_banner(text: String, sub: String, col: Color) -> void:
+	NetHost.event({"k": "banner", "text": text})
 	_banner.text = text
 	_banner.add_theme_color_override("font_color", col)
 	_sub.text = sub

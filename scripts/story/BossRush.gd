@@ -15,6 +15,15 @@ const MENU_SCENE := "res://scenes/BossRushMenu.tscn"
 const TOP_N := 10
 
 static var active := false
+## DAILY RUN (2026-11-23, picked by the user): one run a day, the SAME for everyone - today's date picks
+## 5 of your beaten bosses + ONE modifier. Today's best time is kept, and today's best run comes back as
+## a ghost. (Normal runs and their TOP 10 are unchanged.)
+const DAILY_BOSSES := 5
+const DAILY_MODS := ["NO FLASKS", "GLASS CANNON", "FAST BOSSES", "HALF HEALTH"]
+const DAILY_MOD_TEXT := {"NO FLASKS": "no flasks at all", "GLASS CANNON": "everyone takes 1.5x damage",
+	"FAST BOSSES": "bosses move + attack faster", "HALF HEALTH": "you start at half health"}
+static var daily := false
+static var daily_mod := ""
 static var hero := "warrior"
 static var order: Array[int] = []
 static var index := 0
@@ -66,6 +75,75 @@ static func start(p_hero: String) -> bool:
 	return true
 
 
+static func today() -> String:
+	return Time.get_date_string_from_system()
+
+
+## Today's run: [boss levels in order, modifier]. Seeded by the date.
+static func daily_plan() -> Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("ub_daily_" + today())
+	var pool := boss_levels()
+	for i in range(pool.size() - 1, 0, -1):                 # Seeded shuffle
+		var j := rng.randi() % (i + 1)
+		var tmp := pool[i]
+		pool[i] = pool[j]
+		pool[j] = tmp
+	var picked: Array[int] = []
+	for i in mini(DAILY_BOSSES, pool.size()):
+		picked.append(pool[i])
+	return [picked, String(DAILY_MODS[rng.randi() % DAILY_MODS.size()])]
+
+
+static func start_daily(p_hero: String) -> bool:
+	var plan := daily_plan()
+	var picked: Array[int] = plan[0]
+	if picked.size() < 3 or not start(p_hero):
+		return false
+	daily = true
+	daily_mod = String(plan[1])
+	order = picked
+	flasks = 0 if daily_mod == "NO FLASKS" else RUSH_FLASKS
+	StoryProgress.current_level = order[0]
+	return true
+
+
+## The ghost's file key: the hero (normal runs) or today's daily run.
+static func ghost_key() -> String:
+	return "daily_%s_%s" % [today(), hero] if daily else hero
+
+
+## Today's best daily time for a hero (0 = none yet).
+static func daily_best(p_hero: String) -> float:
+	var c := ConfigFile.new()
+	c.load(SAVE_PATH)
+	return float(c.get_value("daily", today() + "_" + p_hero, 0.0))
+
+
+## DAILY modifiers on the player (StoryManager, after the player spawns) and on each boss (buff_boss).
+static func daily_player(p: Fighter) -> void:
+	if not (active and daily) or p == null:
+		return
+	match daily_mod:
+		"GLASS CANNON":
+			p.damage_taken_mult *= 1.5
+		"HALF HEALTH":
+			if index == 0:
+				p.hp = maxi(1, roundi(float(p.data.max_hp) * 0.5))
+				p.health_changed.emit(p.hp, p.data.max_hp)
+
+
+static func daily_boss(b: BaseEnemy) -> void:
+	if not (active and daily) or b == null:
+		return
+	match daily_mod:
+		"GLASS CANNON":
+			b.damage_taken_mult *= 1.5
+		"FAST BOSSES":
+			b.boss_speed_mult *= 1.25
+			b.boss_cd_mult *= 0.8
+
+
 static func current_level() -> int:
 	return order[clampi(index, 0, order.size() - 1)]
 
@@ -76,6 +154,7 @@ static func progress_text() -> String:
 
 ## A boss is down. Returns the next level number, or 0 when the run is complete.
 static func boss_beaten(fight_time: float, hp_left: int, max_hp: int, flasks_left: int, dmg: int) -> int:
+	Daily.progress("rush_boss")                                 # DAILY challenges
 	total_time += fight_time
 	damage_taken += dmg
 	flasks = flasks_left
@@ -105,6 +184,30 @@ static func _finish(completed: bool) -> void:
 	_restore_story()
 	last_result = {"completed": completed, "beaten": index if not completed else order.size(), "total": order.size(),
 		"time": total_time, "hero": hero, "flasks_used": flasks_used, "damage": damage_taken, "rank": -1}
+	if daily:
+		last_result["daily"] = true
+		last_result["mod"] = daily_mod
+		daily = false
+		if completed:
+			Achievements.unlock("rush_daily")
+			var best := daily_best(hero)
+			if best <= 0.0 or total_time < best:
+				var c := ConfigFile.new()
+				c.load(SAVE_PATH)
+				var keep := {}
+				for k in c.get_section_keys("daily") if c.has_section("daily") else []:
+					if String(k).begins_with(today()):
+						keep[k] = c.get_value("daily", k)
+				if c.has_section("daily"):
+					c.erase_section("daily")                   # (Only today's records are kept)
+				for k in keep:
+					c.set_value("daily", k, keep[k])
+				c.set_value("daily", today() + "_" + hero, total_time)
+				c.save(SAVE_PATH)
+				last_result["daily_best"] = true
+				if run_tracks.size() == order.size():
+					GhostRunner.save_best(hero, order, run_tracks, ghost_key_for(hero, true))
+		return
 	if completed:
 		last_result["rank"] = _record(total_time, order.size())
 		if int(last_result["rank"]) == 0 and run_tracks.size() == order.size():
@@ -142,6 +245,11 @@ static func top(p_hero: String) -> Array:
 	return c.get_value("top", p_hero, [])
 
 
+static func ghost_key_for(p_hero: String, is_daily: bool) -> String:
+	return "daily_%s_%s" % [today(), p_hero] if is_daily else p_hero
+
+
 static func cancel() -> void:
+	daily = false
 	active = false
 	_restore_story()

@@ -13,8 +13,8 @@ var _acc := 0.0
 
 
 ## Spawns the ghost for the current Boss Rush fight, if your best run has one for it.
-static func spawn_for(manager: Node, hero: String, boss_index: int, order: Array[int]) -> GhostRunner:
-	var path := GHOST_FILE % hero
+static func spawn_for(manager: Node, hero: String, boss_index: int, order: Array[int], key: String = "") -> GhostRunner:
+	var path := GHOST_FILE % (key if key != "" else hero)                # key: the daily run has its own ghost
 	if not FileAccess.file_exists(path):
 		return null
 	var d := Replay.load_file(path)
@@ -68,8 +68,12 @@ func _physics_process(delta: float) -> void:
 
 
 ## Saves the ghost of a finished run (one track per boss).
-static func save_best(hero: String, order: Array[int], tracks: Array) -> void:
-	var f := FileAccess.open_compressed(GHOST_FILE % hero, FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
+static func save_best(hero: String, order: Array[int], tracks: Array, key: String = "") -> void:
+	if key.begins_with("daily_"):                                 # Yesterday's daily ghosts go
+		for old in DirAccess.get_files_at("user://"):
+			if old.begins_with("bossrush_ghost_daily_") and not old.contains(key):
+				DirAccess.remove_absolute("user://" + old)
+	var f := FileAccess.open_compressed(GHOST_FILE % (key if key != "" else hero), FileAccess.WRITE, FileAccess.COMPRESSION_ZSTD)
 	if f == null:
 		return
 	f.store_var({"version": Replay.VERSION, "levels": Array(order), "tracks": tracks, "hz": BossRush.run_hz})
