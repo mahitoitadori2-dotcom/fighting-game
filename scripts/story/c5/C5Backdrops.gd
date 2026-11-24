@@ -21,12 +21,12 @@ static func handles(theme: String) -> bool:
 	return THEMES.has(theme)
 
 
-static func _grad(p: Control, sz: Vector2, top: Color, mid: Color, bottom: Color, mid_at: float = 0.6) -> void:
+static func _grad(p, sz: Vector2, top: Color, mid: Color, bottom: Color, mid_at: float = 0.6) -> void:
 	p.draw_polygon(PackedVector2Array([Vector2(0, 0), Vector2(sz.x, 0), Vector2(sz.x, sz.y * mid_at), Vector2(0, sz.y * mid_at)]), PackedColorArray([top, top, mid, mid]))
 	p.draw_polygon(PackedVector2Array([Vector2(0, sz.y * mid_at), Vector2(sz.x, sz.y * mid_at), Vector2(sz.x, sz.y), Vector2(0, sz.y)]), PackedColorArray([mid, mid, bottom, bottom]))
 
 
-static func _ridge(p: Control, sz: Vector2, base_y: float, amp: float, step: float, col: Color, seed_v: int) -> void:
+static func _ridge(p, sz: Vector2, base_y: float, amp: float, step: float, col: Color, seed_v: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_v
 	var pts := PackedVector2Array([Vector2(0, sz.y)])
@@ -38,7 +38,7 @@ static func _ridge(p: Control, sz: Vector2, base_y: float, amp: float, step: flo
 	p.draw_colored_polygon(pts, col)
 
 
-static func paint(p: Control, theme: String, sz: Vector2) -> void:
+static func paint(p, theme: String, sz: Vector2) -> void:
 	match theme:
 		"thornwood":
 			_thornwood(p, sz)
@@ -67,7 +67,7 @@ static func paint(p: Control, theme: String, sz: Vector2) -> void:
 
 
 # ----- ROAD -----
-static func _thornwood(p: Control, sz: Vector2) -> void:
+static func _thornwood(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.12, 0.02, 0.03), Color(0.45, 0.08, 0.05), Color(0.20, 0.05, 0.04), 0.6)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 501
@@ -85,7 +85,7 @@ static func _thornwood(p: Control, sz: Vector2) -> void:
 	_ridge(p, sz, sz.y * 0.92, 30.0, 50.0, Color(0.05, 0.01, 0.02), 502)
 
 
-static func _ruins(p: Control, sz: Vector2) -> void:
+static func _ruins(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.05, 0.06, 0.12), Color(0.18, 0.20, 0.30), Color(0.25, 0.25, 0.32), 0.6)
 	p.draw_circle(Vector2(sz.x * 0.7, sz.y * 0.25), 110.0, Color(0.92, 0.92, 0.85, 0.85))     # Huge pale moon
 	p.draw_circle(Vector2(sz.x * 0.7, sz.y * 0.25), 170.0, Color(0.9, 0.9, 1.0, 0.08))
@@ -106,7 +106,7 @@ static func _ruins(p: Control, sz: Vector2) -> void:
 	_ridge(p, sz, sz.y * 0.9, 30.0, 60.0, Color(0.10, 0.10, 0.14), 512)
 
 
-static func _foothills(p: Control, sz: Vector2) -> void:
+static func _foothills(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.25, 0.32, 0.50), Color(0.62, 0.68, 0.80), Color(0.85, 0.88, 0.92), 0.6)
 	var peak := Vector2(sz.x * 0.62, sz.y * 0.06)
 	p.draw_circle(peak, 80.0, Color(1, 0.95, 0.75, 0.3))
@@ -118,7 +118,7 @@ static func _foothills(p: Control, sz: Vector2) -> void:
 
 
 # ----- BOSS ARENAS -----
-static func _silk_loom(p: Control, sz: Vector2) -> void:
+static func _silk_loom(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.06, 0.04, 0.10), Color(0.16, 0.10, 0.22), Color(0.10, 0.07, 0.12), 0.6)
 	# Moonlight through a round window
 	var w := Vector2(sz.x * 0.5, sz.y * 0.22)
@@ -146,7 +146,7 @@ static func _silk_loom(p: Control, sz: Vector2) -> void:
 	p.draw_rect(Rect2(0, 0, sz.x, 24), Color(0.2, 0.12, 0.08))
 
 
-static func _mirror_hall(p: Control, sz: Vector2) -> void:
+static func _mirror_hall(p, sz: Vector2) -> void:
 	var cx := sz.x * 0.5
 	p.draw_rect(Rect2(0, 0, cx, sz.y), Color(0.08, 0.08, 0.10))
 	p.draw_rect(Rect2(cx, 0, cx, sz.y), Color(0.86, 0.86, 0.90))
@@ -163,7 +163,7 @@ static func _mirror_hall(p: Control, sz: Vector2) -> void:
 	p.draw_arc(Vector2(cx + 220, sz.y * 0.3), 40.0, -PI * 0.5, PI * 0.5, 16, Color(0.4, 0.5, 0.8, 0.9), 12.0)   # ... and a moon
 
 
-static func _beast_den(p: Control, sz: Vector2) -> void:
+static func _beast_den(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.06, 0.03, 0.02), Color(0.25, 0.12, 0.05), Color(0.12, 0.06, 0.03), 0.65)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 541
@@ -185,7 +185,7 @@ static func _beast_den(p: Control, sz: Vector2) -> void:
 	_ridge(p, sz, sz.y * 0.92, 40.0, 60.0, Color(0.08, 0.04, 0.02), 542)
 
 
-static func _gallows(p: Control, sz: Vector2) -> void:
+static func _gallows(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.08, 0.02, 0.06), Color(0.25, 0.08, 0.18), Color(0.18, 0.10, 0.22), 0.6)
 	p.draw_circle(Vector2(sz.x * 0.25, sz.y * 0.22), 90.0, Color(0.75, 0.10, 0.10, 0.9))       # Blood moon
 	p.draw_circle(Vector2(sz.x * 0.25, sz.y * 0.22), 140.0, Color(0.8, 0.1, 0.1, 0.12))
@@ -206,7 +206,7 @@ static func _gallows(p: Control, sz: Vector2) -> void:
 	p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
-static func _world_tree(p: Control, sz: Vector2) -> void:
+static func _world_tree(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.20, 0.35, 0.55), Color(0.55, 0.70, 0.55), Color(0.25, 0.35, 0.18), 0.65)
 	var cx := sz.x * 0.5
 	# Four seasons of the tree's crown: fire (left-top), water (right-top), earth (left), wind (right)
@@ -228,7 +228,7 @@ static func _world_tree(p: Control, sz: Vector2) -> void:
 
 ## The False God's arena: a cathedral of black stone, burnt pews, a burning altar, broken
 ## stained glass glowing red, ash falling.
-static func _ash_cathedral(p: Control, sz: Vector2) -> void:
+static func _ash_cathedral(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.05, 0.02, 0.02), Color(0.16, 0.05, 0.04), Color(0.28, 0.08, 0.04), 0.62)
 	var cx := sz.x * 0.5
 	# Gothic window of broken red glass behind the altar
@@ -258,7 +258,7 @@ static func _ash_cathedral(p: Control, sz: Vector2) -> void:
 		p.draw_rect(Rect2(px - 40, sz.y * 0.78, 10, 34), Color(0.06, 0.03, 0.02))
 
 
-static func _satan_cave(p: Control, sz: Vector2) -> void:
+static func _satan_cave(p, sz: Vector2) -> void:
 	_grad(p, sz, Color(0.04, 0.01, 0.01), Color(0.20, 0.04, 0.02), Color(0.55, 0.15, 0.03), 0.62)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 571
@@ -282,7 +282,7 @@ static func _satan_cave(p: Control, sz: Vector2) -> void:
 	p.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 8), Color(1.0, 0.45, 0.1, 0.6))
 
 
-static func _sun_peak(p: Control, sz: Vector2, burning: bool) -> void:
+static func _sun_peak(p, sz: Vector2, burning: bool) -> void:
 	if burning:
 		_grad(p, sz, Color(0.35, 0.05, 0.02), Color(1.0, 0.45, 0.10), Color(1.0, 0.75, 0.35), 0.55)
 	else:

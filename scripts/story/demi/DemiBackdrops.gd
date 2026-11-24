@@ -18,7 +18,7 @@ static func handles(theme: String) -> bool:
 	return THEMES.has(theme)
 
 
-static func paint(p: Control, theme: String, sz: Vector2) -> void:
+static func paint(p, theme: String, sz: Vector2) -> void:
 	_sky(p, sz, theme)
 	match theme:
 		"demi_plains":
@@ -111,7 +111,7 @@ static func embers(n: Node2D, theme: String, sz: Vector2, t: float, data: Array)
 
 
 # ----- helpers -----
-static func _sky(p: Control, sz: Vector2, theme: String) -> void:
+static func _sky(p, sz: Vector2, theme: String) -> void:
 	var top := SKY_TOP
 	var low := SKY_LOW
 	if theme == "demi_ravine":
@@ -130,7 +130,7 @@ static func _sky(p: Control, sz: Vector2, theme: String) -> void:
 		p.draw_rect(Rect2(0, cy, sz.x, 18.0 + float(i) * 4.0), Color(0.05, 0.05, 0.06, 0.22))
 
 
-static func _mountains(p: Control, sz: Vector2, base: float, amp: float, col: Color, seed_v: int) -> void:
+static func _mountains(p, sz: Vector2, base: float, amp: float, col: Color, seed_v: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_v
 	var pts := PackedVector2Array([Vector2(0, sz.y)])
@@ -142,7 +142,7 @@ static func _mountains(p: Control, sz: Vector2, base: float, amp: float, col: Co
 
 
 ## A row of small dead trees on a line (silhouettes).
-static func _forest(p: Control, sz: Vector2, base: float, h: float, col: Color, seed_v: int, count: int) -> void:
+static func _forest(p, sz: Vector2, base: float, h: float, col: Color, seed_v: int, count: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_v
 	for i in count:
@@ -155,5 +155,5 @@ static func _forest(p: Control, sz: Vector2, base: float, h: float, col: Color, 
 			p.draw_line(Vector2(x, by), Vector2(x + d * th * 0.3, by - th * 0.2), col, maxf(th * 0.025, 1.5))
 
 
-static func _ground(p: Control, sz: Vector2, y: float, col: Color) -> void:
+static func _ground(p, sz: Vector2, y: float, col: Color) -> void:
 	p.draw_rect(Rect2(0, y, sz.x, sz.y - y), col)

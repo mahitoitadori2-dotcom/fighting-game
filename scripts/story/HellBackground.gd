@@ -35,6 +35,7 @@ extends CanvasLayer
 
 var _painter: Control
 var _mesh: ArrayMesh                       # Baked static landscape (MeshCanvas), see _paint
+var _p                                     # What the landscape code draws on (a MeshCanvas while baking)
 var _mesh_key := ""
 var _embers: Node2D
 var _ember_data: Array[Vector3] = []       # x (0..1), speed, size
@@ -68,40 +69,49 @@ func _process(delta: float) -> void:
 # ============================================================
 # STATIC LANDSCAPE
 # ============================================================
+## /nolags 2026-11-23: EVERY theme's landscape is RECORDED ONCE (per theme + screen size) into ONE mesh
+## (MeshCanvas) and drawn with a single draw call - the shapes used to be replayed every frame (hundreds of
+## draw calls on phones). Only the embers (below) still animate. The painting code draws on _p.
 func _paint() -> void:
 	var sz := _painter.size
 	if sz.x <= 1.0:
 		return
+	var key := "%s %d %d" % [theme, int(sz.x), int(sz.y)]
+	if _mesh_key != key:
+		var mc := MeshCanvas.new()
+		mc.view_size = sz
+		_p = mc
+		_paint_into(sz)
+		_p = _painter
+		_mesh = mc.build()
+		_mesh_key = key
+	if _mesh != null:
+		_painter.draw_mesh(_mesh, null)
+
+func _paint_into(sz: Vector2) -> void:
 	if C5Backdrops.handles(theme):                         # Colosseum 5 (C5Backdrops.gd)
-		C5Backdrops.paint(_painter, theme, sz)
+		C5Backdrops.paint(_p, theme, sz)
 		return
 	if ExtBackdrops.handles(theme):                        # Boss extensions (ExtBackdrops.gd)
-		ExtBackdrops.paint(_painter, theme, sz)
+		ExtBackdrops.paint(_p, theme, sz)
 		return
 	if C6Backdrops.handles(theme):                         # The Enlightened Chase (C6Backdrops.gd)
-		C6Backdrops.paint(_painter, theme, sz)
+		C6Backdrops.paint(_p, theme, sz)
 		return
 	if DemiBackdrops.handles(theme):                       # DemiLand (DemiBackdrops.gd)
-		DemiBackdrops.paint(_painter, theme, sz)
+		DemiBackdrops.paint(_p, theme, sz)
 		return
 	if CraterBackdrops.handles(theme):                     # Terra Craterum (CraterBackdrops.gd)
-		CraterBackdrops.paint(_painter, theme, sz)
+		CraterBackdrops.paint(_p, theme, sz)
 		return
 	if OrdBackdrops.handles(theme):                        # Terra Ordinariorum (OrdBackdrops.gd)
-		OrdBackdrops.paint(_painter, theme, sz)
+		OrdBackdrops.paint(_p, theme, sz)
 		return
 	if HuntBackdrops.handles(theme):                       # The Hunt of a Nightmare (HuntBackdrops.gd)
-		var key := "%s %d %d" % [theme, int(sz.x), int(sz.y)]
-		if _mesh_key != key:                                 # ONE mesh = one draw call (was ~900 per frame)
-			var mc := MeshCanvas.new()
-			mc.view_size = sz
-			HuntBackdrops.paint(mc, theme, sz)
-			_mesh = mc.build()
-			_mesh_key = key
-		_painter.draw_mesh(_mesh, null)
+		HuntBackdrops.paint(_p, theme, sz)
 		return
 	if MadnessBackdrops.handles(theme):                    # MADNESS (secret): red chains from hell
-		MadnessBackdrops.paint(_painter, theme, sz)
+		MadnessBackdrops.paint(_p, theme, sz)
 		return
 	match theme:
 		"cave":
@@ -142,9 +152,9 @@ func _paint() -> void:
 
 func _vgradient(sz: Vector2, top: Color, mid: Color, bottom: Color, mid_at: float) -> void:
 	var pts := PackedVector2Array([Vector2(0, 0), Vector2(sz.x, 0), Vector2(sz.x, sz.y * mid_at), Vector2(0, sz.y * mid_at)])
-	_painter.draw_polygon(pts, PackedColorArray([top, top, mid, mid]))
+	_p.draw_polygon(pts, PackedColorArray([top, top, mid, mid]))
 	pts = PackedVector2Array([Vector2(0, sz.y * mid_at), Vector2(sz.x, sz.y * mid_at), Vector2(sz.x, sz.y), Vector2(0, sz.y)])
-	_painter.draw_polygon(pts, PackedColorArray([mid, mid, bottom, bottom]))
+	_p.draw_polygon(pts, PackedColorArray([mid, mid, bottom, bottom]))
 
 
 func _ridge(sz: Vector2, base_y: float, amp: float, step: float, col: Color, seed_v: int) -> void:
@@ -158,7 +168,7 @@ func _ridge(sz: Vector2, base_y: float, amp: float, step: float, col: Color, see
 		pts.append(Vector2(x, base_y - rng.randf_range(0.0, 0.35) * amp))
 		x += rng.randf_range(step * 0.3, step * 0.7)
 	pts.append(Vector2(sz.x + 40.0, sz.y))
-	_painter.draw_colored_polygon(pts, col)
+	_p.draw_colored_polygon(pts, col)
 
 
 func _paint_surface(sz: Vector2) -> void:
@@ -169,36 +179,36 @@ func _paint_surface(sz: Vector2) -> void:
 	for i in 9:
 		var cy := rng.randf_range(0.05, 0.4) * sz.y
 		var cx := rng.randf() * sz.x
-		_painter.draw_set_transform(Vector2(cx, cy), 0.0, Vector2(1.0, 0.18))
-		_painter.draw_circle(Vector2.ZERO, rng.randf_range(160.0, 320.0), Color(0.05, 0.02, 0.02, 0.35))
-	_painter.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		_p.draw_set_transform(Vector2(cx, cy), 0.0, Vector2(1.0, 0.18))
+		_p.draw_circle(Vector2.ZERO, rng.randf_range(160.0, 320.0), Color(0.05, 0.02, 0.02, 0.35))
+	_p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# Volcano (right) with glowing crater + lava streams
 	var vx := sz.x * 0.72
 	var vb := sz.y * 0.78
 	var volcano := PackedVector2Array([Vector2(vx - 330, vb), Vector2(vx - 60, sz.y * 0.36), Vector2(vx + 50, sz.y * 0.36), Vector2(vx + 340, vb)])
-	_painter.draw_colored_polygon(volcano, Color(0.12, 0.05, 0.05))
-	_painter.draw_circle(Vector2(vx - 5, sz.y * 0.35), 80.0, Color(1.0, 0.45, 0.1, 0.25))
-	_painter.draw_line(Vector2(vx - 55, sz.y * 0.36), Vector2(vx + 45, sz.y * 0.36), Color(1.0, 0.65, 0.2), 6.0)
+	_p.draw_colored_polygon(volcano, Color(0.12, 0.05, 0.05))
+	_p.draw_circle(Vector2(vx - 5, sz.y * 0.35), 80.0, Color(1.0, 0.45, 0.1, 0.25))
+	_p.draw_line(Vector2(vx - 55, sz.y * 0.36), Vector2(vx + 45, sz.y * 0.36), Color(1.0, 0.65, 0.2), 6.0)
 	for k in 3:
 		var sx := vx - 40.0 + float(k) * 35.0
-		_painter.draw_polyline(PackedVector2Array([Vector2(sx, sz.y * 0.37), Vector2(sx - 20.0 + float(k) * 10.0, sz.y * 0.5), Vector2(sx - 50.0 + float(k) * 30.0, sz.y * 0.65), Vector2(sx - 80.0 + float(k) * 50.0, vb)]), Color(1.0, 0.4, 0.08, 0.85), 4.0, FighterArt.AA)
+		_p.draw_polyline(PackedVector2Array([Vector2(sx, sz.y * 0.37), Vector2(sx - 20.0 + float(k) * 10.0, sz.y * 0.5), Vector2(sx - 50.0 + float(k) * 30.0, sz.y * 0.65), Vector2(sx - 80.0 + float(k) * 50.0, vb)]), Color(1.0, 0.4, 0.08, 0.85), 4.0, FighterArt.AA)
 	# Smoke column
 	for k in 6:
-		_painter.draw_circle(Vector2(vx + float(k) * 18.0 - 10.0, sz.y * 0.3 - float(k) * 45.0), 40.0 + float(k) * 14.0, Color(0.08, 0.03, 0.03, 0.5))
+		_p.draw_circle(Vector2(vx + float(k) * 18.0 - 10.0, sz.y * 0.3 - float(k) * 45.0), 40.0 + float(k) * 14.0, Color(0.08, 0.03, 0.03, 0.5))
 	# Dark spire on a crag (left)
 	var tx := sz.x * 0.16
 	var crag := PackedVector2Array([Vector2(tx - 110, vb), Vector2(tx - 40, sz.y * 0.52), Vector2(tx + 40, sz.y * 0.5), Vector2(tx + 120, vb)])
-	_painter.draw_colored_polygon(crag, Color(0.06, 0.02, 0.03))
+	_p.draw_colored_polygon(crag, Color(0.06, 0.02, 0.03))
 	var spire := PackedVector2Array([Vector2(tx - 26, sz.y * 0.52), Vector2(tx - 14, sz.y * 0.16), Vector2(tx - 30, sz.y * 0.12), Vector2(tx - 4, sz.y * 0.04), Vector2(tx + 22, sz.y * 0.12), Vector2(tx + 8, sz.y * 0.16), Vector2(tx + 24, sz.y * 0.52)])
-	_painter.draw_colored_polygon(spire, Color(0.04, 0.01, 0.02))
+	_p.draw_colored_polygon(spire, Color(0.04, 0.01, 0.02))
 	for k in 4:                                                   # Lit windows
-		_painter.draw_rect(Rect2(tx - 4, sz.y * (0.2 + float(k) * 0.07), 6, 9), Color(1.0, 0.5, 0.1, 0.8))
+		_p.draw_rect(Rect2(tx - 4, sz.y * (0.2 + float(k) * 0.07), 6, 9), Color(1.0, 0.5, 0.1, 0.8))
 	# Mountain ranges (back -> front)
 	_ridge(sz, sz.y * 0.74, 150.0, 120.0, Color(0.16, 0.05, 0.05), 11)
 	_ridge(sz, sz.y * 0.84, 110.0, 90.0, Color(0.08, 0.03, 0.03), 12)
 	# Lava river glow on the horizon
-	_painter.draw_rect(Rect2(0, sz.y * 0.86, sz.x, 8), Color(1.0, 0.45, 0.1, 0.7))
-	_painter.draw_rect(Rect2(0, sz.y * 0.86 + 8, sz.x, sz.y * 0.14), Color(0.05, 0.02, 0.02))
+	_p.draw_rect(Rect2(0, sz.y * 0.86, sz.x, 8), Color(1.0, 0.45, 0.1, 0.7))
+	_p.draw_rect(Rect2(0, sz.y * 0.86 + 8, sz.x, sz.y * 0.14), Color(0.05, 0.02, 0.02))
 
 
 func _paint_cave(sz: Vector2) -> void:
@@ -209,33 +219,33 @@ func _paint_cave(sz: Vector2) -> void:
 	for i in 3:
 		var fx := sz.x * (0.18 + 0.32 * float(i)) + rng.randf_range(-40.0, 40.0)
 		var w := rng.randf_range(16.0, 28.0)
-		_painter.draw_rect(Rect2(fx - w * 2.0, 0, w * 4.0, sz.y), Color(1.0, 0.35, 0.05, 0.08))
-		_painter.draw_rect(Rect2(fx - w * 0.5, 0, w, sz.y * 0.85), Color(1.0, 0.45, 0.1, 0.55))
-		_painter.draw_rect(Rect2(fx - w * 0.15, 0, w * 0.3, sz.y * 0.85), Color(1.0, 0.85, 0.4, 0.6))
+		_p.draw_rect(Rect2(fx - w * 2.0, 0, w * 4.0, sz.y), Color(1.0, 0.35, 0.05, 0.08))
+		_p.draw_rect(Rect2(fx - w * 0.5, 0, w, sz.y * 0.85), Color(1.0, 0.45, 0.1, 0.55))
+		_p.draw_rect(Rect2(fx - w * 0.15, 0, w * 0.3, sz.y * 0.85), Color(1.0, 0.85, 0.4, 0.6))
 	# Rock pillars
 	for i in 5:
 		var px := rng.randf() * sz.x
 		var pw := rng.randf_range(50.0, 110.0)
 		var pts := PackedVector2Array([Vector2(px - pw * 0.6, 0), Vector2(px + pw * 0.6, 0), Vector2(px + pw * 0.35, sz.y * 0.45), Vector2(px + pw * 0.7, sz.y), Vector2(px - pw * 0.7, sz.y), Vector2(px - pw * 0.35, sz.y * 0.45)])
-		_painter.draw_colored_polygon(pts, Color(0.07, 0.04, 0.04))
+		_p.draw_colored_polygon(pts, Color(0.07, 0.04, 0.04))
 	# Stalactites from the ceiling
 	var x := -20.0
 	while x < sz.x + 20.0:
 		var w := rng.randf_range(30.0, 80.0)
 		var l := rng.randf_range(60.0, 220.0)
-		_painter.draw_colored_polygon(PackedVector2Array([Vector2(x, -2), Vector2(x + w, -2), Vector2(x + w * 0.5 + rng.randf_range(-8.0, 8.0), l)]), Color(0.05, 0.03, 0.03))
+		_p.draw_colored_polygon(PackedVector2Array([Vector2(x, -2), Vector2(x + w, -2), Vector2(x + w * 0.5 + rng.randf_range(-8.0, 8.0), l)]), Color(0.05, 0.03, 0.03))
 		x += w * rng.randf_range(0.6, 1.0)
 	# Floor rubble silhouette + lava glow
 	_ridge(sz, sz.y * 0.88, 70.0, 70.0, Color(0.04, 0.02, 0.02), 31)
-	_painter.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 6), Color(1.0, 0.4, 0.08, 0.5))
+	_p.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 6), Color(1.0, 0.4, 0.08, 0.5))
 
 
 func _shard(p: Vector2, ang: float, seg_len: float, w: float, col: Color, hi: Color) -> void:
 	var d := Vector2.from_angle(ang)
 	var n := d.orthogonal() * w
 	var pts := PackedVector2Array([p + n, p + n + d * seg_len * 0.8, p + d * seg_len, p - n + d * seg_len * 0.8, p - n])
-	_painter.draw_colored_polygon(pts, col)
-	_painter.draw_colored_polygon(PackedVector2Array([p + n * 0.15, p + n * 0.15 + d * seg_len * 0.8, p + d * seg_len, p]), hi)
+	_p.draw_colored_polygon(pts, col)
+	_p.draw_colored_polygon(PackedVector2Array([p + n * 0.15, p + n * 0.15 + d * seg_len * 0.8, p + d * seg_len, p]), hi)
 
 
 func _paint_geode(sz: Vector2) -> void:
@@ -245,20 +255,20 @@ func _paint_geode(sz: Vector2) -> void:
 	# Giant geode openings with crystal rings
 	for g in [Vector3(0.22, 0.38, 150.0), Vector3(0.78, 0.30, 190.0), Vector3(0.52, 0.62, 110.0)]:
 		var c := Vector2(g.x * sz.x, g.y * sz.y)
-		_painter.draw_circle(c, g.z * 1.3, Color(0.6, 0.3, 0.9, 0.10))
-		_painter.draw_circle(c, g.z, Color(0.10, 0.05, 0.14))
+		_p.draw_circle(c, g.z * 1.3, Color(0.6, 0.3, 0.9, 0.10))
+		_p.draw_circle(c, g.z, Color(0.10, 0.05, 0.14))
 		for i in 18:
 			var a := TAU * float(i) / 18.0 + rng.randf_range(-0.1, 0.1)
 			_shard(c + Vector2.from_angle(a) * g.z, a + PI, g.z * rng.randf_range(0.35, 0.6), g.z * 0.08,
 				Color(0.55, 0.30, 0.85, 0.85), Color(0.85, 0.70, 1.0, 0.85))
-		_painter.draw_circle(c, g.z * 0.25, Color(1.0, 0.75, 0.35, 0.25))           # Amber heart
+		_p.draw_circle(c, g.z * 0.25, Color(1.0, 0.75, 0.35, 0.25))           # Amber heart
 	# Crystal spikes from ceiling and floor silhouettes
 	var x := -20.0
 	while x < sz.x + 20.0:
 		_shard(Vector2(x, -4), PI * 0.5 + rng.randf_range(-0.2, 0.2), rng.randf_range(50.0, 160.0), rng.randf_range(10.0, 22.0), Color(0.12, 0.07, 0.17), Color(0.25, 0.15, 0.35))
 		x += rng.randf_range(40.0, 90.0)
 	_ridge(sz, sz.y * 0.9, 60.0, 60.0, Color(0.06, 0.03, 0.09), 52)
-	_painter.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 5), Color(0.75, 0.45, 1.0, 0.45))
+	_p.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 5), Color(0.75, 0.45, 1.0, 0.45))
 
 
 func _paint_hive(sz: Vector2) -> void:
@@ -273,27 +283,27 @@ func _paint_hive(sz: Vector2) -> void:
 		for k in 9:
 			var t := float(k) / 8.0
 			pts.append(Vector2(cx + (t - 0.5) * 240.0, sin(t * PI) * sag))
-		_painter.draw_polyline(pts, Color(0.03, 0.03, 0.04), 4.0, FighterArt.AA)
+		_p.draw_polyline(pts, Color(0.03, 0.03, 0.04), 4.0, FighterArt.AA)
 	# Scrap heaps (silhouettes of plates, pipes, gears)
 	for i in 7:
 		var hx := rng.randf() * sz.x
 		var hw := rng.randf_range(120.0, 260.0)
 		var hy := sz.y * rng.randf_range(0.62, 0.8)
 		var low := sz.y - 2.0                                     # Small previews: keep every point above the bottom edge
-		_painter.draw_colored_polygon(PackedVector2Array([Vector2(hx - hw, sz.y), Vector2(hx - hw * 0.4, minf(hy + 20.0, low)), Vector2(hx, minf(hy, low)),
+		_p.draw_colored_polygon(PackedVector2Array([Vector2(hx - hw, sz.y), Vector2(hx - hw * 0.4, minf(hy + 20.0, low)), Vector2(hx, minf(hy, low)),
 			Vector2(hx + hw * 0.5, minf(hy + 30.0, low)), Vector2(hx + hw, sz.y)]), Color(0.08, 0.08, 0.09))
-		_painter.draw_arc(Vector2(hx + hw * 0.2, hy + 10.0), 22.0, 0.0, TAU, 12, Color(0.12, 0.12, 0.13), 6.0)   # Gear
-		_painter.draw_line(Vector2(hx - hw * 0.5, hy + 30.0), Vector2(hx + hw * 0.1, hy - 30.0), Color(0.12, 0.12, 0.13), 7.0)  # Pipe
+		_p.draw_arc(Vector2(hx + hw * 0.2, hy + 10.0), 22.0, 0.0, TAU, 12, Color(0.12, 0.12, 0.13), 6.0)   # Gear
+		_p.draw_line(Vector2(hx - hw * 0.5, hy + 30.0), Vector2(hx + hw * 0.1, hy - 30.0), Color(0.12, 0.12, 0.13), 7.0)  # Pipe
 	# Egg pods (glowing cyan cocoons) on the far wall
 	for i in 8:
 		var p := Vector2(rng.randf() * sz.x, sz.y * rng.randf_range(0.2, 0.55))
-		_painter.draw_set_transform(p, rng.randf_range(-0.3, 0.3), Vector2(0.7, 1.0))
-		_painter.draw_circle(Vector2.ZERO, 24.0, Color(0.2, 0.9, 0.9, 0.08))
-		_painter.draw_circle(Vector2.ZERO, 14.0, Color(0.10, 0.16, 0.17))
-		_painter.draw_circle(Vector2.ZERO, 6.0, Color(0.3, 0.95, 0.95, 0.35))
-	_painter.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		_p.draw_set_transform(p, rng.randf_range(-0.3, 0.3), Vector2(0.7, 1.0))
+		_p.draw_circle(Vector2.ZERO, 24.0, Color(0.2, 0.9, 0.9, 0.08))
+		_p.draw_circle(Vector2.ZERO, 14.0, Color(0.10, 0.16, 0.17))
+		_p.draw_circle(Vector2.ZERO, 6.0, Color(0.3, 0.95, 0.95, 0.35))
+	_p.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	_ridge(sz, sz.y * 0.9, 50.0, 50.0, Color(0.05, 0.05, 0.06), 62)
-	_painter.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 4), Color(0.3, 0.95, 0.95, 0.35))
+	_p.draw_rect(Rect2(0, sz.y * 0.9, sz.x, 4), Color(0.3, 0.95, 0.95, 0.35))
 
 
 ## Glass chamber rects of the lab (shared by the static painter and the bubbles).
@@ -307,7 +317,7 @@ func _lab_chambers(sz: Vector2) -> Array[Rect2]:
 
 func _paint_lab(sz: Vector2) -> void:
 	_vgradient(sz, Color(0.03, 0.05, 0.05), Color(0.07, 0.10, 0.09), Color(0.10, 0.14, 0.10), 0.6)
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	# Tiled back wall
 	var tile := 64.0
 	var y := 0.0
@@ -358,7 +368,7 @@ func _paint_lab(sz: Vector2) -> void:
 
 ## A rotted skeleton floating in a tank (sickly bone colour, missing pieces).
 func _skeleton(c: Vector2, tilt: float, s: float) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	var bone := Color(0.78, 0.74, 0.52)
 	var dark := Color(0.12, 0.10, 0.06)
 	p.draw_set_transform(c, tilt, Vector2(s, s))
@@ -391,7 +401,7 @@ func _skeleton(c: Vector2, tilt: float, s: float) -> void:
 # COLOSSEUM 2 LANDSCAPES
 # ============================================================
 func _paint_elevator(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.10, 0.10, 0.13), Color(0.05, 0.04, 0.06), Color(0.35, 0.07, 0.03), 0.55)
 	p.draw_circle(Vector2(sz.x * 0.5, -sz.y * 0.4), sz.y * 0.6, Color(0.8, 0.85, 1.0, 0.07))      # Light far above
 	# Far shaft wall: riveted panels
@@ -409,7 +419,7 @@ func _paint_elevator(sz: Vector2) -> void:
 
 
 func _paint_enlightened(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.98, 0.93, 0.78), Color(1.0, 0.97, 0.88), Color(0.92, 0.86, 0.72), 0.55)
 	# The great sun with rays
 	var sun := Vector2(sz.x * 0.5, sz.y * 0.28)
@@ -456,7 +466,7 @@ func _paint_enlightened(sz: Vector2) -> void:
 
 
 func _paint_sewer(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.02, 0.03, 0.02), Color(0.05, 0.08, 0.05), Color(0.08, 0.14, 0.08), 0.6)
 	# Brick back wall
 	var row := 0
@@ -497,7 +507,7 @@ func _paint_sewer(sz: Vector2) -> void:
 
 
 func _paint_blasphemy(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.12, 0.02, 0.03), Color(0.45, 0.06, 0.04), Color(0.95, 0.35, 0.08), 0.6)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 91
@@ -537,12 +547,12 @@ func _paint_blasphemy(sz: Vector2) -> void:
 # COLOSSEUM 3 LANDSCAPES
 # ============================================================
 func _flame(p: Vector2, w: float, h: float, a: float) -> void:
-	_painter.draw_colored_polygon(PackedVector2Array([p + Vector2(-w, 0), p + Vector2(-w * 0.4, -h * 0.6), p + Vector2(0, -h), p + Vector2(w * 0.4, -h * 0.5), p + Vector2(w, 0)]), Color(1.0, 0.35, 0.05, a))
-	_painter.draw_colored_polygon(PackedVector2Array([p + Vector2(-w * 0.5, 0), p + Vector2(0, -h * 0.65), p + Vector2(w * 0.5, 0)]), Color(1.0, 0.8, 0.3, a))
+	_p.draw_colored_polygon(PackedVector2Array([p + Vector2(-w, 0), p + Vector2(-w * 0.4, -h * 0.6), p + Vector2(0, -h), p + Vector2(w * 0.4, -h * 0.5), p + Vector2(w, 0)]), Color(1.0, 0.35, 0.05, a))
+	_p.draw_colored_polygon(PackedVector2Array([p + Vector2(-w * 0.5, 0), p + Vector2(0, -h * 0.65), p + Vector2(w * 0.5, 0)]), Color(1.0, 0.8, 0.3, a))
 
 
 func _paint_throne(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.10, 0.03, 0.02), Color(0.30, 0.08, 0.03), Color(0.65, 0.22, 0.05), 0.55)
 	# Back wall: big stone blocks, scorched
 	var y := 0.0
@@ -594,12 +604,12 @@ func _gear_bg(c: Vector2, r: float, col: Color, teeth: int = 12) -> void:
 	for i in teeth * 2:
 		var a := TAU * float(i) / float(teeth * 2)
 		pts.append(c + Vector2.from_angle(a) * (r if i % 2 == 0 else r * 0.82))
-	_painter.draw_colored_polygon(pts, col)
-	_painter.draw_circle(c, r * 0.3, col.darkened(0.4))
+	_p.draw_colored_polygon(pts, col)
+	_p.draw_circle(c, r * 0.3, col.darkened(0.4))
 
 
 func _paint_architectium(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.45, 0.62, 0.72), Color(0.72, 0.80, 0.78), Color(0.55, 0.60, 0.52), 0.6)
 	# Far: big gears turning on towers (static silhouettes)
 	_gear_bg(Vector2(sz.x * 0.18, sz.y * 0.3), 90.0, Color(0.48, 0.55, 0.55, 0.6), 14)
@@ -629,7 +639,7 @@ func _paint_architectium(sz: Vector2) -> void:
 
 
 func _paint_workshop(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.08, 0.06, 0.06), Color(0.20, 0.10, 0.06), Color(0.45, 0.18, 0.05), 0.6)
 	# Roof trusses
 	for i in 8:
@@ -657,7 +667,7 @@ func _paint_workshop(sz: Vector2) -> void:
 
 
 func _paint_golem_hall(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.04, 0.05, 0.08), Color(0.10, 0.12, 0.16), Color(0.16, 0.18, 0.22), 0.6)
 	# Huge stone columns with rune bands
 	for i in 5:
@@ -681,7 +691,7 @@ func _paint_golem_hall(sz: Vector2) -> void:
 # COLOSSEUM 4 LANDSCAPES
 # ============================================================
 func _paint_dark_cave(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.02, 0.02, 0.03), Color(0.05, 0.05, 0.06), Color(0.08, 0.08, 0.09), 0.6)
 	# Dim light falling in from the cave mouth (top left)
 	p.draw_colored_polygon(PackedVector2Array([Vector2(sz.x * 0.05, 0), Vector2(sz.x * 0.25, 0), Vector2(sz.x * 0.55, sz.y * 0.9), Vector2(sz.x * 0.2, sz.y * 0.9)]), Color(0.7, 0.75, 0.8, 0.06))
@@ -701,22 +711,22 @@ func _paint_dark_cave(sz: Vector2) -> void:
 
 func _bone(c: Vector2, ang: float, l: float, col: Color) -> void:
 	var d := Vector2.from_angle(ang) * l * 0.5
-	_painter.draw_line(c - d, c + d, col, 6.0)
+	_p.draw_line(c - d, c + d, col, 6.0)
 	for e in [c - d, c + d]:
 		var n := Vector2.from_angle(ang + PI * 0.5) * 4.0
-		_painter.draw_circle(e + n, 5.0, col)
-		_painter.draw_circle(e - n, 5.0, col)
+		_p.draw_circle(e + n, 5.0, col)
+		_p.draw_circle(e - n, 5.0, col)
 
 
 func _skull(c: Vector2, s: float, col: Color) -> void:
-	_painter.draw_circle(c, 14.0 * s, col)
-	_painter.draw_rect(Rect2(c.x - 9.0 * s, c.y + 6.0 * s, 18.0 * s, 10.0 * s), col)
-	_painter.draw_circle(c + Vector2(-5, -1) * s, 4.0 * s, Color(0, 0, 0, 0.9))
-	_painter.draw_circle(c + Vector2(5, -1) * s, 4.0 * s, Color(0, 0, 0, 0.9))
+	_p.draw_circle(c, 14.0 * s, col)
+	_p.draw_rect(Rect2(c.x - 9.0 * s, c.y + 6.0 * s, 18.0 * s, 10.0 * s), col)
+	_p.draw_circle(c + Vector2(-5, -1) * s, 4.0 * s, Color(0, 0, 0, 0.9))
+	_p.draw_circle(c + Vector2(5, -1) * s, 4.0 * s, Color(0, 0, 0, 0.9))
 
 
 func _paint_void(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.0, 0.0, 0.01), Color(0.04, 0.01, 0.07), Color(0.08, 0.02, 0.12), 0.6)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 181
@@ -739,7 +749,7 @@ func _paint_void(sz: Vector2) -> void:
 
 
 func _paint_altar(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.0, 0.0, 0.02), Color(0.03, 0.02, 0.06), Color(0.06, 0.04, 0.08), 0.6)
 	# A pillar of soft light falling on the altar
 	var ac := Vector2(sz.x * 0.5, sz.y * 0.88)
@@ -764,7 +774,7 @@ func _paint_altar(sz: Vector2) -> void:
 
 
 func _paint_spider_lair(sz: Vector2) -> void:
-	var p := _painter
+	var p = _p                                  # (A MeshCanvas while baking)
 	_vgradient(sz, Color(0.01, 0.0, 0.02), Color(0.05, 0.02, 0.06), Color(0.09, 0.04, 0.10), 0.6)
 	var web_col := Color(0.75, 0.75, 0.82, 0.35)
 	# Big webs in the corners and across the ceiling

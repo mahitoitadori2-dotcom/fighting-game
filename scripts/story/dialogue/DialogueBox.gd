@@ -424,14 +424,22 @@ func _draw_options(c: Control, opts: Array) -> void:
 		var rr: Rect2 = rects[k]
 		var on := k == _sel
 		var pulse := 0.5 + 0.5 * sin(_t * 6.0)
-		c.draw_rect(rr, Color(0.10, 0.08, 0.05) if on else Color(0.04, 0.04, 0.05))
+		var cut := _cut_rect(rr, 12.0)                           # DIALOGUE outline: cut corners + gold
+		c.draw_colored_polygon(cut, Color(0.10, 0.08, 0.05) if on else Color(0.04, 0.04, 0.05))
 		if on:
-			c.draw_rect(rr.grow(4.0), Color(GOLD_HI.r, GOLD_HI.g, GOLD_HI.b, 0.15 + 0.15 * pulse), false, 4.0)
-		c.draw_rect(rr, GOLD_HI if on else GOLD_DARK, false, 2.5)
+			var glow := _cut_rect(rr.grow(5.0), 15.0)
+			c.draw_polyline(glow + PackedVector2Array([glow[0]]), Color(GOLD_HI.r, GOLD_HI.g, GOLD_HI.b, 0.15 + 0.15 * pulse), 4.0)
+		c.draw_polyline(cut + PackedVector2Array([cut[0]]), GOLD_HI if on else GOLD_DARK, 2.5)
 		FighterArt.label(c, rr.get_center() + Vector2(0, 8), String(opts[k]), 20, GOLD_HI if on else Color(0.75, 0.72, 0.66))
 		if on:                                                  # A little gold heart / cursor on the left
 			var hp := Vector2(rr.position.x + 22.0 + pulse * 3.0, rr.get_center().y)
 			c.draw_colored_polygon(PackedVector2Array([hp + Vector2(-7, -6), hp + Vector2(7, 0), hp + Vector2(-7, 6)]), GOLD_HI)
+
+
+## A rectangle with its 4 corners cut off (the dialogue's own outline shape).
+static func _cut_rect(r: Rect2, k: float) -> PackedVector2Array:
+	return PackedVector2Array([r.position + Vector2(k, 0), Vector2(r.end.x - k, r.position.y), Vector2(r.end.x, r.position.y + k),
+		Vector2(r.end.x, r.end.y - k), r.end - Vector2(k, 0), Vector2(r.position.x + k, r.end.y), Vector2(r.position.x, r.end.y - k), r.position + Vector2(0, k)])
 
 
 ## The ANCIENT frame: a dark gradient inside, a carved stone border, a double gold rim with a

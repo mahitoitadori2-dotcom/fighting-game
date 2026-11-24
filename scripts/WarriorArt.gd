@@ -327,13 +327,6 @@ const _BLADE_PTS := [
 	Vector2(18, 6), Vector2(10, 5)]
 
 
-static func _xf(pts: Array, origin: Vector2, ang: float) -> PackedVector2Array:
-	var out := PackedVector2Array()
-	for p in pts:
-		out.append(origin + (p as Vector2).rotated(ang))
-	return out
-
-
 static func _sword(c: CanvasItem, hand: Vector2, ang: float, sc: float = 1.0) -> void:
 	if sc != 1.0:
 		_sword_scaled(c, hand, ang, sc)

@@ -10,7 +10,7 @@ static func handles(theme: String) -> bool:
 	return THEMES.has(theme)
 
 
-static func paint(p: Control, theme: String, sz: Vector2) -> void:
+static func paint(p, theme: String, sz: Vector2) -> void:
 	var top := Color(0.38, 0.62, 0.92)
 	var low := Color(0.78, 0.88, 0.98)
 	match theme:
@@ -84,7 +84,7 @@ static func paint(p: Control, theme: String, sz: Vector2) -> void:
 
 ## The Storm: a low dark wall of cloud on the horizon, lightning inside it - and, far away above
 ## it, the STORM ITSELF (its true shape, StormArt), small and faint.
-static func _storm(p: Control, sz: Vector2) -> void:
+static func _storm(p, sz: Vector2) -> void:
 	StormArt.draw(p, Vector2(sz.x * 0.30, sz.y * 0.36), 0.22, 0.0, 0.5)
 	var y := sz.y * 0.50
 	for i in 26:
@@ -95,7 +95,7 @@ static func _storm(p: Control, sz: Vector2) -> void:
 		p.draw_polyline(PackedVector2Array([Vector2(bx, y - 40), Vector2(bx + 12, y - 10), Vector2(bx - 4, y + 10), Vector2(bx + 10, y + 40)]), Color(0.8, 0.9, 1.0, 0.5), 2.0)
 
 
-static func _hills(p: Control, sz: Vector2, col: Color, y0: float) -> void:
+static func _hills(p, sz: Vector2, col: Color, y0: float) -> void:
 	var pts := PackedVector2Array([Vector2(0, sz.y)])
 	for i in 13:
 		var x := sz.x * float(i) / 12.0

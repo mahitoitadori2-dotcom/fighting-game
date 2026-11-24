@@ -29,6 +29,7 @@ func _ready() -> void:
 	SoundManager.play_music("menu")              # Keeps playing if it already is
 	BossRush.cancel()                             # Left a Boss Rush through the pause menu
 	QoL.save_picks()                              # Your fighter / opponent / arena come back next time
+	NetLink.reset_offline()                       # (A finished filled-seat match: back to plain offline)
 	_build()
 	UiStyle.focus_later(_play)
 	_tell_page_ready.call_deferred()

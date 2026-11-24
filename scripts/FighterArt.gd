@@ -87,7 +87,7 @@ static func wobble(pts: PackedVector2Array, center: Vector2, amp: float = WOBBLE
 
 
 ## Closed wavy outline.
-static func outline(c: CanvasItem, pts: PackedVector2Array, width: float = 4.0, col: Color = BLACK) -> void:
+static func outline(c, pts: PackedVector2Array, width: float = 4.0, col: Color = BLACK) -> void:
 	if pts.size() < 2:
 		return
 	var center := Vector2.ZERO
@@ -133,7 +133,7 @@ static func rrect(c: CanvasItem, rect: Rect2, base: Color, shade: Color, hi: Col
 
 
 ## Soft round blob with a wavy outline, shaded side and highlight.
-static func ball(c: CanvasItem, center: Vector2, r: float, base: Color, shade: Color, hi: Color) -> void:
+static func ball(c, center: Vector2, r: float, base: Color, shade: Color, hi: Color) -> void:
 	var rim := PackedVector2Array()
 	for i in 20:
 		var a := TAU * float(i) / 20.0

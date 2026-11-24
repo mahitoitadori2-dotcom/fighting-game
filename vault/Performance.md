@@ -169,3 +169,21 @@ hundreds of canvas commands every frame. `HellBackground` now records them ONCE 
 
 Other backdrops (`HellBackground` themes, C5 / Ext / Demi / Crater / Ord) still replay their shapes each frame: the
 same trick would help them too (e.g. DemiLand 658 draw calls, boss level 6 752).
+## /nolags 2026-11-23: EVERY Story backdrop baked into one mesh
+
+`HellBackground` now records the landscape of EVERY theme (65: Colosseums, Chase, extensions, open worlds,
+Madness, the Hunt) ONCE per theme + screen size into a `MeshCanvas` and draws one mesh; the painting code draws
+on `_p` (a MeshCanvas while baking). `MeshCanvas` gained `draw_arc` + `draw_set_transform`; a few shared
+helpers (`FighterArt.outline` / `ball`, `StormArt.draw`, `EnlightenedFx._relic`) take any canvas now. Only the
+embers still animate. Same look (screenshots of levels 6, 26, 48, 62 and DemiLand). Web, emulated iPhone 13:
+
+| Scene | Draw calls | FPS |
+|---|---|---|
+| boss level 6 | 743 -> 591 | 44.8 -> 49.2 |
+| boss level 34 | 477 -> 383 | (noise) |
+| boss level 15 | 506 -> 427 | 44 -> 44 |
+| Terra Ordinariorum | 561 -> 447 | 56.5 -> 58.4 |
+| DemiLand | 646 -> 632 | 48 -> 52 |
+
+Next biggest: Versus fights (~450-550 draw calls, ~11-14 ms physics with 2 fighters) and the Achievements grid
+(773 nodes, 45-53 ms game code).

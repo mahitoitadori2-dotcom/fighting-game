@@ -237,12 +237,6 @@ func arena_center() -> float:
 	return g.global_position.x if g != null else global_position.x
 
 
-func target_y() -> float:
-	if brain != null and brain.target != null and is_instance_valid(brain.target):
-		return brain.target.global_position.y
-	return global_position.y
-
-
 ## Straight shot. dir: -1 / 1.
 func shoot(look: String, from: Vector2, dir: float, spd: float, life: float, size: Vector2, damage: int,
 		kb: Vector2, tint: Color = Color.WHITE, move: String = "boss_shot", pierce: bool = false) -> EnemyProjectile:

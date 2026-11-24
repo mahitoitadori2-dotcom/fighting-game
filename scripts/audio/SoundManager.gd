@@ -152,13 +152,6 @@ func say(key: String, text: String, pitch: float = 0.6, rate: float = 0.95) -> v
 	DisplayServer.tts_speak(text, voice, clampi(roundi(sfx_volume * 100.0), 0, 100), pitch, rate)
 
 
-func stop_voice() -> void:
-	if _voice_player != null:
-		_voice_player.stop()
-	if _tts() != "":
-		DisplayServer.tts_stop()
-
-
 ## First English TTS voice ("" = no TTS on this device / setting off).
 func _tts() -> String:
 	if _tts_checked:
@@ -270,10 +263,6 @@ func _release_music(p: AudioStreamPlayer) -> void:
 	# Don't trust the engine to drop the browser copy on its own: unregister the sample explicitly.
 	if OS.has_feature("web") and AudioServer.has_method("unregister_stream_as_sample"):
 		AudioServer.call("unregister_stream_as_sample", s)
-
-
-func current_music() -> String:
-	return _music_name
 
 
 var _active_music: AudioStreamPlayer

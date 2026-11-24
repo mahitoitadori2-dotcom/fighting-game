@@ -442,10 +442,6 @@ func _page_data() -> Dictionary:
 	return PAGES.get(_page, PAGES[1])
 
 
-func _page_first() -> int:
-	return StoryLevels.first_of(_page)
-
-
 func _page_last() -> int:
 	return mini(StoryLevels.last_of(_page), StoryLevels.count())
 

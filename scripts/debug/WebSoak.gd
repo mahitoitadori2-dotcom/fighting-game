@@ -12,7 +12,7 @@ static func wanted() -> bool:
 	if not OS.has_feature("web"):
 		return false
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest"))
+	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest") or String(q).contains("soak=shots") or String(q).contains("soak=looks"))
 
 
 func _ready() -> void:
@@ -167,6 +167,26 @@ func _run_mobile() -> void:
 	await _run_mobile_inner()
 
 
+## ?soak=shots: a few backdrops on screen (screenshots by the driver) - for checking how maps look.
+func _run_shots() -> void:
+	await _w(2.0)
+	StoryManager.autoplay = true
+	for lv in [6, 26, 48, 62]:
+		StoryProgress.current_level = lv
+		StoryManager.boss_retry = lv
+		get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+		await _w(7.0)
+		print("MOBILE shot bg_%d" % lv)
+		await _w(0.5)
+	StoryManager.autoplay = false
+	StoryProgress.current_level = 63
+	get_tree().change_scene_to_file("res://scenes/DemiLand.tscn")
+	await _w(8.0)
+	print("MOBILE shot bg_demi")
+	await _w(0.5)
+	print("MOBILE done")
+
+
 ## ?soak=netguest&code=XXXXX&server=ws://...: the WEB build joins an online room as the guest (cross-play test).
 func _run_netguest(q: String) -> void:
 	await _w(2.0)
@@ -233,6 +253,23 @@ func _run_madui() -> void:
 
 
 ## ?soak=hunt: THE HUNT OF A NIGHTMARE picture check - each map + each boss on screen (screenshots by the driver).
+## ?soak=looks: the three OUTLINE families on screen (buttons / a notification / a dialogue choice).
+func _run_looks() -> void:
+	await _w(2.0)
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+	await _w(2.5)
+	AchievementToast.show_achievement(Achievements.get_def(Achievements.ULTIMATE))
+	Daily._toast("+20 MARKS")
+	await _w(1.2)
+	print("MOBILE shot notice")
+	await _w(4.0)
+	DialogueBox.play(get_tree().current_scene, [["warrior", "Which way now?", ["LEFT PATH", "RIGHT PATH"]]])
+	await _w(3.5)
+	print("MOBILE shot dialogue")
+	await _w(1.5)
+	print("MOBILE done")
+
+
 func _run_hunt() -> void:
 	await _w(2.0)
 	StoryProgress.load_progress()
@@ -403,6 +440,114 @@ func _playing_sounds() -> PackedStringArray:
 	return out
 
 
+## 2026-11-23 features, by taps: DAILY (+ buying a palette), PLAY ONLINE, Boss Rush DAILY RUN.
+func _mobile_new_menus() -> void:
+	get_tree().change_scene_to_file(CharacterRoster.MAIN_MENU)
+	await _w(3.0)
+	Daily.load_data()
+	Daily.marks = 200
+	Daily.save_data()
+	var db := _find_button(get_tree().current_scene, "DAILY")
+	print("MOBILE daily button=%s" % (db != null))
+	if db != null:
+		_ctl_target("DAILY", db)
+		if await _wait_for(func() -> bool: return get_tree().current_scene.scene_file_path.ends_with("DailyMenu.tscn"), 10.0):
+			await _w(1.5)
+			print("MOBILE shot daily")
+			var buy: Button = null
+			for b in get_tree().current_scene.find_children("*", "Button", true, false):
+				if (b as Button).text.begins_with("CRIMSON"):
+					buy = b
+			if buy != null:
+				_ctl_target("BUY", buy)
+				await _wait_for(func() -> bool: return Daily.owned.has("crimson"), 8.0)
+			print("MOBILE daily shop: bought crimson=%s marks left=%d" % [Daily.owned.has("crimson"), Daily.marks])
+			_ctl_target("BACK", _find_button(get_tree().current_scene, "BACK"))
+			await _wait_for(func() -> bool: return get_tree().current_scene.scene_file_path == CharacterRoster.MAIN_MENU, 8.0)
+	await _w(1.5)
+	var ob := _find_button(get_tree().current_scene, "PLAY ONLINE")
+	print("MOBILE play online button=%s" % (ob != null))
+	if ob != null:
+		_ctl_target("ONLINE", ob)
+		var ok: bool = await _wait_for(func() -> bool: return get_tree().current_scene.scene_file_path.ends_with("OnlineMenu.tscn"), 10.0)
+		await _w(1.5)
+		print("MOBILE online menu open=%s  quickplay button=%s" % [ok, _find_button(get_tree().current_scene, "QUICKPLAY VERSUS") != null])
+		print("MOBILE shot online")
+		_ctl_target("BACK", _find_button(get_tree().current_scene, "BACK"))
+		await _wait_for(func() -> bool: return get_tree().current_scene.scene_file_path == CharacterRoster.MAIN_MENU, 8.0)
+	await _w(1.5)
+	var rb := _find_button(get_tree().current_scene, "BOSS RUSH")
+	if rb != null:
+		_ctl_target("RUSH", rb)
+		await _wait_for(func() -> bool: return get_tree().current_scene.scene_file_path == BossRush.MENU_SCENE, 10.0)
+		await _w(1.5)
+		print("MOBILE boss rush DAILY RUN button=%s" % (_find_button(get_tree().current_scene, "DAILY RUN") != null))
+		print("MOBILE shot rush")
+
+
+## A weapon pickup used with the touch ATTACK button, then PHOTO MODE from the pause menu.
+func _mobile_weapons_photo() -> void:
+	ArenaManager.p1_cpu = false
+	ArenaManager.selected_arena = "test"
+	CharacterRoster.selected_id = "warrior"
+	CharacterRoster.opponent_id = "architect"
+	get_tree().change_scene_to_file("res://Main.tscn")
+	await _w(4.0)
+	var am := get_tree().get_first_node_in_group("arena_manager") as ArenaManager
+	var tc := get_tree().current_scene.find_child("TouchControls", true, false)
+	if am == null or tc == null:
+		print("MOBILE weapons: no fight / no touch controls")
+		return
+	var pk := WeaponDrops.Pickup.new()
+	pk.weapon = "HALBERD"
+	am.add_child(pk)
+	pk.floor_y = am.p1.global_position.y
+	pk.global_position = Vector2(am.p1.global_position.x, pk.floor_y - 30.0)
+	await _w(1.2)
+	var held := am.p1.get_node_or_null("HeldWeapon")
+	print("MOBILE weapon picked up=%s" % (held != null))
+	print("MOBILE shot weapon")
+	var atk := Vector2.ZERO
+	for btn in tc.get("_buttons"):
+		if String(btn["action"]) == "punch":
+			atk = btn["center"]
+	for i in 5:
+		_target("ATTACKBTN", atk)
+		await _w(1.3)
+	print("MOBILE after 5 ATK taps: weapon thrown (hand empty)=%s" % (am.p1.get_node_or_null("HeldWeapon") == null))
+	for btn in tc.get("_buttons"):
+		if String(btn["id"]) == "menu":
+			_target("PAUSE", btn["center"])
+	if not await _wait_for(func() -> bool: return PauseMenu.is_open, 10.0):
+		print("MOBILE photo: pause menu did not open")
+		return
+	await _w(0.6)
+	var ph := _find_button(get_tree().root, "PHOTO")
+	print("MOBILE pause PHOTO button=%s" % (ph != null))
+	if ph == null:
+		return
+	_ctl_target("PHOTO", ph)
+	if not await _wait_for(func() -> bool: return get_tree().root.get_node_or_null("PhotoMode") != null, 10.0):
+		print("MOBILE photo mode: NOT OPENED")
+		return
+	await _w(0.8)
+	var pm := get_tree().root.get_node_or_null("PhotoMode") as PhotoMode
+	var cam := get_viewport().get_camera_2d()
+	var z0 := cam.zoom.x
+	_ctl_target("ZOOMIN", _find_button(pm, "+"))
+	await _w(1.2)
+	_ctl_target("HUD", _find_button(pm, "HUD"))
+	await _w(1.2)
+	print("MOBILE photo mode: zoom %.2f -> %.2f  hud hidden=%s" % [z0, cam.zoom.x, pm._hud_hidden])
+	print("MOBILE shot photo")
+	_ctl_target("SAVE", _find_button(pm, "SAVE"))
+	await _w(2.0)
+	print("MOBILE photo saved=%s" % Achievements.is_unlocked("photo_first"))
+	_ctl_target("EXIT", _find_button(pm, "EXIT"))
+	await _w(1.5)
+	print("MOBILE photo mode closed=%s game running=%s" % [get_tree().root.get_node_or_null("PhotoMode") == null, not get_tree().paused])
+
+
 ## Rotor Mode on a phone: P1 is Rotor, the touch ATTACK button = Bite.
 func _mobile_rotor_mode() -> void:
 	SecretCodes.toggle("rotor_mode", get_tree())
@@ -497,6 +642,8 @@ func _run_mobile_inner() -> void:
 						rc.close()
 	await _mobile_rotor_mode()
 	await _mobile_town()
+	await _mobile_new_menus()
+	await _mobile_weapons_photo()
 	# 2) THE RESULTS SCREEN: CPU vs CPU, the opponent knocked out -> swipe up -> does it scroll?
 	ArenaManager.p1_cpu = true
 	CharacterRoster.opponent_id = "architect"
@@ -528,8 +675,14 @@ func _run_mobile_inner() -> void:
 
 func _run() -> void:
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
+	if q is String and String(q).contains("soak=looks"):
+		await _run_looks()
+		return
 	if q is String and String(q).contains("soak=mobile"):
 		await _run_mobile()
+		return
+	if q is String and String(q).contains("soak=shots"):
+		await _run_shots()
 		return
 	if q is String and String(q).contains("soak=netguest"):
 		await _run_netguest(String(q))

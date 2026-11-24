@@ -502,9 +502,13 @@ func _status_text() -> String:
 	return " | ".join(parts)
 
 
+## PHOTO MODE "HUD OFF" hides the name tags too.
+static var hide_tags := false
+
+
 ## Name tag + status text above the head (not flipped, not part of the art).
 func _draw() -> void:
-	if is_dead or data == null:
+	if is_dead or data == null or hide_tags:
 		return
 	var top := -data.body_size.y - 20.0
 	var tag := data.character_name
@@ -513,7 +517,7 @@ func _draw() -> void:
 		tag = "P1  " + tag
 		tag_col = Color(0.55, 1.0, 0.55)
 	elif slot == 2:
-		tag = "CPU  " + tag
+		tag = ("P2  " if NetLink.role != "" and NetLink.mode == "versus" else "CPU  ") + tag      # ONLINE: P2 is a person
 		tag_col = Color(1.0, 0.6, 0.55)
 	FighterArt.label(self, Vector2(0, top), tag, 14, tag_col)
 	var s := _status_text()

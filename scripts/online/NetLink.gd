@@ -31,6 +31,11 @@ static var peer_here := false
 static var guest_fighter := "warrior"      # The guest's pick (Versus)
 static var net_input: NetInput = NetInput.new()   # The guest's buttons, on the host
 static var inbox: Array = []               # Messages for the guest scene that is not loaded yet
+## Filled seat (2026-11-23, by the user - kept SECRET from players): a room nobody joins within ~20 s gets a
+## CPU in the empty seat. The room is closed on the server, the match then runs locally with the CPU, and
+## everything on screen looks exactly like a real online match. Reset on the Main Menu.
+static var bot := false
+const BOT_WAIT := 20.0
 
 var url := DEFAULT_URL
 var _ws := WebSocketPeer.new()
@@ -105,6 +110,28 @@ func quick(p_mode: String) -> void:
 	_text({"t": "quick", "mode": p_mode})
 
 
+## Fill the empty seat: close the room on the server (nobody can walk into a match against a CPU).
+func fill_seat() -> void:
+	if _ws.get_ready_state() == WebSocketPeer.STATE_OPEN:
+		_text({"t": "leave"})
+	bot = true
+	peer_here = false
+
+
+## Back to offline (Main Menu): forget the filled seat.
+static func reset_offline() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var l := tree.root.get_node_or_null("NetLink") as NetLink if tree != null else null
+	if bot or (l == null and role != ""):
+		bot = false
+		role = ""
+		mode = ""
+		code = ""
+		peer_here = false
+		if l != null:
+			l.leave()
+
+
 func leave() -> void:
 	if _ws.get_ready_state() == WebSocketPeer.STATE_OPEN:
 		_text({"t": "leave"})
@@ -113,6 +140,7 @@ func leave() -> void:
 	mode = ""
 	code = ""
 	peer_here = false
+	bot = false
 	inbox.clear()
 	queue_free()
 

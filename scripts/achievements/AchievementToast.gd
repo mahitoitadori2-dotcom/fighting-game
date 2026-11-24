@@ -39,7 +39,7 @@ func _next() -> void:
 	var d: Dictionary = _queue.pop_front()
 	var panel := PanelContainer.new()
 	var gold: Color = AchievementArt.FRAMES.get(String(d["art"].get("frame", "gold")), AchievementArt.FRAMES["gold"])[0]
-	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0.06, 0.06, 0.10, 0.94), gold, 4, 14, 12.0))
+	panel.add_theme_stylebox_override("panel", UiStyle.notice_box(gold, 12.0))
 	panel.position = Vector2(-520, 215)                 # Under the top-left HP bar + move list
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)

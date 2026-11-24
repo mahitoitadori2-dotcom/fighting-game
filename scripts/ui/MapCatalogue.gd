@@ -69,10 +69,10 @@ func _card(e: Dictionary) -> Button:
 	b.focus_mode = Control.FOCUS_ALL
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	var picked := String(e["id"]) == ArenaManager.selected_arena
-	b.add_theme_stylebox_override("normal", UiStyle.box(UiStyle.PANEL, UiStyle.ACCENT_GREEN if picked else UiStyle.INK, 4, 8))
-	b.add_theme_stylebox_override("hover", UiStyle.box(UiStyle.PANEL.lightened(0.12), UiStyle.ACCENT_BLUE, 4, 8))
-	b.add_theme_stylebox_override("focus", UiStyle.box(UiStyle.PANEL.lightened(0.12), UiStyle.ACCENT_BLUE, 4, 8))
-	b.add_theme_stylebox_override("pressed", UiStyle.box(UiStyle.PANEL.lightened(0.2), UiStyle.ACCENT_GREEN, 4, 8))
+	b.add_theme_stylebox_override("normal", UiStyle.button_box(UiStyle.PANEL, UiStyle.ACCENT_GREEN if picked else UiStyle.INK))
+	b.add_theme_stylebox_override("hover", UiStyle.button_box(UiStyle.PANEL.lightened(0.12), UiStyle.ACCENT_BLUE))
+	b.add_theme_stylebox_override("focus", UiStyle.focus_ring(UiStyle.ACCENT_BLUE))
+	b.add_theme_stylebox_override("pressed", UiStyle.button_box(UiStyle.PANEL.lightened(0.2), UiStyle.ACCENT_GREEN, true))
 	var v := VBoxContainer.new()
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

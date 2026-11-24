@@ -193,9 +193,12 @@ static func _toast(text: String) -> void:
 		return
 	var layer := CanvasLayer.new()
 	layer.layer = 130
-	var l := UiStyle.label(text, 26, Color(0.6, 0.9, 1.0), 8)
+	var l := PanelContainer.new()                    # A NOTIFICATION outline (UiStyle.notice_box)
+	l.add_theme_stylebox_override("panel", UiStyle.notice_box(Color(0.6, 0.9, 1.0), 14.0))
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.add_child(UiStyle.label(text, 26, Color(0.6, 0.9, 1.0), 8))
 	l.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	l.offset_top = 120.0
+	l.offset_top = 110.0
 	l.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	layer.add_child(l)
 	tree.root.add_child(layer)

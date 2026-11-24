@@ -8,7 +8,7 @@ static func handles(theme: String) -> bool:
 	return theme == "madness"
 
 
-static func paint(p: Control, _theme: String, sz: Vector2) -> void:
+static func paint(p, _theme: String, sz: Vector2) -> void:
 	# Sky: black at the top (hell above) -> deep red at the horizon
 	for i in 12:
 		var k := float(i) / 11.0
@@ -50,7 +50,7 @@ static func paint(p: Control, _theme: String, sz: Vector2) -> void:
 		p.draw_colored_polygon(PackedVector2Array([Vector2(bx - 18, sz.y * 0.86), Vector2(bx + 18, sz.y * 0.86), Vector2(bx + 4, sz.y * 0.86 - bh)]), Color(0.05, 0.0, 0.0))
 
 
-static func _chain(p: Control, a: Vector2, b: Vector2, w: float, col: Color) -> void:
+static func _chain(p, a: Vector2, b: Vector2, w: float, col: Color) -> void:
 	var n := int(a.distance_to(b) / (w * 1.4))
 	for i in n:
 		var c := a.lerp(b, (float(i) + 0.5) / float(maxi(n, 1)))

@@ -17,7 +17,7 @@ static func handles(theme: String) -> bool:
 	return THEMES.has(theme)
 
 
-static func paint(p: Control, theme: String, sz: Vector2) -> void:
+static func paint(p, theme: String, sz: Vector2) -> void:
 	# Sky: dark at the top, glowing red at the rim
 	for i in 10:
 		var k := float(i) / 9.0
@@ -77,7 +77,7 @@ static func paint(p: Control, theme: String, sz: Vector2) -> void:
 	p.draw_rect(Rect2(0, sz.y * 0.82, sz.x, sz.y * 0.18), Color(0.08, 0.04, 0.04))
 
 
-static func _volcano(p: Control, base: Vector2, h: float, i: int) -> void:
+static func _volcano(p, base: Vector2, h: float, i: int) -> void:
 	var w := h * 1.4
 	var cone := PackedVector2Array([base + Vector2(-w, 0), base + Vector2(-w * 0.18, -h), base + Vector2(w * 0.18, -h), base + Vector2(w, 0)])
 	p.draw_colored_polygon(cone, Color(0.11, 0.06, 0.06))
@@ -89,7 +89,7 @@ static func _volcano(p: Control, base: Vector2, h: float, i: int) -> void:
 		p.draw_circle(top + Vector2(float(k) * 14.0 - 10.0, -30.0 - float(k) * 40.0), 24.0 + float(k) * 14.0, Color(0.16, 0.12, 0.12, 0.28 - 0.04 * float(i)))
 
 
-static func _ash(p: Control, sz: Vector2, seed_v: int) -> void:
+static func _ash(p, sz: Vector2, seed_v: int) -> void:
 	for k in 40:                                                   # Falling ash (static flecks)
 		var x := fmod(float(k * 97 + seed_v * 31), sz.x)
 		var y := fmod(float(k * 53 + seed_v * 17), sz.y * 0.8)

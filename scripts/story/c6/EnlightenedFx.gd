@@ -63,7 +63,7 @@ static func _grenade(c: CanvasItem, t: float) -> void:
 
 
 ## 0 vase, 1 candelabra, 2 stone tablet, 3 bell, 4 statue head.
-static func _relic(c: CanvasItem, kind: int, _t: float) -> void:
+static func _relic(c, kind: int, _t: float) -> void:
 	match kind:
 		0:
 			var v := PackedVector2Array([Vector2(-8, -20), Vector2(8, -20), Vector2(6, -14), Vector2(14, 2), Vector2(9, 18), Vector2(-9, 18), Vector2(-14, 2), Vector2(-6, -14)])

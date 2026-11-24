@@ -15,7 +15,7 @@ static func handles(theme: String) -> bool:
 	return THEMES.has(theme)
 
 
-static func paint(p: Control, theme: String, sz: Vector2) -> void:
+static func paint(p, theme: String, sz: Vector2) -> void:
 	match theme:
 		"golden_dunes":
 			_dunes(p, sz)
@@ -50,13 +50,13 @@ static func embers(n: Node2D, theme: String, sz: Vector2, t: float, data: Array)
 
 
 # ----- helpers -----
-static func _sun(p: Control, c: Vector2, r: float) -> void:
+static func _sun(p, c: Vector2, r: float) -> void:
 	p.draw_circle(c, r * 2.2, Color(1.0, 0.95, 0.7, 0.12))
 	p.draw_circle(c, r * 1.4, Color(1.0, 0.93, 0.6, 0.25))
 	p.draw_circle(c, r, Color(1.0, 0.97, 0.82))
 
 
-static func _dune(p: Control, sz: Vector2, base_y: float, amp: float, waves: float, phase: float, col: Color) -> void:
+static func _dune(p, sz: Vector2, base_y: float, amp: float, waves: float, phase: float, col: Color) -> void:
 	var pts := PackedVector2Array([Vector2(0, sz.y)])
 	for i in 41:
 		var x := sz.x * float(i) / 40.0
@@ -66,7 +66,7 @@ static func _dune(p: Control, sz: Vector2, base_y: float, amp: float, waves: flo
 
 
 ## A tall obelisk / statue of HIM: robe, halo, face-mask (silhouette with gold details).
-static func _statue(p: Control, base: Vector2, h: float, col: Color, gold: Color) -> void:
+static func _statue(p, base: Vector2, h: float, col: Color, gold: Color) -> void:
 	var w := h * 0.22
 	p.draw_colored_polygon(PackedVector2Array([base + Vector2(-w, 0), base + Vector2(-w * 0.6, -h * 0.75), base + Vector2(w * 0.6, -h * 0.75), base + Vector2(w, 0)]), col)
 	p.draw_circle(base + Vector2(0, -h * 0.82), w * 0.45, col)
@@ -78,7 +78,7 @@ static func _statue(p: Control, base: Vector2, h: float, col: Color, gold: Color
 # ============================================================
 # ROAD MAPS
 # ============================================================
-static func _dunes(p: Control, sz: Vector2) -> void:
+static func _dunes(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.98, 0.78, 0.45), Color(1.0, 0.90, 0.65), Color(0.85, 0.62, 0.32), 0.55)
 	_sun(p, Vector2(sz.x * 0.72, sz.y * 0.18), 46.0)
 	_dune(p, sz, sz.y * 0.58, 50.0, 1.3, 0.4, Color(0.92, 0.70, 0.40))
@@ -91,7 +91,7 @@ static func _dunes(p: Control, sz: Vector2) -> void:
 	_dune(p, sz, sz.y * 0.86, 30.0, 1.6, 4.0, Color(0.80, 0.56, 0.28))
 
 
-static func _pilgrim_road(p: Control, sz: Vector2) -> void:
+static func _pilgrim_road(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.55, 0.65, 0.92), Color(1.0, 0.88, 0.62), Color(0.80, 0.70, 0.52), 0.6)
 	_sun(p, Vector2(sz.x * 0.5, sz.y * 0.30), 38.0)
 	# The road going away into the distance
@@ -110,7 +110,7 @@ static func _pilgrim_road(p: Control, sz: Vector2) -> void:
 			p.draw_rect(Rect2(base.x + side * 30.0 * (0.4 + d) - 8.0 * (0.5 + d), base.y - 40.0 - 120.0 * d, 16.0 * (0.5 + d), 40.0 * (0.5 + d)), Color(0.30, 0.25, 0.65, 0.9))
 
 
-static func _oasis(p: Control, sz: Vector2) -> void:
+static func _oasis(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.45, 0.70, 0.95), Color(0.98, 0.90, 0.70), Color(0.85, 0.70, 0.45), 0.55)
 	_sun(p, Vector2(sz.x * 0.25, sz.y * 0.2), 34.0)
 	# Mirage road shimmering in the sky
@@ -137,7 +137,7 @@ static func _oasis(p: Control, sz: Vector2) -> void:
 # ============================================================
 # BOSS ARENAS
 # ============================================================
-static func _sanctum(p: Control, sz: Vector2) -> void:
+static func _sanctum(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.12, 0.08, 0.06), Color(0.42, 0.28, 0.14), Color(0.22, 0.14, 0.08), 0.6)
 	# Ritual circle glowing on the far wall
 	var c := Vector2(sz.x * 0.5, sz.y * 0.42)
@@ -165,7 +165,7 @@ static func _sanctum(p: Control, sz: Vector2) -> void:
 		p.draw_circle(Vector2(bx, sz.y * 0.80), 8.0, Color(1.0, 0.6, 0.2, 0.7))
 
 
-static func _reliquary(p: Control, sz: Vector2) -> void:
+static func _reliquary(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.95, 0.75, 0.40), Color(1.0, 0.92, 0.70), Color(1.0, 0.96, 0.85), 0.5)
 	_sun(p, Vector2(sz.x * 0.5, sz.y * 0.12), 60.0)
 	# Rays from the sun

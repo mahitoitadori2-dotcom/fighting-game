@@ -95,5 +95,3 @@ static func draw_portrait(c: CanvasItem, t: float) -> void:
 	ExtArt.spider(c, {"t": t, "pose": "idle"}, KINDS["venom"]["art"])
 
 
-static func draw_kind(c: CanvasItem, t: float, k: String) -> void:
-	ExtArt.spider(c, {"t": t, "pose": "idle"}, KINDS[k]["art"])

@@ -10,6 +10,7 @@ extends RefCounted
 var verts := PackedVector2Array()
 var cols := PackedColorArray()
 var view_size := Vector2(1280, 720)        # Answer for get_viewport_rect() during recording
+var xf := Transform2D.IDENTITY               # draw_set_transform (applied to every point)
 
 
 func get_viewport_rect() -> Rect2:
@@ -17,9 +18,9 @@ func get_viewport_rect() -> Rect2:
 
 
 func _tri(a: Vector2, b: Vector2, c: Vector2, ca: Color, cb: Color, cc: Color) -> void:
-	verts.append(a)
-	verts.append(b)
-	verts.append(c)
+	verts.append(xf * a)
+	verts.append(xf * b)
+	verts.append(xf * c)
 	cols.append(ca)
 	cols.append(cb)
 	cols.append(cc)
@@ -89,6 +90,25 @@ func draw_circle(p: Vector2, r: float, col: Color, filled: bool = true, width: f
 		var a0 := TAU * float(i) / float(seg)
 		var a1 := TAU * float(i + 1) / float(seg)
 		_tri(p, p + Vector2(cos(a0), sin(a0)) * r, p + Vector2(cos(a1), sin(a1)) * r, col, col, col)
+
+
+## Like CanvasItem.draw_set_transform: everything drawn after it is moved / rotated / scaled.
+func draw_set_transform(pos: Vector2, rot: float = 0.0, scl: Vector2 = Vector2.ONE) -> void:
+	xf = Transform2D(rot, scl, 0.0, pos)
+
+
+func draw_set_transform_matrix(m: Transform2D) -> void:
+	xf = m
+
+
+## Like CanvasItem.draw_arc (an outline along part of a circle).
+func draw_arc(center: Vector2, radius: float, start: float, end: float, point_count: int, col: Color, width: float = -1.0, _aa: bool = false) -> void:
+	var n := maxi(point_count, 2)
+	var pts := PackedVector2Array()
+	for i in n:
+		var a := lerpf(start, end, float(i) / float(n - 1))
+		pts.append(center + Vector2(cos(a), sin(a)) * radius)
+	draw_polyline(pts, col, width)
 
 
 ## The recorded drawing as one mesh (null if nothing was drawn).

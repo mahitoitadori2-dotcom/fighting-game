@@ -18,7 +18,7 @@ const BOLT := Color(0.80, 0.90, 1.0)
 const BLACK := Color(0, 0, 0)
 
 
-static func draw(c: CanvasItem, o: Vector2, s: float, t: float, alpha: float = 1.0) -> void:
+static func draw(c, o: Vector2, s: float, t: float, alpha: float = 1.0) -> void:
 	var a := alpha
 	var bob := sin(t * 0.6) * 6.0 * s
 	o += Vector2(0, bob)
@@ -98,7 +98,7 @@ static func draw(c: CanvasItem, o: Vector2, s: float, t: float, alpha: float = 1
 			c.draw_polyline(bolt, Color(BOLT.r, BOLT.g, BOLT.b, 0.9 * a), 3.0 * s)
 
 
-static func _debris(c: CanvasItem, p: Vector2, r: float, rot: float, a: float) -> void:
+static func _debris(c, p: Vector2, r: float, rot: float, a: float) -> void:
 	var pts := PackedVector2Array()
 	for k in 5:
 		var th := TAU * float(k) / 5.0 + rot

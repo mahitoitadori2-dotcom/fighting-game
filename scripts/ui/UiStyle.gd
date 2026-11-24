@@ -2,6 +2,13 @@ class_name UiStyle
 extends RefCounted
 ## Shared look for menus: chunky cartoon buttons with thick black borders and
 ## outlined text, matching the in-game art style.
+##
+## THREE OUTLINE FAMILIES, so you can tell them apart at a glance (2026-11-24):
+##   BUTTONS        button_box(): capsule shape, a light rim, a deep 3D lip at the bottom
+##                  (it sinks when pressed); the focus ring sits OUTSIDE the outline.
+##   NOTIFICATIONS  notice_box(): square corners, a thin coloured outline with a thick bar on the
+##                  left and a coloured glow (achievements, daily rewards, unlock messages).
+##   DIALOGUE       DialogueBox._frame(): carved stone + a double gold rim; its choices have cut corners.
 
 const INK := Color(0.04, 0.04, 0.06)
 const PANEL := Color(0.12, 0.14, 0.20, 0.94)
@@ -30,6 +37,46 @@ static func box(bg: Color, border: Color = INK, border_w: int = 4, radius: int =
 
 ## Give a control the keyboard / pad focus on the next frame - only if it still exists and is
 ## in the tree then (a screen can be left before that: "Condition !is_inside_tree()" errors).
+## BUTTON outline: round, black, with a 3D lip at the bottom (a pressed button sinks: thin lip).
+static func button_box(bg: Color, border: Color = Color(0, 0, 0, 0), pressed: bool = false) -> StyleBoxFlat:
+	var rim := border if border.a > 0.0 else bg.lightened(0.38)      # A light rim: readable on dark screens
+	var s := box(bg, rim, 3, 26, 16.0)                                # Capsule shape
+	s.border_width_bottom = 4 if pressed else 9
+	s.border_width_top = 6 if pressed else 3
+	s.content_margin_top = 16.0 * 0.6 + (3.0 if pressed else 0.0)
+	s.shadow_offset = Vector2(0, 2 if pressed else 5)
+	return s
+
+
+## The controller / keyboard FOCUS ring of a button: drawn just outside its outline.
+static func focus_ring(col: Color = ACCENT_GREEN) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.draw_center = false
+	s.border_color = col
+	s.set_border_width_all(4)
+	s.set_corner_radius_all(30)
+	s.set_expand_margin_all(6.0)
+	return s
+
+
+## NOTIFICATION outline: square corners, thin coloured line, thick bar on the left, a glow.
+static func notice_box(accent: Color, pad: float = 12.0) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0.035, 0.04, 0.065, 0.94)
+	s.border_color = accent
+	s.set_border_width_all(2)
+	s.border_width_left = 10
+	s.set_corner_radius_all(3)
+	s.content_margin_left = pad + 8.0
+	s.content_margin_right = pad
+	s.content_margin_top = pad * 0.7
+	s.content_margin_bottom = pad * 0.7
+	s.shadow_color = Color(accent.r, accent.g, accent.b, 0.35)
+	s.shadow_size = 12
+	s.shadow_offset = Vector2.ZERO
+	return s
+
+
 static func focus_later(c: Control) -> void:
 	# A WEAK reference: if the screen closes before next frame, no "Lambda capture was freed" error
 	var w: WeakRef = weakref(c)
@@ -50,14 +97,12 @@ static func make_button(text: String, min_size: Vector2 = Vector2(340, 62), font
 	b.add_theme_color_override("font_outline_color", INK)
 	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
 		b.add_theme_color_override(c, TEXT)
-	b.add_theme_stylebox_override("normal", box(Color(0.20, 0.24, 0.33)))
-	b.add_theme_stylebox_override("hover", box(Color(0.22, 0.52, 0.95)))
-	b.add_theme_stylebox_override("pressed", box(Color(0.18, 0.70, 0.28)))
-	b.add_theme_stylebox_override("hover_pressed", box(Color(0.18, 0.70, 0.28)))
-	var focus := box(Color(0, 0, 0, 0), ACCENT_GREEN, 4)
-	focus.draw_center = false
-	focus.shadow_size = 0
-	b.add_theme_stylebox_override("focus", focus)
+	b.add_theme_stylebox_override("normal", button_box(Color(0.20, 0.24, 0.33)))
+	b.add_theme_stylebox_override("hover", button_box(Color(0.22, 0.52, 0.95)))
+	b.add_theme_stylebox_override("pressed", button_box(Color(0.18, 0.70, 0.28), Color(0, 0, 0, 0), true))
+	b.add_theme_stylebox_override("hover_pressed", button_box(Color(0.18, 0.70, 0.28), Color(0, 0, 0, 0), true))
+	b.add_theme_stylebox_override("disabled", button_box(Color(0.14, 0.15, 0.19)))
+	b.add_theme_stylebox_override("focus", focus_ring())
 	ui_sounds(b)
 	return b
 

@@ -16,7 +16,7 @@ static func handles(theme: String) -> bool:
 	return THEMES.has(theme)
 
 
-static func paint(p: Control, theme: String, sz: Vector2) -> void:
+static func paint(p, theme: String, sz: Vector2) -> void:
 	match theme:
 		"caeser_crypts":
 			_crypts(p, sz)
@@ -66,7 +66,7 @@ static func embers(n: Node2D, theme: String, sz: Vector2, t: float, data: Array)
 # ============================================================
 # BC - the Caeser's crypts / tomb
 # ============================================================
-static func _crypts(p: Control, sz: Vector2) -> void:
+static func _crypts(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.06, 0.03, 0.03), Color(0.20, 0.08, 0.05), Color(0.12, 0.05, 0.04), 0.65)
 	# Stone vaults (arches)
 	for i in 6:
@@ -99,7 +99,7 @@ static func _crypts(p: Control, sz: Vector2) -> void:
 		p.draw_circle(Vector2(cx, cy - 32), 14.0, Color(1.0, 0.6, 0.2, 0.15))
 
 
-static func _tomb(p: Control, sz: Vector2) -> void:
+static func _tomb(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.02, 0.04, 0.03), Color(0.08, 0.14, 0.10), Color(0.04, 0.06, 0.05), 0.65)
 	# A giant serpent RIBCAGE arching over the tomb
 	var c := Vector2(sz.x * 0.5, sz.y * 0.92)
@@ -124,7 +124,7 @@ static func _tomb(p: Control, sz: Vector2) -> void:
 # ============================================================
 # AG - the Saint Rocks sanctuary / sanctum
 # ============================================================
-static func _saint_rocks(p: Control, sz: Vector2, sanctum: bool) -> void:
+static func _saint_rocks(p, sz: Vector2, sanctum: bool) -> void:
 	if sanctum:
 		C5Backdrops._grad(p, sz, Color(0.12, 0.16, 0.24), Color(0.35, 0.42, 0.52), Color(0.24, 0.26, 0.30), 0.6)
 	else:
@@ -166,7 +166,7 @@ static func _saint_rocks(p: Control, sz: Vector2, sanctum: bool) -> void:
 # ============================================================
 # VM - deep Void / Horrid nest
 # ============================================================
-static func _webs(p: Control, sz: Vector2, n: int, col: Color, seed_v: int) -> void:
+static func _webs(p, sz: Vector2, n: int, col: Color, seed_v: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_v
 	for k in n:
@@ -181,7 +181,7 @@ static func _webs(p: Control, sz: Vector2, n: int, col: Color, seed_v: int) -> v
 			p.draw_polyline(pts, col, 1.2)
 
 
-static func _deep_void(p: Control, sz: Vector2) -> void:
+static func _deep_void(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.01, 0.0, 0.02), Color(0.06, 0.02, 0.10), Color(0.03, 0.01, 0.05), 0.6)
 	_webs(p, sz, 6, Color(0.6, 0.55, 0.75, 0.35), 77)
 	# Hanging cocoons
@@ -199,7 +199,7 @@ static func _deep_void(p: Control, sz: Vector2) -> void:
 		p.draw_colored_polygon(EnemyArt.ellipse_points(Vector2(x2, sz.y * 0.8), 24.0, 8.0, 10), Color(0.04, 0.03, 0.06))
 
 
-static func _horrid_nest(p: Control, sz: Vector2) -> void:
+static func _horrid_nest(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.0, 0.0, 0.01), Color(0.08, 0.03, 0.12), Color(0.03, 0.01, 0.05), 0.55)
 	# A web cathedral: big gothic web arches
 	for k in 3:
@@ -221,7 +221,7 @@ static func _horrid_nest(p: Control, sz: Vector2) -> void:
 # ============================================================
 # AC - the reactor after the explosion
 # ============================================================
-static func _reactor_waste(p: Control, sz: Vector2) -> void:
+static func _reactor_waste(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.10, 0.14, 0.06), Color(0.38, 0.48, 0.18), Color(0.16, 0.18, 0.10), 0.62)
 	# The wrecked reactor: a cracked cooling tower + a broken dome
 	var tx := sz.x * 0.7
@@ -246,7 +246,7 @@ static func _reactor_waste(p: Control, sz: Vector2) -> void:
 	p.draw_circle(s, 5.0, Color(0.9, 0.8, 0.15))
 
 
-static func _reactor_core(p: Control, sz: Vector2) -> void:
+static func _reactor_core(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.02, 0.06, 0.03), Color(0.10, 0.22, 0.08), Color(0.05, 0.08, 0.04), 0.6)
 	# The melted core: a huge glowing green pit in the middle, pipes all around
 	var c := Vector2(sz.x * 0.5, sz.y * 0.5)
@@ -265,7 +265,7 @@ static func _reactor_core(p: Control, sz: Vector2) -> void:
 # ============================================================
 # FM - The Forge / its heart
 # ============================================================
-static func _forge(p: Control, sz: Vector2) -> void:
+static func _forge(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.08, 0.04, 0.03), Color(0.40, 0.14, 0.05), Color(0.16, 0.07, 0.04), 0.62)
 	# Catwalks + chains
 	for k in 2:
@@ -291,7 +291,7 @@ static func _forge(p: Control, sz: Vector2) -> void:
 	p.draw_polyline(river.slice(0, 21), Color(1.0, 0.85, 0.4), 4.0)
 
 
-static func _forge_heart(p: Control, sz: Vector2) -> void:
+static func _forge_heart(p, sz: Vector2) -> void:
 	C5Backdrops._grad(p, sz, Color(0.10, 0.03, 0.02), Color(0.55, 0.20, 0.05), Color(0.25, 0.08, 0.03), 0.55)
 	# The GIANT CRUCIBLE tipping molten metal behind the arena
 	var c := Vector2(sz.x * 0.5, sz.y * 0.42)

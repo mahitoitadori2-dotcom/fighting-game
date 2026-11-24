@@ -172,6 +172,7 @@ func _toggle_hud() -> void:
 				(l as CanvasLayer).visible = true
 		_hidden_layers.clear()
 		_hud_hidden = false
+		_set_tags(false)
 		_show("HUD ON")
 		return
 	for l in get_tree().root.find_children("*", "CanvasLayer", true, false):
@@ -181,7 +182,15 @@ func _toggle_hud() -> void:
 		cl.visible = false
 		_hidden_layers.append(cl)
 	_hud_hidden = true
+	_set_tags(true)
 	_show("HUD OFF")
+
+
+## The name tags above the fighters belong to the HUD too.
+func _set_tags(hidden: bool) -> void:
+	Fighter.hide_tags = hidden
+	for f in get_tree().get_nodes_in_group("fighters"):
+		(f as CanvasItem).queue_redraw()
 
 
 func _save() -> void:

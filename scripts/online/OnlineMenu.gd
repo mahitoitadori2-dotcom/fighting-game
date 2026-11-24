@@ -8,6 +8,9 @@ var _code: LineEdit
 var _status: Label
 var _room: Label
 var _buttons: Array[Button] = []
+var _wait := 0.0                                       # Seconds the room has waited for a player
+var _wait_limit := NetLink.BOT_WAIT
+var _quick_mode := ""                                  # Quickplay with no open room: host one and search
 
 
 func _ready() -> void:
@@ -38,8 +41,12 @@ func _ready() -> void:
 	_add(row1, "HOST VERSUS", func() -> void: _go(func() -> void: NetLink.get_link().host_room("versus")))
 	_add(row1, "HOST STORY", func() -> void: _go(func() -> void: NetLink.get_link().host_room("story")))
 	var row2 := _row(col)
-	_add(row2, "QUICKPLAY VERSUS", func() -> void: _go(func() -> void: NetLink.get_link().quick("versus")))
-	_add(row2, "QUICKPLAY STORY", func() -> void: _go(func() -> void: NetLink.get_link().quick("story")))
+	_add(row2, "QUICKPLAY VERSUS", func() -> void:
+		_quick_mode = "versus"
+		_go(func() -> void: NetLink.get_link().quick("versus")))
+	_add(row2, "QUICKPLAY STORY", func() -> void:
+		_quick_mode = "story"
+		_go(func() -> void: NetLink.get_link().quick("story")))
 	var row3 := _row(col)
 	_code = LineEdit.new()
 	_code.placeholder_text = "CODE"
@@ -85,14 +92,50 @@ func _on_status(t: String) -> void:
 	_status.text = t
 
 
+func _process(delta: float) -> void:
+	if NetLink.role == "host" and NetLink.code != "" and not NetLink.peer_here and not NetLink.bot:
+		_wait += delta
+		if _wait >= _wait_limit:
+			_fill()
+	else:
+		_wait = 0.0
+
+
+## Nobody came: the empty seat gets filled (looks exactly like someone joining).
+func _fill() -> void:
+	NetLink.get_link().fill_seat()
+	_status.text = "PLAYER FOUND"
+	SoundManager.play_sfx("holy")
+	if NetLink.mode == "versus":
+		var pool := CharacterRoster.playable().filter(func(e: Dictionary) -> bool: return String(e.get("id", "")) != "apha" and e.get("selectable", true))
+		CharacterRoster.opponent_id = String((pool[randi() % pool.size()] as Dictionary).get("id", "warrior")) if not pool.is_empty() else "warrior"
+		ArenaManager.p1_cpu = false
+		get_tree().create_timer(0.8).timeout.connect(func() -> void:
+			if is_inside_tree():
+				get_tree().change_scene_to_file(ArenaManager.arena_entry(ArenaManager.selected_arena)["scene"]))
+	else:
+		get_tree().create_timer(0.8).timeout.connect(func() -> void:
+			if is_inside_tree():
+				get_tree().change_scene_to_file(StoryManager.STORY_MENU))
+
+
 func _on_failed(m: String) -> void:
+	if _quick_mode != "" and m == "NO OPEN ROOMS RIGHT NOW":      # Quickplay: open a room and search
+		var qm := _quick_mode
+		_quick_mode = ""
+		NetLink.get_link().host_room(qm)
+		_status.text = "SEARCHING FOR PLAYERS..."
+		return
 	_status.text = m
 	_status.add_theme_color_override("font_color", Color(1.0, 0.5, 0.45))
 
 
 func _on_room(c: String) -> void:
 	_room.text = "ROOM  " + c
-	_status.text = "WAITING FOR A PLAYER"
+	if _status.text != "SEARCHING FOR PLAYERS...":
+		_status.text = "WAITING FOR A PLAYER"
+	_wait = 0.0
+	_wait_limit = NetLink.BOT_WAIT + randf_range(0.0, 6.0)
 
 
 func _on_joined(m: String, h: String) -> void:

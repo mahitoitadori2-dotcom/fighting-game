@@ -105,13 +105,6 @@ func _physics_process(delta: float) -> void:
 			f.gauge.add(rate * delta)
 
 
-func auto_fill_rate(f: Fighter) -> float:
-	var over := fight_time - f.data.gauge_auto_start_time
-	if over <= 0.0:
-		return 0.0
-	return f.data.gauge_auto_base_rate + over * f.data.gauge_auto_growth
-
-
 # ===== HIT RESOLUTION =====
 ## Returns "hit", "blocked", "perfect" or "ignored".
 static func apply_hit(hit: HitData, victim: Fighter) -> String:

@@ -211,7 +211,8 @@ func _ready() -> void:
 	_spawn_player()
 	max_attackers = MAX_ATTACKERS
 	var online := NetLink.is_host() and NetLink.mode == "story" and not BossRush.active
-	if (StoryLevels.has_partner(level_number) or online) and not BossRush.active:
+	var seat := NetLink.bot and NetLink.mode == "story"          # (A filled seat: the partner hero, CPU-driven)
+	if (StoryLevels.has_partner(level_number) or online or seat) and not BossRush.active:
 		_spawn_partner()
 		max_attackers = MAX_ATTACKERS + 1
 		if online:

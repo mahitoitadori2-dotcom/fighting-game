@@ -241,10 +241,6 @@ func camp_cleared(i: int) -> bool:
 	return i < _camps.size() and bool(_camps[i]["cleared"])
 
 
-func corpses_on_floor() -> Array:
-	return _corpses
-
-
 func wall_pile() -> int:
 	return _wall.pile if _wall != null else 0
 

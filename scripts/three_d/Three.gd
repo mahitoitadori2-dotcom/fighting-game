@@ -231,23 +231,6 @@ static func hero(parent: Node3D, hero_id: String, pos: Vector3, world_h: float =
 	return billboard(parent, func(c: CanvasItem, t: float) -> void: art.call("draw_portrait", c, t), pos, world_h)
 
 
-## Billboard of a hero RUNNING (real walk-cycle legs).
-static func hero_running(parent: Node3D, hero_id: String, pos: Vector3, world_h: float = 2.0) -> Sprite3D:
-	return billboard(parent, _run_draw.bind(hero_id), pos, world_h)
-
-
-static func _run_draw(c: CanvasItem, t: float, hero_id: String) -> void:
-	match hero_id:
-		"warrior":
-			WarriorArt._draw_figure(c, {"t": t, "ph": t * 15.0, "floor": true})
-		"anti":
-			ArchitectArt.set_palette(ArchitectArt.ANTI_PALETTE)
-			ArchitectArt._draw_figure(c, t, t * 15.0, true, 0.0, 0.0, 0.0, 0.0, false, false)
-			ArchitectArt.set_palette(ArchitectArt.NORMAL_PALETTE)
-		_:
-			ArchitectArt._draw_figure(c, t, t * 15.0, true, 0.0, 0.0, 0.0, 0.0, false, false)
-
-
 ## Billboard of a Story enemy / boss portrait (StoryLevels id), sized by its figure scale.
 static func enemy(parent: Node3D, id: String, pos: Vector3, world_h: float = 2.4) -> Sprite3D:
 	var base := StoryLevels.base_id(id)
