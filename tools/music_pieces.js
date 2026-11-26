@@ -904,4 +904,38 @@ PIECES.boss_troupe_heart = { bpm: 120, meter: 4, rev: 0.45,
     { t: 'hit', inst: 'bells', key: 60, from: 0, to: 16, beats: [0], every: 4, vel: 60, dur: 4 },
   ] };
 
+// THE TRUE HUNT (levels 111-138): a hunting march across a shaking world - horn calls over driving
+// spiccato strings, taiko + snare; the strings and trumpets take the tune when the choir comes in.
+PIECES.story_true_hunt = { bpm: 132, meter: 4, rev: 0.35,
+  chords: 'Em D C Am D Em B7 Em  Em D G Em Am C B Em',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 7, 0, 12, 0, 7, 0], step: 0.5, vel: 78 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 1], [1.5, 0.5], [2, 1], [3, 1]], vel: 90 },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 2.5], vel: 96 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3], vel: 62 },
+    { t: 'mel', inst: 'horn', bar: 0, vel: 104, dbl: [['trombone', -1, 0.35]],
+      notes: 'E5:1.5 B4:0.5 E5:1 G5:1 F#5:2 E5:1 D5:1 C5:1.5 D5:0.5 E5:1 G5:1 A5:4 D5:1.5 A4:0.5 D5:1 F#5:1 E5:2 D5:2 B4:1 D#5:1 F#5:1 A5:1 B5:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, vel: 60 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 108, dbl: [['trumpet', 0, 0.35], ['violin', -1, 0.4]],
+      notes: 'B5:1 A5:1 G5:1 E5:1 F#5:2 D5:2 G5:1 F#5:1 E5:1 D5:1 B4:4 A4:1 C5:1 E5:1 A5:1 G5:2 E5:2 F#5:1 D#5:1 B4:1 D#5:1 E5:4' },
+    { t: 'hit', inst: 'drums', key: 57, from: 8, to: 16, beats: [0], every: 4, vel: 84, dur: 3 },
+  ] };
+
+// THE NIGHTMARE MONSTROSITY (level 138): a stone golem stomping - low brass + tuba on a limping beat,
+// organ, heavy timpani; the strings and voices scream the tune in the second half.
+PIECES.boss_monstrosity = { bpm: 104, meter: 4, rev: 0.45,
+  chords: 'C#m C#m A A F#m F#m G# G#  C#m G# A G# F#m C#m G# G#',
+  parts: [
+    { t: 'pad', inst: 'organ', from: 0, to: 16, oct: -1, vel: 54 },
+    { t: 'pad', inst: 'tremolo', from: 0, to: 16, oct: -1, vel: 50 },
+    { t: 'bass', inst: 'tuba', from: 0, to: 16, pat: [[0, 1.5], [1.5, 0.5], [2, 2]], vel: 98 },
+    { t: 'hit', inst: 'timpani', key: 36, from: 0, to: 16, beats: [0, 1.5, 2], vel: 118 },
+    { t: 'mel', inst: 'trombone', bar: 0, vel: 110, dbl: [['tuba', -1, 0.4], ['horn', 0, 0.3]],
+      notes: 'C#4:2 E4:1 D#4:1 C#4:2 G#3:2 A3:1 B3:1 C#4:1 E4:1 A4:4 F#4:2 A4:1 G#4:1 F#4:2 C#4:2 G#4:2 F#4:1 E4:1 D#4:2 C4:2' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, oct: 1, vel: 66 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 114, dbl: [['oohs', -1, 0.4], ['trumpet', -1, 0.3]],
+      notes: 'C#6:1 E6:1 G#6:2 F#6:1 E6:1 D#6:2 C#6:1 E6:1 A6:2 G#6:4 F#6:1 A6:1 C#7:2 B6:1 A6:1 G#6:2 F#6:2 E6:2 D#6:4' },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 92, dur: 3 },
+  ] };
+
 module.exports = { PIECES, build };

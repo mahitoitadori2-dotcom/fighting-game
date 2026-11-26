@@ -113,6 +113,11 @@ func update(fighter: Fighter, delta: float) -> void:
 	# Every-frame reactions (dodging, etc.). Can override the decision above.
 	if enemy != null:
 		react(delta)
+		# M1 CHAIN: once a string has started and the target is still close, keep swinging to the 4th
+		if f.m1_step > 0 and f.m1_ready() and f._is_free() and dist < 130.0 and facing_enemy and rng.randf() < 0.35:
+			_taps.append("attack")
+			if f.m1_step == ControlledFighter.M1_CHAIN - 1 and rng.randf() < 0.25:
+				_cur["crouch"] = true                                 # Sometimes the uppercut finisher
 
 	# A queued directional press fires once we face the enemy
 	if _queued != "":

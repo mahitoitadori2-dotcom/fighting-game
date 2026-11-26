@@ -12,7 +12,7 @@ extends RefCounted
 
 const SAVE_PATH := "user://story.cfg"
 const TOTAL_LEVELS := 80                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE, 75-80 = ORBIS TERRARUM (80 = THE STORM ATTACKS)
-const AVAILABLE_LEVELS := 110             # + The Hunt of a Nightmare (82-110). + The Abandoned Town (81). Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
+const AVAILABLE_LEVELS := 138             # + The True Hunt (111-138). + The Hunt of a Nightmare (82-110). + The Abandoned Town (81). Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]
@@ -69,6 +69,22 @@ static var frozen_skins := false
 ##   "left"    left him asleep in his chains (the town lives)
 ##   ""        not played yet
 static var town_choice := ""
+## THE TRUE HUNT's ending (NightmareOffer): "joined" = the Nightmare Lord joined you (he is unlocked in
+## Versus - CharacterRoster), "left" = he left, "" = not reached yet. Once he joined, he stays.
+static var nl_fate := ""
+
+
+static func set_nl_fate(f: String) -> void:
+	load_progress()
+	if nl_fate != "joined":
+		nl_fate = f
+	save_progress()
+
+
+## The Nightmare Lord is on your side (his Versus card is unlocked).
+static func nl_recruited() -> bool:
+	load_progress()
+	return nl_fate == "joined"
 
 
 static func set_town_choice(c: String) -> void:
@@ -253,6 +269,7 @@ static func load_progress() -> void:
 	story_skin = String(cfg.get_value("story", "story_skin", "galaxy" if Achievements.galaxy_skin else ""))
 	frozen_skins = bool(cfg.get_value("story", "frozen_skins", false))
 	town_choice = String(cfg.get_value("story", "town_choice", ""))
+	nl_fate = String(cfg.get_value("story", "nl_fate", ""))
 	if not bool(cfg.get_value("story", "ext_301", false)):
 		_move_ext_keys()                                 # (Once: Boss Extensions moved from 101-115 to 301-315)
 	if int(cfg.get_value("story", "layout", 1)) < LAYOUT:
@@ -304,6 +321,7 @@ static func save_progress() -> void:
 	cfg.set_value("story", "story_skin", story_skin)
 	cfg.set_value("story", "frozen_skins", frozen_skins)
 	cfg.set_value("story", "town_choice", town_choice)
+	cfg.set_value("story", "nl_fate", nl_fate)
 	cfg.save(SAVE_PATH)
 
 

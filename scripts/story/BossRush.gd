@@ -195,7 +195,8 @@ static func _finish(completed: bool) -> void:
 				var c := ConfigFile.new()
 				c.load(SAVE_PATH)
 				var keep := {}
-				for k in c.get_section_keys("daily") if c.has_section("daily") else []:
+				var old_keys: PackedStringArray = c.get_section_keys("daily") if c.has_section("daily") else PackedStringArray()
+				for k in old_keys:
 					if String(k).begins_with(today()):
 						keep[k] = c.get_value("daily", k)
 				if c.has_section("daily"):

@@ -111,6 +111,7 @@ static func play(f: Fighter, type: String, hit: HitData) -> void:
 		root.add_child(decal)
 		decal.global_position = floor_pos
 		f.respawned.connect(decal.queue_free, CONNECT_ONE_SHOT)
+		f.tree_exiting.connect(decal.queue_free, CONNECT_ONE_SHOT)   # (A fighter that is removed takes its mark along)
 
 
 # ============================================================

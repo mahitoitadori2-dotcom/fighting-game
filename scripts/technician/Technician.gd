@@ -107,9 +107,12 @@ func _new_hit(dmg: int, kb: Vector2, move: String, hit_type: String = "melee") -
 
 # ===== WRENCH (no Onslaught) =====
 func _try_punch() -> void:
+	if not m1_ready():
+		return
 	SoundManager.play_sfx("swing", -4.0)
 	is_blocking = false
 	_hit = _new_hit(data.punch_damage, data.punch_knockback, "wrench")
+	m1_begin(_hit)
 	state = State.PUNCH_STARTUP
 	_state_timer = data.punch_startup
 

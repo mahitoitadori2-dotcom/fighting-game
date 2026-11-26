@@ -12,7 +12,7 @@ static func wanted() -> bool:
 	if not OS.has_feature("web"):
 		return false
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest") or String(q).contains("soak=shots") or String(q).contains("soak=looks"))
+	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest") or String(q).contains("soak=shots") or String(q).contains("soak=looks") or String(q).contains("soak=truehunt"))
 
 
 func _ready() -> void:
@@ -79,6 +79,10 @@ func _perf(path: String, secs: float, tag: String) -> void:
 	_rec = true
 	await _w(secs)
 	_rec = false
+	_perf_report(tag)
+
+
+func _perf_report(tag: String) -> void:
 	var n := maxi(_frames.size(), 1)
 	var sorted := _frames.duplicate()
 	sorted.sort()
@@ -95,6 +99,64 @@ func _perf(path: String, secs: float, tag: String) -> void:
 	_spikes.sort_custom(func(a: Array, b: Array) -> bool: return a[0] > b[0])
 	for sp in _spikes.slice(0, 3):
 		print("PERF    spike %.0f ms: game code %.1f ms, physics %.1f ms, draws %d -> %s" % [sp[0], sp[1], sp[2], sp[3], "RENDER / browser" if sp[1] + sp[2] < sp[0] * 0.5 else "GAME CODE"])
+
+
+## ?soak=perfth: THE TRUE HUNT only - disaster levels with ledges, and the Monstrosity at a full crowd.
+func _run_perf_th() -> void:
+	await _w(3.0)
+	StoryProgress.load_progress()
+	StoryProgress.unlocked_level = 138
+	StoryManager.autoplay = true
+	StoryProgress.current_level = 82
+	StoryManager.boss_retry = 0
+	await _perf(StoryManager.ARENA_SCENE, 12.0, "hunt 82 (old, compare)")
+	for lv in [113, 116, 119, 122]:
+		StoryProgress.current_level = lv
+		StoryManager.boss_retry = 0
+		await _perf(StoryManager.ARENA_SCENE, 12.0, "true hunt %d" % lv)
+	# The Monstrosity at its worst: break it down until MAX_ALIVE golems are out, then measure
+	StoryProgress.current_level = 138
+	StoryManager.boss_retry = 138
+	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+	await _w(1.0)
+	await _wait_for(func() -> bool: return CombatManager.fight_active and not get_tree().paused, 40.0)
+	for i in 80:
+		var alive := 0
+		var biggest: NightmareMonstrosity = null
+		for f in get_tree().get_nodes_in_group("fighters"):
+			var g := f as NightmareMonstrosity
+			if g != null and not g.is_dead:
+				alive += 1
+				if biggest == null or g.gen < biggest.gen:
+					biggest = g
+		if alive >= NightmareMonstrosity.MAX_ALIVE or biggest == null:
+			break
+		biggest.take_damage(99999)
+		await _w(0.25)
+	await _w(1.0)
+	_frames.clear()
+	_proc = 0.0
+	_phys = 0.0
+	_draws = 0.0
+	_prims = 0.0
+	_last_us = 0
+	_spikes.clear()
+	_rec = true
+	await _w(12.0)
+	_rec = false
+	var golems := get_tree().get_nodes_in_group("fighters").filter(func(f: Node) -> bool: return f is NightmareMonstrosity)
+	var dead := golems.filter(func(f: Node) -> bool: return (f as NightmareMonstrosity).is_dead).size()
+	_perf_report("crowd (%d alive, %d dead kept)" % [golems.size() - dead, dead])
+	print("PERF graphics level=%d (0 POTATO, 1 FAST, 2 REGULAR, 3 REAL)" % GraphicsSettings.level)
+	var kinds := {}
+	for nd in get_tree().current_scene.find_children("*", "", true, false):
+		var k := String(nd.get_script().get_global_name()) if nd.get_script() != null and String(nd.get_script().get_global_name()) != "" else nd.get_class()
+		kinds[k] = int(kinds.get(k, 0)) + 1
+	var top := kinds.keys()
+	top.sort_custom(func(a: String, b: String) -> bool: return int(kinds[a]) > int(kinds[b]))
+	print("PERF nodes by kind: %s" % ", ".join(top.slice(0, 14).map(func(k: String) -> String: return "%s=%d" % [k, kinds[k]])))
+	StoryManager.autoplay = false
+	print("SOAK DONE")
 
 
 func _run_perf() -> void:
@@ -253,6 +315,84 @@ func _run_madui() -> void:
 
 
 ## ?soak=hunt: THE HUNT OF A NIGHTMARE picture check - each map + each boss on screen (screenshots by the driver).
+## ?soak=truehunt: THE TRUE HUNT picture check - disasters + ledges on a few maps, the Monstrosity
+## splitting, and the Nightmare Lord's offer (the Volcano Slave path and the goblin path).
+func _run_truehunt() -> void:
+	await _w(2.0)
+	StoryProgress.load_progress()
+	StoryProgress.unlocked_level = 138
+	StoryManager.autoplay = true
+	for n in [111, 113, 116, 119, 122]:
+		StoryProgress.current_level = n
+		StoryManager.boss_retry = 0
+		get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+		await _w(1.0)
+		await _wait_for(func() -> bool: return CombatManager.fight_active and not get_tree().paused, 40.0)
+		await _w(6.0)
+		print("MOBILE shot th_%d" % n)
+		await _w(2.6)
+		print("MOBILE shot th_%db" % n)
+		await _w(1.0)
+	for path in ["slave", "goblins"]:
+		NightmareOffer.test_path = path
+		StoryProgress.current_level = 138
+		StoryManager.boss_retry = 138
+		get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+		await _w(1.0)
+		await _wait_for(func() -> bool: return CombatManager.fight_active and not get_tree().paused, 40.0)
+		await _w(2.0)
+		if path == "slave":
+			print("MOBILE shot th_boss")
+		var split_shot := false
+		for i in 900:                                     # Kill golems one by one until the offer starts
+			await _w(0.25)
+			var m := get_tree().get_first_node_in_group("story_manager") as StoryManager
+			if m != null and m.boss != null and NightmareMonstrosity.remaining() == 0 and i > 20:
+				break
+			if m == null or not CombatManager.fight_active:
+				continue
+			var alive := 0
+			for f in get_tree().get_nodes_in_group("fighters"):
+				var g := f as NightmareMonstrosity
+				if g != null and not g.is_dead:
+					alive += 1
+					if alive == 1:
+						g.take_damage(99999)
+			if path == "slave" and not split_shot and alive >= 6:
+				split_shot = true
+				await _w(0.6)
+				print("MOBILE shot th_split")
+			if alive == 0 and NightmareMonstrosity.remaining() == 0:
+				break
+		await _w(12.0)                                    # The death cutscene, then he walks in
+		print("MOBILE shot th_offer_%s" % path)
+		var t := 0.0
+		while t < 120.0:                                  # Wait for the outcome scene (after the lore)
+			await _w(0.5)
+			t += 0.5
+			var m2 := get_tree().get_first_node_in_group("story_manager") as StoryManager
+			if m2 == null:
+				break
+			var lt := ""
+			for b in get_tree().current_scene.get_children():
+				if not (b is DialogueBox):
+					continue
+				var ln: Array = (b as DialogueBox).lines
+				var i: int = (b as DialogueBox).get("_i")
+				if i >= 0 and i < ln.size():
+					lt = String(ln[i][1])
+			if lt.begins_with("Slow footsteps") or lt.begins_with("Goblins?!"):
+				await _w(2.0)
+				print("MOBILE shot th_outcome_%s" % path)
+				break
+		await _w(6.0)
+		print("MOBILE shot th_end_%s" % path)
+		await _w(4.0)
+	NightmareOffer.test_path = ""
+	StoryManager.autoplay = false
+	print("MOBILE done")
+
+
 ## ?soak=looks: the three OUTLINE families on screen (buttons / a notification / a dialogue choice).
 func _run_looks() -> void:
 	await _w(2.0)
@@ -267,6 +407,30 @@ func _run_looks() -> void:
 	await _w(3.5)
 	print("MOBILE shot dialogue")
 	await _w(1.5)
+	get_tree().paused = false
+	# Models + attack wind-up (2026-11-24)
+	ArenaManager.p1_cpu = true
+	ArenaManager.selected_arena = "test"
+	CharacterRoster.selected_id = "warrior"
+	CharacterRoster.opponent_id = "technician"
+	get_tree().change_scene_to_file("res://Main.tscn")
+	await _w(2.0)
+	print("MOBILE shot models")
+	await _w(1.0)
+	var shots := 0
+	for i in 1200:
+		await get_tree().physics_frame
+		for f in get_tree().get_nodes_in_group("fighters"):
+			if f is Fighter and (f as Fighter).startup_progress() > 0.8 and shots < 2:
+				Engine.time_scale = 0.0
+				print("MOBILE shot windup_%d" % shots)
+				await _w(1.2)
+				Engine.time_scale = 1.0
+				shots += 1
+				await _w(1.0)
+				break
+		if shots >= 2:
+			break
 	print("MOBILE done")
 
 
@@ -678,6 +842,9 @@ func _run() -> void:
 	if q is String and String(q).contains("soak=looks"):
 		await _run_looks()
 		return
+	if q is String and String(q).contains("soak=truehunt"):
+		await _run_truehunt()
+		return
 	if q is String and String(q).contains("soak=mobile"):
 		await _run_mobile()
 		return
@@ -692,6 +859,9 @@ func _run() -> void:
 		return
 	if q is String and String(q).contains("soak=hunt"):
 		await _run_hunt()
+		return
+	if q is String and String(q).contains("soak=perfth"):
+		await _run_perf_th()
 		return
 	if q is String and String(q).contains("soak=perf"):
 		await _run_perf()

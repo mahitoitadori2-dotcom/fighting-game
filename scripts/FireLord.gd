@@ -122,6 +122,8 @@ func _handle_actions() -> void:
 
 # ===== PUNCH (no Onslaught, no flash, no Afterburn trigger) =====
 func _try_punch() -> void:
+	if not m1_ready():
+		return
 	SoundManager.play_sfx("punch")
 	is_blocking = false
 	_punch_hit = HitData.new()
@@ -131,6 +133,7 @@ func _try_punch() -> void:
 	_punch_hit.origin = global_position
 	_punch_hit.hit_type = "melee"
 	_punch_hit.move = "punch"
+	m1_begin(_punch_hit)
 	state = State.PUNCH_STARTUP
 	_state_timer = data.punch_startup
 

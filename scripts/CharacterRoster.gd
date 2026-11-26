@@ -192,7 +192,7 @@ static func _fire_lord() -> Dictionary:
 		"id": "firelord",
 		"name": "Nightmare Lord",
 		"short": "Nightmare Lord",
-		"selectable": true,
+		"selectable": StoryProgress.nl_recruited(),   # Locked until he JOINS you (Story: end of The True Hunt)
 		"accent": Color(1.0, 0.15, 0.15),
 		"art": FireLordArt,
 		"fighter": FireLord,

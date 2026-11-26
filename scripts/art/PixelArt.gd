@@ -12,6 +12,7 @@ extends CanvasGroup
 
 const PX := 3.0                          # Pixel size in game units (fighters are ~64 x 128)
 static var enabled := true
+static var rim_on := true                # Edge light / shade (8 extra screen reads per pixel; REGULAR+ only)
 
 const SHADER_CODE := """
 shader_type canvas_item;
@@ -21,6 +22,7 @@ uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_n
 uniform float px = 3.0;                  // Cell size in SCREEN pixels
 uniform vec2 origin = vec2(0.0);         // Grid anchor (the feet) in screen pixels
 uniform float levels = 14.0;             // Colour steps per channel
+uniform float rim = 1.0;                 // MODEL SHADING (2026-11-24): light on top edges, shade on bottom edges
 
 float bayer2(vec2 a) {
 	a = floor(a);
@@ -29,6 +31,10 @@ float bayer2(vec2 a) {
 
 float bayer4(vec2 a) {                   // 4x4 ordered dither threshold, 0..1
 	return bayer2(0.5 * a) * 0.25 + bayer2(a);
+}
+
+float alpha_at(vec2 cl, vec2 o, float p, vec2 sps) {
+	return textureLod(screen_texture, ((cl + 0.5) * p + o) * sps, 0.0).a;
 }
 
 void fragment() {
@@ -41,6 +47,19 @@ void fragment() {
 	}
 	float a = c.a > bayer4(cell) * 0.96 + 0.02 ? 1.0 : 0.0;   // Dithered transparency, hard edges
 	vec3 rgb = floor(c.rgb * levels + 0.5) / levels;           // Gentle posterize
+	// Shading: the cells just inside the TOP / LEFT edge catch the light, the BOTTOM / RIGHT edge
+	// is in shade. The black outline itself is left alone (it stays crisp).
+	if (a > 0.5 && rim > 0.0 && dot(rgb, vec3(0.3, 0.59, 0.11)) > 0.07) {
+		float up = min(alpha_at(cell + vec2(0.0, -1.0), origin, px, SCREEN_PIXEL_SIZE), alpha_at(cell + vec2(0.0, -2.0), origin, px, SCREEN_PIXEL_SIZE));
+		float lf = min(alpha_at(cell + vec2(-1.0, 0.0), origin, px, SCREEN_PIXEL_SIZE), alpha_at(cell + vec2(-2.0, 0.0), origin, px, SCREEN_PIXEL_SIZE));
+		float dn = min(alpha_at(cell + vec2(0.0, 1.0), origin, px, SCREEN_PIXEL_SIZE), alpha_at(cell + vec2(0.0, 2.0), origin, px, SCREEN_PIXEL_SIZE));
+		float rt = min(alpha_at(cell + vec2(1.0, 0.0), origin, px, SCREEN_PIXEL_SIZE), alpha_at(cell + vec2(2.0, 0.0), origin, px, SCREEN_PIXEL_SIZE));
+		if (up < 0.3 || lf < 0.3) {
+			rgb = mix(rgb, vec3(1.0, 0.97, 0.90), 0.34 * rim);
+		} else if (dn < 0.3 || rt < 0.3) {
+			rgb *= 1.0 - 0.26 * rim;
+		}
+	}
 	COLOR = vec4(rgb, a) * COLOR;
 }
 """
@@ -88,4 +107,7 @@ func _process(_delta: float) -> void:
 	var xf := vp.get_final_transform() * get_global_transform_with_canvas()
 	var s := absf(xf.get_scale().y)
 	_mat.set_shader_parameter("px", maxf(PX * s, 1.0))
+	# Edge shading costs 8 extra screen reads per pixel: PC graphics levels only (phones start on FAST,
+	# where it was barely visible anyway - /nolags 2026-11-25: 11.5 -> 17.3 fps in the golem crowd)
+	_mat.set_shader_parameter("rim", 1.0 if rim_on and GraphicsSettings.level >= GraphicsSettings.REGULAR else 0.0)
 	_mat.set_shader_parameter("origin", xf.origin)

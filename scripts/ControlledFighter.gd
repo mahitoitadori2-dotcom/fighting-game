@@ -43,6 +43,18 @@ var rolls := 0                        # Rolls + backsteps done (this level)
 var last_dodged_from: Fighter = null
 var last_dodge_time := -10.0
 
+# ===== M1 CHAIN (2026-11-24): the basic attack is a 4-hit string =====
+# Hits 1-3: a small push + a stun that lasts until the next swing (a true combo once the first lands).
+# Hit 4 = FINISHER (x1.5 damage): knocks back far; hold CROUCH = uppercut, in the air = downslam.
+# After the 4th (or a dropped chain) the basic attack rests M1_ENDLAG seconds.
+const M1_CHAIN := 4
+const M1_WINDOW := 0.55               # After a swing ends, this long to press the next one
+const M1_ENDLAG := 0.5
+var m1_step := 0
+var m1_landed := 0                    # Hits of the current chain that connected (achievement)
+var _m1_window := 0.0
+var _m1_lock := 0.0
+
 
 # ===== SETUP =====
 func _ready() -> void:
@@ -58,6 +70,7 @@ func _ready() -> void:
 	add_child(hitbox)
 	hitbox.setup(self)
 	hitbox.hit_landed.connect(_on_hit_landed)
+	hitbox.hit_landed.connect(_m1_landed)
 
 	onslaught = OnslaughtSystem.new(data)
 	if data.gauge_enabled:
@@ -74,6 +87,7 @@ func is_human() -> bool:
 
 # ===== MAIN LOOP =====
 func _physics_process(delta: float) -> void:
+	_ledge_drop_tick(delta)
 	if is_dead:
 		return
 	if not CombatManager.fight_active:   # Match intro / winner screen
@@ -124,9 +138,35 @@ func _physics_process(delta: float) -> void:
 	_handle_state(delta)
 	_handle_movement(delta)
 	move_and_slide()
+	_ledge_drop(delta)
 	check_fall_death()
 	_update_visuals(delta)
 	update_pose(delta, is_attacking() or not _is_free())   # Shared walk / crouch / jump / attack animation
+
+
+## THE TRUE HUNT's rock LEDGES (StoryPlatform): press CROUCH while standing on one to drop through it.
+var _ledge_drop_t := 0.0
+
+
+## Runs FIRST every frame (before any early return: grabs, cutscenes, death), so the floor always comes back.
+func _ledge_drop_tick(delta: float) -> void:
+	if _ledge_drop_t > 0.0:
+		_ledge_drop_t -= delta
+		if _ledge_drop_t <= 0.0 or is_dead or grabbed_by != null:
+			_ledge_drop_t = 0.0
+			set_collision_mask_value(1, true)       # Solid again (we are below the ledge by now)
+
+
+func _ledge_drop(_delta: float) -> void:
+	if _ledge_drop_t > 0.0 or not is_on_floor() or not ctl.just_pressed("crouch"):
+		return
+	for i in get_slide_collision_count():
+		if get_slide_collision(i).get_collider() is StoryPlatform:
+			set_collision_mask_value(1, false)
+			_ledge_drop_t = 0.22
+			global_position.y += 2.0
+			velocity.y = maxf(velocity.y, 120.0)
+			return
 
 
 func _tick_timers(delta: float) -> void:
@@ -134,6 +174,67 @@ func _tick_timers(delta: float) -> void:
 		cooldowns[k] = maxf(cooldowns[k] - delta, 0.0)
 	perfect_flash = maxf(perfect_flash - delta, 0.0)
 	onslaught.tick(delta)
+	_m1_lock = maxf(_m1_lock - delta, 0.0)
+	if _m1_window > 0.0:
+		_m1_window -= delta
+		if _m1_window <= 0.0 and m1_step > 0:
+			m1_step = 0                            # Chain dropped
+			m1_landed = 0
+
+
+# ===== M1 CHAIN =====
+## False while the basic attack rests after a finished chain (the press is ignored).
+func m1_ready() -> bool:
+	return _m1_lock <= 0.0
+
+
+## Every basic attack calls this with its HitData when the swing STARTS: picks the chain step and
+## shapes the hit (hits 1-3 keep the target close, hit 4 sends them flying). timing = the hero's swing
+## speed multiplier (Royal Destiny, gorilla...).
+func m1_begin(h: HitData, timing: float = 1.0) -> void:
+	m1_step = m1_step + 1 if (_m1_window > 0.0 and m1_step < M1_CHAIN) else 1
+	if m1_step == 1:
+		m1_landed = 0
+	var swing := (data.punch_startup + data.punch_active + data.punch_recovery) * timing
+	h.m1 = m1_step
+	if m1_step < M1_CHAIN:
+		h.knockback = Vector2(float(facing) * 90.0, -40.0)
+		h.causes_hitstun = true
+		_m1_window = swing + M1_WINDOW
+		return
+	h.damage = maxi(roundi(float(h.damage) * 1.5), h.damage + 1)
+	var push := maxf(absf(h.knockback.x) * 2.0, 620.0)
+	if not is_on_floor():
+		h.knockback = Vector2(float(facing) * 220.0, 760.0)            # DOWNSLAM
+	elif ctl.pressed("crouch"):
+		h.knockback = Vector2(float(facing) * 140.0, -860.0)           # UPPERCUT
+	else:
+		h.knockback = Vector2(float(facing) * push, -300.0)            # KNOCKBACK
+	_m1_window = 0.0
+	m1_step = 0
+	_m1_lock = swing + M1_ENDLAG
+
+
+func _m1_landed(victim: Fighter, hit: HitData, result: String) -> void:
+	if hit.m1 <= 0 or victim == null or not is_instance_valid(victim):
+		return
+	if result != "hit":
+		m1_landed = 0
+		return
+	m1_landed += 1
+	var chest := victim.global_position + Vector2(0, -minf(80.0, victim.data.body_size.y * 0.6))
+	if hit.m1 < M1_CHAIN:
+		# Held until the next swing lands (true combo); the CPU / player can't escape mid-string
+		var keep := (data.punch_startup + data.punch_active + data.punch_recovery) + 0.12
+		victim.stun_timer = maxf(victim.stun_timer, keep)
+		Effects.hit_sparks(self, chest, 3 + hit.m1, 0.6 + 0.12 * float(hit.m1))
+		return
+	Effects.hit_sparks(self, chest, 10, 1.3)
+	Effects.shake(self, 7.0)
+	victim.stun_timer = maxf(victim.stun_timer, 0.45)
+	if m1_landed >= M1_CHAIN and is_human():
+		Achievements.unlock("m1_full_chain")
+	m1_landed = 0
 
 
 func _handle_debug_input() -> void:
@@ -421,6 +522,8 @@ func _on_respawn() -> void:
 		cooldowns[k] = 0.0
 	stamina = SoulsRules.MAX_STAMINA
 	exhausted = false
+	_ledge_drop_t = 0.0
+	set_collision_mask_value(1, true)                  # Never respawn halfway through a ledge drop
 	_on_respawn_extra()
 
 

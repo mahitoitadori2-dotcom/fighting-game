@@ -40,7 +40,7 @@ extends RefCounted
 
 const PLAYER_CHARACTER := "warrior"      # Story Mode is Warrior only (Colosseums 1-3)
 ## Levels per Colosseum. Colosseums past this list (not made yet) use DEFAULT_SIZE.
-const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6, 1, 29] # 15th = THE HUNT OF A NIGHTMARE (82-110) - 14th = THE ABANDONED TOWN (81) - 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
+const COLOSSEUM_SIZES := [6, 9, 11, 8, 16, 12, 1, 3, 1, 3, 1, 3, 6, 1, 29, 28] # 16th = THE TRUE HUNT (111-138) - 15th = THE HUNT OF A NIGHTMARE (82-110) - 14th = THE ABANDONED TOWN (81) - 13th = ORBIS TERRARUM (75-80) - 12th = THE ROAD TO PEACE (72-74) - 11th = TERRA ORDINARIORUM (71) - 6th = THE ENLIGHTENED CHASE (51-62), 7th = DEMILAND (63), 8th = THE CAVES (64-66), 9th = TERRA CRATERUM (67), 10th = THE MAGMA RUN (68-70)
 const DEFAULT_SIZE := 6
 
 ## Weapon variants of the soldier enemies (ArmedSoldier kit): id -> [base id, weapon].
@@ -68,7 +68,7 @@ static var LEVELS: Dictionary = _all_levels()
 
 static func _all_levels() -> Dictionary:
 	var all := {}
-	for part: Dictionary in [LevelsColosseums.LEVELS, LevelsJourney.LEVELS, LevelsHunt.LEVELS]:
+	for part: Dictionary in [LevelsColosseums.LEVELS, LevelsJourney.LEVELS, LevelsHunt.LEVELS, LevelsTrueHunt.LEVELS]:
 		all.merge(part)
 	return all
 
@@ -100,6 +100,11 @@ const TOWN_LEVEL := 81
 const HUNT_PART := 15
 const HUNT_FIRST := 82
 const HUNT_LAST := 110
+## THE TRUE HUNT: the part after The Hunt of a Nightmare (28 arena levels, 111-138: natural disasters,
+## ledges, every regular enemy; boss THE NIGHTMARE MONSTROSITY, then the Nightmare Lord's offer).
+const TRUE_HUNT_PART := 16
+const TRUE_FIRST := 111
+const TRUE_LAST := 138
 ## Level 80: THE STORM ATTACKS (after all the lessons) - one level in five phases (OrbisTalk / CaveSlide /
 ## StoryArena chained by OrbisTalk.storm_phase): the table, the breaking bridge, the dead town, the cave
 ## slide with the Storm behind you, then possessed corpses + THE STORM HAND.
@@ -109,6 +114,8 @@ const STORM_LEVEL := 80
 static func part_name(c: int) -> String:
 	if c == Madness.PART:
 		return "MADNESS"
+	if c == TRUE_HUNT_PART:
+		return "THE TRUE HUNT"
 	if c == HUNT_PART:
 		return "THE HUNT OF A NIGHTMARE"
 	if c == TOWN_PART:
@@ -271,9 +278,10 @@ static func hero_name(h: String) -> String:
 	return String(CharacterRoster.get_entry(h).get("short", "WARRIOR")).to_upper()
 
 
-## Does level n have a CPU partner? (Colosseum 5 - never in SOLO mode)
+## Does level n have a CPU partner? (Colosseum 5 - never in SOLO mode; THE TRUE HUNT's "pal" always)
 static func has_partner(n: int) -> bool:
-	return bool(get_level(n).get("partner", false)) and not StoryProgress.c5_solo
+	var lv := get_level(n)
+	return bool(lv.get("partner", false)) and (not StoryProgress.c5_solo or bool(lv.get("pal", false)))
 
 
 ## A Colosseum 5 duo level played WITHOUT the partner (Solo mode).
@@ -531,6 +539,9 @@ static func enemy_script(id: String) -> Script:
 			return TroupeHeart
 		"nm_boar", "nm_dog", "nm_goat":
 			return NightmareAnimal
+		# ----- The True Hunt -----
+		"nightmare_monstrosity":
+			return NightmareMonstrosity
 	return Parasite
 
 
@@ -702,7 +713,7 @@ static func make_enemy(id: String) -> BaseEnemy:
 		return enemy_script(id).new()                    # DemiLand + Terra Craterum + Ordinariorum enemies + bosses
 	# ----- THE HUNT OF A NIGHTMARE -----
 	if id in ["troupe_follower", "nm_trader", "aristocrat", "troupe_jester", "nightmare_musician", "head_guard",
-			"nightmares_lord", "troupe_heart", "nightmare_lord"]:
+			"nightmares_lord", "troupe_heart", "nightmare_lord", "nightmare_monstrosity"]:
 		return enemy_script(id).new()
 	if id.begins_with("nm_"):                         # NIGHTMARE VERSIONS of the open worlds' weakest enemies
 		var nm: BaseEnemy

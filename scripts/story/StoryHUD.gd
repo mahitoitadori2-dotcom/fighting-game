@@ -113,7 +113,7 @@ func _paint() -> void:
 						var fill := Color(0.1, 0.65, 1.0) if pv >= float(i + 1) else (Color(0.1, 0.35, 0.65) if pv > float(i) else Color(0.12, 0.18, 0.25))
 						_painter.draw_rect(seg.grow(-1.0), fill)
 				for i in manager.max_partner_flasks:
-					_flask(Vector2(x + 214 + float(i) * 30.0, py + 8), i < manager.partner_flasks)
+					_flask(Vector2(x + 216 + float(i) * 24.0, py + 26), i < manager.partner_flasks)   # (Beside the bar, under the HP text)
 
 	# ---------------- Level title + wave ----------------
 	var cx := sz.x * 0.5

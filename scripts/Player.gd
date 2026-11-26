@@ -127,6 +127,8 @@ func _handle_actions() -> void:
 
 # ===== COMBAT: MELEE =====
 func _try_punch() -> void:
+	if not m1_ready():
+		return
 	is_blocking = false
 	_pending_melee_flash = false
 	var is_onsl := onslaught.consume_flash("melee", "")   # Pressed during the flash?
@@ -152,6 +154,8 @@ func _try_punch() -> void:
 	# During Full Arsenal the mechanical arms deliver the blows (FAOTH part "arms").
 	_punch_hit.move = "faoth" if arsenal_timer > 0.0 else "punch"
 	_punch_hit.part = "arms" if arsenal_timer > 0.0 else ""
+	if not is_onsl:
+		m1_begin(_punch_hit)                          # (An Onslaught Strike keeps its own launch)
 	state = State.PUNCH_STARTUP
 	_state_timer = data.punch_startup
 

@@ -136,6 +136,8 @@ func _handle_actions() -> void:
 ## Same damage + range as the Architect's punch. Never touches the Onslaught
 ## system: no combo count, no flash, no Afterburn.
 func _try_sword() -> void:
+	if not m1_ready():
+		return
 	is_blocking = false
 	var dmg: int = data.punch_damage
 	if onslaught.afterburn_timer > 0.0:          # Only possible from the Time Stop penalty
@@ -150,6 +152,7 @@ func _try_sword() -> void:
 	_sword_hit.hit_type = "sword"
 	_sword_hit.move = "sword"
 	_sword_hit.onslaught = false
+	m1_begin(_sword_hit, _swing_mult())
 	state = State.SWORD_STARTUP
 	_state_timer = data.punch_startup * _swing_mult()
 

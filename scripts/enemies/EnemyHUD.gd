@@ -39,6 +39,13 @@ func _draw() -> void:
 		return
 	var t := enemy.anim_time
 
+	if enemy.compact_hud:
+		# COMPACT (crowds of the same small enemy - the Monstrosity's pieces): only a short HP bar
+		var kc := clampf(float(enemy.hp) / maxf(float(enemy.data.max_hp), 1.0), 0.0, 1.0)
+		var bc := Rect2(-24.0, -6, 48.0, 6)
+		draw_rect(bc.grow(1.5), Color(0, 0, 0))
+		draw_rect(Rect2(bc.position, Vector2(48.0 * kc, 6)), Color(0.9, 0.15, 0.15).lerp(Color(0.2, 0.85, 0.3), kc))
+		return
 	# --- Name (+ ENRAGED above it) ---
 	if not Madness.active():                          # MADNESS: no names, only health
 		FighterArt.label(self, Vector2(0, -16), enemy.enemy_name.to_upper(), 14, Color.WHITE)

@@ -50,9 +50,13 @@ const MAP_TILE := {
 	"prime_sanctum": Color(0.55, 0.36, 0.14), "sky_reliquary": Color(0.92, 0.80, 0.45),
 	"demi_door": Color(0.20, 0.18, 0.22),
 	"town": Color(0.56, 0.36, 0.20), "nightmare_cave": Color(0.30, 0.06, 0.05),
+	# The True Hunt
+	"th_rocks": Color(0.40, 0.14, 0.08), "th_village": Color(0.26, 0.22, 0.20), "th_hollow": Color(0.18, 0.15, 0.17),
+	"th_magma": Color(0.55, 0.20, 0.06), "th_reactor": Color(0.22, 0.34, 0.14), "th_mountain": Color(0.36, 0.40, 0.46),
+	"th_tents": Color(0.50, 0.08, 0.08), "th_forge": Color(0.30, 0.10, 0.06),
 }
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
-const FIGURE_SCALE := {"parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
+const FIGURE_SCALE := {"nightmare_monstrosity": 0.22, "parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
 	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "forge_mother": 0.16, "arch_golem": 0.15,
 	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11,
@@ -91,6 +95,8 @@ const PAGES := {
 		"board": [Color(0.95, 0.82, 0.55), Color(0.45, 0.62, 0.88)], "boss_label": Color(0.35, 0.55, 1.0)},
 	15: {"title": "STORY MODE  -  THE HUNT OF A NIGHTMARE",
 		"board": [Color(0.30, 0.06, 0.06), Color(0.12, 0.02, 0.03)], "boss_label": Color(1.0, 0.45, 0.4)},
+	16: {"title": "STORY MODE  -  THE TRUE HUNT",
+		"board": [Color(0.32, 0.12, 0.05), Color(0.10, 0.06, 0.10)], "boss_label": Color(1.0, 0.55, 0.3)},
 	14: {"title": "STORY MODE  -  THE ABANDONED TOWN",
 		"board": [Color(0.40, 0.26, 0.14), Color(0.16, 0.08, 0.06)], "boss_label": Color(1.0, 0.86, 0.55)},
 }
@@ -1014,6 +1020,20 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.TRUE_HUNT_PART:
+		# The True Hunt: cracked ground, falling burning stones, lightning out of a dark sky
+		var base16 := r.position.y + r.size.y
+		for k in 7:
+			var cx := r.position.x + r.size.x * (0.08 + 0.14 * float(k))
+			c.draw_line(Vector2(cx, base16 - 6.0), Vector2(cx + 18.0, base16 - 40.0 - 12.0 * float(k % 3)), Color(1.0, 0.4, 0.1, 0.45), 3.0)
+		for k in 5:
+			var ph := fmod(_t * 0.35 + float(k) * 0.21, 1.0)
+			var mp := Vector2(r.position.x + r.size.x * (0.15 + 0.17 * float(k)) + ph * 60.0, r.position.y + r.size.y * (0.1 + 0.7 * ph))
+			c.draw_line(mp, mp - Vector2(26, 34), Color(1.0, 0.5, 0.15, 0.25 * (1.0 - ph)), 6.0)
+			c.draw_circle(mp, 6.0, Color(1.0, 0.55, 0.2, 0.6 * (1.0 - ph)))
+		if fmod(_t, 4.0) < 0.15:                               # A flash of lightning now and then
+			var lx := r.position.x + r.size.x * 0.7
+			c.draw_polyline(PackedVector2Array([Vector2(lx, r.position.y), Vector2(lx - 20, r.position.y + 60), Vector2(lx + 10, r.position.y + 110), Vector2(lx - 14, r.position.y + 180)]), Color(0.85, 0.92, 1.0, 0.8), 3.0)
 	elif _page >= StoryLevels.HUNT_PART:
 		# The Hunt of a Nightmare: red tents on dark rocks, strings of red lanterns
 		var base15 := r.position.y + r.size.y

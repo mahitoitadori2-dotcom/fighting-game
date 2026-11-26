@@ -11,6 +11,8 @@ extends RefCounted
 ##   fog         true = drifting green fog in front of the floor (sewers)
 ##   solid       true = underground: solid rock fills the space under the floor (no floating island)
 ##   zone        name of the area on the board
+##   platforms   [[x from the centre, height above the floor, width], ...] one-way rock LEDGES
+##               (StoryPlatform; jump up through them, they hold you from above) - The True Hunt
 const MAPS := {
 	# ----- Colosseum 1 -----
 	"wastes": {"bg": "surface", "ground": 2, "walls": "lava", "half_width": 850.0, "music": "story_surface", "zone": "THE ASHEN WASTES"},
@@ -132,5 +134,22 @@ const MAPS := {
 	"hunt_hollow":   {"bg": "hunt_hollow", "ground": 13, "walls": "dark", "half_width": 820.0, "music": "story_hunt", "solid": true, "zone": "THE STONE HOLLOW"},
 	# Inside the tents - UNIQUE to the 3 final fights: a cave with a big red crucible
 	"hunt_crucible": {"bg": "hunt_crucible", "ground": 20, "walls": "hellrock", "half_width": 860.0, "music": "none", "solid": true, "zone": "THE CRUCIBLE"},
+	# ----- THE TRUE HUNT (111-138): the lands of Terra Patria, torn up by disasters, with LEDGES -----
+	"th_rocks":    {"bg": "hunt_rocks", "ground": 20, "walls": "hellrock", "half_width": 900.0, "music": "story_true_hunt", "zone": "THE SHAKING ROCKS",
+		"platforms": [[-460.0, 120.0, 190.0], [40.0, 165.0, 230.0], [500.0, 115.0, 170.0]]},
+	"th_village":  {"bg": "demi_village", "ground": 27, "walls": "thorn", "half_width": 880.0, "music": "story_true_hunt", "zone": "THE EMPTY VILLAGE",
+		"platforms": [[-330.0, 125.0, 210.0], [360.0, 125.0, 210.0]]},
+	"th_hollow":   {"bg": "hunt_hollow", "ground": 13, "walls": "dark", "half_width": 840.0, "music": "story_true_hunt", "solid": true, "zone": "THE DEEP HOLLOW",
+		"platforms": [[-520.0, 110.0, 160.0], [-120.0, 175.0, 170.0], [300.0, 120.0, 200.0]]},
+	"th_magma":    {"bg": "crater_fields", "ground": 20, "walls": "hellrock", "half_width": 880.0, "music": "story_true_hunt", "zone": "THE BOILING FIELDS",
+		"platforms": [[-420.0, 140.0, 200.0], [0.0, 120.0, 150.0], [430.0, 140.0, 200.0]]},
+	"th_reactor":  {"bg": "reactor_waste", "ground": 5, "walls": "lab", "half_width": 860.0, "music": "story_true_hunt", "zone": "THE OLD REACTOR",
+		"platforms": [[-260.0, 150.0, 240.0], [420.0, 115.0, 180.0]]},
+	"th_mountain": {"bg": "ord_mountain", "ground": 23, "walls": "thorn", "half_width": 900.0, "music": "story_true_hunt", "zone": "THE BROKEN PASS",
+		"platforms": [[-540.0, 105.0, 170.0], [-180.0, 150.0, 190.0], [200.0, 195.0, 170.0], [560.0, 120.0, 170.0]]},
+	"th_tents":    {"bg": "hunt_tents", "ground": 20, "walls": "hellrock", "half_width": 880.0, "music": "story_true_hunt", "zone": "THE CLAN'S LAST CAMP",
+		"platforms": [[-380.0, 130.0, 220.0], [380.0, 130.0, 220.0]]},
+	"th_forge":    {"bg": "hunt_crucible", "ground": 20, "walls": "hellrock", "half_width": 900.0, "music": "story_true_hunt", "solid": true, "zone": "THE NIGHTMARE FORGE",
+		"platforms": [[-520.0, 130.0, 180.0], [520.0, 130.0, 180.0]]},
 	"orbis":        {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_orbis", "zone": "ORBIS TERRARUM"},
 }

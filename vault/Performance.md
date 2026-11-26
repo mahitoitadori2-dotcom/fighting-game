@@ -187,3 +187,24 @@ embers still animate. Same look (screenshots of levels 6, 26, 48, 62 and DemiLan
 
 Next biggest: Versus fights (~450-550 draw calls, ~11-14 ms physics with 2 fighters) and the Achievements grid
 (773 nodes, 45-53 ms game code).
+## /nolags 2026-11-25: The True Hunt
+
+New hidden mode `?soak=perfth` (WebSoak `_run_perf_th`): an old Hunt level for comparison, four True Hunt levels
+(disasters + ledges + partner) and the Nightmare Monstrosity at a full crowd (14 golems). Web, emulated iPhone 13,
+**measured while the /speedtest crash sweep ran on the same PC** (all numbers a bit slow; compare rows, not absolutes).
+
+| Scene | Before | After |
+|---|---|---|
+| Monstrosity crowd: nodes | 740-825 (grew to 1078: dead golems kept) | 281-394 |
+| Monstrosity crowd: FPS | 11.5-11.9 | 12.0-12.2 (unchanged - see below) |
+| Edge shading A/B (crowd) | on 11.5 | off 17.3 |
+| Hunt 82 / True Hunt 113-122 FPS | 47.7 / 31-36 | 44-49 / 30-37 (noise) |
+
+Kept:
+- **Dead golems are freed** 2 s after they fall (the last one stays for the death cutscene). Blood / scorch marks
+  leave with their fighter. Before: every one of the 127 golems stayed as a corpse with its own render group.
+- **Model edge shading only on REGULAR / REAL graphics** (8 extra screen reads per pixel; phones start on FAST).
+Tried and reverted (no measured gain): no pixel pass on small golems; fewer details on small golems.
+**Still open:** the 14-golem crowd is ~12 FPS in SwiftShader - mostly RENDER time (one canvas group per fighter).
+Real iPhone GPUs are much faster than SwiftShader, so test on a phone; if it is slow there too, lowering
+`NightmareMonstrosity.MAX_ALIVE` (14) is the gameplay knob (the user's call).

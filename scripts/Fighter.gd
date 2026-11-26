@@ -83,6 +83,24 @@ var _pose_bob_ph := 0.0
 var _pose_lean := 0.0
 var _pose_lunge := 0.0
 var _pose_squash := Vector2.ONE
+# MODELS + ATTACK STARTUP (2026-11-24): a soft shadow at the feet, idle breathing, a wind-up that lasts
+# the move's REAL startup (heavier moves coil deeper) and a glint right before the hit.
+static var _state_names := {}          # script path -> {state int: "NAME"} (from the class's State enum)
+var _pose_shadow: Node2D
+var _pose_glint: Node2D
+var _pose_glint_a := 0.0
+var _pose_breath_t := randf() * TAU
+var _su_state := -999
+var _su_total := 0.0
+var _su_known := false
+# REACTIONS (2026-11-24): a hit snaps the body away from the blow (harder hits = bigger), hitstun
+# staggers, blocking braces (and a blocked hit shoves), turning around squeezes the body for a moment.
+var _pose_hit := 0.0
+var _pose_hit_dir := 0.0
+var _pose_block := 0.0
+var _pose_block_kick := 0.0
+var _pose_turn := 0.0
+var _pose_last_facing := 0
 
 
 static func now() -> float:
@@ -113,6 +131,10 @@ func _ready() -> void:
 	add_child(hurtbox)
 	hurtbox.setup(self, data.body_size)
 
+	_pose_shadow = Node2D.new()                         # Under the model (added before it)
+	_pose_shadow.name = "Shadow"
+	add_child(_pose_shadow)
+	_pose_shadow.draw.connect(_draw_pose_shadow)
 	pixel_group = PixelArt.new()
 	pixel_group.name = "PixelArt"
 	add_child(pixel_group)
@@ -123,6 +145,10 @@ func _ready() -> void:
 	visuals.name = "Visuals"
 	anim_pose.add_child(visuals)
 	visuals.draw.connect(_draw_model)
+	_pose_glint = Node2D.new()                          # Over the model
+	_pose_glint.name = "Glint"
+	add_child(_pose_glint)
+	_pose_glint.draw.connect(_draw_pose_glint)
 
 	hp = data.max_hp
 	health_changed.emit(hp, data.max_hp)
@@ -157,15 +183,27 @@ func update_pose(delta: float, attacking: bool) -> void:
 	_pose_was_floor = on_floor
 	_pose_land = move_toward(_pose_land, 0.0, delta * 6.5)
 	_pose_takeoff = move_toward(_pose_takeoff, 0.0, delta * 7.0)
-	# --- Attack: a quick wind-up (lean back, dip), then the strike (lean in, small lunge) ---
-	if attacking:
+	# --- Attack: the WIND-UP lasts the move's real startup (coil back + dip, deeper for slower moves,
+	# a tremble and a glint at the end), then the strike SNAPS forward (lean in, lunge, a smear) ---
+	var sp := startup_progress()
+	var atk := 0.0
+	if sp >= 0.0:
+		var depth := 0.7 + 0.6 * clampf(_su_total / 0.30, 0.0, 1.0)
+		atk = -(1.0 - (1.0 - sp) * (1.0 - sp)) * depth
+		_pose_atk_t = 0.0
+	elif attacking:
 		_pose_atk_t = 0.0 if _pose_atk_t < 0.0 else _pose_atk_t + delta
+		if _su_known:
+			atk = clampf(1.25 - _pose_atk_t * 2.8, 0.45, 1.25)
+		else:                                       # Art without a known startup: the old quick wind-up
+			atk = -1.0 if _pose_atk_t < 0.06 else clampf(1.0 - (_pose_atk_t - 0.06) * 2.5, 0.45, 1.0)
 	else:
 		_pose_atk_t = -1.0
-	var atk := 0.0
-	if _pose_atk_t >= 0.0:
-		atk = -1.0 if _pose_atk_t < 0.06 else clampf(1.0 - (_pose_atk_t - 0.06) * 2.5, 0.45, 1.0)
-	anim_attack = lerpf(anim_attack, atk, minf(delta * 22.0, 1.0))
+	anim_attack = lerpf(anim_attack, atk, minf(delta * (40.0 if atk > anim_attack else 18.0), 1.0))
+	var glint := clampf((sp - 0.70) / 0.30, 0.0, 1.0) if sp >= 0.0 and _su_total >= 0.10 else 0.0
+	if glint > 0.0 or _pose_glint_a > 0.0:
+		_pose_glint_a = glint if glint > 0.0 else move_toward(_pose_glint_a, 0.0, delta * 9.0)
+		_pose_glint.queue_redraw()
 	# --- Walk bob: the body dips as the legs spread (twice per stride) ---
 	var walking := on_floor and absf(vx) > 25.0 and anim_crouch < 0.5
 	var ph: float = float(get("walk_phase")) if "walk_phase" in self else _pose_bob_ph
@@ -175,25 +213,107 @@ func update_pose(delta: float, attacking: bool) -> void:
 	anim_walk = move_toward(anim_walk, clampf(absf(vx) / 120.0, 0.0, 1.0) if walking else 0.0, delta * 6.0)
 	# --- Combine ---
 	var land_curve := sin(_pose_land * PI * 0.5)
-	var dip := maxf(-anim_attack, 0.0) * 4.0
+	var dip := maxf(-anim_attack, 0.0) * 5.5
 	var target_drop := anim_crouch * 18.0 + land_curve * 12.0 + bob + dip
 	if not on_floor:
 		target_drop = 0.0
 	anim_drop = lerpf(anim_drop, target_drop, minf(delta * 30.0, 1.0))
 	var fwd := clampf(vx * float(facing) / 320.0, -1.0, 1.0) if on_floor else 0.0
-	var lean := 0.055 * fwd + 0.07 * maxf(anim_attack, 0.0) - 0.06 * maxf(-anim_attack, 0.0)
+	var lean := 0.055 * fwd + 0.07 * maxf(anim_attack, 0.0) - 0.085 * maxf(-anim_attack, 0.0)
 	if not on_floor:
 		lean += 0.05 * clampf(vx * float(facing) / 320.0, -1.0, 1.0)
 	_pose_lean = lerpf(_pose_lean, lean, minf(delta * 14.0, 1.0))
-	_pose_lunge = lerpf(_pose_lunge, 7.0 * maxf(anim_attack, 0.0) - 3.0 * maxf(-anim_attack, 0.0), minf(delta * 20.0, 1.0))
+	_pose_lunge = lerpf(_pose_lunge, 7.0 * maxf(anim_attack, 0.0) - 5.0 * maxf(-anim_attack, 0.0), minf(delta * 20.0, 1.0))
 	# Squash & stretch: stretch on take-off and fast vertical moves; no-knee art also squashes on landing
 	var stretch := 0.07 * _pose_takeoff + 0.035 * absf(anim_air)
 	var squash := 0.0 if anim_legs else 0.10 * land_curve + 0.05 * maxf(-anim_attack, 0.0)
-	var sq := Vector2(1.0 - stretch * 0.6 + squash, 1.0 + stretch - squash)
+	var smear := 0.07 * maxf(anim_attack - 0.6, 0.0)                 # The strike stretches forward
+	var breath := 0.0                                                 # Idle breathing
+	if on_floor and not attacking and absf(vx) < 10.0 and anim_crouch < 0.1:
+		_pose_breath_t += delta * 2.3
+		breath = sin(_pose_breath_t) * 0.012
+	var sq := Vector2(1.0 - stretch * 0.6 + squash + smear - breath * 0.5, 1.0 + stretch - squash - smear * 0.5 + breath)
 	_pose_squash = _pose_squash.lerp(sq, minf(delta * 20.0, 1.0))
-	anim_pose.position = Vector2(_pose_lunge * float(facing), anim_drop * absf(visuals.scale.y) if anim_legs else 0.0)
-	anim_pose.rotation = _pose_lean * float(facing)
-	anim_pose.scale = _pose_squash
+	# --- Reactions: hit recoil, hitstun stagger, block brace + shove, turn-around squeeze ---
+	_pose_hit = move_toward(_pose_hit, 0.0, delta * 4.0)
+	_pose_block = move_toward(_pose_block, 1.0 if is_blocking and not is_dead else 0.0, delta * 12.0)
+	_pose_block_kick = move_toward(_pose_block_kick, 0.0, delta * 5.0)
+	if _pose_last_facing != 0 and facing != _pose_last_facing and on_floor:
+		_pose_turn = 1.0
+	_pose_last_facing = facing
+	_pose_turn = move_toward(_pose_turn, 0.0, delta * 7.0)
+	var hit_curve := sin(minf(_pose_hit, 1.0) * PI * 0.5)
+	var hit_x := _pose_hit_dir * 7.0 * hit_curve - float(facing) * 5.0 * _pose_block_kick
+	var hit_rot := _pose_hit_dir * 0.17 * hit_curve - float(facing) * 0.06 * _pose_block_kick
+	if stun_timer > 0.0 and not is_dead:
+		hit_rot += sin(float(Time.get_ticks_msec()) * 0.028) * 0.035          # Stagger wobble
+	var brace := _pose_block * (1.0 - _pose_block_kick * 0.5)
+	var tremble := sin(float(Time.get_ticks_msec()) * 0.09) * 0.9 if sp > 0.75 else 0.0
+	var drop_y := (anim_drop + brace * 6.0 + hit_curve * 4.0) * absf(visuals.scale.y) if anim_legs else 0.0
+	anim_pose.position = Vector2(_pose_lunge * float(facing) + tremble + hit_x, drop_y)
+	if _pose_shadow != null:                                               # Shadow: only on the floor
+		_pose_shadow.modulate.a = move_toward(_pose_shadow.modulate.a, 0.0 if (not on_floor or is_dead) else 1.0, delta * 8.0)
+	anim_pose.rotation = (_pose_lean - 0.06 * brace) * float(facing) + hit_rot
+	var react := Vector2(1.0 + 0.09 * hit_curve + 0.05 * brace - 0.22 * _pose_turn, 1.0 - 0.09 * hit_curve - 0.05 * brace + 0.04 * _pose_turn)
+	anim_pose.scale = _pose_squash * react
+
+
+## 0..1 through an attack's STARTUP (the wind-up), -1 when not winding up. Read from the class's
+## State enum (any state named *_STARTUP) and its countdown timer (_state_timer / _timer).
+func startup_progress() -> float:
+	if not ("state" in self):
+		return -1.0
+	var scr := get_script() as Script
+	if scr == null:
+		return -1.0
+	var key := scr.resource_path
+	if not _state_names.has(key):
+		var rev := {}
+		var s := scr
+		while s != null and rev.is_empty():
+			var m: Variant = s.get_script_constant_map().get("State")
+			if m is Dictionary:
+				for k: Variant in (m as Dictionary):
+					rev[int((m as Dictionary)[k])] = String(k)
+			s = s.get_base_script()
+		_state_names[key] = rev
+	var names: Dictionary = _state_names[key]
+	if names.is_empty():
+		return -1.0
+	_su_known = true
+	var st := int(get("state"))
+	var t := float(get("_state_timer")) if "_state_timer" in self else (float(get("_timer")) if "_timer" in self else -1.0)
+	if st != _su_state:
+		_su_state = st
+		_su_total = maxf(t, 0.001)
+	if t < 0.0 or not String(names.get(st, "")).ends_with("STARTUP"):
+		return -1.0
+	return clampf(1.0 - t / _su_total, 0.0, 1.0)
+
+
+## Soft oval shadow at the feet (drawn once; update_pose fades it in the air).
+func _draw_pose_shadow() -> void:
+	if data == null:
+		return
+	var w := data.body_size.x * 0.62 + 10.0
+	var pts := PackedVector2Array()
+	for i in 20:
+		var a := TAU * float(i) / 20.0
+		pts.append(Vector2(cos(a) * w, 2.0 + sin(a) * w * 0.16))
+	_pose_shadow.draw_colored_polygon(pts, Color(0, 0, 0, 0.28))
+
+
+## The GLINT at the end of a wind-up: a 4-point star in front of the chest.
+func _draw_pose_glint() -> void:
+	if _pose_glint_a <= 0.01 or data == null:
+		return
+	var p := Vector2(data.body_size.x * 0.6 * float(facing), -data.body_size.y * 0.62)
+	var r := 6.0 + 10.0 * _pose_glint_a
+	var k := r * 0.2
+	var col := Color(1.0, 0.98, 0.85, _pose_glint_a)
+	_pose_glint.draw_colored_polygon(PackedVector2Array([p + Vector2(0, -r), p + Vector2(k, -k), p + Vector2(r, 0), p + Vector2(k, k),
+		p + Vector2(0, r), p + Vector2(-k, k), p + Vector2(-r, 0), p + Vector2(-k, -k)]), col)
+	_pose_glint.draw_circle(p, r * 0.28, Color(1, 1, 1, _pose_glint_a))
 
 
 ## Straight back to the neutral anim_pose (respawn, cutscenes).
@@ -209,6 +329,10 @@ func reset_pose() -> void:
 	_pose_lean = 0.0
 	_pose_lunge = 0.0
 	_pose_squash = Vector2.ONE
+	_pose_hit = 0.0
+	_pose_block = 0.0
+	_pose_block_kick = 0.0
+	_pose_turn = 0.0
 	if anim_pose != null:
 		anim_pose.position = Vector2.ZERO
 		anim_pose.rotation = 0.0
@@ -340,6 +464,13 @@ func take_hit(amount: int, hit: HitData) -> void:
 		var col := Color(1.0, 0.55, 0.1) if hit.onslaught else Color.WHITE
 		Effects.popup(self, global_position + Vector2(randf_range(-14.0, 14.0), -140), "-%d" % amount, col, 28 if hit.onslaught else 22)
 		_flash(Color(1.0, 0.3, 0.3), 0.15)
+		_pose_hit = clampf(float(amount) / 22.0, 0.45, 1.0)          # Recoil: away from the blow
+		if hit.knockback.x != 0.0:
+			_pose_hit_dir = signf(hit.knockback.x)
+		elif hit.source != null and is_instance_valid(hit.source):
+			_pose_hit_dir = signf(global_position.x - hit.source.global_position.x)
+		else:
+			_pose_hit_dir = -float(facing)
 	if hit.knockback != Vector2.ZERO:
 		apply_knockback(hit.knockback, hit.causes_hitstun)
 	if hp <= 0:
@@ -385,6 +516,7 @@ func apply_knockback(kb: Vector2, stun: bool = true) -> void:
 
 
 func on_blocked(hit: HitData, perfect: bool) -> void:
+	_pose_block_kick = 0.5 if perfect else 1.0                 # The guard gets shoved back
 	if perfect:
 		Effects.popup(self, global_position + Vector2(0, -150), "PERFECT BLOCK!", Color(0.4, 1.0, 1.0), 28)
 	else:

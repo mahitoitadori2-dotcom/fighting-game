@@ -109,6 +109,8 @@ static func _build() -> void:
 	# ---------------- VERSUS ----------------
 	_add("vs_first", "First Blood", "Win your first Versus fight.", "versus",
 		{"big": "sword", "frame": "bronze", "bg": Color(0.45, 0.12, 0.10)})
+	_add("m1_full_chain", "Four Count", "Land all 4 hits of a basic-attack chain, finisher included.", "versus",
+		{"big": "sword", "frame": "bronze", "bg": Color(0.38, 0.22, 0.08)})
 	_add("vs_no_powers", "Powerless Victory", "Win a Versus fight without using a single Power (moves 1 / 2 / 3).", "versus",
 		{"big": "no_powers", "frame": "silver", "bg": Color(0.20, 0.16, 0.40)})
 	_add("vs_no_blocks", "Shieldless Victory", "Win a Versus fight without blocking even once.", "versus",
@@ -322,6 +324,18 @@ static func _build() -> void:
 		{"script": HeadGuard, "frame": "bronze", "emblem": "sword", "bg": hunt_bg.darkened(0.3)})
 	_add("col_%d" % StoryLevels.HUNT_PART, "The Hunt of a Nightmare Conquered", "Stop THE TROUPE'S HEART (Level 110).", "story",
 		{"big": "crown", "frame": "gold", "bg": hunt_bg})
+	# ---------------- THE TRUE HUNT (levels 111-138) ----------------
+	var true_bg := Color(0.26, 0.08, 0.04)
+	_add("disaster_dodger", "Weatherproof", "THE TRUE HUNT: clear a level without a single natural disaster touching you.", "challenge",
+		{"big": "no_blocks", "frame": "silver", "bg": true_bg})
+	_add("monstrosity_down", "Sixth Generation", "Break the Nightmare Monstrosity all the way down - every last golem.", "story",
+		{"script": NightmareMonstrosity, "frame": "gold", "emblem": "skull", "bg": true_bg})
+	_add("nl_joined", "A Nightmare on Our Side", "The Nightmare Lord joins you at the end of THE TRUE HUNT.", "story",
+		{"script": FireLordArt, "frame": "gold", "emblem": "star", "bg": Color(0.36, 0.04, 0.04)})
+	_add("nl_left", "The One That Got Away", "The Nightmare Lord leaves at the end of THE TRUE HUNT.", "story",
+		{"script": FireLordArt, "frame": "silver", "emblem": "skull", "bg": Color(0.14, 0.06, 0.06)})
+	_add("col_%d" % StoryLevels.TRUE_HUNT_PART, "The True Hunt Conquered", "Defeat THE NIGHTMARE MONSTROSITY (Level 138).", "story",
+		{"big": "crown", "frame": "gold", "bg": true_bg})
 	# ---------------- MADNESS (secret: XANXXE 1NT3GR1T13S) ----------------
 	_add("madness_unlocked", "Integrity Compromised", "Extract Reality. Ready Infection. Engage Madness.", "secret",
 		{"script": WeirdCreature, "frame": "red", "emblem": "skull", "bg": Color(0.20, 0.0, 0.0)})

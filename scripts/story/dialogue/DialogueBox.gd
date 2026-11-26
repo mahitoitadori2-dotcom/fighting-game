@@ -362,8 +362,18 @@ func _next() -> void:
 
 func _close() -> void:
 	get_tree().paused = _was_paused
+	_closed = true
 	finished.emit()
 	queue_free()
+
+
+## Freed WITHOUT finishing (the scene changed mid-talk: quit, retry, a test): never leave the game frozen.
+var _closed := false
+
+
+func _exit_tree() -> void:
+	if not _closed:
+		get_tree().paused = _was_paused
 
 
 # ============================================================

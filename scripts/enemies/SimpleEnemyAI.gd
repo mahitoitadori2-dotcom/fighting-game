@@ -40,8 +40,18 @@ func think() -> void:
 			retreat()
 	else:
 		hold()
-	if dy < -110.0 and chance(0.25):
+	if _ledges():
+		# THE TRUE HUNT's rock LEDGES: you are up there -> jump just high enough to land next to you
+		if dy < -70.0 and dist < 300.0 and chance(0.5):
+			var need := sqrt((-dy + 30.0) * 2.0 * e.data.gravity) / maxf(e.data.jump_force, 1.0)
+			e.jump(clampf(need, 1.0, 1.5))
+	elif dy < -110.0 and chance(0.25):
 		e.jump()
+
+
+## Are there one-way ledges in this arena (StoryPlatform)?
+func _ledges() -> bool:
+	return not e.get_tree().get_nodes_in_group("story_platform").is_empty()
 
 
 ## Signed x distance to the closest living ally enemy (INF if alone). Few enemies = cheap.

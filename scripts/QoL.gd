@@ -35,9 +35,10 @@ static func load_settings() -> void:
 	var you := String(c.get_value("picks", "you", ""))
 	var opp := String(c.get_value("picks", "opponent", ""))
 	var arena := String(c.get_value("picks", "arena", ""))
-	if you != "" and String(CharacterRoster.get_entry(you).get("id", "")) == you:
+	# (A LOCKED fighter - the Nightmare Lord before he joins you - is never restored)
+	if you != "" and String(CharacterRoster.get_entry(you).get("id", "")) == you and CharacterRoster.get_entry(you).get("selectable", true):
 		CharacterRoster.selected_id = you
-	if opp == "" or String(CharacterRoster.get_entry(opp).get("id", "")) == opp:
+	if opp == "" or (String(CharacterRoster.get_entry(opp).get("id", "")) == opp and CharacterRoster.get_entry(opp).get("selectable", true)):
 		CharacterRoster.opponent_id = opp
 	if arena != "" and String(MapCatalog.entry(arena).get("id", "")) == arena:
 		ArenaManager.selected_arena = arena

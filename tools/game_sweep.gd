@@ -6,7 +6,7 @@ extends Node
 ## Errors land in the log between the "### TEST" markers.
 ## Run (silent, ~35 min), BACK UP the saves first (it completes levels / unlocks things):
 ##   godot --audio-driver Dummy --path . --log-file sweep.log res://tools/game_sweep.tscn
-## One part only: set UB_SWEEP=menus | maps | versus | story | ext | demi
+## One part only: set UB_SWEEP=menus | maps | versus | story | ext | demi | hunt | truehunt
 
 const SKIP_WARMUP := 1.0
 
@@ -183,6 +183,15 @@ func _run() -> void:
 			if String(StoryLevels.get_level(n).get("boss", "")) != "" and not (StoryLevels.get_level(n).get("waves", []) as Array).is_empty():
 				StoryManager.boss_retry = n
 				await _test("hunt boss %d" % n, "res://scenes/StoryArena.tscn", 16.0)
+	if only == "" or only == "truehunt":
+		# THE TRUE HUNT (111-138): every level (disasters, ledges, partner), 138 also from the checkpoint
+		for n in range(StoryLevels.TRUE_FIRST, StoryLevels.TRUE_LAST + 1):
+			StoryProgress.current_level = n
+			StoryManager.boss_retry = 0
+			await _test("truehunt %d %s" % [n, String(StoryLevels.get_level(n).get("title", ""))], "res://scenes/StoryArena.tscn", 16.0)
+			if String(StoryLevels.get_level(n).get("boss", "")) != "":
+				StoryManager.boss_retry = n
+				await _test("truehunt boss %d" % n, "res://scenes/StoryArena.tscn", 20.0)
 	await _test("menu MainMenu (end)", "res://scenes/MainMenu.tscn", 4.0)
 	print("MEM at end: %d MB" % int(OS.get_static_memory_usage() / 1048576))
 	print("SWEEP DONE")

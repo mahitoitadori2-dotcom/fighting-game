@@ -64,6 +64,23 @@ const OPENING := {
 		["enlightened", "If they fall... then I am..."],
 		["H", "Alone."],
 		["enlightened", "STOP THEM! SOMEBODY STOP THEM!"]],
+	# ----- THE TRUE HUNT (lore by the user, 2026-11-25): both heroes hunt the Nightmare Lord -----
+	111: [["narrator", "When the Storm woke again, the Nightmare Nourmish Clan struck. Every people of Terra Patria answered - and the Clan ran into the caves."],
+		["P", "His Troupe is broken. Now we find HIM."],
+		["H", "Strange. In every fight, he never once aimed at either of us. Only at everything around us."],
+		["P", "That's exactly why I'm coming along. Something about him doesn't add up."],
+		["H", "And the ground won't stop shaking."]],
+	115: [["P", "Meteors. Gales. Now the ceiling. This planet is coming apart."],
+		["H", "Or something is keeping it busy. The Storm wakes up, and the whole world twitches."]],
+	120: [["H", "Look at them. Guards, saints, tribes, things from the Colosseums..."],
+		["P", "The Clan isn't fighting us. It's HERDING everything it finds into our way."],
+		["H", "Then the Nightmare Lord is close. You don't build a wall that big around nothing."]],
+	125: [["narrator", "Long ago, when the first sky of the universe formed, it formed here. Terra Patria breathed before any other world."],
+		["narrator", "The universe did not forget. It locked the door."]],
+	130: [["P", "Lightning hits the same spot twice here. Three times. As if the sky were aiming."],
+		["H", "The Storm guards half the planet at once. We're walking right under its half."]],
+	136: [["H", "Their last camp. Empty."],
+		["P", "Not empty. Listen. Something in the cave behind it is breathing... and it's made of stone."]],
 }
 
 ## After the boss is dead (after its death scene / before the finale cutscene).
@@ -156,6 +173,11 @@ const BOSS := {
 	56: [["first_prime", "Turn back. The Light does not forgive."],
 		["H", "Your king is hiding behind you."],
 		["first_prime", "Then I will be the wall he hides behind."]],
+	# ----- THE TRUE HUNT -----
+	138: [["narrator", "A golem of black stone climbs out of the anvil. Red fire leaks from its cracks - and dies out, again and again."],
+		["P", "They tried to put nightmare flame into a golem. It didn't take."],
+		["H", "It looks half dead already."],
+		["narrator", "It is not. It will not be. Not for six generations."]],
 	# The last level: he goes CRAZY for his life
 	62: [["H", "No more running."],
 		["enlightened", "Running? HA! HAHAHA! I'm not running... I'm SURVIVING!"],

@@ -86,10 +86,10 @@ func _physics_process(delta: float) -> void:
 		var n: Node = _tracked.get(id)
 		if n == null or not is_instance_valid(n) or not n.is_inside_tree():
 			continue
-		var props: Dictionary = Replay.capture(n as Fighter) if n is Fighter else NetHost.props(n)
+		var p: Dictionary = Replay.capture(n as Fighter) if n is Fighter else NetHost.props(n)
 		if n is Fighter:
-			_last[id] = props
-		var spawn := {"i": id, "s": (n.get_script() as Script).resource_path, "p": props, "x": _xform(n as Node2D), "n": String(n.name)}
+			_last[id] = p
+		var spawn := {"i": id, "s": (n.get_script() as Script).resource_path, "p": p, "x": _xform(n as Node2D), "n": String(n.name)}
 		if n.get("net_sync") == true:
 			spawn["pp"] = n.get_parent().get_instance_id()     # Inside a fighter (a held weapon)
 		sp.append(spawn)

@@ -181,6 +181,9 @@ func _try_punch() -> void:
 	_hit.damage = data.punch_damage
 	_hit.knockback = Vector2(facing * data.punch_knockback.x, data.punch_knockback.y)
 	_hit.move = "onslaught_punch"
+	if not m1_ready():
+		return
+	m1_begin(_hit)
 	state = State.PUNCH_STARTUP
 	_timer = data.punch_startup
 

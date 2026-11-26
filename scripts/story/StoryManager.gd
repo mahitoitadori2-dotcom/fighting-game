@@ -270,6 +270,7 @@ func _exit_tree() -> void:
 	wall_right_x = 100000.0
 	max_attackers = MAX_ATTACKERS
 	Companion.leader = null
+	NightmareMonstrosity.clear_waiting()          # Golems that never got their turn
 	MatchSettings.sandbox = _saved_sandbox
 	ArenaCamera.focus = null
 	Engine.time_scale = 1.0
@@ -333,6 +334,11 @@ func _apply_map(map: Dictionary) -> void:
 		player_spawn.x = clampf(player_spawn.x, wall_left_x + 120.0, wall_right_x - 120.0)
 	# IMPORTANT maps (boss arenas): a 3D background behind the 2D fight (Backdrop3D)
 	Backdrop3D.apply(get_parent(), String(map.get("bg", "")), center_x)
+	# THE TRUE HUNT: one-way rock LEDGES above the floor (removed again on the next map)
+	for old in get_tree().get_nodes_in_group("story_platform"):
+		old.queue_free()
+	for pl: Array in map.get("platforms", []):
+		StoryPlatform.build(self, Vector2(center_x + float(pl[0]), _ground_y - float(pl[1])), float(pl[2]), Color(0.30, 0.16, 0.12))
 
 
 func _spawn_player() -> void:
@@ -528,6 +534,8 @@ func _run() -> void:
 		else:
 			(waves[0] as Array).append_array(extra)
 	_waves_now = waves
+	if not (level.get("disasters", []) as Array).is_empty() and not BossRush.active:
+		_disaster = NatureDisaster.start(self, level["disasters"])     # THE TRUE HUNT: natural disasters
 	for i in waves.size():
 		_wave_index = i
 		await _spawn_wave(waves[i], i, waves.size())
@@ -538,6 +546,8 @@ func _run() -> void:
 			_show_banner("WAVE CLEARED", "", Color(0.6, 1.0, 0.6))
 			await _wait(1.3)
 			_hide_banner()
+	if _disaster != null:
+		_disaster.stop()                           # The land calms down when the last wave falls
 	if String(level.get("boss", "")) != "":
 		_reached_boss = true                       # Dying from here on offers RETRY FROM BOSS
 		await _boss_intro()
@@ -562,6 +572,10 @@ func _run() -> void:
 		else:
 			await _boss_death_cutscene()
 			await _dialogue("after")                       # The First Prime falls: now he is scared
+			if bool(level.get("nl_offer", false)) and not _over:
+				await NightmareOffer.play(self)            # THE TRUE HUNT: the Nightmare Lord joins you... or leaves
+				if _over:
+					return
 	elif String(level.get("cutscene_out", "")) != "":
 		# Normal level that ends in a cutscene (Colosseum 4: the floor breaks, you fall into the void)
 		if bool(level.get("floor_break", false)):
@@ -579,7 +593,7 @@ func _clear_hazards() -> void:
 	for n in get_tree().current_scene.find_children("*", "", true, false):
 		if n is EnemyProjectile:
 			(n as EnemyProjectile).recycle()
-		elif n is EnlightenedFx.Laser or n is BossHazard:
+		elif n is EnlightenedFx.Laser or n is BossHazard or n is NatureDisaster.Strike:
 			n.queue_free()
 
 
@@ -1116,6 +1130,23 @@ func _on_boss_died() -> void:
 ## GROUP BOSS (boss extension VM4: three Void Horrids): a boss with spawn_group() brings its
 ## siblings. Each gets the Story boss buff and its own HP bar; the level ends when all are dead.
 var boss_group: Array = []
+## THE TRUE HUNT's natural disasters (NatureDisaster), null in every other level.
+var _disaster: NatureDisaster = null
+
+
+## A boss that SPLITS (the Nightmare Monstrosity): a new piece joins the boss group the moment it is
+## born, so the level only ends with the very last one. The big HP bar goes away (the HUD counter
+## "... LEFT" takes over); the last piece to die is the one the death cutscene looks at.
+func add_boss_member(e: BaseEnemy) -> void:
+	if boss_group.is_empty() and boss != null:
+		boss_group.append(boss)
+	boss_group.append(e)
+	boss_bar_visible = false
+	e.died.connect(func() -> void:
+		if _over:
+			return
+		boss = e
+		_on_boss_died())
 
 
 func _spawn_boss_group() -> void:
@@ -1281,6 +1312,8 @@ func _level_clear() -> void:
 		for k in badges:
 			names.append(Achievements.KIND_NAMES.get(k, String(k)))
 		badge_text = "    |    BADGES: " + ", ".join(names)
+	if _disaster != null and _disaster.player_hits == 0 and not autoplay:
+		Achievements.unlock("disaster_dodger")          # THE TRUE HUNT: not one disaster touched you
 	var lore_name := StoryLore.collect(String(level.get("boss", "")))
 	if lore_name != "":
 		badge_text += "\nITEM FOUND: %s  (read it in the CODEX on the board)" % lore_name

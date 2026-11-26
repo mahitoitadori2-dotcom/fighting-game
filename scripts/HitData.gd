@@ -14,6 +14,7 @@ var causes_hitstun := true
 var is_grab := false
 var gauge_gain := true
 var move := ""                         # Which move: punch, rocket, hnct, drill, void_goo, triple_rocket, faoth, sword, grab, eternal, mini_eternal, shadow_swarm...
+var m1 := 0                            # Basic-attack chain step 1-4 (0 = not an M1): ControlledFighter.m1_begin
 var part := ""                         # Sub-part of a combo ultimate (FAOTH: rocket / goo / hnct / arms)
 ## Damage type: "normal", "explosion" or "void". Leave "" to auto-detect from move/part.
 ## Characters can be weak to a type (CharacterData.damage_kind_taken).

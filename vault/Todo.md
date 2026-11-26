@@ -10,6 +10,10 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 
 ## Testing
 
+- [ ] **Play THE TRUE HUNT yourself (111-138, added 2026-11-25).** Only the CPU played it, headless, with no screenshots. Check: the disasters look right and are fair; the ledges (can enemies reach you up there?); the 127-golem Monstrosity isn't too long; the Nightmare Lord, goblins, Slave and Sacrifice are the right size in the ending; all 4 ending paths. See [Story Mode](StoryMode.md).
+- [ ] **Try the 4-hit M1 chain in Versus** (2026-11-24): once hit 1 lands, all 4 are guaranteed. Is that too strong? (A Warrior chain = 23 damage.)
+- [ ] Run /speedtest (the full crash sweep was not run after the True Hunt / M1 changes) and /phonowebo.
+
 - [ ] **Play Colosseum 1 yourself.** The tests used a CPU-controlled Warrior, so a human must tune the difficulty, especially the Blinded Lord.
   - In `BlindedLord.gd`: boss HP, `phase2_speed_mult` and `phase2_cooldown_mult`.
   - In `ChemicalPool.gd`: `TICK` and `TICK_DAMAGE`.

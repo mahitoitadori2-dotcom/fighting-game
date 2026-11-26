@@ -89,14 +89,14 @@ static func hero_allowed(id: String) -> bool:
 		return false
 	for e in CharacterRoster.playable():
 		if String(e["id"]) == id:
-			return true
+			return bool(e.get("selectable", true))        # (Not a LOCKED fighter)
 	return false
 
 
 static func heroes() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for e in CharacterRoster.playable():
-		if String(e["id"]) != "apha":
+		if String(e["id"]) != "apha" and bool(e.get("selectable", true)):
 			out.append(e)
 	return out
 

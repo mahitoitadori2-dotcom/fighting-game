@@ -64,6 +64,7 @@ var walk_phase := 0.0
 ## NIGHTMARE VERSION (The Hunt of a Nightmare, levels 82-110: ids "nm_<enemy>"): a weak enemy of the
 ## three open worlds, dark red, tougher and meaner, named "Nightmare ...". Set before it enters the tree.
 var nightmare := false
+var compact_hud := false                  # Floating HUD = only a short HP bar (crowds: the Monstrosity's pieces)
 var nightmare_name := ""                 # "" = "Nightmare " + its normal name
 const NIGHTMARE_TINT := Color(0.95, 0.30, 0.28)
 const NIGHTMARE_HP := 1.6

@@ -1,8 +1,8 @@
----
+﻿---
 class: state
 validity: current
 type: reference
-updated: 2026-11-09
+updated: 2026-11-25
 ---
 
 # Story Mode
@@ -454,3 +454,17 @@ Its own Story part (page 9) after The Caves: the second OPEN-WORLD level, with t
   - The Breaker drops and is picked up; the magma drains; the wall blows up; level 67 clears.
   - Screenshots looked right.
 - **Not checked:** played by a human, and the boss balance. The CPU cannot really play an open world.
+## The True Hunt (levels 111-138, added 2026-11-25)
+
+Lore by the user. Terra Patria was the first planet with breathable air and became a "Prime Fragment of Existence", sealed by 9 locks (6 shut now: Alert Service, DoMA, Storm Seed, Kharleming's Constitution, Einstein's Theorem / Shield of Kokusen's, Core Ignition). The Nightmare Nourmish Clan sneaked in before the seal, struck when the Storm woke, was beaten by every people of the planet and fled to the caves. Now the heroes hunt the Nightmare Lord.
+- **Heroes:** you play the hero who did NOT chase the Enlightened One; the other one is ALWAYS your CPU partner (even with SOLO on), because the Nightmare Lord never hurts either of them.
+- **Enemies:** every regular enemy of the game (Colosseums, Chase, Boss Extensions, DemiLand, Terra Craterum, the Hunt). No bosses or mini-bosses. Madness enemies stay secret. 2-5 waves per level.
+- **Natural disasters** (per level, they hit EVERYONE, with a warning first): quake, meteors, lightning, eruption, rockfall, gale (wind pushes everyone). Achievement for a level with no disaster hit.
+- **Maps:** 8 new ones (rocks, village, hollow, magma fields, reactor, mountain pass, the Clan's last camp, the Nightmare Forge) with one-way rock ledges.
+- **Milestones:** 120 / 130 harder, 125 even harder.
+- **Boss (138): the Nightmare Monstrosity.** A golem with nightmare flame that never caught. It splits into 2 smaller, faster golems every time it falls, down to generation 6 (127 golems in all, at most 14 out at once). The big HP bar becomes a "... LEFT" counter.
+- **Ending (the Nightmare Lord's offer)**, checked in this order: fewer than 3 of the DemiLand Stranger's talks -> goblins ambush him, he runs (LEAVES); freed the Kharleming Sacrifice -> it attacks him, he calls it a trap (LEAVES); freed the Volcano Slave (one of his Clan) -> he JOINS; otherwise you choose. Your Abandoned Town choice changes one line.
+- **Joined = the Nightmare Lord unlocks in Versus** (he is locked until then). He stays unlocked after a Story reset.
+- **Lore:** most of it is told by him at the end; short talks at 111 / 115 / 120 / 125 / 130 / 136 / 138; a Codex item (the Smith's Tally) hints at locks 7-9.
+- **Music:** story_true_hunt, boss_monstrosity (new).
+- **Tested (headless, autoplay):** all 28 levels' data; levels 111, 113, 115, 116, 122 cleared with disasters striking; level 138 cleared on all 4 ending paths; the lock and unlock work. **Not checked:** seen on screen (no screenshots yet), played by a human, the balance of the disasters and of the 127-golem boss.
