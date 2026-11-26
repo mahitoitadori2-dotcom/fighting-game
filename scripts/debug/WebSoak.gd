@@ -12,7 +12,7 @@ static func wanted() -> bool:
 	if not OS.has_feature("web"):
 		return false
 	var q: Variant = JavaScriptBridge.eval("window.location.search", true)
-	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest") or String(q).contains("soak=shots") or String(q).contains("soak=looks") or String(q).contains("soak=truehunt"))
+	return q is String and (String(q).contains("soak=1") or String(q).contains("soak=perf") or String(q).contains("soak=mobile") or String(q).contains("soak=hunt") or String(q).contains("soak=madui") or String(q).contains("soak=netguest") or String(q).contains("soak=shots") or String(q).contains("soak=looks") or String(q).contains("soak=truehunt") or String(q).contains("soak=phonenew"))
 
 
 func _ready() -> void:
@@ -390,6 +390,83 @@ func _run_truehunt() -> void:
 		await _w(4.0)
 	NightmareOffer.test_path = ""
 	StoryManager.autoplay = false
+	print("MOBILE done")
+
+
+## ?soak=phonenew (2026-11-26): the 1476e33 features BY TOUCH - the 4-hit M1 chain with the ATK button,
+## the Nightmare Lord's LOCKED card in Character Select, and dropping through a True Hunt ledge (stick DOWN).
+func _run_phone_new() -> void:
+	await _w(2.0)
+	# ---- 1. M1 chain: Warrior vs the Dummy, 4 ATK taps ----
+	ArenaManager.p1_cpu = false
+	ArenaManager.selected_arena = "test"
+	CharacterRoster.selected_id = "warrior"
+	CharacterRoster.opponent_id = ""
+	get_tree().change_scene_to_file("res://Main.tscn")
+	await _w(4.0)
+	var am := get_tree().get_first_node_in_group("arena_manager") as ArenaManager
+	var tc := get_tree().current_scene.find_child("TouchControls", true, false)
+	if am == null or tc == null or am.p1 == null or am.p2 == null:
+		print("MOBILE m1: no fight / no touch controls")
+	else:
+		var steps: Array = []
+		am.p1.hitbox.hit_landed.connect(func(_v: Fighter, h: HitData, r: String) -> void: steps.append("%d%s" % [h.m1, r.left(1)]))
+		var atk := Vector2.ZERO
+		for btn in tc.get("_buttons"):
+			if String(btn["action"]) == "punch":
+				atk = btn["center"]
+		for i in 4:
+			am.p2.global_position = am.p1.global_position + Vector2(float(am.p1.facing) * 75.0, 0.0)
+			am.p2.velocity = Vector2.ZERO
+			_target("ATTACKBTN", atk)
+			await _w(0.62)
+		await _w(0.4)
+		print("MOBILE m1 chain by touch: steps=%s  finisher landed=%s" % [" ".join(steps), steps.has("4h")])
+		print("MOBILE shot m1_finisher")
+	# ---- 2. The Nightmare Lord is LOCKED in Character Select (not recruited in this browser) ----
+	get_tree().change_scene_to_file(CharacterRoster.CHARACTER_SELECT)
+	await _w(3.0)
+	var nl_card: Control = null
+	for n in get_tree().current_scene.find_children("*", "", true, false):
+		if n is CharacterCard and String((n.get("_entry") as Dictionary).get("id", "")) == "firelord":
+			nl_card = n
+	var before := CharacterRoster.selected_id
+	if nl_card != null:
+		print("MOBILE nightmare lord card: selectable=%s" % nl_card.get("_selectable"))
+		_ctl_target("NLCARD", nl_card)
+		await _w(1.5)
+	print("MOBILE nightmare lord locked: card found=%s  picked after a tap=%s (was %s, now %s)" % [nl_card != null, CharacterRoster.selected_id == "firelord", before, CharacterRoster.selected_id])
+	print("MOBILE shot nl_locked")
+	# ---- 3. True Hunt ledge: stand on it, pull the stick DOWN, drop through ----
+	StoryProgress.load_progress()
+	StoryProgress.unlocked_level = maxi(StoryProgress.unlocked_level, 113)
+	StoryProgress.current_level = 113
+	StoryManager.boss_retry = 0
+	StoryManager.autoplay = false
+	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+	await _w(1.0)
+	await _wait_for(func() -> bool: return CombatManager.fight_active and not get_tree().paused, 40.0)
+	var m := get_tree().get_first_node_in_group("story_manager") as StoryManager
+	var ledges := get_tree().get_nodes_in_group("story_platform")
+	if m == null or ledges.is_empty():
+		print("MOBILE ledge: no level / no ledges")
+	else:
+		for e in get_tree().get_nodes_in_group("fighters"):
+			if e is BaseEnemy:
+				(e as BaseEnemy).damage_mult = 0.0           # (Nothing knocks us off while we test)
+		var lg := ledges[0] as Node2D
+		m.player.global_position = lg.global_position + Vector2(0, -4)
+		m.player.velocity = Vector2.ZERO
+		await _w(1.0)
+		var on_ledge: bool = m.player.is_on_floor() and m.player.global_position.y < m._ground_y - 50.0
+		print("MOBILE ledge: standing on it=%s (y=%d, floor y=%d)" % [on_ledge, m.player.global_position.y, m._ground_y])
+		print("MOBILE shot ledge_on")
+		var tcs := get_tree().current_scene.find_child("TouchControls", true, false)
+		var home: Vector2 = (tcs.get("_stick") as Dictionary)["home"] if tcs != null else Vector2(105, 280)
+		_target("STICKDOWN", home)
+		await _w(2.0)
+		print("MOBILE ledge: after stick DOWN on the floor=%s (y=%d)" % [m.player.global_position.y > m._ground_y - 10.0, m.player.global_position.y])
+		print("MOBILE shot ledge_dropped")
 	print("MOBILE done")
 
 
@@ -844,6 +921,9 @@ func _run() -> void:
 		return
 	if q is String and String(q).contains("soak=truehunt"):
 		await _run_truehunt()
+		return
+	if q is String and String(q).contains("soak=phonenew"):
+		await _run_phone_new()
 		return
 	if q is String and String(q).contains("soak=mobile"):
 		await _run_mobile()
