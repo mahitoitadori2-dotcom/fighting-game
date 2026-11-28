@@ -18,6 +18,8 @@ extends CanvasLayer
 ##   jumpscare   Rotor. Suddenly. Loudly.
 ##   boo         closes the panel (same as exit)
 ##   hi / what time is it (a random country) / + small talk: ping, coin, dice, joke, whoami, date...
+##   cutscene <capture|timestop|free|bridge>   watch a cutscene of THE LAST STRETCH right now (2026-11-28)
+##   level <139-148>                           jump straight into a level of THE LAST STRETCH (no unlocking)
 
 ## While MADNESS is on (2026-11-22, by the user) the console refuses most commands. Only these get through -
 ## normalize (the way out), rotor + jumpscare (they SCARE XANXXE: MadnessPresence.scare), and closing.
@@ -26,6 +28,8 @@ const REFUSALS := ["XANXXE> no.", "XANXXE> I don't take orders.", "XANXXE> acces
 	"XANXXE> that command belongs to me now.", "XANXXE> try again. it won't help.", "XANXXE> ...no."]
 const COMMANDS := {
 	"help": ["_cmd_help", "list the commands"],
+	"cutscene": ["_cmd_cutscene", "cutscene <capture|timestop|free|bridge>  -  watch a Last Stretch cutscene"],
+	"level": ["_cmd_level", "level <139-148>  -  jump into a Last Stretch level"],
 	"#s001": ["_cmd_s001", "BLACK GHOST: every move with an Onslaught goes off as its Onslaught"],
 	"#s002": ["_cmd_s002", "a CPU clone of you joins the fight"],
 	"#s003": ["_cmd_s003", "CORRUPTED + IMMORTAL... but blind"],
@@ -235,6 +239,41 @@ func _cmd_status(_args: PackedStringArray) -> void:
 		var f := n as Fighter
 		if f != null and f.slot == 1 and f.data != null:
 			say("  you: %s  HP %d / %d" % [f.data.character_name, f.hp, f.data.max_hp])
+
+
+## THE LAST STRETCH: watch one of its cutscenes now, on top of whatever is running (nothing is saved).
+func _cmd_cutscene(args: PackedStringArray) -> void:
+	var which := args[0].to_lower() if args.size() > 0 else ""
+	var lv := {"capture": 142, "timestop": 147, "free": 148, "bridge": 148}
+	if not lv.has(which):
+		say("  cutscene capture | timestop | free | bridge")
+		return
+	say("  playing ls_%s..." % which)
+	close()
+	var cs := StoryCutscene.new()
+	cs.kind = "ls_" + which
+	cs.level = int(lv[which])
+	cs.hero_art = ArchitectArt
+	var was := get_tree().paused
+	get_tree().paused = true                                  # The fight behind it waits (the cutscene always runs)
+	get_tree().root.add_child(cs)
+	await cs.finished
+	cs.queue_free()
+	get_tree().paused = was
+
+
+## THE LAST STRETCH: start one of its levels directly (no unlocking; clearing it saves like any level).
+func _cmd_level(args: PackedStringArray) -> void:
+	var n := int(args[0]) if args.size() > 0 else 0
+	if n < LevelsLastStretch.FIRST or n > LevelsLastStretch.LAST:
+		say("  level %d-%d" % [LevelsLastStretch.FIRST, LevelsLastStretch.LAST])
+		return
+	say("  to level %d..." % n)
+	close()
+	get_tree().paused = false
+	StoryProgress.current_level = n
+	StoryManager.boss_retry = 0
+	get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
 
 
 func _cmd_echo(args: PackedStringArray) -> void:

@@ -8,6 +8,8 @@ extends Node3D
 ##   face(dir)      turn to look along a direction (the model faces +x by default)
 ##   spin           extra roll of the whole body around its middle (tumbling / rolling)
 ## Origin = feet, about 2.2 units tall (scale the node for bigger bosses).
+## The heroes use MODELLED parts from Blender (art/models/heroes/*.glb, rebuilt by
+## tools/blender/build_heroes.py); bosses and anything without a model keep the shape-built body.
 
 var pose := "idle"
 var spin := 0.0
@@ -85,8 +87,105 @@ func _limb(parent: Node3D, at: Vector3, seg_len: float, r: float, upper: Color, 
 	return [top, mid]
 
 
+## The modelled heroes (built in Blender by tools/blender/build_heroes.py): one mesh per body part,
+## each with its origin at the joint it turns on, so the same pivots / animation drive them.
+const MODELS := {
+	"warrior": "res://art/models/heroes/warrior.glb",
+	"architect": "res://art/models/heroes/architect.glb",
+	"anti": "res://art/models/heroes/architect.glb",
+	"enlightened": "res://art/models/heroes/enlightened.glb",
+}
+## Material slots of the models that are NOT palette colours: [colour, glow]
+const FIXED_SLOTS := {
+	"dark": [Color(0.04, 0.02, 0.06), 0.0],
+	"steel": [Color(0.75, 0.77, 0.82), 0.0],
+	"grip": [Color(0.25, 0.15, 0.08), 0.0],
+	"eye_gold": [Color(1.0, 0.85, 0.35), 2.0],
+}
+static var _model_cache := {}               # glb path -> {part name: Mesh}
+
+
+## The part meshes of a hero model ({} if there is none: the shape-built body is used).
+static func _model_parts(who: String) -> Dictionary:
+	var path := String(MODELS.get(who, ""))
+	if path == "":
+		return {}
+	if _model_cache.has(path):
+		return _model_cache[path]
+	var out := {}
+	if ResourceLoader.exists(path):
+		var ps := load(path) as PackedScene
+		if ps != null:
+			var inst := ps.instantiate()
+			for n in inst.find_children("*", "MeshInstance3D", true, false):
+				out[String(n.name)] = (n as MeshInstance3D).mesh
+			inst.free()
+	_model_cache[path] = out
+	return out
+
+
+## One body part of a model under a pivot; its material slots get the hero's palette colours.
+func _part(parent: Node3D, mesh: Mesh, cfg: Dictionary, far: bool) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	for i in mesh.get_surface_count():
+		var sm := mesh.surface_get_material(i)
+		var slot := sm.resource_name if sm != null else "chest"
+		var col := Color.WHITE
+		var glow := 0.0
+		if FIXED_SLOTS.has(slot):
+			col = FIXED_SLOTS[slot][0]
+			glow = FIXED_SLOTS[slot][1]
+		else:
+			col = cfg.get(slot, cfg.get("chest", Color.WHITE))
+			if slot == "core":
+				glow = 3.0
+			if far and (slot == "leg" or slot == "arm"):
+				col = col.darkened(0.2)                                # The far limbs, a little darker (as before)
+		mi.set_surface_override_material(i, Three.outlined(Three.mat(col, glow), 0.0 if glow > 0.0 else 0.025))
+	parent.add_child(mi)
+	return mi
+
+
+func _build_model(who: String, cfg: Dictionary, parts: Dictionary) -> void:
+	body = _pivot(self, Vector3(0, 0.95, 0))
+	for side: float in [1.0, -1.0]:
+		var top := _pivot(body, Vector3(0, 0, side * 0.16))
+		_part(top, parts["thigh"], cfg, side < 0.0)
+		var knee := _pivot(top, Vector3(0, -0.475, 0))
+		_part(knee, parts["shin"], cfg, side < 0.0)
+		_legs.append(top)
+		_knees.append(knee)
+	_part(body, parts["chest"], cfg, false)
+	head = _pivot(body, Vector3(0.02, 1.08, 0))
+	_part(head, parts["head"], cfg, false)
+	for side: float in [1.0, -1.0]:
+		var sz := 0.3 * 1.15 + 0.105 + 0.03
+		var top := _pivot(body, Vector3(0, 0.8, side * sz))
+		_part(top, parts["upperarm"], cfg, side < 0.0)
+		var elbow := _pivot(top, Vector3(0, -0.425, 0))
+		_part(elbow, parts["forearm"], cfg, side < 0.0)
+		_arms.append(top)
+		hands.append(elbow)
+	match who:
+		"warrior":                                                         # The jagged sword, held forward-down
+			if parts.has("sword"):
+				var sw := _part(hands[0], parts["sword"], cfg, false)
+				sw.position = Vector3(0.03, -0.44, 0)
+				sw.rotation = Vector3(0, 0, -PI * 0.65)
+		"enlightened":
+			Three.ring(head, 0.09, 0.11, Vector3(0, 0.2, 0), Color(0.97, 0.77, 0.24), 0.5, 0.0)   # Circlet
+			var halo := Three.ring(head, 0.4, 0.46, Vector3(-0.2, 0.05, 0), Color(1.0, 0.86, 0.35), 3.0, 0.0)
+			halo.rotation = Vector3(0, 0, PI * 0.5)
+
+
 func _build(cfg: Dictionary) -> void:
 	var who := String(cfg.get("who", ""))
+	var parts := _model_parts(who)
+	if parts.has("chest") and parts.has("head") and parts.has("thigh") and parts.has("shin") \
+			and parts.has("upperarm") and parts.has("forearm"):
+		_build_model(who, cfg, parts)
+		return
 	var bulk: float = cfg.get("bulk", 1.0)
 	var lr: float = cfg.get("limb", 1.0)
 	body = _pivot(self, Vector3(0, 0.95, 0))

@@ -81,7 +81,53 @@ const OPENING := {
 		["H", "The Storm guards half the planet at once. We're walking right under its half."]],
 	136: [["H", "Their last camp. Empty."],
 		["P", "Not empty. Listen. Something in the cave behind it is breathing... and it's made of stone."]],
+	# ----- THE LAST STRETCH (lore by the user, 2026-11-28): the road with the Nightmare Lord, then the Architect's soul -----
+	139: [["narrator", "The Nightmare Lord walks with the heroes now. Behind them, the Storm has started to follow."],
+		["nightmare_lord", "It knows. Three of us who might break out, walking in the open. It will not wait forever."],
+		["P", "Then we keep moving. Out here, with nothing over our heads, it'll kill us."],
+		["H", "We need a village. Walls, roofs, people. Somewhere it won't strike."],
+		["nightmare_lord", "Villages. People. Animals. I like farmers best when they are alive and not afraid of me. It is rare."]],
+	140: [["narrator", "A bolt hits the road behind them. Then another, closer."],
+		["nightmare_lord", "In the Ritual we say the nightmare heart blooms when the sky is angriest. Today it would bloom twice."],
+		["warrior", "Your Ritual. Their gods. Somebody's always praying to something."],
+		["warrior", "Me? Voidism. Nothing up there. Nothing waiting. Just the next fight."],
+		["architect", "...There used to be something up there for me."]],
+	141: [["narrator", "Fields. Fences. A farmer by the road makes a sign against the sky as you pass: a circle, cut in half."],
+		["nightmare_lord", "A Rallist. Gods with animal heads, a Heaven, a Hell - and a hatred of the Storm older than his grandfather."],
+		["H", "And the others? The ones who don't hate it?"],
+		["nightmare_lord", "Stormists. They think the Storm is a god. Their saviour. That it keeps them safe from every threat."],
+		["P", "Safe. From the thing that's chasing us."],
+		["nightmare_lord", "Pray we meet Rallists first."]],
+	142: [["P", "Towers. Glass and copper. That's no village, that's a city."],
+		["H", "Walls and roofs. Exactly what we need."],
+		["nightmare_lord", "Look at the rods on every tower. They are not catching the lightning. They are offering it a seat."],
+		["nightmare_lord", "...Stormists."],
+		["H", "We need shelter. We'll talk to them."]],
+	143: [["narrator", "The cells of Halcyon. Through the wall, the Warrior is still out cold. The Nightmare Lord is not."],
+		["nightmare_lord", "They called you Grade FTE as if it were a prayer, Architect. At dawn they hand all three of us to their god."],
+		["architect", "...I can't break these bars. Not like I am now."],
+		["nightmare_lord", "Then do not be like you are now."],
+		["architect", "When I went Grade 0 I learned one thing. The strongest lock is the one inside you."],
+		["architect", "I'm going in."],
+		["narrator", "He closes his eyes, and falls into himself."],
+		["narrator", "First: the Architectium. The orders. Every one he ever followed."]],
+	144: [["narrator", "In the Architectium they believed in Architectiulum: one day a god would come with the supplies and the knowledge. Everything they built, they built waiting for Him."],
+		["architect", "I waited too. I built for Him. He never came."],
+		["architect", "Nobody ever came. Not with supplies. Not with answers."]],
+	145: [["narrator", "Deeper. The Void Below. The place he was most afraid."],
+		["architect", "I was alone down here. Bones, and dark, and things crawling."],
+		["architect", "I told myself I wasn't scared. I lied."]],
+	146: [["narrator", "Deeper still. The challengers the cure turned into monsters. The ones he had to kill to get out."],
+		["architect", "I freed them. That's what I told myself. Heaven or Hell, as long as they were out."],
+		["architect", "I never asked if they wanted to go."]],
+	147: [["narrator", "The bottom of his soul. A core of blue light. And in front of it, someone wearing his face."]],
 }
+## THE LAST STRETCH: the Nightmare Lord LEFT at the end of The True Hunt -> he comes back at the start of 139.
+const NL_RETURN := [
+	["narrator", "A shape steps out of the rocks at the edge of the road. Red skin. A red tie."],
+	["nightmare_lord", "You sent me away. I came back anyway. The Storm is following you, and I have nowhere better to be."],
+	["H", "...Fine. Walk with us."],
+]
 
 ## After the boss is dead (after its death scene / before the finale cutscene).
 const AFTER := {
@@ -173,6 +219,11 @@ const BOSS := {
 	56: [["first_prime", "Turn back. The Light does not forgive."],
 		["H", "Your king is hiding behind you."],
 		["first_prime", "Then I will be the wall he hides behind."]],
+	# ----- THE LAST STRETCH -----
+	147: [["hollow_architect", "You came all this way down. For what? You ARE me."],
+		["architect", "No. You're everything I was afraid of. Obedience. Waiting. Fear. Guilt."],
+		["hollow_architect", "Without me, what is left of you?"],
+		["architect", "Let's find out."]],
 	# ----- THE TRUE HUNT -----
 	138: [["narrator", "A golem of black stone climbs out of the anvil. Red fire leaks from its cracks - and dies out, again and again."],
 		["P", "They tried to put nightmare flame into a golem. It didn't take."],
@@ -196,17 +247,17 @@ const NAMES := {
 	"farmer": "THE FARMER", "child": "A CHILD", "trainer": "THE TRAINER", "storm": "THE STORM",
 	"judge": "THE OLDEST JUDGE", "shopkeeper": "THE SHOPKEEPER", "young_guard": "THE YOUNGEST GUARD",
 	"tw_woman": "A TOWNSWOMAN", "tw_farmer": "A FARMER", "tw_child": "A CHILD", "tw_baker": "THE SUN-BAKER",
-	"nightmare_lord": "THE NIGHTMARE LORD",
+	"nightmare_lord": "THE NIGHTMARE LORD", "king": "THE KING OF HALCYON", "hollow_architect": "THE HOLLOW ARCHITECT",
 }
 ## Townsfolk: their look (OrdArt.villager) and voice.
 const TOWN_LOOK := {"baker": 0, "washerwoman": 1, "guard": 3, "elder": 4, "farmer": 2, "child": 5,
 	"tw_baker": 0, "tw_woman": 1, "tw_farmer": 2, "tw_child": 5}
 const TOWN_VOICE := {"baker": "town_m", "washerwoman": "town_f", "guard": "town_m", "elder": "town_old", "farmer": "town_m", "child": "town_child",
 	"judge": "town_old", "shopkeeper": "town_m", "young_guard": "town_child", "tw_baker": "town_m", "tw_woman": "town_f",
-	"tw_farmer": "town_m", "tw_child": "town_child", "nightmare_lord": "satan"}
+	"tw_farmer": "town_m", "tw_child": "town_child", "nightmare_lord": "satan", "king": "town_old", "hollow_architect": "architect"}
 
 ## Portrait scale (portraits are drawn feet-at-origin; this makes them ~230 px tall).
-const SCALE := {"judge": 1.8, "shopkeeper": 1.8, "young_guard": 1.8, "tw_baker": 1.8, "tw_woman": 1.8, "tw_farmer": 1.8, "tw_child": 1.5, "nightmare_lord": 1.9, "storm": 1.0, "trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
+const SCALE := {"judge": 1.8, "shopkeeper": 1.8, "young_guard": 1.8, "tw_baker": 1.8, "tw_woman": 1.8, "tw_farmer": 1.8, "tw_child": 1.5, "nightmare_lord": 1.9, "king": 1.75, "hollow_architect": 1.9, "storm": 1.0, "trainer": 1.75, "baker": 1.8, "washerwoman": 1.8, "guard": 1.8, "elder": 1.8, "farmer": 1.8, "child": 1.5, "volcano_slave": 1.9, "kharleming_sacrifice": 3.4, "stranger": 1.85, "warrior": 1.9, "architect": 1.9, "enlightened": 1.9, "architect_chorus": 0.42, "blasphemy_caeser": 0.78,
 	"forge_mother": 0.74, "arch_golem": 0.7, "void_massacre": 0.56, "needle": 1.6, "brothers": 1.5, "first_prime": 1.15}
 
 
@@ -219,7 +270,10 @@ static func lines_for(n: int, kind: String, hero: String, partner: String) -> Ar
 		return []
 	var other := "architect" if hero == "warrior" else "warrior"
 	var out: Array = []
-	for l in src[n]:
+	var src_lines: Array = src[n]
+	if kind == "opening" and n == LevelsLastStretch.FIRST and not StoryProgress.nl_recruited():
+		src_lines = NL_RETURN + src_lines                     # He left you after The True Hunt - and comes back
+	for l in src_lines:
 		var who := String(l[0])
 		if who == "H":
 			who = hero
@@ -634,5 +688,7 @@ static func draw_portrait(c: CanvasItem, id: String, t: float) -> void:
 			TownArt.npc(c, id, t)
 		"nightmare_lord":
 			FireLordArt.draw_portrait(c, t)
+		"king":
+			HalcyonKing.draw_portrait(c, t)
 		_:
 			StoryLevels.draw_portrait(c, id, t)

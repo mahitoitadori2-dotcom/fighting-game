@@ -102,6 +102,94 @@ func _perf_report(tag: String) -> void:
 
 
 ## ?soak=perfth: THE TRUE HUNT only - disaster levels with ledges, and the Monstrosity at a full crowd.
+## ?soak=perfsplit (/nolags 2026-11-26): WHERE do a Story level's draw calls come from? Hides one kind of
+## thing at a time and prints the average draw calls / primitives without it.
+func _run_perf_split() -> void:
+	await _w(3.0)
+	StoryProgress.load_progress()
+	StoryProgress.unlocked_level = 138
+	StoryManager.autoplay = true
+	for lv in [82, 116]:
+		StoryProgress.current_level = lv
+		StoryManager.boss_retry = 0
+		get_tree().change_scene_to_file(StoryManager.ARENA_SCENE)
+		await _w(1.0)
+		await _wait_for(func() -> bool: return CombatManager.fight_active and not get_tree().paused, 30.0)
+		await _w(4.6)                               # The first disaster strikes ~4 s in: catch its warning
+		var sc := get_tree().current_scene
+		var m := get_tree().get_first_node_in_group("story_manager") as StoryManager
+		var sets := {
+			"partner": func(n: Node) -> bool: return n is Fighter and not (n is BaseEnemy) and m != null and n != m.player,
+			"player": func(n: Node) -> bool: return m != null and n == m.player,
+			"enemies": func(n: Node) -> bool: return n is BaseEnemy,
+			"ledges": func(n: Node) -> bool: return n is StoryPlatform,
+			"disaster fx": func(n: Node) -> bool: return n is NatureDisaster,
+			"strikes": func(n: Node) -> bool: return n is NatureDisaster.Strike,
+			"ground": func(n: Node) -> bool: return n is ArenaGround,
+			"backdrop": func(n: Node) -> bool: return n is HellBackground,
+			"walls": func(n: Node) -> bool: return n is CaveWall,
+			"hud layers": func(n: Node) -> bool: return n is CanvasLayer,
+		}
+		get_tree().paused = true                    # One frozen moment: every toggle sees the same scene
+		var base := await _draw_avg(1.5)
+		print("PERF split lv %d  all         draws=%6.0f prims=%7.0f" % [lv, base.x, base.y])
+		for k: String in sets:
+			var hidden: Array = []
+			for n in sc.find_children("*", "", true, false):
+				if (sets[k] as Callable).call(n) and n is CanvasItem and (n as CanvasItem).visible:
+					(n as CanvasItem).visible = false
+					hidden.append(n)
+				elif (sets[k] as Callable).call(n) and n is CanvasLayer and (n as CanvasLayer).visible:
+					(n as CanvasLayer).visible = false
+					hidden.append(n)
+			var a := await _draw_avg(1.5)
+			for n in hidden:
+				if is_instance_valid(n):
+					n.set("visible", true)
+			await get_tree().process_frame
+			print("PERF split lv %d  -%-11s draws=%6.0f prims=%7.0f  (saves %4.0f draws, %d nodes hidden)" % [lv, k, a.x, a.y, base.x - a.x, hidden.size()])
+		# The HUD layers: each drawn piece hidden alone
+		for layer in sc.find_children("*", "CanvasLayer", true, false):
+			for ch in (layer as Node).find_children("*", "CanvasItem", true, false):
+				var hi := ch as CanvasItem
+				if not hi.visible:
+					continue
+				hi.visible = false
+				var a3 := await _draw_avg(0.3)
+				hi.visible = true
+				if base.x - a3.x >= 6.0:
+					var sn: String = String(hi.get_script().get_global_name()) if hi.get_script() != null else ""
+					print("PERF split lv %d  hud part %-46s saves %4.0f draws" % [lv, String(sc.get_path_to(hi)).right(46) + " " + hi.get_class() + " " + sn, base.x - a3.x])
+		# Inside the HERO: what do its parts cost? (each child of the player, hidden alone)
+		if m != null and m.player != null:
+			for ch in m.player.find_children("*", "CanvasItem", true, false):
+				var ci := ch as CanvasItem
+				if not ci.visible:
+					continue
+				ci.visible = false
+				var a2 := await _draw_avg(0.4)
+				ci.visible = true
+				if base.x - a2.x >= 4.0:
+					print("PERF split lv %d  hero part %-40s saves %4.0f draws, %6.0f prims" % [lv, String(m.player.get_path_to(ci)) + " (" + ci.get_class() + ")", base.x - a2.x, base.y - a2.y])
+		get_tree().paused = false
+	StoryManager.autoplay = false
+	print("SOAK DONE")
+
+
+func _draw_avg(secs: float) -> Vector2:
+	await get_tree().process_frame
+	var d := 0.0
+	var p := 0.0
+	var n := 0
+	var end := Time.get_ticks_msec() + int(secs * 1000.0)
+	while Time.get_ticks_msec() < end:
+		await get_tree().process_frame
+		d += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+		p += Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)
+		n += 1
+	return Vector2(d, p) / float(maxi(n, 1))
+
+
 func _run_perf_th() -> void:
 	await _w(3.0)
 	StoryProgress.load_progress()
@@ -939,6 +1027,9 @@ func _run() -> void:
 		return
 	if q is String and String(q).contains("soak=hunt"):
 		await _run_hunt()
+		return
+	if q is String and String(q).contains("soak=perfsplit"):
+		await _run_perf_split()
 		return
 	if q is String and String(q).contains("soak=perfth"):
 		await _run_perf_th()

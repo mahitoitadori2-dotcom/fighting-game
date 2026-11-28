@@ -69,6 +69,9 @@ const ITEMS := [
 		"A hymn-plate that will not stop glowing. When the reactor broke, the Chorus did not run. They sang louder.\n\nWhat is left of them sings the meltdown, note by note, to anyone who comes down to listen."],
 	["forge_father", "Hammer-Head of the First Forge",
 		"The head of a hammer older than the Colosseums. The Forge Father built the Forge Mother, and called her weak when she cooled.\n\nHe forged the first cage the Enlightened One ever ordered. He never asked who it was for."],
+	# ----- The Last Stretch -----
+	["hollow_architect", "A Blueprint of Himself",
+		"A sheet of blueprint paper, folded small. On it, in the Architect's own hand: a drawing of a man, every part labelled. OBEDIENCE. WAITING. FEAR. GUILT. All of them crossed out.\n\nIn the middle, where the core should be, one word, pressed so hard the pen went through: TIME."],
 	# ----- The True Hunt -----
 	["nightmare_monstrosity", "Smith's Tally of the Nine Locks",
 		"A slate from the Clan's forge, scratched with nine marks. Six are crossed out: the Alert, the Deconstructors, the Storm Seed, the Kharleming Constitution, Einstein's Theorem, the Core Ignition.\n\nThe last three are circled again and again: THE GREAT DEACCELERATOR. DECOMPOSITION. FULL TIME REVERSAL. Under them, in a shaking hand: \"if the seventh shuts, we stop growing. if the eighth, they come. if the ninth... pray it is one of us.\""],

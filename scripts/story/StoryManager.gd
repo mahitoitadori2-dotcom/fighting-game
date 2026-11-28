@@ -71,6 +71,9 @@ var player: ControlledFighter               # Warrior (Colosseums 1-3) or Archit
 var hero := "warrior"
 ## Colosseum 5: the other hero, played by a MEDIUM CPU, fighting beside you (revives when it falls).
 var partner: ControlledFighter = null
+## THE LAST STRETCH: the Nightmare Lord as a third CPU ally (levels with "nl_ally").
+var nl_ally: ControlledFighter = null
+var _nl_fell := false                        # The Nightmare Lord went down in this level ("Fellow Traveller")
 var flasks := FLASKS_PER_LEVEL
 var partner_flasks := PARTNER_FLASKS
 var max_flasks := FLASKS_PER_LEVEL           # + DEEP_FAITH_EXTRA_FLASKS for the Warrior / Architect
@@ -220,7 +223,14 @@ func _ready() -> void:
 	if bool(level.get("trainer_ally", false)) and not BossRush.active:          # Level 80: the Trainer fights with you
 		_spawn_trainer_ally()
 		max_attackers += 1
+	if bool(level.get("nl_ally", false)) and not BossRush.active:              # THE LAST STRETCH: the Nightmare Lord walks with you
+		_spawn_nl_ally()
+		max_attackers += 1
 	_place_messages()
+	if bool(level.get("folk", false)):                                          # THE LAST STRETCH: people + animals along the road
+		var fl := wall_left_x + 60.0 if has_walls else _center_x - 800.0
+		var fr := wall_right_x - 60.0 if has_walls else _center_x + 800.0
+		RoadFolk.spawn(self, fl, fr, _ground_y, level_number)
 	if Madness.is_madness(level_number):
 		MadnessFX.install_level(self)                    # Grey world, blood red, grain, whispers
 	_hud = StoryHUD.new()
@@ -447,6 +457,26 @@ func _spawn_trainer_ally() -> void:
 	add_child(ally)
 
 
+## THE LAST STRETCH (levels with "nl_ally"): THE NIGHTMARE LORD fights beside you and your partner -
+## his Versus kit (FireLord) with a partner brain (PartnerFireLordAI); he revives like the partner.
+func _spawn_nl_ally() -> void:
+	nl_ally = FireLord.new()
+	nl_ally.name = "Ally_NightmareLord"
+	nl_ally.ctl = PartnerFireLordAI.new()
+	nl_ally.position = player_spawn + Vector2(-180, 0)
+	nl_ally.spawn_position = nl_ally.position
+	nl_ally.slot = 3
+	nl_ally.team = 1
+	nl_ally.default_facing = 1
+	nl_ally.facing = 1
+	nl_ally.respawn_enabled = true
+	nl_ally.quiet_announce = true
+	add_child(nl_ally)
+	StoryBuff.apply(nl_ally)
+	nl_ally.data.respawn_delay = Companion.REVIVE_TIME
+	nl_ally.died.connect(func() -> void: _nl_fell = true)
+
+
 ## Story Mode buff for the heroes (WarriorData / ArchitectData.apply_story_buff). Each
 ## fighter has its own data copy, so Versus keeps the normal numbers.
 func _story_buff(f: Fighter) -> void:
@@ -504,6 +534,10 @@ func _place_party(x: float) -> void:
 		partner.global_position = Vector2(x - 90.0, _ground_y)
 		partner.velocity = Vector2.ZERO
 		partner.facing = 1
+	if nl_ally != null and is_instance_valid(nl_ally) and not nl_ally.is_dead:
+		nl_ally.global_position = Vector2(x - 180.0, _ground_y)
+		nl_ally.velocity = Vector2.ZERO
+		nl_ally.facing = 1
 
 
 # ============================================================
@@ -583,6 +617,10 @@ func _run() -> void:
 		await _play_cutscene(String(level["cutscene_out"]))
 	if bool(level.get("bombard", false)) and not _over:
 		await _enl_bombard(true)                   # ...and again as he runs on to the next level
+		if _over:
+			return
+	if bool(level.get("ls_end", false)) and not _over:
+		await LastStretch.play(self)               # THE LAST STRETCH: the king, the rescue, the bridge into the Storm
 		if _over:
 			return
 	await _level_clear()
@@ -793,6 +831,10 @@ func _intro() -> void:
 			var pland := partner.global_position
 			partner.global_position = pland + Vector2(0, -600)
 			tw.parallel().tween_property(partner, "global_position", pland, 0.65).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		if nl_ally != null:
+			var nland := nl_ally.global_position
+			nl_ally.global_position = nland + Vector2(0, -660)
+			tw.parallel().tween_property(nl_ally, "global_position", nland, 0.72).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		await tw.finished
 		Effects.shake(self, 9.0)
 		Effects.hit_sparks(player, land + Vector2(0, -8), 10, 1.2)
@@ -880,6 +922,8 @@ func _spawn_enemy(id: String, pos: Vector2) -> BaseEnemy:
 	e.position = pos
 	add_child(e)
 	_apply_void_mod(e, id)
+	if bool(level.get("soul", false)):                   # THE LAST STRETCH: memories inside the Architect's soul
+		e.set_deferred("modulate", HollowArchitect.SOUL_TINT)
 	if bool(level.get("possessed", false)):              # Level 80: CORPSES the Storm controls
 		e.set_deferred("modulate", Color(0.55, 0.62, 0.95))     # (Deferred: after the enemy's own setup)
 		Effects.hit_sparks(e, pos + Vector2(0, -60), 10, 1.2)
@@ -1314,6 +1358,8 @@ func _level_clear() -> void:
 		badge_text = "    |    BADGES: " + ", ".join(names)
 	if _disaster != null and _disaster.player_hits == 0 and not autoplay:
 		Achievements.unlock("disaster_dodger")          # THE TRUE HUNT: not one disaster touched you
+	if nl_ally != null and not _nl_fell and not autoplay:
+		Achievements.unlock("ls_nl_unhurt")             # THE LAST STRETCH: the Nightmare Lord never went down
 	var lore_name := StoryLore.collect(String(level.get("boss", "")))
 	if lore_name != "":
 		badge_text += "\nITEM FOUND: %s  (read it in the CODEX on the board)" % lore_name

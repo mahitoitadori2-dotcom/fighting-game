@@ -54,9 +54,13 @@ const MAP_TILE := {
 	"th_rocks": Color(0.40, 0.14, 0.08), "th_village": Color(0.26, 0.22, 0.20), "th_hollow": Color(0.18, 0.15, 0.17),
 	"th_magma": Color(0.55, 0.20, 0.06), "th_reactor": Color(0.22, 0.34, 0.14), "th_mountain": Color(0.36, 0.40, 0.46),
 	"th_tents": Color(0.50, 0.08, 0.08), "th_forge": Color(0.30, 0.10, 0.06),
+	# The Last Stretch
+	"ls_plains": Color(0.36, 0.56, 0.28), "ls_farms": Color(0.70, 0.58, 0.26), "ls_gate": Color(0.36, 0.52, 0.58),
+	"ls_soul": Color(0.36, 0.24, 0.56), "ls_soul_dark": Color(0.18, 0.10, 0.26), "ls_soul_core": Color(0.52, 0.56, 0.86),
+	"ls_throne": Color(0.62, 0.22, 0.08),
 }
 ## Size of the mini enemy figure on each space (small enemies drawn bigger).
-const FIGURE_SCALE := {"nightmare_monstrosity": 0.22, "parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
+const FIGURE_SCALE := {"nightmare_monstrosity": 0.22, "hollow_architect": 0.32, "king": 0.32, "parasite": 0.6, "kharleming": 0.75, "brute": 0.3, "hydra": 0.25, "golem": 0.36, "blinded_lord": 0.27,
 	"architect_chorus": 0.1, "guard": 0.3, "follower": 0.34, "crawler": 0.36, "stray": 0.5, "blasphemy_caeser": 0.17,
 	"copper": 0.32, "sparkling": 0.9, "atomic": 0.22, "warrior_a": 0.3, "forge_mother": 0.16, "arch_golem": 0.15,
 	"crawling": 0.8, "escapist": 0.5, "void_soul": 0.6, "tentacle": 0.3, "masker": 0.26, "shining": 0.36, "void_massacre": 0.11,
@@ -97,6 +101,8 @@ const PAGES := {
 		"board": [Color(0.30, 0.06, 0.06), Color(0.12, 0.02, 0.03)], "boss_label": Color(1.0, 0.45, 0.4)},
 	16: {"title": "STORY MODE  -  THE TRUE HUNT",
 		"board": [Color(0.32, 0.12, 0.05), Color(0.10, 0.06, 0.10)], "boss_label": Color(1.0, 0.55, 0.3)},
+	17: {"title": "STORY MODE  -  THE LAST STRETCH",
+		"board": [Color(0.20, 0.30, 0.22), Color(0.14, 0.10, 0.24)], "boss_label": Color(0.75, 0.70, 1.0)},
 	14: {"title": "STORY MODE  -  THE ABANDONED TOWN",
 		"board": [Color(0.40, 0.26, 0.14), Color(0.16, 0.08, 0.06)], "boss_label": Color(1.0, 0.86, 0.55)},
 }
@@ -299,7 +305,7 @@ func _refresh_ui() -> void:
 	if _celebrate:
 		var boss_names := {1: "The Blinded Lord", 2: "Blasphemy Caeser", 3: "The Architect's Golem", 4: "The Void Massacre", 5: "The Sun", 6: "The Enlightened One", 7: "The Ancient Door", 8: "The Deep Throat"}
 		if _final_page():
-			_info.text = "TO BE CONTINUED...  You slid out of the deepest cave. What waits at the bottom?"
+			_info.text = "TO BE CONTINUED...  Three travellers on a bridge of light, walking into the Storm."
 		else:
 			_info.text = "%s COMPLETE!  %s has fallen.  Next: %s" % [
 				StoryLevels.part_name(_page), boss_names.get(_page, "The boss"), StoryLevels.part_name(_page + 1)]
@@ -1020,6 +1026,22 @@ func _draw_scenery_n(r: Rect2) -> void:
 		# Furnace glow (bottom right) + rune circle (top right)
 		c.draw_circle(r.position + Vector2(r.size.x * 0.6, r.size.y * 0.86), 40.0 + 4.0 * sin(_t * 3.0), Color(1.0, 0.5, 0.1, 0.3))
 		c.draw_arc(r.position + Vector2(r.size.x * 0.72, r.size.y * 0.42), 40.0, 0.0, TAU, 24, Color(0.4, 0.85, 1.0, 0.5 + 0.3 * sin(_t * 2.0)), 4.0, FighterArt.AA)
+	elif _page >= StoryLevels.LAST_PART:
+		# The Last Stretch: the road under a storm cloud, a town of glass towers far off, a blue core glowing
+		var base17 := r.position.y + r.size.y
+		for k in 9:
+			var cx17 := r.position.x + r.size.x * (0.05 + 0.11 * float(k))
+			c.draw_circle(Vector2(cx17, r.position.y + 26.0 + 10.0 * sin(float(k) * 1.7)), 34.0, Color(0.10, 0.08, 0.16, 0.55))
+		for k in 6:
+			var tx := r.position.x + r.size.x * (0.62 + 0.05 * float(k))
+			var th17 := 40.0 + 22.0 * float((k * 7) % 3)
+			c.draw_rect(Rect2(tx, base17 - 10.0 - th17, 18.0, th17), Color(0.40, 0.62, 0.70, 0.45))
+		var cc := r.position + Vector2(r.size.x * 0.24, r.size.y * 0.5)
+		c.draw_circle(cc, 30.0 + 4.0 * sin(_t * 2.0), Color(0.3, 0.7, 1.0, 0.22))
+		c.draw_circle(cc, 12.0, Color(0.6, 0.9, 1.0, 0.6))
+		if fmod(_t, 5.0) < 0.12:                               # Lightning behind you on the road
+			var lx17 := r.position.x + r.size.x * 0.12
+			c.draw_polyline(PackedVector2Array([Vector2(lx17, r.position.y), Vector2(lx17 + 18, r.position.y + 70), Vector2(lx17 - 8, r.position.y + 130)]), Color(0.85, 0.92, 1.0, 0.8), 3.0)
 	elif _page >= StoryLevels.TRUE_HUNT_PART:
 		# The True Hunt: cracked ground, falling burning stones, lightning out of a dark sky
 		var base16 := r.position.y + r.size.y

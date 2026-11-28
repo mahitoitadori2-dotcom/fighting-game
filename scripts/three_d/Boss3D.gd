@@ -436,6 +436,12 @@ func _build(id: String) -> float:
 					Three.ball(sp, 0.07, Vector3(float(i) * 0.12, sin(float(i)) * 0.1, 0), Color(0.3, 0.5, 0.25), 0.0, 0.015)
 				_on(func(t: float) -> void: sp.rotation.z = sin(t * 4.0 + float(k)) * 0.5)
 			return 2.8
+	if id == "hollow_architect":                                     # The Last Stretch: the Architect's own model, hollowed out
+		var hp: Dictionary = HollowArchitect.HOLLOW_PALETTE
+		_human({"who": "architect", "leg": hp["GREEN"], "arm": hp["GREEN"], "chest": hp["WHITE"], "belt": hp["DARK"],
+			"foot": hp["DARK_SHADE"], "hand": hp["GREEN_SHADE"], "head": "visor", "head_col": hp["WHITE"], "visor": hp["VISOR"],
+			"core": hp["CORE_HI"]})
+		return 2.3
 	# Anything else: a generic hulking figure in the boss's tile colour
 	_human({"leg": Color(0.3, 0.3, 0.35), "arm": Color(0.3, 0.3, 0.35), "chest": Color(0.4, 0.35, 0.4), "head": "hood",
 		"head_col": Color(0.2, 0.2, 0.25), "eye": Color(1, 0.3, 0.2), "bulk": 1.3})

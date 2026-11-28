@@ -16,11 +16,13 @@ signal finished
 const DURATION := {"elevator": 6.5, "sewer_fall": 3.4, "corpse_climb": 8.0, "throne_wake": 6.0, "cave_roll": 5.0, "void_fall": 3.6,
 	"c5_intro": 6.5, "mountain_climb": 8.0, "reach_peak": 6.0, "fall_to_earth": 11.0,
 	"enl_chase": 7.5, "enl_end": 10.0,
+	"ls_capture": 13.0, "ls_timestop": 17.0, "ls_free": 8.0, "ls_bridge": 15.0,
 	"intro_walk": 4.2, "intro_fly": 4.4, "intro_fall": 3.8, "intro_gate": 4.6, "intro_boss": 4.8}
 const MUSIC := {"elevator": "story_ascent", "sewer_fall": "story_sewers", "corpse_climb": "story_ascent",
 	"throne_wake": "story_throne", "cave_roll": "story_darkcave", "void_fall": "story_void",
 	"c5_intro": "story_ascent", "mountain_climb": "story_cave", "reach_peak": "story_altar", "fall_to_earth": "menu",
-	"enl_chase": "story_chase", "enl_end": "story_altar"}
+	"enl_chase": "story_chase", "enl_end": "story_altar",
+	"ls_capture": "story_last_stretch", "ls_timestop": "boss_hollow_architect", "ls_free": "story_throne", "ls_bridge": "story_soul"}
 ## [start, end, title, subtitle]
 const CAPTIONS := {
 	"elevator": [[0.6, 3.2, "COLOSSEUM 2: THE ASCENT", ""], [3.4, 6.0, "THE ELEVATOR FROM HELL", "Up... out of the depths."]],
@@ -39,6 +41,15 @@ const CAPTIONS := {
 	"enl_chase": [[0.5, 3.4, "THE ENLIGHTENED CHASE", ""], [3.8, 7.0, "HE IS RUNNING", "Your partner is hurt and can't follow.  You go alone."]],
 	"enl_end": [[0.5, 3.0, "AS HE TURNS TO LEAVE...", ""], [3.3, 6.3, "THE SKY GOES DARK", "Everything he threw rises into a DARK CLOUD."],
 		[6.8, 9.6, "THE STORM", "It has seen everything."]],
+	# The Last Stretch (ScenesLast)
+	"ls_capture": [[0.5, 3.4, "HALCYON", "A town at last. Glass, copper... and a spiral over every door."], [3.8, 6.4, "THEY WORSHIP THE STORM", "And they know exactly who you are.  GRADE FTE."],
+		[6.8, 9.2, "STORM-RODS", ""], [10.0, 12.6, "THE CELLS OF HALCYON", "Three cages.  Three prisoners."]],
+	"ls_timestop": [[0.5, 3.0, "THE CELLS OF HALCYON", "The Architect opens his eyes.  He knows who he is now."], [3.4, 5.6, "TIME STOPS", ""],
+		[6.2, 10.0, "NOTHING MOVES", "Not the guards.  Not the rain.  Not the Storm."], [10.4, 12.2, "A SPARK IN THE SQUARE", ""],
+		[12.8, 16.4, "HALCYON BURNS", "Peace and freedom for the good.  Pain and enclosure for the evil."]],
+	"ls_free": [[0.5, 3.0, "THE CELLS", "He came back for them."], [4.6, 7.4, "FREE", ""]],
+	"ls_bridge": [[0.5, 3.6, "OUT OF THE FIRE", "Something builds itself, plank by plank of light."], [4.2, 7.6, "A BRIDGE INTO THE STORM", ""],
+		[8.4, 11.6, "THE LAST STRETCH", "Three of them.  One road left."], [12.0, 14.6, "TO BE CONTINUED...", ""]],
 }
 
 var kind := "elevator"
@@ -119,6 +130,10 @@ func _ready() -> void:
 		"enl_end":
 			SoundManager.play_sfx("rumble")
 			SoundManager.play_sfx("holy", -4.0)
+		"ls_capture", "ls_free":
+			SoundManager.play_sfx("whoosh", -6.0)
+		"ls_timestop", "ls_bridge":
+			SoundManager.play_sfx("rumble", -6.0)
 
 
 func _input(event: InputEvent) -> void:
@@ -156,6 +171,31 @@ func _process(delta: float) -> void:
 		"elevator":
 			if _cross(4.6):
 				SoundManager.play_sfx("rumble", -4.0)
+		"ls_capture":
+			if _cross(6.6):
+				SoundManager.play_sfx("beam")
+			for c in 3:
+				if _cross(10.2 + float(c) * 0.5):
+					SoundManager.play_sfx("chain", -2.0)
+		"ls_timestop":
+			if _cross(3.3):
+				SoundManager.play_sfx("ultimate")
+			if _cross(4.4):
+				SoundManager.play_sfx("slam")
+			for i in 7:
+				if _cross(7.0 + float(i) * 0.5):
+					SoundManager.play_sfx("sword_slash", -4.0)
+			if _cross(11.4):
+				SoundManager.play_sfx("flame")
+			if _cross(12.4):
+				SoundManager.play_sfx("explosion")
+				SoundManager.play_sfx("flame")
+		"ls_free":
+			if _cross(3.0) or _cross(3.6):
+				SoundManager.play_sfx("chain")
+		"ls_bridge":
+			if _cross(1.5):
+				SoundManager.play_sfx("holy")
 	if _t >= _len:
 		_finish()
 
@@ -240,11 +280,27 @@ func _paint_2d(sz: Vector2, k: float) -> void:
 			C5Cutscenes.paint(_painter, kind, sz, k, _t)
 		"enl_chase", "enl_end":
 			C6Cutscenes.paint(_painter, kind, sz, k, _t)
+		"ls_capture", "ls_timestop", "ls_free", "ls_bridge":
+			_paint_last(sz, k)
 		"intro_walk", "intro_fly", "intro_fall", "intro_gate", "intro_boss":
 			_vgrad(Rect2(Vector2.ZERO, sz), Color(0.05, 0.04, 0.06), Color(0.2, 0.12, 0.08))   # (2D: just a backdrop)
 			_hero(Vector2(sz.x * 0.5, sz.y * 0.8), 1.8)
 		_:
 			_paint_elevator(sz, k)
+
+
+## THE LAST STRETCH without 3D (POTATO / phones on FAST): a painted backdrop + the hero, the captions tell it.
+func _paint_last(sz: Vector2, k: float) -> void:
+	match kind:
+		"ls_capture":
+			LastBackdrops.paint(_painter, "ls_gate", sz)
+		"ls_timestop":
+			LastBackdrops.paint(_painter, "ls_soul_core" if k < 3.4 else "ls_throne", sz)
+			if k > 3.4 and k < 12.4:
+				_painter.draw_rect(Rect2(Vector2.ZERO, sz), Color(0.55, 0.6, 0.75, 0.45))      # Time stopped: grey-blue
+		_:
+			LastBackdrops.paint(_painter, "ls_throne", sz)
+	_hero(Vector2(sz.x * 0.5, sz.y * 0.86), 1.8)
 
 
 func _hero(p: Vector2, scale_v: float, rot: float = 0.0) -> void:

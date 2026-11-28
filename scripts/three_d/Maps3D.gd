@@ -27,6 +27,8 @@ const FAMILY := {
 	"prime_sanctum": "holy", "sky_reliquary": "holy",
 	"hunt_rocks": "cave", "hunt_tents": "cave", "hunt_hollow": "cave", "hunt_crucible": "lava",
 	"demi_plains": "forest", "demi_village": "forest", "demi_ravine": "cave", "demi_grove": "forest", "demi_door": "void",
+	"ls_plains": "forest", "ls_farms": "forest", "ls_gate": "metal", "ls_soul": "void", "ls_soul_dark": "void",
+	"ls_soul_core": "void", "ls_throne": "lava",
 }
 
 

@@ -208,3 +208,38 @@ Tried and reverted (no measured gain): no pixel pass on small golems; fewer deta
 **Still open:** the 14-golem crowd is ~12 FPS in SwiftShader - mostly RENDER time (one canvas group per fighter).
 Real iPhone GPUs are much faster than SwiftShader, so test on a phone; if it is slow there too, lowering
 `NightmareMonstrosity.MAX_ALIVE` (14) is the gameplay knob (the user's call).
+## /nolags 2026-11-26: where the draw calls go (HUD + touch buttons batched)
+
+New hidden mode `?soak=perfsplit` (WebSoak `_run_perf_split`): FREEZES a Story level (82 and 116) and hides one
+kind of thing at a time, so every row sees the same frame (unfrozen windows were too noisy: +-100 draws).
+Draw calls per frame, web, emulated iPhone 13:
+
+| Piece | Draw calls |
+|---|---|
+| One HERO model (player or True Hunt partner) | ~172-180 (7 000 prims) |
+| 3 regular enemies | ~132 (~44 each) |
+| Story HUD (bars, flasks, texts) | 74-86 -> 58-70 |
+| Touch buttons | 42 -> 9-13 |
+| Backdrop embers layer | ~36 |
+| True Hunt ledges / disaster strikes | ~9 each (cheap) |
+
+So the True Hunt costs more than older levels ONLY because of the partner (one more hero).
+
+Kept:
+- **Story HUD** (`StoryHUD.gd`): all bars / gauge / flask shapes are recorded into ONE `MeshCanvas` mesh, the texts
+  are drawn after it (no text sits on a shape: same look).
+- **Touch buttons** (`TouchControls.gd`): shapes into meshes, texts after them, the 3 smooth rings keep their own
+  antialiased draws; and they are only redrawn when something changes (press, stick, cooldown, ult glow).
+  The cooldown sweep is now a clean pie slice (was a thick arc).
+- **Bug found + documented in `MeshCanvas.gd`:** keep the built mesh in a member var. A mesh made inside `_draw`
+  and dropped at the end renders NOTHING ("Parameter mesh is null" every frame).
+Tried and reverted (no measured gain): sorting the HUD texts by font size.
+
+Full `?soak=perf` before -> after (draw calls; FPS in SwiftShader is noisy): boss 15 442->416, 26 385->360,
+45 658->623, 48 552->533, 50 680->645, 56 547->498, hunt 82 455->432, DemiLand 639->615, Ordinariorum 829->812.
+Versus fights unchanged (~470-540). Checked by phone screenshot (True Hunt 113: HUD + buttons look right).
+
+**Biggest cost left: the hero models** (~175 draw calls each, every polygon / outline its own draw call). The
+fix would be recording each model into a MeshCanvas every frame: ~120 `draw_model_on(c: CanvasItem)` scripts +
+art helpers would need to accept a MeshCanvas, and the per-frame GDScript cost must be measured first. A
+project of its own, not a /nolags round.

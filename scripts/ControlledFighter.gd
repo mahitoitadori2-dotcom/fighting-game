@@ -45,9 +45,15 @@ var last_dodge_time := -10.0
 
 # ===== M1 CHAIN (2026-11-24): the basic attack is a 4-hit string =====
 # Hits 1-3: a small push + a stun that lasts until the next swing (a true combo once the first lands).
-# Hit 4 = FINISHER (x1.5 damage): knocks back far; hold CROUCH = uppercut, in the air = downslam.
+# Hit 4 = FINISHER (x1.3 damage): knocks back far; hold CROUCH = uppercut, in the air = downslam.
 # After the 4th (or a dropped chain) the basic attack rests M1_ENDLAG seconds.
+# Balance 2026-11-26: hits 2-3 deal x0.8 (combo scaling), the finisher x1.3 (was x1.5), and hit 3's
+# hold is TIGHT (M1_LAST_HOLD): press the finisher late and the target can block it.
 const M1_CHAIN := 4
+const M1_SCALE := 0.8                  # Damage of hits 2-3
+const M1_FINISH := 1.3                 # Damage of hit 4
+const M1_HOLD := 0.12                  # Stun after hits 1-2, on top of one swing
+const M1_LAST_HOLD := 0.04             # Stun after hit 3, on top of one swing
 const M1_WINDOW := 0.55               # After a swing ends, this long to press the next one
 const M1_ENDLAG := 0.5
 var m1_step := 0
@@ -198,11 +204,13 @@ func m1_begin(h: HitData, timing: float = 1.0) -> void:
 	var swing := (data.punch_startup + data.punch_active + data.punch_recovery) * timing
 	h.m1 = m1_step
 	if m1_step < M1_CHAIN:
+		if m1_step > 1:
+			h.damage = maxi(roundi(float(h.damage) * M1_SCALE), 1)
 		h.knockback = Vector2(float(facing) * 90.0, -40.0)
 		h.causes_hitstun = true
 		_m1_window = swing + M1_WINDOW
 		return
-	h.damage = maxi(roundi(float(h.damage) * 1.5), h.damage + 1)
+	h.damage = maxi(roundi(float(h.damage) * M1_FINISH), h.damage + 1)
 	var push := maxf(absf(h.knockback.x) * 2.0, 620.0)
 	if not is_on_floor():
 		h.knockback = Vector2(float(facing) * 220.0, 760.0)            # DOWNSLAM
@@ -224,8 +232,10 @@ func _m1_landed(victim: Fighter, hit: HitData, result: String) -> void:
 	m1_landed += 1
 	var chest := victim.global_position + Vector2(0, -minf(80.0, victim.data.body_size.y * 0.6))
 	if hit.m1 < M1_CHAIN:
-		# Held until the next swing lands (true combo); the CPU / player can't escape mid-string
-		var keep := (data.punch_startup + data.punch_active + data.punch_recovery) + 0.12
+		# Held until the next swing lands (true combo if pressed on time); after hit 3 the hold is tight,
+		# so a late finisher can be blocked
+		var keep := (data.punch_startup + data.punch_active + data.punch_recovery) \
+				+ (M1_LAST_HOLD if hit.m1 == M1_CHAIN - 1 else M1_HOLD)
 		victim.stun_timer = maxf(victim.stun_timer, keep)
 		Effects.hit_sparks(self, chest, 3 + hit.m1, 0.6 + 0.12 * float(hit.m1))
 		return

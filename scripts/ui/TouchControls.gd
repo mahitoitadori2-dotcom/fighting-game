@@ -253,7 +253,27 @@ func _process(_delta: float) -> void:
 				_player = cf
 		if _player != null and _player.move_ids.size() > 3 and not _extended:
 			_layout()                             # Found a 7-power fighter: add buttons 4-7 + FLY
-	_ui.queue_redraw()
+	var sig := _ui_signature()
+	if sig != _last_sig:                          # Redraw only when something on the buttons changed
+		_last_sig = sig
+		_ui.queue_redraw()
+
+
+## PERFORMANCE (/nolags 2026-11-26): the buttons were redrawn every frame as ~42 separate draw calls
+## (Godot can't batch circles with lines with text). Now the shapes go into MeshCanvas meshes (one
+## draw call each), the texts are drawn after them (outlines, then letters: they batch), only the
+## smooth rings keep their own antialiased draws, and nothing is redrawn while nothing changes.
+var _last_sig := ""
+var _mesh_keep: Array = []
+
+
+func _ui_signature() -> String:
+	var parts := PackedStringArray([str(_scale), str(_stick["finger"] != -999), str(_stick["center"]), str(_stick["knob"]), str(_buttons.size())])
+	for b in _buttons:
+		parts.append("%s%d%.2f" % [b["label"], 1 if b["pressed"] else 0, snappedf(_cooldown_fraction(b["id"]), 0.02)])
+		if b["id"] == "ult" and _player != null and _player.gauge != null and _player.gauge.segments() > 0:
+			parts.append("u%d_%d" % [_player.gauge.segments(), int(Time.get_ticks_msec() / 50)])   # The ready glow pulses
+	return "|".join(parts)
 
 
 func _draw_ui() -> void:
@@ -263,46 +283,68 @@ func _draw_ui() -> void:
 	var a := PRESS_ALPHA if held else IDLE_ALPHA
 	var c: Vector2 = _stick["center"]
 	var r: float = _stick["r"]
-	_ui.draw_circle(c, r, Color(0, 0, 0, a * 0.35))
+	var base := MeshCanvas.new()
+	base.draw_circle(c, r, Color(0, 0, 0, a * 0.35))
+	_mesh_keep = [base.build()]                # (The renderer uses the meshes after this returns: keep them)
+	_ui.draw_mesh(_mesh_keep[0], null)
 	_ui.draw_arc(c, r, 0.0, TAU, 40, Color(0, 0, 0, a), 4.0 * s, FighterArt.AA)
 	_ui.draw_arc(c, r - 3.0 * s, 0.0, TAU, 40, Color(1, 1, 1, a * 0.6), 2.0 * s, FighterArt.AA)
+	var mc := MeshCanvas.new()
 	for d in [Vector2.LEFT, Vector2.RIGHT, Vector2.DOWN, Vector2.UP]:
 		var tip: Vector2 = c + d * (r - 10.0 * s)
-		_ui.draw_line(tip - d * 8.0 * s + d.orthogonal() * 5.0 * s, tip, Color(1, 1, 1, a * 0.7), 2.5 * s)
-		_ui.draw_line(tip - d * 8.0 * s - d.orthogonal() * 5.0 * s, tip, Color(1, 1, 1, a * 0.7), 2.5 * s)
+		mc.draw_line(tip - d * 8.0 * s + d.orthogonal() * 5.0 * s, tip, Color(1, 1, 1, a * 0.7), 2.5 * s)
+		mc.draw_line(tip - d * 8.0 * s - d.orthogonal() * 5.0 * s, tip, Color(1, 1, 1, a * 0.7), 2.5 * s)
 	var knob: Vector2 = _stick["knob"]
-	_ui.draw_circle(knob, r * 0.42 + 3.0 * s, Color(0, 0, 0, a))
-	_ui.draw_circle(knob, r * 0.42, Color(0.9, 0.92, 1.0, a))
+	mc.draw_circle(knob, r * 0.42 + 3.0 * s, Color(0, 0, 0, a))
+	mc.draw_circle(knob, r * 0.42, Color(0.9, 0.92, 1.0, a))
 
 	# --- Buttons ---
 	var font := ThemeDB.fallback_font
+	var rings: Array = []                          # [centre, radius, colour, width] (antialiased, after the mesh)
+	var texts: Array = []                          # [pos, text, size, outline px, outline colour, colour]
 	for b in _buttons:
 		var bc: Vector2 = b["center"]
 		var br: float = b["r"]
 		var pressed: bool = b["pressed"]
 		var ba := PRESS_ALPHA if pressed else IDLE_ALPHA
 		var fill := _button_color(b["id"])
-		_ui.draw_circle(bc, br + 3.0 * s, Color(0, 0, 0, ba))
-		_ui.draw_circle(bc, br, Color(fill.r, fill.g, fill.b, ba))
+		mc.draw_circle(bc, br + 3.0 * s, Color(0, 0, 0, ba))
+		mc.draw_circle(bc, br, Color(fill.r, fill.g, fill.b, ba))
 		if pressed:
-			_ui.draw_circle(bc, br * 0.85, Color(1, 1, 1, 0.25))
-		# Cooldown sweep on move buttons
+			mc.draw_circle(bc, br * 0.85, Color(1, 1, 1, 0.25))
+		# Cooldown sweep on move buttons (a pie slice over the button)
 		var cd := _cooldown_fraction(b["id"])
 		if cd > 0.0:
-			_ui.draw_arc(bc, br * 0.5, -PI * 0.5, -PI * 0.5 + TAU * cd, 24, Color(0, 0, 0, 0.55), br, false)
+			var pie := PackedVector2Array([bc])
+			for i in 25:
+				var ang := -PI * 0.5 + TAU * cd * float(i) / 24.0
+				pie.append(bc + Vector2(cos(ang), sin(ang)) * br)
+			if pie.size() >= 3:
+				for i in range(1, pie.size() - 1):
+					mc._tri(pie[0], pie[i], pie[i + 1], Color(0, 0, 0, 0.55), Color(0, 0, 0, 0.55), Color(0, 0, 0, 0.55))
 		# Ultimate: glow when ready + bar count
 		if b["id"] == "ult" and _player != null and _player.gauge != null:
 			var bars := _player.gauge.segments()
 			if bars > 0:
 				var p := 0.5 + 0.5 * sin(Time.get_ticks_msec() / 150.0)
-				_ui.draw_arc(bc, br + 6.0 * s, 0.0, TAU, 32, Color(0.35, 0.8, 1.0, 0.5 + 0.4 * p), 3.0 * s, FighterArt.AA)
-				_ui.draw_string(font, bc + Vector2(br * 0.55, -br * 0.55), str(bars), HORIZONTAL_ALIGNMENT_LEFT, -1, int(12 * s), Color(1, 1, 1, 0.9))
+				rings.append([bc, br + 6.0 * s, Color(0.35, 0.8, 1.0, 0.5 + 0.4 * p), 3.0 * s])
+				texts.append([bc + Vector2(br * 0.55, -br * 0.55), str(bars), int(12 * s), 0, Color(0, 0, 0, 0), Color(1, 1, 1, 0.9)])
 		var label: String = b["label"]
 		var fs := int((18.0 if label.length() <= 1 else 12.0) * s * (1.25 if b["id"] == "attack" else 1.0))
 		var tw := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 		var tp := bc + Vector2(-tw * 0.5, fs * 0.35)
-		_ui.draw_string_outline(font, tp, label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, int(4 * s), Color(0, 0, 0, minf(ba + 0.3, 1.0)))
-		_ui.draw_string(font, tp, label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(1, 1, 1, minf(ba + 0.4, 1.0)))
+		texts.append([tp, label, fs, int(4 * s), Color(0, 0, 0, minf(ba + 0.3, 1.0)), Color(1, 1, 1, minf(ba + 0.4, 1.0))])
+	var mesh := mc.build()
+	if mesh != null:
+		_mesh_keep.append(mesh)
+		_ui.draw_mesh(mesh, null)
+	for g in rings:
+		_ui.draw_arc(g[0], g[1], 0.0, TAU, 32, g[2], g[3], FighterArt.AA)
+	for t in texts:
+		if int(t[3]) > 0:
+			_ui.draw_string_outline(font, t[0], t[1], HORIZONTAL_ALIGNMENT_LEFT, -1, t[2], t[3], t[4])
+	for t in texts:
+		_ui.draw_string(font, t[0], t[1], HORIZONTAL_ALIGNMENT_LEFT, -1, t[2], t[5])
 
 
 func _button_color(id: String) -> Color:

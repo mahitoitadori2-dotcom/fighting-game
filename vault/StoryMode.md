@@ -1,4 +1,4 @@
-﻿---
+---
 class: state
 validity: current
 type: reference
@@ -468,3 +468,16 @@ Lore by the user. Terra Patria was the first planet with breathable air and beca
 - **Lore:** most of it is told by him at the end; short talks at 111 / 115 / 120 / 125 / 130 / 136 / 138; a Codex item (the Smith's Tally) hints at locks 7-9.
 - **Music:** story_true_hunt, boss_monstrosity (new).
 - **Tested (headless, autoplay):** all 28 levels' data; levels 111, 113, 115, 116, 122 cleared with disasters striking; level 138 cleared on all 4 ending paths; the lock and unlock work. **Not checked:** seen on screen (no screenshots yet), played by a human, the balance of the disasters and of the 127-golem boss.
+
+## The Last Stretch (levels 139-148, added 2026-11-28)
+
+Lore by the user. The heroes travel on **with the Nightmare Lord** (if he left at the end of The True Hunt, he comes back at the start of 139). The Storm follows them; out in the open it will kill them, so they look for a village. Code: `scripts/story/levels/LevelsLastStretch.gd`, `scripts/story/last/`, cutscenes `scripts/three_d/ScenesLast.gd`.
+- **Religions (user's lore, used in the talks):** Stormism (the Storm is a god and saviour - Halcyon), Rallism (Egyptian gods + Heaven / Hell + hatred of the Storm), Voidism (the Warrior: atheism), Architectiulum (the Architect in the Architectium: a god brings supplies + knowledge) -> Frepasm (since he went Grade 0: peace and freedom for the good, pain and enclosure for the evil), The Ritual (the Nightmare Lord: the nightmare heart blooms into new Nightmare Lords), Goddism (the Enlightened One).
+- **139-142 the road:** you (the hero who did not chase the Enlightened One) + your partner + **the Nightmare Lord as a third CPU ally** (his Versus kit, revives like the partner). **People and animals** stroll in the background (`RoadFolk.gd`, scenery only). Lightning / gale from the Storm on 140-142. New maps: the open road, the farmlands, outside Halcyon.
+- **End of 142: cutscene "ls_capture"** (3D): Halcyon, an advanced Stormist town; they know the Warrior and the Architect are Grade FTE; guards with storm-rods knock all three down -> three cells.
+- **143-147: only the Architect, inside his own soul**, fighting his life's weaknesses (enemies are ghostly violet memories): 143 Obedience (Architectium soldiers), 144 The Gift That Never Came (believers), 145 The Dark Below (the Void), 146 The Ones You Could Not Save (the cured challengers), 147 boss **THE HOLLOW ARCHITECT** (his model in a hollow palette; one move per weakness).
+- **End of 147: cutscene "ls_timestop"** (the user's "HERE"): he stops time (the world goes grey, rain hangs in the air), the bars fly off, he walks through the frozen guards tearing their limbs off (the limbs hang in the air until time comes back), sparks a fire under the Storm's spiral in the square, and Halcyon burns.
+- **148 the King of Halcyon** (no fight): a short talk (Stormism vs Frepasm), the hand through the king's chest, cutscene "ls_free" (the Warrior and the Nightmare Lord walk out of their cells), a last talk, cutscene "ls_bridge": a bridge of light builds itself into the Storm and the three walk onto it. TO BE CONTINUED.
+- **Extras:** 3 new music tracks (story_last_stretch, story_soul, boss_hollow_architect), 5 achievements (Fellow Traveller, True Self, Unshaken, Pain and Enclosure, The Last Stretch Conquered), a Codex item (A Blueprint of Himself). Milestone: 140 is harder.
+- Without 3D (POTATO / phones on FAST) the cutscenes show a painted backdrop + the captions.
+- **Tested (headless, autoplay, 2026-11-28):** all 10 levels cleared start to finish (Nightmare Lord ally + road folk on 139-142, soul tint on 143-147, the Hollow Architect beaten, the 148 king / free / bridge flow), no script errors. **Not checked:** seen on screen, played by a human. Red Console: `cutscene <capture|timestop|free|bridge>`, `level <139-148>`.

@@ -938,4 +938,52 @@ PIECES.boss_monstrosity = { bpm: 104, meter: 4, rev: 0.45,
     { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 92, dur: 3 },
   ] };
 
+// THE LAST STRETCH (levels 139-142): three travellers on an open road, the Storm behind them - a walking
+// harp and cello tune in D, the violin answers over slow strings; drums only when the sky starts to rumble.
+PIECES.story_last_stretch = { bpm: 100, meter: 4, rev: 0.35,
+  chords: 'D A Bm G D A G A  Bm G D A Bm G Em F#',
+  parts: [
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 1, 1], [2, 2, 1], [3, 1, 1]], oct: 1, vel: 60 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 2], [2, 2]], vel: 70 },
+    { t: 'mel', inst: 'cello', bar: 0, vel: 92,
+      notes: 'D4:1.5 E4:0.5 F#4:1 A4:1 B4:2 A4:2 F#4:1 E4:1 D4:1 E4:1 F#4:4 G4:1.5 F#4:0.5 E4:1 D4:1 B3:2 D4:2 E4:1 F#4:1 G4:1 E4:1 A4:4' },
+    { t: 'pad', inst: 'slowstrings', from: 8, to: 16, vel: 56 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 98, dbl: [['horn', -1, 0.3]],
+      notes: 'B4:1.5 C#5:0.5 D5:1 F#5:1 E5:2 D5:2 C#5:1 D5:1 E5:1 F#5:1 A5:4 G5:1.5 F#5:0.5 E5:1 D5:1 E5:2 G5:2 F#5:1 E5:1 D5:1 C#5:1 C#5:4' },
+    { t: 'hit', inst: 'taiko', key: 45, from: 8, to: 16, beats: [0, 2.5], vel: 80 },
+    { t: 'pad', inst: 'choir', from: 12, to: 16, vel: 52 },
+  ] };
+
+// THE ARCHITECT'S SOUL (levels 143-147): inside himself - tremolo strings in the dark, a slow harp,
+// a wordless voice; the violin takes the tune when he goes deeper. Soft timpani like a heartbeat.
+PIECES.story_soul = { bpm: 70, meter: 4, rev: 0.6,
+  chords: 'Am F Dm E  Am F G E  Am C Dm E  F Dm E E',
+  parts: [
+    { t: 'pad', inst: 'tremolo', from: 0, to: 16, oct: -1, vel: 46 },
+    { t: 'arp', inst: 'harp', from: 0, to: 16, pat: [[0, 0, 1], [1, 2, 1], [2, 1, 1], [3, 2, 1]], oct: 1, vel: 50 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 4]], vel: 55 },
+    { t: 'mel', inst: 'oohs', bar: 0, vel: 84,
+      notes: 'A4:3 B4:1 C5:2 A4:2 D5:3 C5:1 B4:4 A4:3 B4:1 C5:2 E5:2 D5:2 B4:2 G#4:4' },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 90,
+      notes: 'E5:3 D5:1 C5:2 E5:2 F5:3 E5:1 D5:4 C5:3 B4:1 A4:2 C5:2 B4:2 G#4:2 E4:4' },
+    { t: 'hit', inst: 'timpani', key: 40, from: 0, to: 16, beats: [0, 0.6], vel: 62 },
+  ] };
+
+// THE HOLLOW ARCHITECT (level 147): his own face, every weakness at once - driving spiccato strings,
+// taiko + snare, a trumpet tune doubled by trombones; the choir and violins scream it back in the second half.
+PIECES.boss_hollow_architect = { bpm: 148, meter: 4, rev: 0.4,
+  chords: 'Dm Dm Bb C Dm Dm Gm A  Dm F Bb C Gm Bb A A',
+  parts: [
+    { t: 'ost', inst: 'strings', from: 0, to: 16, rel: [0, 0, 12, 0, 7, 0, 12, 7], step: 0.5, vel: 80 },
+    { t: 'bass', inst: 'contrabass', from: 0, to: 16, pat: [[0, 0.5], [0.5, 0.5], [1.5, 0.5], [2, 1], [3, 1]], vel: 92 },
+    { t: 'hit', inst: 'taiko', key: 45, from: 0, to: 16, beats: [0, 1.5, 2.5], vel: 100 },
+    { t: 'hit', inst: 'drums', key: 38, from: 0, to: 16, beats: [1, 3], vel: 70 },
+    { t: 'mel', inst: 'trumpet', bar: 0, vel: 106, dbl: [['trombone', -1, 0.35]],
+      notes: 'D5:1 A4:1 D5:1 F5:1 E5:2 D5:2 F5:1 E5:1 D5:1 C5:1 D5:4 D5:1 F5:1 A5:1 G5:1 F5:2 D5:2 G5:1 F5:1 E5:1 D5:1 C#5:4' },
+    { t: 'pad', inst: 'choir', from: 8, to: 16, vel: 64 },
+    { t: 'mel', inst: 'violin', bar: 8, vel: 110, dbl: [['violin', -1, 0.4]],
+      notes: 'A5:1 G5:1 F5:1 E5:1 F5:2 A5:2 A#5:1 A5:1 G5:1 F5:1 G5:4 A#5:1 A5:1 G5:1 F5:1 D5:2 F5:2 E5:1 F5:1 G5:1 E5:1 A5:4' },
+    { t: 'hit', inst: 'drums', key: 57, from: 0, to: 16, beats: [0], every: 4, vel: 86, dur: 3 },
+  ] };
+
 module.exports = { PIECES, build };

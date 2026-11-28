@@ -151,5 +151,13 @@ const MAPS := {
 		"platforms": [[-380.0, 130.0, 220.0], [380.0, 130.0, 220.0]]},
 	"th_forge":    {"bg": "hunt_crucible", "ground": 20, "walls": "hellrock", "half_width": 900.0, "music": "story_true_hunt", "solid": true, "zone": "THE NIGHTMARE FORGE",
 		"platforms": [[-520.0, 130.0, 180.0], [520.0, 130.0, 180.0]]},
+	# ----- THE LAST STRETCH (139-148): the road to Halcyon, the Architect's soul, the burning town -----
+	"ls_plains":    {"bg": "ls_plains", "ground": 19, "walls": "thorn", "half_width": 900.0, "music": "story_last_stretch", "zone": "THE OPEN ROAD"},
+	"ls_farms":     {"bg": "ls_farms", "ground": 19, "walls": "thorn", "half_width": 880.0, "music": "story_last_stretch", "zone": "THE FARMLANDS"},
+	"ls_gate":      {"bg": "ls_gate", "ground": 11, "walls": "lab", "half_width": 880.0, "music": "story_last_stretch", "zone": "OUTSIDE HALCYON"},
+	"ls_soul":      {"bg": "ls_soul", "ground": 14, "walls": "dark", "half_width": 840.0, "music": "story_soul", "solid": true, "zone": "THE ARCHITECT'S SOUL"},
+	"ls_soul_dark": {"bg": "ls_soul_dark", "ground": 18, "walls": "dark", "half_width": 820.0, "music": "story_soul", "solid": true, "zone": "THE DEEPER SOUL"},
+	"ls_soul_core": {"bg": "ls_soul_core", "ground": 16, "walls": "dark", "half_width": 820.0, "music": "story_soul", "solid": true, "zone": "THE CORE"},
+	"ls_throne":    {"bg": "ls_throne", "ground": 25, "walls": "hellrock", "half_width": 820.0, "music": "story_throne", "zone": "HALCYON IN FLAMES"},
 	"orbis":        {"bg": "ord_meadow", "ground": 19, "walls": "thorn", "half_width": 840.0, "music": "story_orbis", "zone": "ORBIS TERRARUM"},
 }

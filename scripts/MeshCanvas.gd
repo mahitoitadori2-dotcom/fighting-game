@@ -6,6 +6,8 @@ extends RefCounted
 ## Godot replays every recorded canvas command each frame and can't batch rects with polygons
 ## with lines, so a static backdrop of hundreds of shapes cost hundreds of draw calls per frame on
 ## phones. Same look, one draw call.
+# KEEP A REFERENCE to the built mesh (a member var) until the next redraw: draw_mesh only stores the
+# mesh's RID, and a mesh freed at the end of _draw renders nothing ("Parameter mesh is null").
 
 var verts := PackedVector2Array()
 var cols := PackedColorArray()

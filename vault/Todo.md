@@ -101,3 +101,4 @@ Back to [Summary](SUMMARY.md). Large plans are in the [Roadmap](Roadmap.md).
 ## Performance
 
 - [ ] Pool the other projectiles: Triangle Bomb, Void Goo, Oil Puddle, Throne, Nightmare Heart, Helper Minion.
+- [ ] **Watch The Last Stretch cutscenes** (Red Console: `cutscene capture / timestop / free / bridge`) and tune timing / camera. All 10 levels (139-148) cleared on headless autoplay 2026-11-28; nothing seen on screen yet. Play 139-148 yourself (Hollow Architect balance, Nightmare Lord ally).

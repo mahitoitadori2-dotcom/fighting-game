@@ -17,7 +17,7 @@ const INTRO_LEN := {"intro_walk": 4.2, "intro_fly": 4.4, "intro_fall": 3.8, "int
 
 
 static func has(kind: String) -> bool:
-	return STORY.has(kind) or INTROS.has(kind)
+	return STORY.has(kind) or INTROS.has(kind) or ScenesLast.has(kind)
 
 
 ## Which intro a level gets: boss levels -> boss reveal; the first level in a new area -> a gate
@@ -63,7 +63,10 @@ static func build(st: Stage3D, kind: String, ctx: Dictionary) -> void:
 		"enl_end":
 			_enl_end(st, hero)
 		_:
-			_intro(st, kind, hero, n)
+			if ScenesLast.has(kind):                                # THE LAST STRETCH (ScenesLast.gd)
+				ScenesLast.build(st, kind, hero, other)
+			else:
+				_intro(st, kind, hero, n)
 
 
 static func _k(t: float, a: float, b: float) -> float:

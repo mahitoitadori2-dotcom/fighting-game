@@ -12,7 +12,7 @@ extends RefCounted
 
 const SAVE_PATH := "user://story.cfg"
 const TOTAL_LEVELS := 80                 # Level 50 = The Sun, 51-62 = THE ENLIGHTENED CHASE, 63 = DEMILAND, 64-66 = THE CAVES, 67 = TERRA CRATERUM, 68-70 = THE MAGMA RUN, 71 = TERRA ORDINARIORUM, 72-74 = THE ROAD TO PEACE, 75-80 = ORBIS TERRARUM (80 = THE STORM ATTACKS)
-const AVAILABLE_LEVELS := 138             # + The True Hunt (111-138). + The Hunt of a Nightmare (82-110). + The Abandoned Town (81). Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
+const AVAILABLE_LEVELS := 148             # + The Last Stretch (139-148). + The True Hunt (111-138). + The Hunt of a Nightmare (82-110). + The Abandoned Town (81). Colosseums 1-5 + The Enlightened Chase + DemiLand + The Caves + Terra Craterum + The Magma Run + Terra Ordinariorum + The Road to Peace + Orbis Terrarum
 const LAYOUT := 2
 ## Layout 1 level (index) -> the same content in layout 2.
 const OLD_TO_NEW := [0, 1, 2, 2, 3, 4, 6, 8, 9, 10, 12, 13, 15, 16, 17, 19, 20, 24, 26, 27, 28, 29, 30, 31, 34]

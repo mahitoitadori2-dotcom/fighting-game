@@ -336,6 +336,18 @@ static func _build() -> void:
 		{"script": FireLordArt, "frame": "silver", "emblem": "skull", "bg": Color(0.14, 0.06, 0.06)})
 	_add("col_%d" % StoryLevels.TRUE_HUNT_PART, "The True Hunt Conquered", "Defeat THE NIGHTMARE MONSTROSITY (Level 138).", "story",
 		{"big": "crown", "frame": "gold", "bg": true_bg})
+	# ---------------- THE LAST STRETCH (levels 139-148) ----------------
+	var last_bg := Color(0.16, 0.12, 0.26)
+	_add("ls_nl_unhurt", "Fellow Traveller", "THE LAST STRETCH: clear a road level without the Nightmare Lord ever going down.", "challenge",
+		{"script": FireLordArt, "frame": "silver", "emblem": "star", "bg": Color(0.30, 0.06, 0.06)})
+	_add("ls_true_self", "True Self", "Beat THE HOLLOW ARCHITECT at the bottom of the Architect's soul.", "story",
+		{"script": HollowArchitect, "frame": "gold", "emblem": "star", "bg": last_bg})
+	_add("ls_unshaken", "Unshaken", "Beat THE HOLLOW ARCHITECT without drinking a flask during the fight.", "challenge",
+		{"script": HollowArchitect, "frame": "silver", "emblem": "no_heal", "bg": last_bg.darkened(0.3)})
+	_add("ls_king", "Pain and Enclosure", "Have your last word with THE KING OF HALCYON.", "story",
+		{"script": HalcyonKing, "frame": "bronze", "emblem": "skull", "bg": Color(0.36, 0.12, 0.05)})
+	_add("col_%d" % StoryLevels.LAST_PART, "The Last Stretch Conquered", "Walk onto the bridge into the Storm (Level 148).", "story",
+		{"big": "crown", "frame": "gold", "bg": last_bg})
 	# ---------------- MADNESS (secret: XANXXE 1NT3GR1T13S) ----------------
 	_add("madness_unlocked", "Integrity Compromised", "Extract Reality. Ready Infection. Engage Madness.", "secret",
 		{"script": WeirdCreature, "frame": "red", "emblem": "skull", "bg": Color(0.20, 0.0, 0.0)})

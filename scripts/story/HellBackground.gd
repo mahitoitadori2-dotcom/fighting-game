@@ -110,6 +110,9 @@ func _paint_into(sz: Vector2) -> void:
 	if HuntBackdrops.handles(theme):                       # The Hunt of a Nightmare (HuntBackdrops.gd)
 		HuntBackdrops.paint(_p, theme, sz)
 		return
+	if LastBackdrops.handles(theme):                       # The Last Stretch (LastBackdrops.gd)
+		LastBackdrops.paint(_p, theme, sz)
+		return
 	if MadnessBackdrops.handles(theme):                    # MADNESS (secret): red chains from hell
 		MadnessBackdrops.paint(_p, theme, sz)
 		return
